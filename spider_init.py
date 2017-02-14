@@ -709,18 +709,19 @@ if __name__ == '__main__':
     # from proj.tasks import tp_attr_city_page
     #
     # import csv
+    #
     # _count = 0
     # f = open('/tmp/tp_1227.csv')
     # f.readline()
     # reader = csv.reader(f)
     # for line in reader:
-    #     if line[4]!='NULL':
-    #         print line[0],line[4]
-    #         _count+=1
+    #     if line[4] != 'NULL':
+    #         print line[0], line[4]
+    #         _count += 1
     #
     #         # tp_attr_list_page_num.delay(line[-1],line[0])
     # print _count
-
+    #
     # tp_attr_city_page.delay('http://www.tripadvisor.cn/Tourism-g187147-Paris_Ile_de_France-Vacations.html', '10001')
 
     # todo tp_city_rest_crawl
@@ -962,12 +963,26 @@ if __name__ == '__main__':
     # hotel_list_task('booking', '11958', 'remote_4_test_hotel_list', task_id='asfasdfasdfasdf')
 
     # todo test qyer poi task
-    from proj.qyer_attr_task import detail_page, get_pid_total_page
+    # from proj.qyer_attr_task import detail_page, get_pid_total_page
+    #
+    # target_url = u'http://place.qyer.com/paris/sight/'
+    # # print get_pid_total_page.delay(target_url=target_url)
+    #
+    # # detail_page(u'20', 2)
+    #
+    # get_pid_total_page(target_url=target_url, city_id=u'10001', part=u'qyer_test_0210')
+    # # detail_page(pid=u'20', page_num=3, city_id='10001', part='qyer_test_0210')
 
-    target_url = u'http://place.qyer.com/paris/sight/'
-    # print get_pid_total_page.delay(target_url=target_url)
+    # todo daodao poi task init
+    import pandas
+    from sqlalchemy import create_engine
+    from proj.tasks import tp_attr_city_page, tp_rest_city_page, tp_shop_city_page
 
-    # detail_page(u'20', 2)
+    engine = create_engine('mysql+mysqlconnector://hourong:hourong@localhost:3306/SuggestName')
 
-    get_pid_total_page(target_url=target_url, city_id=u'10001', part=u'qyer_test_0210')
-    # detail_page(pid=u'20', page_num=3, city_id='10001', part='qyer_test_0210')
+    table = pandas.read_sql('select city_id, daodao_url from daodao_result_1', engine)
+    city_id_dict = pandas.Series(table.daodao_url.values, table.city_id).to_dict()
+    for k, v in city_id_dict.items():
+        tp_attr_city_page.delay(v, k, 'tp_attr_list_0213')
+        tp_rest_city_page.delay(v, k, 'tp_rest_list_0213')
+        tp_shop_city_page.delay(v, k, 'tp_shop_list_0213')

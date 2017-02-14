@@ -30,6 +30,7 @@ from .my_lib.shop_parser import parse as shop_parser
 from .my_lib.task_module.task_func import update_task
 from .my_lib.tp_comment_parser import parse, long_comment_parse, insert_db
 from .my_lib.BaseTask import BaseTask
+from .my_lib.task_module.task_func import get_task_id, update_task, insert_task
 
 platforms.C_FORCE_ROOT = True
 
@@ -129,8 +130,8 @@ def get_long_comment(self, target_url, language, miaoji_id):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
-def get_lost_attr(self, target_url, city_id):
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
+def get_lost_attr(self, target_url, city_id, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -150,9 +151,13 @@ def get_lost_attr(self, target_url, city_id):
             self.retry()
         else:
             print "Success with " + PROXY + ' CODE 0'
-            update_proxy('Platform', PROXY, x, '0')
+            try:
+                print attr_insert_db(result, city_id)
+                update_task(task_id=kwargs['task_id'])
+                update_proxy('Platform', PROXY, x, '0')
+            except Exception as exc:
+                self.retry(exc=exc)
 
-        print attr_insert_db(result, city_id)
         return result
         # data = long_comment_parse(page.content, target_url, language)
         # return insert_db([data, ])
@@ -203,8 +208,8 @@ def get_site_url(self, target_url, source_id):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
-def get_lost_rest(self, target_url):
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
+def get_lost_rest(self, target_url, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -218,7 +223,7 @@ def get_lost_rest(self, target_url):
     try:
         page = requests.get(target_url, proxies=proxies, headers=headers, timeout=15)
         page.encoding = 'utf8'
-        result = rest_parser(page.content, target_url)
+        result = rest_parser(page.content, target_url, city_id=city_id)
         if result == 'Error':
             update_proxy('Platform', PROXY, x, '23')
             self.retry()
@@ -227,6 +232,7 @@ def get_lost_rest(self, target_url):
             update_proxy('Platform', PROXY, x, '0')
 
         # print attr_insert_db(result)
+        update_task(task_id=kwargs['task_id'])
         return result
         # data = long_comment_parse(page.content, target_url, language)
         # return insert_db([data, ])
@@ -235,8 +241,8 @@ def get_lost_rest(self, target_url):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='15/s')
-def get_lost_shop(self, target_url, city_id):
+@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='45/s')
+def get_lost_shop(self, target_url, city_id, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -255,6 +261,7 @@ def get_lost_shop(self, target_url, city_id):
             self.retry()
         else:
             print "Success with " + PROXY + ' CODE 0'
+            update_task(task_id=kwargs['task_id'])
             update_proxy('Platform', PROXY, x, '0')
         return result
     except Exception as exc:
@@ -262,8 +269,8 @@ def get_lost_shop(self, target_url, city_id):
         self.retry(exc=exc, countdown=2)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
-def get_lost_rest_new(self, target_url, city_id):
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
+def get_lost_rest_new(self, target_url, city_id, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -280,8 +287,8 @@ def get_lost_rest_new(self, target_url, city_id):
         if result == 'Error':
             self.retry()
         else:
+            update_task(task_id=kwargs['task_id'])
             update_proxy('Platform', PROXY, x, '23')
-            self.retry()
         return result
     except Exception as exc:
         self.retry(exc=exc)
@@ -796,7 +803,7 @@ attr_oa_pattern = re.compile('-oa(\d+)')
 
 
 @app.task(bind=True, base=BaseTask, max_retries=7, rate_limit='15/s')
-def tp_attr_city_page(self, city_url, city_id):
+def tp_attr_city_page(self, city_url, city_id, part):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -815,11 +822,11 @@ def tp_attr_city_page(self, city_url, city_id):
     doc = PyQuery(page.text)
     doc.make_links_absolute(city_url)
     for item in doc('.attractions.twoLines a').items():
-        tp_attr_list_page_num.delay(item.attr.href, city_id)
+        tp_attr_list_page_num.delay(item.attr.href, city_id, part)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='15/s')
-def tp_attr_list_page_num(self, index_url, city_id):
+def tp_attr_list_page_num(self, index_url, city_id, part):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -842,16 +849,17 @@ def tp_attr_list_page_num(self, index_url, city_id):
         num = int(attr_oa_pattern.findall(item.attr.href)[0])
         num_list.append(num)
 
-    tp_attr_detail_page_url.delay(index_url, city_id)
+    tp_attr_detail_page_url.delay(index_url, city_id, part)
     try:
         for page_num in range(30, max(num_list) + 30, 30):
-            tp_attr_detail_page_url.delay(index_url.replace('-Activities', '-Activities-oa' + str(page_num)), city_id)
+            tp_attr_detail_page_url.delay(index_url.replace('-Activities', '-Activities-oa' + str(page_num)), city_id,
+                                          part)
     except:
         pass
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
-def tp_attr_detail_page_url(self, page_num_url, city_id):
+def tp_attr_detail_page_url(self, page_num_url, city_id, part):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -869,10 +877,17 @@ def tp_attr_detail_page_url(self, page_num_url, city_id):
         self.retry()
     doc = PyQuery(page.text)
     doc.make_links_absolute(page_num_url)
+
+    data = []
+    worker = u'daodao_poi_base_data'
     for item in doc('.property_title a').items():
         href = item.attr.href
         if 'Attraction_Review' in href:
-            get_lost_attr.delay(href, city_id)
+            args = json.dumps(
+                {u'target_url': unicode(href), u'city_id': unicode(city_id), u'type': 'attr'})
+            task_id = get_task_id(worker, args=args)
+            data.append((task_id, worker, args, unicode(part).replace(u'list', u'detail')))
+    print insert_task(data=data)
 
 
 # add lost rest
@@ -882,7 +897,7 @@ rest_g_pattern = re.compile('-g(\d+)')
 
 
 @app.task(bind=True, base=BaseTask, max_retries=7, rate_limit='15/s')
-def tp_rest_city_page(self, city_url, city_id):
+def tp_rest_city_page(self, city_url, city_id, part):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -901,11 +916,11 @@ def tp_rest_city_page(self, city_url, city_id):
     doc = PyQuery(page.text)
     doc.make_links_absolute(city_url)
     for item in doc('.restaurants.twoLines a').items():
-        tp_rest_list_page_num.delay(item.attr.href, city_id)
+        tp_rest_list_page_num.delay(item.attr.href, city_id, part)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='15/s')
-def tp_rest_list_page_num(self, index_url, city_id):
+def tp_rest_list_page_num(self, index_url, city_id, part):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -929,18 +944,18 @@ def tp_rest_list_page_num(self, index_url, city_id):
         num = int(rest_oa_pattern.findall(item.attr.href)[0])
         num_list.append(num)
 
-    tp_rest_detail_page_url.delay(index_url, city_id)
+    tp_rest_detail_page_url.delay(index_url, city_id, part)
     try:
         for page_num in range(30, max(num_list) + 30, 30):
             g_num = rest_g_pattern.findall(index_url)[0]
             tp_rest_detail_page_url.delay(index_url.replace('-g' + g_num, '-g{0}-oa{1}'.format(g_num, page_num)),
-                                          city_id)
+                                          city_id, part)
     except:
         pass
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
-def tp_rest_detail_page_url(self, page_num_url, city_id):
+def tp_rest_detail_page_url(self, page_num_url, city_id, part):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -958,14 +973,22 @@ def tp_rest_detail_page_url(self, page_num_url, city_id):
         self.retry()
     doc = PyQuery(page.text)
     doc.make_links_absolute(page_num_url)
+
+    data = []
+    worker = u'daodao_poi_base_data'
+
     for item in doc('.property_title').items():
         href = item.attr.href
         if 'Restaurant_Review' in href:
-            get_lost_rest_new.delay(href, city_id)
+            args = json.dumps(
+                {u'target_url': unicode(href), u'city_id': unicode(city_id), u'type': u'rest'})
+            task_id = get_task_id(worker, args=args)
+            data.append((task_id, worker, args, unicode(part).replace(u'list', u'detail')))
+    print insert_task(data=data)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=7, rate_limit='15/s')
-def tp_shop_city_page(self, city_url, city_id):
+def tp_shop_city_page(self, city_url, city_id, part):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -984,11 +1007,11 @@ def tp_shop_city_page(self, city_url, city_id):
     doc = PyQuery(page.text)
     doc.make_links_absolute(city_url)
     for item in doc('.attractions.twoLines a').items():
-        tp_shop_shop_city_page.delay(item.attr.href, city_id)
+        tp_shop_shop_city_page.delay(item.attr.href, city_id, part)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='15/s')
-def tp_shop_shop_city_page(self, city_url, city_id):
+def tp_shop_shop_city_page(self, city_url, city_id, part):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -1007,11 +1030,11 @@ def tp_shop_shop_city_page(self, city_url, city_id):
     doc = PyQuery(page.text)
     doc.make_links_absolute(city_url)
     for item in doc('#ATTR_CATEGORY_26 a').items():
-        tp_shop_list_page_num.delay(item.attr.href, city_id)
+        tp_shop_list_page_num.delay(item.attr.href, city_id, part)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='15/s')
-def tp_shop_list_page_num(self, index_url, city_id):
+def tp_shop_list_page_num(self, index_url, city_id, part):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -1034,17 +1057,17 @@ def tp_shop_list_page_num(self, index_url, city_id):
         num = int(attr_oa_pattern.findall(item.attr.href)[0])
         num_list.append(num)
 
-    tp_shop_detail_page_url.delay(index_url, city_id)
+    tp_shop_detail_page_url.delay(index_url, city_id, part)
     try:
         for page_num in range(30, max(num_list) + 30, 30):
             tp_shop_detail_page_url.delay(index_url.replace('-Activities-c26', '-Activities-c26-oa' + str(page_num)),
-                                          city_id)
+                                          city_id, part)
     except:
         pass
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
-def tp_shop_detail_page_url(self, page_num_url, city_id):
+def tp_shop_detail_page_url(self, page_num_url, city_id, part):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -1062,7 +1085,15 @@ def tp_shop_detail_page_url(self, page_num_url, city_id):
         self.retry()
     doc = PyQuery(page.text)
     doc.make_links_absolute(page_num_url)
+
+    data = []
+    worker = u'daodao_poi_base_data'
+
     for item in doc('.property_title a').items():
         href = item.attr.href
         if 'Attraction_Review' in href:
-            get_lost_shop.delay(href, city_id)
+            args = json.dumps(
+                {u'target_url': unicode(href), u'city_id': unicode(city_id), u'type': u'shop'})
+            task_id = get_task_id(worker, args=args)
+            data.append((task_id, worker, args, unicode(part).replace(u'list', u'detail')))
+    print insert_task(data=data)

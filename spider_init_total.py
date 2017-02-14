@@ -10,6 +10,7 @@ from proj.tripadvisor_city_query_task import tripadvisor_city_query_task
 from proj.hotel_list_task import hotel_list_task
 from proj.tasks import craw_html
 from proj.qyer_poi_tasks import qyer_poi_task
+from proj.tasks import get_lost_attr, get_lost_rest_new, get_lost_shop
 
 
 def add_target(task_url, miaoji_id, **kwargs):
@@ -90,5 +91,17 @@ if __name__ == '__main__':
         if worker == 'qyer_poi_task':
             _count += 1
             qyer_poi_task.delay(args['target_url'], args['city_id'], task_id=task_id)
+
+        # todo daodao poi base data
+        if worker == 'daodao_poi_base_data':
+            if args[u'type'] == u'attr':
+                get_lost_attr.delay(args['target_url'], args['city_id'], task_id=task_id)
+                _count += 1
+            if args[u'type'] == u'rest':
+                get_lost_rest_new.delay(args['target_url'], args['city_id'], task_id=task_id)
+                _count += 1
+            if args[u'type'] == u'shop':
+                get_lost_shop.delay(args['target_url'], args['city_id'], task_id=task_id)
+                _count += 1
 
     print _count

@@ -338,7 +338,7 @@ def parse(content, url, miaoji_id='NULL'):
 
 
 def insert_db(result, city_id):
-    sql = "insert into tp_attr_basic_1227 (`source`, `name`, `name_en`, `phone`, `map_info`, `address`, `opentime`, `star`, `ranking`, `tagid`, `commentcounts`, `recommended_time`, `introduction`, `prize`, `traveler_choice`, `first_review_id`, `imgurl`,`miaoji_id`, `id`, `source_city_id`, `url`, `site_raw`, `site_before_301`, `city_id`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    sql = "insert into tp_attr_basic_0213 (`source`, `name`, `name_en`, `phone`, `map_info`, `address`, `opentime`, `star`, `ranking`, `tagid`, `commentcounts`, `recommended_time`, `introduction`, `prize`, `traveler_choice`, `first_review_id`, `imgurl`,`miaoji_id`, `id`, `source_city_id`, `url`, `site_raw`, `site_before_301`, `city_id`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     result = list(result)
     result.append(city_id)
     return db.ExecuteSQL(sql, tuple(result))

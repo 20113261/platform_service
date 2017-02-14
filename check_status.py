@@ -18,6 +18,9 @@ if __name__ == '__main__':
     for key in res.keys():
         ip_set.add(key.replace('celery@', '').replace('-', '.'))
 
+    ip_list = []
     for ip, host in mioji_host.items():
         if ip not in ip_set:
-            print host
+            ip_list.append(host)
+
+    print 'host_list_start|' + '|'.join(ip_list) + '|end_of_host_list'
