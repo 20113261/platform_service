@@ -1,4 +1,4 @@
-# celery spider
+# ServicePlatform
 
 ## 开发环境
 
@@ -38,4 +38,12 @@
 ### init_task.sh:
 
 
-    sh init_task.sh 开始分发任务
+    sh init_task.sh 开始分发任务，监控程序会调用此脚本发部分五
+    
+### supervisor_start.sh
+
+    sh supervisor_start.sh 守护程序守护的脚本，用于拉起 slave
+
+### check_status.sh
+
+    sh check_status.sh 查看 slave 心跳，用于将监控程序将僵尸程序重启
