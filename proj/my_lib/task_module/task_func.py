@@ -45,7 +45,7 @@ def update_task(task_id):
 
 def insert_task(data):
     conn = MySQLdb.connect(host='10.10.180.145', user='hourong', passwd='hourong', db='Task', charset="utf8")
-    sql = 'insert ignore into Task (`id`,`worker`,`args`,`priority`, `task_name`) VALUES (%s, %s, %s, 1, %s)'
+    sql = 'insert ignore into Task (`id`,`worker`,`args`,`priority`, `task_name`) VALUES (%s, %s, %s, 3, %s)'
     with conn as cursor:
         cursor.executemany(sql, data)
     conn.close()

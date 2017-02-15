@@ -11,6 +11,7 @@ from proj.hotel_list_task import hotel_list_task
 from proj.tasks import craw_html
 from proj.qyer_poi_tasks import qyer_poi_task
 from proj.tasks import get_lost_attr, get_lost_rest_new, get_lost_shop
+from proj.qyer_attr_task import get_pid_total_page
 
 
 def add_target(task_url, miaoji_id, **kwargs):

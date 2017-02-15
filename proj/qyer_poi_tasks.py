@@ -12,7 +12,7 @@ from .my_lib.task_module.task_func import update_task
 from .my_lib.BaseTask import BaseTask
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')
 def qyer_poi_task(self, target_url, city_id, **kwargs):
     x = time.time()
     PROXY = get_proxy(source="Platform")

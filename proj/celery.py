@@ -11,7 +11,8 @@ app = Celery('proj', include=['proj.tasks',
                               'proj.qyer_city_query_task',
                               'proj.tripadvisor_city',
                               'proj.hotel_list_task',
-                              'proj.qyer_attr_task'
+                              'proj.qyer_attr_task',
+                              'proj.poi_nearby_city_task'
                               ])
 app.config_from_object('proj.config')
 

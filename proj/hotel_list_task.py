@@ -29,7 +29,7 @@ hotel_rooms_c = {'check_in': '20170603', 'nights': 1, 'rooms': [{'adult': 1, 'ch
 def hotel_list_database(source, city_id):
     task = Task()
     task.extra['hotel'] = hotel_default
-    task.content = city_id
+    task.content = str(city_id)
     spider = factory.get_spider(source, 'hotelList')
     spider.task = task
     return spider.crawl(required=['hotelList_hotel'])
@@ -41,7 +41,6 @@ def hotel_list_database(source, city_id):
 def hotel_list_task(self, source, city_id, part, **kwargs):
     try:
         result = hotel_list_database(source=source, city_id=city_id)
-        update_task(kwargs['task_id'])
         data = []
         part = part.replace('list', 'detail')
         for sid, hotel_url in result[0]['hotelList_hotel']:
@@ -59,10 +58,11 @@ def hotel_list_task(self, source, city_id, part, **kwargs):
                  u'part': unicode(part)})
             task_id = get_task_id(worker, special_hotel_task_args)
             data.append((task_id, worker, args, unicode(part)))
+        update_task(kwargs['task_id'])
         print insert_task(data=data)
     except Exception as exc:
         self.retry(exc=exc)
 
 
 if __name__ == '__main__':
-    print hotel_list_database('booking', '11958')
+    print hotel_list_database('hoteltravel', '21447')

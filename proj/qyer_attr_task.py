@@ -8,11 +8,10 @@ from .celery import app
 from .my_lib.BaseTask import BaseTask
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
-from .qyer_poi_tasks import qyer_poi_task
 from .my_lib.task_module.task_func import insert_task, get_task_id
 
 
-@app.task(bind=True, base=BaseTask, max_retries=7, rate_limit='15/s')
+@app.task(bind=True, base=BaseTask, max_retries=7, rate_limit='10/m')
 def get_pid_total_page(self, target_url, city_id, part):
     x = time.time()
     PROXY = get_proxy(source="Platform")
@@ -31,14 +30,14 @@ def get_pid_total_page(self, target_url, city_id, part):
         total_attr = re.findall(u'景点\((\d+)\)', content)[0]
         # return pid, (int(total_attr) // 15) + 1
         print pid, total_attr
-        for page_num in range(1, (int(total_attr) // 15) + 1):
+        for page_num in range(1, (int(total_attr) // 15) + 2):
             detail_page.delay(pid, page_num, city_id, part)
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='15/s')
+@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='10/m')
 def detail_page(self, pid, page_num, city_id, part):
     x = time.time()
     PROXY = get_proxy(source="Platform")
@@ -47,7 +46,7 @@ def detail_page(self, pid, page_num, city_id, part):
         'https': 'socks5://' + PROXY
     }
     headers = {
-        'User-agent': GetUserAgent()
+        'User-agent': GetUserAgent(),
     }
 
     try:
@@ -57,7 +56,7 @@ def detail_page(self, pid, page_num, city_id, part):
             u'pid': unicode(pid),
             u'sort': u'32',
             u'subsort': u'all',
-            u'isnominate': u'1',
+            u'isnominate': u'-1',
             u'haslastm': u'false',
             u'rank': u'6'
         }
@@ -67,14 +66,17 @@ def detail_page(self, pid, page_num, city_id, part):
         content = json_page.text
         j_data = json.loads(content)
         task_data = []
+        url_result = []
         for attr in j_data[u'data'][u'list']:
             worker = u'qyer_poi_task'
             args = json.dumps(
                 {u'target_url': unicode(u'http:' + attr[u'url']), u'city_id': unicode(city_id)})
             task_id = get_task_id(worker=worker, args=args)
             task_data.append((task_id, worker, args, unicode(part.replace('list', 'detail'))))
+            url_result.append(u'http' + attr[u'url'])
         result = insert_task(data=task_data)
         print result
+        print url_result
         return result
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')

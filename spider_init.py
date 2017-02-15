@@ -122,11 +122,13 @@ if __name__ == '__main__':
     # import db_localhost as db
     # from proj.tasks import get_site_url
     #
-    # sql = 'select id,site_before_301 from tp_attr_basic_1227 where site is null and site_before_301!=""'
+    # # table_name = 'tp_attr_basic_0213'
+    # table_name = 'tp_shop_basic_0213'
+    # sql = 'select id,site_before_301 from {0} where site is null and site_before_301!=""'.format(table_name)
     # for each in db.QueryBySQL(sql):
     #     source_id = each['id']
     #     site_before_301 = each['site_before_301']
-    #     get_site_url.delay(site_before_301, source_id)
+    #     get_site_url.delay(site_before_301, source_id, table_name)
 
 
     # todo get_lost_rest
@@ -958,9 +960,12 @@ if __name__ == '__main__':
     #     get_cities.delay(geo, country_id, offset)
 
     # todo test hotel_list_task
-    # from proj.hotel_list_task import hotel_list_task
+    # from proj.hotel_list_task import hotel_list_task, hotel_list_database
     #
-    # hotel_list_task('booking', '11958', 'remote_4_test_hotel_list', task_id='asfasdfasdfasdf')
+    # # 21147 21378
+    # # print hotel_list_database('hoteltravel', '21378')
+    # print hotel_list_database('hotels', '11658')
+    # # hotel_list_task('hoteltravel', '21447', 'remote_4_test_hotel_list', task_id='asdfasdf')
 
     # todo test qyer poi task
     # from proj.qyer_attr_task import detail_page, get_pid_total_page
@@ -969,20 +974,59 @@ if __name__ == '__main__':
     # # print get_pid_total_page.delay(target_url=target_url)
     #
     # # detail_page(u'20', 2)
-    #
+
     # get_pid_total_page(target_url=target_url, city_id=u'10001', part=u'qyer_test_0210')
-    # # detail_page(pid=u'20', page_num=3, city_id='10001', part='qyer_test_0210')
+    # detail_page(pid=u'20', page_num=10, city_id='10001', part='qyer_test_0214')
 
     # todo daodao poi task init
+    # import pandas
+    # import json
+    # from sqlalchemy import create_engine
+    # from proj.tasks import tp_attr_city_page, tp_rest_city_page, tp_shop_city_page
+    # from proj.my_lib.task_module.task_func import insert_task, get_task_id
+    #
+    # engine = create_engine('mysql+mysqlconnector://hourong:hourong@localhost:3306/SuggestName')
+    #
+    # table = pandas.read_sql(
+    #     'select city_id, daodao_url from DaodaoSuggestCityUrl where daodao_url!="null" and daodao_url!="无"', engine)
+    # city_id_dict = pandas.Series(table.daodao_url.values, table.city_id).to_dict()
+    #
+    # data = []
+    # worker = u'daodao_poi_base_data'
+    #
+    # for k, v in city_id_dict.items():
+    #     if u'Tourism' in v:
+    #         tp_attr_city_page.delay(v.strip(), k, 'tp_attr_list_0213')
+    #         tp_rest_city_page.delay(v.strip(), k, 'tp_rest_list_0213')
+    #         tp_shop_city_page.delay(v.strip(), k, 'tp_shop_list_0213')
+    #
+    #     if u'Attraction_Review' in v:
+    #         args = json.dumps(
+    #             {u'target_url': unicode(v.strip()), u'city_id': unicode(k), u'type': 'attr'})
+    #         task_id = get_task_id(worker, args=args)
+    #         data.append((task_id, worker, args, u'tp_attr_detail_0213'))
+    #
+    # print insert_task(data=data)
+
+    # todo qyer poi task init
     import pandas
     from sqlalchemy import create_engine
-    from proj.tasks import tp_attr_city_page, tp_rest_city_page, tp_shop_city_page
+    from proj.qyer_attr_task import get_pid_total_page
 
     engine = create_engine('mysql+mysqlconnector://hourong:hourong@localhost:3306/SuggestName')
 
-    table = pandas.read_sql('select city_id, daodao_url from daodao_result_1', engine)
-    city_id_dict = pandas.Series(table.daodao_url.values, table.city_id).to_dict()
+    table = pandas.read_sql('select city_id, city_link from qyer_id_2', engine)
+    city_id_dict = pandas.Series(table.city_link.values, table.city_id).to_dict()
     for k, v in city_id_dict.items():
-        tp_attr_city_page.delay(v, k, 'tp_attr_list_0213')
-        tp_rest_city_page.delay(v, k, 'tp_rest_list_0213')
-        tp_shop_city_page.delay(v, k, 'tp_shop_list_0213')
+        target_url = unicode(v + 'sight/')
+        city_id = unicode(k)
+        print target_url, city_id
+        get_pid_total_page.delay(target_url=target_url, city_id=city_id, part='tp_qyer_list_0214')
+
+    # todo test poi nearby city task
+    # from proj.poi_nearby_city_task import poi_nearby_city_task
+    #
+    # poi_id = 'v223168'
+    # city_id = '30010'
+    # map_info = '151.212531,-33.866978'
+    # poi_nearby_city_task(poi_id=poi_id, poi_city_id=city_id, poi_map_info=map_info)

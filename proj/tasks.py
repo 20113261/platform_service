@@ -185,13 +185,13 @@ def _get_site_url(target_url):
         return "Error"
 
 
-def update_site_url(site_url, source_id):
-    sql = 'update tp_attr_basic_1227 set site=%s where id=%s'
+def update_site_url(site_url, source_id, table_name):
+    sql = 'update {0} set site=%s where id=%s'.format(table_name)
     return db_localhost.ExecuteSQL(sql, (site_url, source_id))
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
-def get_site_url(self, target_url, source_id):
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
+def get_site_url(self, target_url, source_id, table_name):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     try:
@@ -202,7 +202,7 @@ def get_site_url(self, target_url, source_id):
         else:
             print "Success with " + PROXY + ' CODE 0'
             update_proxy('Platform', PROXY, x, '0')
-            update_site_url(res, source_id)
+            update_site_url(res, source_id, table_name=table_name)
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
         self.retry(exc=exc)
