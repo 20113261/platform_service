@@ -4,7 +4,7 @@ from my_lib.BaseTask import BaseTask
 from my_lib.task_module.task_func import update_task
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
+@app.task(bind=True, base=BaseTask, max_retries=3)
 def poi_nearby_city_task(self, poi_id, poi_city_id, poi_map_info, **kwargs):
     try:
         nearby_city = get_nearby_city(poi_id=poi_id, poi_city_id=poi_city_id, poi_map_info=poi_map_info)

@@ -38,7 +38,7 @@
 ### init_task.sh:
 
 
-    sh init_task.sh 开始分发任务，监控程序会调用此脚本发部分五
+    sh init_task.sh 开始分发任务，监控程序会调用此脚本发部分
     
 ### supervisor_start.sh
 
