@@ -10,7 +10,7 @@ pattern_g = re.compile('-g(\d+)')
 pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 
 pattern_d = re.compile('-d(\d+)')
-TASK_TABLE = "tp_rest_basic_0213"
+TASK_TABLE = "tp_rest_basic"
 
 
 def dining_options_parser(content, url):
@@ -409,5 +409,5 @@ def parse(content, url, city_id):
 #     return db.ExecuteSQLs(sql, args)
 
 def insert_db(args):
-    sql = "INSERT INTO " + TASK_TABLE + " (`name`,`telphone`,`map_info`,`address`,`open_time`,`grade`,`real_ranking`,`cuisines`,`dining_options`,`review_num`,`rating_by_category`,`menu`,`price`,`description`,`service`,`payment`,`prize`,`traveler_choice`,`image_urls`,`id`,`res_url`,`first_review_id`,`price_level`,`source_city_id`,`site_raw`, `city_id`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    sql = "INSERT INTO " + TASK_TABLE + " (`name`,`telphone`,`map_info`,`address`,`open_time`,`grade`,`real_ranking`,`cuisines`,`dining_options`,`review_num`,`rating_by_category`,`menu`,`price`,`description`,`service`,`payment`,`prize`,`traveler_choice`,`image_urls`,`id`,`res_url`,`first_review_id`,`price_level`,`source_city_id`,`site_raw`, `city_id`, `source`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'daodao')"
     return db.ExecuteSQL(sql, args)

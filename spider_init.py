@@ -979,49 +979,50 @@ if __name__ == '__main__':
     # detail_page(pid=u'20', page_num=10, city_id='10001', part='qyer_test_0214')
 
     # todo daodao poi task init
-    # import pandas
-    # import json
-    # from sqlalchemy import create_engine
-    # from proj.tasks import tp_attr_city_page, tp_rest_city_page, tp_shop_city_page
-    # from proj.my_lib.task_module.task_func import insert_task, get_task_id
-    #
-    # engine = create_engine('mysql+mysqlconnector://hourong:hourong@localhost:3306/SuggestName')
-    #
-    # table = pandas.read_sql(
-    #     'select city_id, daodao_url from DaodaoSuggestCityUrl where daodao_url!="null" and daodao_url!="无"', engine)
-    # city_id_dict = pandas.Series(table.daodao_url.values, table.city_id).to_dict()
-    #
-    # data = []
-    # worker = u'daodao_poi_base_data'
-    #
-    # for k, v in city_id_dict.items():
-    #     if u'Tourism' in v:
-    #         tp_attr_city_page.delay(v.strip(), k, 'tp_attr_list_0213')
-    #         tp_rest_city_page.delay(v.strip(), k, 'tp_rest_list_0213')
-    #         tp_shop_city_page.delay(v.strip(), k, 'tp_shop_list_0213')
-    #
-    #     if u'Attraction_Review' in v:
-    #         args = json.dumps(
-    #             {u'target_url': unicode(v.strip()), u'city_id': unicode(k), u'type': 'attr'})
-    #         task_id = get_task_id(worker, args=args)
-    #         data.append((task_id, worker, args, u'tp_attr_detail_0213'))
-    #
-    # print insert_task(data=data)
-
-    # todo qyer poi task init
     import pandas
+    import json
     from sqlalchemy import create_engine
-    from proj.qyer_attr_task import get_pid_total_page
+    from proj.tasks import tp_attr_city_page, tp_rest_city_page, tp_shop_city_page
+    from proj.my_lib.task_module.task_func import insert_task, get_task_id
 
     engine = create_engine('mysql+mysqlconnector://hourong:hourong@localhost:3306/SuggestName')
 
-    table = pandas.read_sql('select city_id, city_link from qyer_id_2', engine)
-    city_id_dict = pandas.Series(table.city_link.values, table.city_id).to_dict()
+    table = pandas.read_sql(
+        'select city_id, daodao_url from DaodaoSuggestCityUrl where daodao_url!="null" and daodao_url!="无" and daodao_url!="-" and city_id in ("10161", "10352", "10381", "10386", "10468", "10551", "11423", "11446", "11471", "11481", "11487", "11491", "11566", "11612", "11615", "11618", "11625", "11628", "11631", "11653", "11666", "11696", "11716", "11740", "11757", "11758", "11773", "11802", "11850", "11862", "11863", "11869", "11875", "11881", "11885", "11886", "11900", "11906", "11912", "11921", "11941", "11944", "11958", "11988", "12006", "12008", "12014", "12034", "12036", "12038", "12045", "12074", "12102", "12109", "12117", "12146", "12157", "12171", "12246", "12249", "12252", "12305", "12323", "12326", "12386", "12407", "12423", "12432", "12443", "12449", "12453", "12476", "12481", "12482", "12494", "12561", "12623", "12627", "12636", "12644", "12725", "12733", "12749", "12754", "12763", "12771", "12795", "12824", "12835", "12852", "12921", "12949", "12950", "12956", "12961", "12964", "12966", "12972", "12976", "12993", "13007", "13010", "13015", "13023", "13025", "13028", "13035", "13039", "13069", "13078", "13168", "13173", "13178", "13181", "13184", "13187", "13216", "13217", "13221", "13222", "13238", "13257", "13259", "13273", "13281", "13300", "13335", "13385", "13389", "13422", "13425", "13429", "13434", "13446", "13474", "20045", "20093", "20199", "20214", "20215", "20222", "20230", "20236", "20314", "20328", "20353", "20358", "20364", "20374", "20407", "20409", "20413", "20423", "20463", "20492", "20506", "20511", "20545", "20555", "20558", "20561", "20564", "20568", "20570", "20586", "20635", "20641", "20650", "20678", "20680", "20707", "20727", "20736", "20744", "20763", "20768", "20807", "20858", "20877", "20887", "20895", "20946", "20962", "20967", "21001", "21051", "21094", "21109", "21121", "21158", "21159", "21161", "21171", "21177", "21188", "21189", "21194", "21198", "21200", "21227", "21235", "21250", "21263", "21279", "21284", "21287", "21331", "21335", "21339", "21341", "21344", "21347", "21350", "21355", "21358", "21361", "21364", "21383", "21392", "21397", "21398", "21412", "21417", "21419", "21441", "21443", "21455", "21459", "30078", "30082", "30090", "30100", "30101", "30114", "30165", "30170", "30172", "30175", "30184", "30187", "30195", "30208", "30220", "30225", "30237", "30244", "30246", "30247", "30253", "30272", "30294", "30300", "30301", "30309", "30310", "30319", "30326", "30331", "30332", "40040", "40043", "40061", "40064", "40065", "40075", "40091", "40120", "40122", "40123", "40126", "40141", "40158", "40170", "40184", "40194", "40199", "40208", "40220", "40229", "40267", "40269", "40288", "40297", "40333", "40352", "40354", "40362", "40366", "40369", "40390", "40393", "40434", "40450", "40456", "40461", "40463", "40469", "50060", "50062", "50063", "50065", "50068", "50079", "50081", "50130", "50142", "50170", "50194", "50219", "50331", "50399", "50463", "50590", "50594", "50696", "50750", "50753", "50771", "50801", "50804", "50818", "50840", "50895", "50901", "50911", "50917", "50921", "50925", "50929", "50954", "51026", "51057", "51105", "51115", "51132", "51138", "51143", "51154", "51157", "51174", "51178", "51207", "51211", "51227", "51305", "51322", "51353", "51354", "51359", "51365", "51371", "51383", "51403", "51421", "51450", "60002", "60075", "60082", "60122", "60137")',
+        engine)
+    city_id_dict = pandas.Series(table.daodao_url.values, table.city_id).to_dict()
+
+    data = []
+    worker = u'daodao_poi_base_data'
+
     for k, v in city_id_dict.items():
-        target_url = unicode(v + 'sight/')
-        city_id = unicode(k)
-        print target_url, city_id
-        get_pid_total_page.delay(target_url=target_url, city_id=city_id, part='tp_qyer_list_0214')
+        if u'Tourism' in v:
+            tp_attr_city_page.delay(v.strip(), k, 'tp_attr_list_0216')
+            tp_rest_city_page.delay(v.strip(), k, 'tp_rest_list_0216')
+            tp_shop_city_page.delay(v.strip(), k, 'tp_shop_list_0216')
+
+        if u'Attraction_Review' in v:
+            args = json.dumps(
+                {u'target_url': unicode(v.strip()), u'city_id': unicode(k), u'type': 'attr'})
+            task_id = get_task_id(worker, args=args)
+            data.append((task_id, worker, args, u'tp_attr_detail_0216'))
+
+    print insert_task(data=data)
+
+    # todo qyer poi task init
+    # import pandas
+    # from sqlalchemy import create_engine
+    # from proj.qyer_attr_task import get_pid_total_page
+    #
+    # engine = create_engine('mysql+mysqlconnector://hourong:hourong@localhost:3306/SuggestName')
+    #
+    # table = pandas.read_sql('select city_id, city_link from qyer_id_2', engine)
+    # city_id_dict = pandas.Series(table.city_link.values, table.city_id).to_dict()
+    # for k, v in city_id_dict.items():
+    #     target_url = unicode(v + 'sight/')
+    #     city_id = unicode(k)
+    #     print target_url, city_id
+    #     get_pid_total_page.delay(target_url=target_url, city_id=city_id, part='tp_qyer_list_0214')
 
     # todo test poi nearby city task
     # from proj.poi_nearby_city_task import poi_nearby_city_task
@@ -1030,3 +1031,13 @@ if __name__ == '__main__':
     # city_id = '30010'
     # map_info = '151.212531,-33.866978'
     # poi_nearby_city_task(poi_id=poi_id, poi_city_id=city_id, poi_map_info=map_info)
+    #
+    # import pymysql
+    # from proj.poi_nearby_city_task import poi_nearby_city_task
+    #
+    # conn = pymysql.connect(host='10.10.114.35', user='hourong', passwd='hourong', charset='utf8', db='shop_merge')
+    #
+    # with conn as cursor:
+    #     cursor.execute('select id, city_id, map_info from chat_shopping')
+    #     for mid, m_city_id, map_info in cursor.fetchall():
+    #         poi_nearby_city_task.delay(poi_id=mid, poi_city_id=m_city_id, poi_map_info=map_info, task_id='abcd')

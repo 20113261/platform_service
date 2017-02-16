@@ -336,7 +336,7 @@ def parse(content, url, city_id):
 
 
 def insert_db(args):
-    sql = "insert into tp_shop_basic_0213 (`source`, `name`, `name_en`, `phone`, `map_info`, `address`, `opentime`, `star`, `ranking`, `tagid`, `commentcounts`, `recommended_time`, `introduction`, `prize`, `traveler_choice`, `first_review_id`, `imgurl`,`city_id`, `id`, `source_city_id`, `url`, `site_raw`, `site_before_301`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    sql = "insert into tp_shop_basic (`source`, `name`, `name_en`, `phone`, `map_info`, `address`, `opentime`, `star`, `ranking`, `tagid`, `commentcounts`, `recommended_time`, `introduction`, `prize`, `traveler_choice`, `first_review_id`, `imgurl`,`city_id`, `id`, `source_city_id`, `url`, `site_raw`, `site_before_301`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     return db.ExecuteSQL(sql, args)
 
 
