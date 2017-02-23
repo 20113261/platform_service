@@ -1,13 +1,10 @@
 # coding=utf-8
-import db_localhost as db
+import pymysql
 import re
 from lxml import html
 
-COMMENT_TABLE = 'attr_comment_0105'
-LONG_TABLE = 'attr_long_0105'
 
-
-def parse(content, url, language, miaoji_id):
+def parse(content, url, language, miaoji_id, special_str):
     root = html.fromstring(content)
     data_list = []
 
@@ -45,13 +42,14 @@ def parse(content, url, language, miaoji_id):
                     review_city_id, review_attr_id, review_id, review_id)
                 print 'long_comment_url:   %s' % long_comment_url
                 long_count += 1
-                print 'insert long:', insert_long((long_comment_url.strip(), language, miaoji_id))
+                print 'insert long:', \
+                    insert_long((long_comment_url.strip(), language, miaoji_id), 'tp_comment_long_' + special_str)
         except Exception, e:
             print 'comment parse error:'
             print str(e)
         count += 1
     if len(data_list) != 0:
-        print 'insert comment', insert_db(data_list), url
+        print 'insert comment', insert_db(data_list, 'tp_comment_' + special_str), url
     else:
         print 'no comment', url
 
@@ -180,11 +178,20 @@ def long_comment_parse(content, url, language, miaoji_id='NULL'):
     return data
 
 
-def insert_db(args):
-    sql = 'insert ignore into ' + COMMENT_TABLE + '(source, source_city_id, source_id, review_id, review_title, review_text, review_link, comment_time, comment_rating, user_name, user_link, review_from, miaoji_id, language) values(%s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s,%s)'  # on duplicate key update review_from=values(review_from)'
-    return db.ExecuteSQLs(sql, args)
+def insert_db(args, table_name):
+    conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', charset='utf8', db='Comment')
+    with conn as cursor:
+        sql = 'replace into {0} (source, source_city_id, source_id, review_id, review_title, review_text, review_link, comment_time, comment_rating, user_name, user_link, review_from, miaoji_id, language) values(%s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s,%s)'.format(
+            table_name)
+        res = cursor.executemany(sql, args)
+    conn.close()
+    return res
 
 
-def insert_long(args):
-    sql = 'insert ignore into ' + LONG_TABLE + ' (`url`,`language`,`miaoji_id`) values(%s, %s, %s)'
-    return db.ExecuteSQL(sql, args)
+def insert_long(args, table_name):
+    conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', charset='utf8', db='Comment')
+    with conn as cursor:
+        sql = 'replace into {0} (`url`,`language`,`miaoji_id`) values(%s, %s, %s)'.format(table_name)
+        res = cursor.executemany(sql, args)
+    conn.close()
+    return res

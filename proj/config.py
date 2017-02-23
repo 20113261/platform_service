@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
-CELERY_RESULT_BACKEND = 'amqp://hourong:1220@10.10.213.148/celery'
-BROKER_URL = 'amqp://hourong:1220@10.10.213.148/celery'
+CELERY_RESULT_BACKEND = 'amqp://hourong:1220@10.10.114.35/celery'
+BROKER_URL = 'amqp://hourong:1220@10.10.114.35/celery'
 CELERYD_MAX_TASKS_PER_CHILD = 40
 CELERY_IGNORE_RESULT = True
 CELERY_ACCEPT_CONTENT = ['pickle']

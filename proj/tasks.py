@@ -65,7 +65,7 @@ def add(x, y):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
-def get_comment(self, target_url, language, miaoji_id, **kwargs):
+def get_comment(self, target_url, language, miaoji_id, special_str, **kwargs):
     if language == 'en':
         data = {
             'mode': 'filterReviews',
@@ -93,7 +93,7 @@ def get_comment(self, target_url, language, miaoji_id, **kwargs):
         try:
             page = requests.post(target_url, data, headers=headers, proxies=proxies, timeout=120)
             page.encoding = 'utf8'
-            res = parse(page.text, target_url, language, miaoji_id)
+            res = parse(page.text, target_url, language, miaoji_id, special_str)
             if res == 0:
                 update_proxy('Platform', PROXY, x, '23')
                 self.retry(countdown=120)
@@ -107,7 +107,7 @@ def get_comment(self, target_url, language, miaoji_id, **kwargs):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/s')
-def get_long_comment(self, target_url, language, miaoji_id):
+def get_long_comment(self, target_url, language, miaoji_id, special_str):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -124,7 +124,7 @@ def get_long_comment(self, target_url, language, miaoji_id):
         data = long_comment_parse(page.content, target_url, language, miaoji_id)
         update_proxy('Platform', PROXY, x, '0')
         print "Success with " + PROXY + ' CODE 0'
-        return insert_db([data, ])
+        return insert_db((data,), 'tp_comment_' + special_str)
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
         self.retry(exc=exc)
@@ -340,7 +340,7 @@ def get_images(self, source, target_url, **kwargs):
         self.retry(exc=exc, countdown=2)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
 def booking_comment(self, target_url, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
@@ -370,7 +370,7 @@ def booking_comment(self, target_url, **kwargs):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
 def venere_comment(self, target_url, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
@@ -400,7 +400,7 @@ def venere_comment(self, target_url, **kwargs):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='120/s')
 def expedia_comment(self, target_url, **kwargs):
     headers = {
         'User-agent': GetUserAgent()
@@ -539,10 +539,12 @@ from .my_lib.hotel_img_func import insert_db as hotel_images_info_insert_db, get
 redis_dict = redis.Redis(host='10.10.180.145', db=5)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=5)
-def get_hotel_images_info(self, path, part, desc_path):
+@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='60/s')
+def get_hotel_images_info(self, path, part, desc_path, **kwargs):
     try:
-        print 'Get File', path
+        print 'Get File',
+        if os.path.getsize(path) > 10485760:
+            print 'Too Large'
         file_md5 = get_file_md5(path)
         flag, h, w = is_complete_scale_ok(path)
         # (`source`, `source_id`, `pic_url`, `pic_md5`, `part`, `size`, `flag`)
@@ -571,6 +573,7 @@ def get_hotel_images_info(self, path, part, desc_path):
         shutil.move(path, os.path.join(desc_path, pic_md5))
         print 'Succeed'
         print hotel_images_info_insert_db(data)
+        print update_task(kwargs['task_id'])
         return flag, h, w
     except Exception as exc:
         print "Error Exception"
@@ -702,12 +705,12 @@ def get_lost_poi_image(self, file_path, file_name, target_url):
 
 
 def insert_daodao_image_list(args):
-    sql = 'insert ignore into daodao_img(`mid`,`url`,`img_list`) values (%s,%s,%s)'
+    sql = 'replace into daodao_img(`mid`,`url`,`img_list`) values (%s,%s,%s)'
     return db_localhost.ExecuteSQL(sql, args)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
-def get_daodao_image_url(self, source_url, mid):
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='30/s')
+def get_daodao_image_url(self, source_url, mid, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -739,6 +742,7 @@ def get_daodao_image_url(self, source_url, mid):
             data = (mid, source_url, img_list)
             print insert_daodao_image_list(data)
             update_proxy('Platform', PROXY, x, '0')
+            update_task(kwargs['task_id'])
         return data
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
@@ -777,6 +781,8 @@ def craw_html(self, url, flag, table_name, **kwargs):
             content = page.text
             # test data
             j_data = json.loads(content)
+            if j_data['status'] != 'OK':
+                raise Exception('Status:\t' + j_data['status'])
             data = (md5_url, url, content, flag)
             # print insert_crawled_html(data, table_name)
             conn = MySQLdb.connect(host='10.10.231.105', user='hourong', passwd='hourong', db='crawled_html',

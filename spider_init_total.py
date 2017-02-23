@@ -11,12 +11,14 @@ from proj.hotel_list_task import hotel_list_task
 from proj.tasks import craw_html
 from proj.qyer_poi_tasks import qyer_poi_task
 from proj.tasks import get_lost_attr, get_lost_rest_new, get_lost_shop
-from proj.qyer_attr_task import get_pid_total_page
+from proj.tasks import get_hotel_images_info
+from proj.poi_nearby_city_task import poi_nearby_city_task
+from proj.tasks import get_daodao_image_url
 
 
-def add_target(task_url, miaoji_id, **kwargs):
-    res1 = get_comment.delay(task_url, 'zhCN', miaoji_id, **kwargs)
-    res2 = get_comment.delay(task_url, 'en', miaoji_id, **kwargs)
+def add_target(task_url, miaoji_id, special_str, **kwargs):
+    res1 = get_comment.delay(task_url, 'zhCN', miaoji_id, special_str, **kwargs)
+    res2 = get_comment.delay(task_url, 'en', miaoji_id, special_str, **kwargs)
     return res1, res2
 
 
@@ -25,7 +27,7 @@ if __name__ == '__main__':
     for task_id, args, worker in get_task_total(limit=100000):
         # todo get_comment With Task
         if worker == 'poi_comment':
-            add_target(args['url'], args['mid'], task_id=task_id)
+            add_target(args['url'], args['mid'], args['special_str'], task_id=task_id)
             _count += 1
 
         # todo hotel list init by Task
@@ -104,5 +106,20 @@ if __name__ == '__main__':
             if args[u'type'] == u'shop':
                 get_lost_shop.delay(args['target_url'], args['city_id'], task_id=task_id)
                 _count += 1
+
+        # todo hotel image info
+        if worker == 'hotel_image_info_task':
+            get_hotel_images_info.delay(args['path'], args['part'], args['desc_path'], task_id=task_id)
+            _count += 1
+
+        # todo poi nearby city task
+        if worker == 'poi_nearby_city_task':
+            poi_nearby_city_task.delay(poi_id=args['mid'], poi_city_id=args['city_id'], poi_map_info=args['map_info'],
+                                       task_id=task_id)
+            _count += 1
+
+        if worker == 'daodao_img_url_task':
+            get_daodao_image_url.delay(args['source_url'], args['mid'], task_id=task_id)
+            _count += 1
 
     print _count
