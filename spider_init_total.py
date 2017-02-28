@@ -14,6 +14,7 @@ from proj.tasks import get_lost_attr, get_lost_rest_new, get_lost_shop
 from proj.tasks import get_hotel_images_info
 from proj.poi_nearby_city_task import poi_nearby_city_task
 from proj.tasks import get_daodao_image_url
+from proj.daodao_img_rename_tasks import daodao_img_rename_task
 
 
 def add_target(task_url, miaoji_id, special_str, **kwargs):
@@ -120,6 +121,12 @@ if __name__ == '__main__':
 
         if worker == 'daodao_img_url_task':
             get_daodao_image_url.delay(args['source_url'], args['mid'], task_id=task_id)
+            _count += 1
+
+        # todo daodao img rename task
+        if worker == 'daodao_img_rename_task':
+            daodao_img_rename_task.delay(args['file_name'], args['src_path'], args['dst_path'], args['bucket_name'],
+                                         args['img_url'], args['mid'], args['table_name'], task_id=task_id)
             _count += 1
 
     print _count

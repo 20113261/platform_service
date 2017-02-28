@@ -361,40 +361,40 @@ if __name__ == '__main__':
     #     print insert_total_city((continent_name, country_name, state_name, city_name))
 
     # todo get_images_info
-    import os
-    import db_localhost
-    from proj.tasks import get_images_info
-
+    # import os
+    # import db_localhost
+    # from proj.tasks import get_images_info
     #
-    # def get_already_calculated():
-    #     _set = set()
-    #     sql='select file_name from image_info'
-    #     for line in db_localhost.QueryBySQL(sql):
-    #         _set.add(line['file_name'].split('_')[0])
-    #     return _set
-    #
-    # already_calculated = get_already_calculated()
-    # # path_list = ['/search/image/pic_task_2016_12_13_1_celery/',
-    # #              '/search/image/pic_task_2016_12_13_2_celery/',
-    # #              '/search/image/pic_task_2016_12_13_3_celery/',
-    # #              '/search/image/pic_task_2016_12_13_4_celery/',
-    # #              '/search/image/pic_task_2016_12_13_5_celery/',
-    # #              '/search/image/pic_task_2016_12_13_6_celery/']
-    # # path = '/search/image/img_url_1130_rest_celery/'
-    # path_list = ['/search/image/attr_img_url_2017_01_04_12_celery/',
-    #              '/search/image/rest_img_url_2017_01_04_12_celery/',
-    #              '/search/image/shop_img_url_2017_01_04_12_celery/']
-    path_list = ['/search/image/attr_img_task_170217']
-    total = 0
-    for path in path_list:
-        _count = 0
-        for file_name in os.listdir(path):
-            # if file_name not in already_calculated:
-            get_images_info.delay(os.path.join(path, file_name))
-            _count += 1
-        print _count
-        total += _count
-    print total
+    # #
+    # # def get_already_calculated():
+    # #     _set = set()
+    # #     sql='select file_name from image_info'
+    # #     for line in db_localhost.QueryBySQL(sql):
+    # #         _set.add(line['file_name'].split('_')[0])
+    # #     return _set
+    # #
+    # # already_calculated = get_already_calculated()
+    # # # path_list = ['/search/image/pic_task_2016_12_13_1_celery/',
+    # # #              '/search/image/pic_task_2016_12_13_2_celery/',
+    # # #              '/search/image/pic_task_2016_12_13_3_celery/',
+    # # #              '/search/image/pic_task_2016_12_13_4_celery/',
+    # # #              '/search/image/pic_task_2016_12_13_5_celery/',
+    # # #              '/search/image/pic_task_2016_12_13_6_celery/']
+    # # # path = '/search/image/img_url_1130_rest_celery/'
+    # # path_list = ['/search/image/attr_img_url_2017_01_04_12_celery/',
+    # #              '/search/image/rest_img_url_2017_01_04_12_celery/',
+    # #              '/search/image/shop_img_url_2017_01_04_12_celery/']
+    # path_list = ['/search/image/attr_img_task_170217']
+    # total = 0
+    # for path in path_list:
+    #     _count = 0
+    #     for file_name in os.listdir(path):
+    #         # if file_name not in already_calculated:
+    #         get_images_info.delay(os.path.join(path, file_name))
+    #         _count += 1
+    #     print _count
+    #     total += _count
+    # print total
 
     # todo trip_advisor_comment
     # from proj.my_lib.poi_comment.get_task import get_task_full
@@ -1027,20 +1027,59 @@ if __name__ == '__main__':
     #     get_pid_total_page.delay(target_url=target_url, city_id=city_id, part='tp_qyer_list_0214')
 
     # todo test poi nearby city task
-    # from proj.poi_nearby_city_task import poi_nearby_city_task
+    # # from proj.poi_nearby_city_task import poi_nearby_city_task
     #
-    # poi_id = 'v223168'
-    # city_id = '30010'
-    # map_info = '151.212531,-33.866978'
-    # poi_nearby_city_task(poi_id=poi_id, poi_city_id=city_id, poi_map_info=map_info)
-
+    # # poi_id = 'v223168'
+    # # city_id = '30010'
+    # # map_info = '151.212531,-33.866978'
+    # # poi_nearby_city_task(poi_id=poi_id, poi_city_id=city_id, poi_map_info=map_info)
+    #
     # import pymysql
     # from proj.poi_nearby_city_task import poi_nearby_city_task
     #
-    # conn = pymysql.connect(host='10.10.114.35', user='hourong', passwd='hourong', charset='utf8', db='rest_merge')
+    # conn = pymysql.connect(host='10.10.189.213', user='hourong', passwd='hourong', charset='utf8', db='onlinedb')
+    #
+    # # _count = 0
+    # # with conn as cursor:
+    # #     cursor.execute('select id, city_id, map_info from chat_restaurant')
+    # #     for mid, m_city_id, map_info in cursor.fetchall():
+    # #         poi_nearby_city_task.delay(poi_id=mid, poi_city_id=m_city_id, poi_map_info=map_info, task_id='abcd')
+    #
     #
     # _count = 0
     # with conn as cursor:
-    #     cursor.execute('select id, city_id, map_info from chat_restaurant')
+    #     cursor.execute('select uid, city_mid, map_info from hotel limit 1500000,500000')
     #     for mid, m_city_id, map_info in cursor.fetchall():
     #         poi_nearby_city_task.delay(poi_id=mid, poi_city_id=m_city_id, poi_map_info=map_info, task_id='abcd')
+    #         _count += 1
+    # print _count
+
+    # todo test_daodao_img_rename task
+
+    def get_task():
+        f = open('/root/data/task/attr_img_task_170223')
+        _count = 0
+        for line in f:
+            try:
+                mid, img_url, file_name = line.strip().split('\t')
+            except:
+                continue
+            if mid != '':
+                _count += 1
+                yield mid, img_url, file_name + '.jpg'
+                if _count == 10:
+                    break
+
+
+    from proj.daodao_img_rename_tasks import daodao_img_rename_task
+
+    # (self, file_name, src_path, dst_path, bucket_name, img_url, mid, table_name, **kwargs)
+    _count = 0
+    for mid, img_url, file_name in get_task():
+        try:
+            daodao_img_rename_task(file_name, '/search/image/attr_img_task_170223', '/search/image/attr_result_0228',
+                                   'mioji-attr', img_url, mid, 'attr_bucket_relation', task_id='asdfasdf')
+        except:
+            continue
+        _count += 1
+    print _count

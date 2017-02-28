@@ -27,12 +27,14 @@ from .my_lib.hotel_comment.venere import parser as venere_comment_parser
 from .my_lib.is_complete_scale_ok import is_complete_scale_ok
 from .my_lib.rest_parser import parse as rest_parser
 from .my_lib.shop_parser import parse as shop_parser
-from .my_lib.task_module.task_func import update_task
 from .my_lib.tp_comment_parser import parse, long_comment_parse, insert_db
 from .my_lib.BaseTask import BaseTask
 from .my_lib.task_module.task_func import get_task_id, update_task, insert_task
+from .my_lib.get_rate_limit import get_rate_limit
 
 platforms.C_FORCE_ROOT = True
+
+_rate_limit_dict = get_rate_limit()
 
 
 @app.task
@@ -307,7 +309,7 @@ def get_lost_rest_no_proxy(self, target_url):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='50/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit=_rate_limit_dict['proj.tasks.get_images'])
 def get_images(self, source, target_url, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
