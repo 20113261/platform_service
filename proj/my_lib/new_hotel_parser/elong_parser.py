@@ -175,21 +175,19 @@ def elong_parser(content, url, other_info):
 
 
 if __name__ == '__main__':
-    url = 'http://ihotel.elong.com/101703/'
-    other_info = {
-        'source_id': '101703',
-        'city_id': '50001'
-    }
+    # url = 'http://ihotel.elong.com/101703/'
+    url = 'http://ihotel.elong.com/670847/'
+    other_info = {u'source_id': u'670847', u'city_id': u'20236'}
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.text
     result = elong_parser(content, url, other_info)
+    print 'Hello World'
 
-    try:
-        session = DBSession()
-        session.add(result)
-        session.commit()
-        session.close()
-    except Exception as e:
-        print str(e)
-
+    # try:
+    #     session = DBSession()
+    #     session.add(result)
+    #     session.commit()
+    #     session.close()
+    # except Exception as e:
+    #     print str(e)

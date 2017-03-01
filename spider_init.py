@@ -962,12 +962,12 @@ if __name__ == '__main__':
     #     get_cities.delay(geo, country_id, offset)
 
     # todo test hotel_list_task
-    # from proj.hotel_list_task import hotel_list_task, hotel_list_database
-    #
-    # # 21147 21378
-    # # print hotel_list_database('hoteltravel', '21378')
-    # print hotel_list_database('hotels', '11658')
-    # # hotel_list_task('hoteltravel', '21447', 'remote_4_test_hotel_list', task_id='asdfasdf')
+    from proj.hotel_list_task import hotel_list_task, hotel_list_database
+
+    # 21147 21378
+    # print hotel_list_database('hoteltravel', '21378')
+    print hotel_list_database('elong', '20651')
+    # hotel_list_task('hoteltravel', '21447', 'remote_4_test_hotel_list', task_id='asdfasdf')
 
     # todo test qyer poi task
     # from proj.qyer_attr_task import detail_page, get_pid_total_page
@@ -1056,30 +1056,43 @@ if __name__ == '__main__':
 
     # todo test_daodao_img_rename task
 
-    def get_task():
-        f = open('/root/data/task/attr_img_task_170223')
-        _count = 0
-        for line in f:
-            try:
-                mid, img_url, file_name = line.strip().split('\t')
-            except:
-                continue
-            if mid != '':
-                _count += 1
-                yield mid, img_url, file_name + '.jpg'
-                if _count == 10:
-                    break
+    # def get_task():
+    #     f = open('/root/data/task/attr_img_task_170223')
+    #     _count = 0
+    #     for line in f:
+    #         try:
+    #             mid, img_url, file_name = line.strip().split('\t')
+    #         except:
+    #             continue
+    #         if mid != '':
+    #             _count += 1
+    #             yield mid, img_url, file_name + '.jpg'
+    #             if _count == 10:
+    #                 break
+    #
+    #
+    # from proj.daodao_img_rename_tasks import daodao_img_rename_task
+    #
+    # # (self, file_name, src_path, dst_path, bucket_name, img_url, mid, table_name, **kwargs)
+    # _count = 0
+    # for mid, img_url, file_name in get_task():
+    #     try:
+    #         daodao_img_rename_task(file_name, '/search/image/attr_img_task_170223', '/search/image/attr_result_0228',
+    #                                'mioji-attr', img_url, mid, 'attr_bucket_relation', task_id='asdfasdf')
+    #     except:
+    #         continue
+    #     _count += 1
+    # print _count
 
+    # from proj.daodao_img_rename_tasks import daodao_img_rename_task
 
-    from proj.daodao_img_rename_tasks import daodao_img_rename_task
+    # task_args = {"file_name": "de60f0270dbc50680198e5d973394d84.jpg", "mid": "v237112",
+    #              "dst_path": "/search/image/attr_result_0228", "table_name": "attr_bucket_relation",
+    #              "src_path": "/search/image/attr_img_task_170223",
+    #              "img_url": "http://ccm.ddcdn.com/ext/photo-s/0d/b6/03/13/photo1jpg.jpg", "bucket_name": "mioji-attr"}
 
-    # (self, file_name, src_path, dst_path, bucket_name, img_url, mid, table_name, **kwargs)
-    _count = 0
-    for mid, img_url, file_name in get_task():
-        try:
-            daodao_img_rename_task(file_name, '/search/image/attr_img_task_170223', '/search/image/attr_result_0228',
-                                   'mioji-attr', img_url, mid, 'attr_bucket_relation', task_id='asdfasdf')
-        except:
-            continue
-        _count += 1
-    print _count
+    # task_args = {"file_name": "c5a16c87624fe8dd0bb0fb3402f1285e.jpg", "mid": "v628073",
+    #              "dst_path": "/search/image/attr_result_0228", "table_name": "attr_bucket_relation",
+    #              "src_path": "/search/image/attr_img_task_170223",
+    #              "img_url": "http://ccm.ddcdn.com/ext/photo-s/0d/56/32/30/overlook.jpg", "bucket_name": "mioji-attr"}
+    # daodao_img_rename_task(task_id='106cec6e450bb7afc3d5ad79d5cc3cd6', **task_args)

@@ -33,7 +33,7 @@ def insert_db(args, table_name):
     return res
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='70/s')
+@app.task(bind=True, base=BaseTask, max_retries=1)
 def daodao_img_rename_task(self, file_name, src_path, dst_path, bucket_name, img_url, mid, table_name, **kwargs):
     try:
         src_file = os.path.join(src_path, file_name)
@@ -56,5 +56,7 @@ def daodao_img_rename_task(self, file_name, src_path, dst_path, bucket_name, img
             except Exception as e:
                 raise e
             update_task(kwargs['task_id'])
+        else:
+            raise Exception('Error Flag')
     except Exception as exc:
         self.retry(exc=exc)

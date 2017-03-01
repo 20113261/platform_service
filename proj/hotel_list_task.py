@@ -21,9 +21,9 @@ get_proxy = simple_get_http_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug)
 
-hotel_default = {'check_in': '20170603', 'nights': 1, 'rooms': [{}]}
-hotel_rooms = {'check_in': '20170603', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
-hotel_rooms_c = {'check_in': '20170603', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
+hotel_default = {'check_in': '20170803', 'nights': 1, 'rooms': [{}]}
+hotel_rooms = {'check_in': '20170803', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
+hotel_rooms_c = {'check_in': '20170803', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
 
 
 def hotel_list_database(source, city_id):
@@ -65,4 +65,4 @@ def hotel_list_task(self, source, city_id, part, **kwargs):
 
 
 if __name__ == '__main__':
-    print hotel_list_database('hoteltravel', '21447')
+    print hotel_list_database('elong', '20651')

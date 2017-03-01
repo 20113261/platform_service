@@ -1,5 +1,6 @@
 import hashlib
 
+import pymysql
 import db_img
 
 '''
@@ -15,6 +16,14 @@ import db_img
 | flag        | varchar(10)  | YES  |     | 1                 |                             |
 '''
 
+__sql_dict = {
+    'host': '10.10.189.213',
+    'user': 'hourong',
+    'passwd': 'hourong',
+    'charset': 'utf8',
+    'db': 'update_img'
+}
+
 
 def get_file_md5(f_name):
     hash_md5 = hashlib.md5()
@@ -25,13 +34,21 @@ def get_file_md5(f_name):
 
 
 def insert_db(args):
-    sql = 'insert into pic_relation_new (`source`,`source_id`,`pic_url`,`pic_md5`,`part`,`size`,`flag`, `file_md5`) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)'
-    return db_img.ExecuteSQL(sql, args)
+    conn = pymysql.connect(**__sql_dict)
+    with conn as cursor:
+        sql = 'insert into pic_relation_new (`source`,`source_id`,`pic_url`,`pic_md5`,`part`,`size`,`flag`, `file_md5`) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)'
+        res = cursor.execute(sql, args)
+    conn.close()
+    return res
 
 
 def insert_too_large(args):
-    sql = 'insert into TooLargePic (`file_name`,`file_size`) VALUES (%s,%s)'
-    return db_img.ExecuteSQL(sql, args)
+    conn = pymysql.connect(**__sql_dict)
+    with conn as cursor:
+        sql = 'insert into TooLargePic (`file_name`,`file_size`) VALUES (%s,%s)'
+        res = cursor.execute(sql, args)
+    conn.close()
+    return res
 
 
 if __name__ == '__main__':

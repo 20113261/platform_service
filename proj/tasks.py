@@ -309,7 +309,7 @@ def get_lost_rest_no_proxy(self, target_url):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit=_rate_limit_dict['proj.tasks.get_images'])
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='30/s')
 def get_images(self, source, target_url, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
@@ -541,12 +541,12 @@ from .my_lib.hotel_img_func import insert_db as hotel_images_info_insert_db, get
 redis_dict = redis.Redis(host='10.10.180.145', db=5)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='60/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
 def get_hotel_images_info(self, path, part, desc_path, **kwargs):
     try:
         print 'Get File',
         if os.path.getsize(path) > 10485760:
-            print 'Too Large'
+            raise Exception('Too Large')
         file_md5 = get_file_md5(path)
         flag, h, w = is_complete_scale_ok(path)
         # (`source`, `source_id`, `pic_url`, `pic_md5`, `part`, `size`, `flag`)
@@ -572,10 +572,10 @@ def get_hotel_images_info(self, path, part, desc_path, **kwargs):
             file_md5  # file_md5
         )
         print 'Data', data
-        shutil.move(path, os.path.join(desc_path, pic_md5))
-        print 'Succeed'
         print hotel_images_info_insert_db(data)
+        shutil.copy(path, os.path.join(desc_path, pic_md5))
         print update_task(kwargs['task_id'])
+        print 'Succeed'
         return flag, h, w
     except Exception as exc:
         print "Error Exception"
