@@ -11,7 +11,7 @@ from .my_lib.task_module.task_func import update_task
 from .my_lib.BaseTask import BaseTask
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='45/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='20/s')
 def hotel_base_data(self, source, url, other_info, part, **kwargs):
     x = time.time()
     PROXY = get_proxy(source="Platform")
