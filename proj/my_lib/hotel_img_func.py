@@ -36,7 +36,7 @@ def get_file_md5(f_name):
 def insert_db(args):
     conn = pymysql.connect(**__sql_dict)
     with conn as cursor:
-        sql = 'insert into pic_relation_new (`source`,`source_id`,`pic_url`,`pic_md5`,`part`,`size`,`flag`, `file_md5`) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)'
+        sql = 'insert into pic_relation (`source`,`source_id`,`pic_url`,`pic_md5`,`part`,`size`,`flag`, `file_md5`) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)'
         res = cursor.execute(sql, args)
     conn.close()
     return res

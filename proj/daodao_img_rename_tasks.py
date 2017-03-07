@@ -40,17 +40,14 @@ def daodao_img_rename_task(self, file_name, src_path, dst_path, bucket_name, img
         flag, h, w = is_complete_scale_ok(src_file)
         f_md5 = file_md5(src_file)
         size = unicode((h, w))
-        if flag == 0:
-            # img_count += 1
-            # new_name = u'{0}_{1}.jpg'.format(mid, img_count)
-            # (file_name, miaoji_id, url, BUCKET_NAME, size, md5_name, pic_md5, 'machine', '1','online')
+        if flag == 0 or flag == 4:
+            __used = u'1' if flag == 0 else u'0'
             data = (file_name, unicode(mid), unicode(img_url), unicode(bucket_name), size,
                     unicode(file_name).replace(u'.jpg', u''),
                     unicode(f_md5),
-                    u'machine', u'1', u'online')
+                    u'machine', __used, u'online')
             try:
                 # 暂时没有解决这三个函数的事务关系，所以将重要性最低的函数前置执行
-                # redis_dict.set(mid, str(img_count))
                 shutil.copy(src_file, os.path.join(dst_path, file_name))
                 print insert_db(data, table_name)
             except Exception as e:

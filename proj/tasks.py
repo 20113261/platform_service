@@ -537,11 +537,12 @@ import hashlib
 import redis
 import shutil
 from .my_lib.hotel_img_func import insert_db as hotel_images_info_insert_db, get_file_md5
+from pymysql.err import IntegrityError
 
 redis_dict = redis.Redis(host='10.10.180.145', db=5)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/s')
 def get_hotel_images_info(self, path, part, desc_path, **kwargs):
     try:
         print 'Get File',
@@ -572,8 +573,11 @@ def get_hotel_images_info(self, path, part, desc_path, **kwargs):
             file_md5  # file_md5
         )
         print 'Data', data
-        print hotel_images_info_insert_db(data)
-        shutil.copy(path, os.path.join(desc_path, pic_md5))
+        try:
+            print hotel_images_info_insert_db(data)
+            shutil.copy(path, os.path.join(desc_path, pic_md5))
+        except IntegrityError as err:
+            pass
         print update_task(kwargs['task_id'])
         print 'Succeed'
         return flag, h, w

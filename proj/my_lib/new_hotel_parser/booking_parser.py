@@ -243,7 +243,16 @@ def booking_parser(content, url, other_info):
         hotel.img_items = hotel.img_items[:-1].replace('"', '').encode('utf-8')
     except Exception, e:
         print str(e)
-        hotel.img_items = 'NULL'
+    # new img func
+    if hotel.img_items == '':
+        try:
+            hotelPhoto_str = re.findall('hotelPhotos:([\s\S]+?)]', content)[0] + ']'
+            hotel.img_items = '|'.join(
+                map(lambda x: x.replace('\'', '').strip() + '.jpg',
+                    re.findall('large_url:([\s\S]+?).jpg', hotelPhoto_str)))
+        except Exception, e:
+            print e.message
+            hotel.img_items = 'NULL'
 
     print 'img_item'
     print hotel.img_items

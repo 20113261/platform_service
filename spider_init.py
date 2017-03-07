@@ -962,11 +962,13 @@ if __name__ == '__main__':
     #     get_cities.delay(geo, country_id, offset)
 
     # todo test hotel_list_task
-    from proj.hotel_list_task import hotel_list_task, hotel_list_database
-
-    # 21147 21378
-    # print hotel_list_database('hoteltravel', '21378')
-    print hotel_list_database('elong', '20651')
+    # from proj.hotel_list_task import hotel_list_task, hotel_list_database
+    #
+    # # 21147 21378
+    # # print hotel_list_database('hoteltravel', '21378')
+    # # print hotel_list_database('elong', '21281')
+    # # print hotel_list_database('hotels', '21029')
+    # print hotel_list_database('booking', '13108')
     # hotel_list_task('hoteltravel', '21447', 'remote_4_test_hotel_list', task_id='asdfasdf')
 
     # todo test qyer poi task
@@ -1096,3 +1098,14 @@ if __name__ == '__main__':
     #              "src_path": "/search/image/attr_img_task_170223",
     #              "img_url": "http://ccm.ddcdn.com/ext/photo-s/0d/56/32/30/overlook.jpg", "bucket_name": "mioji-attr"}
     # daodao_img_rename_task(task_id='106cec6e450bb7afc3d5ad79d5cc3cd6', **task_args)
+
+    # todo test hotel parser
+    from proj.hotel_tasks import hotel_base_data
+
+    source = u'booking'
+    other_info = {
+        u'source_id': u'1781737',
+        u'city_id': u'10427'
+    }
+    hotel_url = u'http://www.booking.com/hotel/ee/aarde-apartments.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBA-gBAagCBA;sid=182e979b96ee436b39da0638a459a059;checkin=2017-04-03;checkout=2017-04-04;ucfs=1;highlighted_blocks=178173702_97225128_2_0_0;all_sr_blocks=178173702_97225128_2_0_0;room1=A,A;hpos=12;dest_type=city;dest_id=-2625660;srfid=03110f676da63ae2e0d632d5ad163716751ccedeX267;highlight_room='
+    hotel_base_data(source, hotel_url, other_info, u'test123')
