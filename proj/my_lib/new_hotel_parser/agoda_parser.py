@@ -6,7 +6,6 @@ import sys
 import re
 import requests
 from lxml import html as HTML
-from util.UserAgent import GetUserAgent
 
 from data_obj import Hotel, DBSession
 
@@ -15,6 +14,7 @@ review_num_pat = re.compile(r'(\d+)')
 hotel_id_pat = re.compile(r'hotel_id=(.*?)&', re.S)
 city_en_name_pat = re.compile(r'city_Name=(.*?)&', re.S)
 hotel_url_pat = re.compile(r'<link rel="canonical" href="(.*?)" /><meta name="robots"', re.S)
+images_url_pat = re.compile(r'images: \[(.*)],+?', re.S)
 
 hd = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', \
       'Accept-Language': 'zh-cn,zh;q=0.8,en-us;q=0.5,en;q=0.3', 'Connection': 'keep-alive'}
@@ -33,32 +33,35 @@ def agoda_parser(content, url, other_info):
 
     try:
         hotel_name = root.xpath('//*[@id="hotelname"]/text()')[0].encode('utf-8').strip()
-        print hotel_name
+        # print hotel_name
     except Exception, e:
         print str(e)
 
     try:
         k = hotel_name.find('(')
-        print k
+        # print k
         hotel.hotel_name = hotel_name[:k]
     except Exception, e:
-        print str(e)
-    print 'hotel_name'
-    print hotel.hotel_name
+        # print str(e)
+        hotel.hotel_name = 'NULL'
+    print 'hotel_name=>%s' % hotel.hotel_name
+    # print hotel.hotel_name
 
     try:
         hotel.hotel_name_en = hotel_name[k + 1:-1]
     except Exception, e:
-        print str(e)
-    print 'hotel.hotel_name_en'
-    print hotel.hotel_name_en
+        hotel.hotel_name_en = 'NULL'
+        # print str(e)
+    print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
+    # print hotel.hotel_name_en
 
     try:
         hotel.address = root.xpath('//*[@id="hotel-map"]/text()')[0].encode('utf8').strip()
     except Exception, e:
-        print str(e)
-    print 'hotel.address'
-    print hotel.address
+        # print str(e)
+        hotel.address = 'NULL'
+    print 'hotel.address=>%s' % hotel.address
+    # print hotel.address
 
     try:
         lat_pat = re.compile(r'latitude\" content=(.*?) \/>', re.S)
@@ -68,37 +71,43 @@ def agoda_parser(content, url, other_info):
         lat_text = lat_pat.findall(content)[0][1:-1]
         hotel.map_info = lon_text + ',' + lat_text
     except Exception, e:
-        print str(e)
+        # print str(e)
+        hotel.map_info = 'NULL'
 
-    print 'map_info'
-    print hotel.map_info
+    print 'map_info=>%s' % hotel.map_info
+    # print hotel.map_info
 
     try:
         hotel.grade = root.find_class('review-score-value')[0].text
     except:
-        pass
+        hotel.grade = 'NULL'
 
-    print 'grade'
-    print hotel.grade
+    print 'grade=>%s' % hotel.grade
+    # print hotel.grade
 
     try:
         review_num = root.find_class('review-based-on-section')[0].xpath('./strong/text()')[0].encode(
             'utf8').strip()
         hotel.review_num = review_num_pat.findall(review_num)[0]
     except:
-        hotel.review_num = ''
+        hotel.review_num = -1
 
-    print 'hotel.review_num'
-    print hotel.review_num
+    print 'hotel.review_num=>%s' % hotel.review_num
+    # print hotel.review_num
 
     try:
+        # hotel.img_items = '|'.join(
+        #     map(lambda x: 'http:' + x, root.get_element_by_id('hotel-gallery').xpath('./div/img/@src')))
+        img_json = images_url_pat.findall(content)[0]
+        location_pat = re.compile(r'"Location":"(.*?)",', re.S)
+        img_list = location_pat.findall(img_json)
         hotel.img_items = '|'.join(
-            map(lambda x: 'http:' + x, root.get_element_by_id('hotel-gallery').xpath('./div/img/@src')))
+            map(lambda x: 'http:' + x, img_list))
     except:
         hotel.img_items = ''
 
-    print 'img_url'
-    print hotel.img_items
+    print 'img_items=>%s' % hotel.img_items
+    # print hotel.img_items
 
     try:
         hotel.hotel_url = url
@@ -112,13 +121,15 @@ def agoda_parser(content, url, other_info):
         hotel.description = ''.join(about_root.xpath('//div[@data-selenium="abouthotel-detail"]/text()')).encode(
             'utf8').strip()
     except:
-        pass
+        hotel.description = 'NULL'
+    print 'hotel.description=>%s' % hotel.description
 
     try:
         hotel.service = '|'.join(about_root.xpath('//span[@data-selenium="available-feature"]/text()')).encode(
             'utf8').strip()
     except:
-        pass
+        hotel.service = 'NULL'
+    print 'hotel.service=>%s' % hotel.service
 
     if '无线网络' in hotel.service:
         hotel.has_wifi = 'Yes'
@@ -132,12 +143,13 @@ def agoda_parser(content, url, other_info):
     if '停车场免费' in hotel.service or 'parking free' in hotel.service:
         hotel.is_parking_free = 'Yes'
 
-    print 'hotel.has_wifi'
-    print hotel.has_wifi
-    print 'hotel.has_wifi'
-    print hotel.has_wifi
-    print 'hotel.has_parking'
-    print hotel.has_parking
+    print 'hotel.has_wifi=>%s' % hotel.has_wifi
+    # print hotel.has_wifi
+    print 'hotel.is_wifi_free=>%s' % hotel.is_wifi_free
+    # print hotel.has_wifi
+    print 'hotel.has_parking=>%s' % hotel.has_parking
+    # print hotel.has_parking
+    print 'hotel.is_parking_free=>%s' % hotel.is_parking_free
 
     hotel.source = 'agoda'
     hotel.hotel_url = url.encode('utf-8')
@@ -149,7 +161,7 @@ def agoda_parser(content, url, other_info):
 
 if __name__ == '__main__':
     headers = {
-        'User-agent': GetUserAgent(),
+        # 'User-agent': GetUserAgent(),
         'Host': 'www.agoda.com'
     }
     url = 'http://www.agoda.com/city-backpacker-biber/hotel/all/zurich-ch.html?checkin=2016-12-28&los=1&adults=1&rooms=1&cid=-1&searchrequestid=b31690e6-b5b6-4fb2-a924-b1daa147e9ae'
@@ -171,10 +183,10 @@ if __name__ == '__main__':
     other_info['about_content'] = about_content
 
     result = agoda_parser(content, url, other_info)
-    try:
-        session = DBSession()
-        session.add(result)
-        session.commit()
-        session.close()
-    except Exception as e:
-        print str(e)
+    # try:
+    #     session = DBSession()
+    #     session.add(result)
+    #     session.commit()
+    #     session.close()
+    # except Exception as e:
+    #     print str(e)
