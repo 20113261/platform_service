@@ -309,7 +309,7 @@ def get_lost_rest_no_proxy(self, target_url):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='120/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='20/s')
 def get_images(self, source, target_url, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
@@ -327,10 +327,10 @@ def get_images(self, source, target_url, **kwargs):
         file_name = hashlib.md5(target_url).hexdigest()
         if flag in [1, 2]:
             update_proxy('Platform', PROXY, x, '22')
-            print "Image Error with Proxy " + PROXY
+            print "Image Error with Proxy " + PROXY + " used time " + str(time.time() - x)
             self.retry(countdown=2)
         else:
-            print "Success with " + PROXY + ' CODE 0'
+            print "Success with " + PROXY + ' CODE 0 used time ' + str(time.time() - x)
             if 'task_id' in kwargs.keys():
                 update_task(kwargs['task_id'])
             save_image(source, file_name, page.content)
@@ -338,7 +338,7 @@ def get_images(self, source, target_url, **kwargs):
         return flag, h, w, file_name
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '22')
-        print "Image Error with Proxy " + PROXY
+        print "Image Error with Proxy " + PROXY + ' used time ' + str(time.time() - x)
         self.retry(exc=exc, countdown=2)
 
 
@@ -542,7 +542,7 @@ from pymysql.err import IntegrityError
 redis_dict = redis.Redis(host='10.10.180.145', db=5)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='14/s')
 def get_hotel_images_info(self, path, part, desc_path, **kwargs):
     try:
         print 'Get File',
