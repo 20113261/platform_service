@@ -309,7 +309,7 @@ def get_lost_rest_no_proxy(self, target_url):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='30/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='120/s')
 def get_images(self, source, target_url, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()

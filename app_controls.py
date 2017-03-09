@@ -26,10 +26,10 @@ includes = ['proj.tasks',
             'proj.daodao_img_rename_tasks'
             ]
 if __name__ == '__main__':
-    # print app.control.rate_limit('proj.tasks.get_images', '1/s')
-    app.now()
-    print 'Hello World'
-    print 'Hello World'
+    print app.control.rate_limit('proj.tasks.get_images', '60/s')
+    # app.now()
+    # print 'Hello World'
+    # print 'Hello World'
     # for task_name in app.tasks.keys():
     #     if task_name.startswith('proj.'):
     #         print task_name

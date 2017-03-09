@@ -38,6 +38,12 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             other_info['about_content'] = about_content
 
         # agoda end
+
+        # booking start
+
+        headers['Referer'] = 'http://www.booking.com'
+
+        # booking end
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
         if not result:
             update_proxy('Platform', PROXY, x, '23')
