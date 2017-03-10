@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
         # todo hotel image info
         if worker == 'hotel_image_info_task':
-            get_hotel_images_info.delay(args['path'], args['part'], args['desc_path'], task_id=task_id)
+            get_hotel_images_info.delay(args['path'], args['part'], args['dst_path'], task_id=task_id)
             _count += 1
 
         # todo poi nearby city task

@@ -783,11 +783,11 @@ def craw_html(self, url, flag, table_name, **kwargs):
             update_proxy('Platform', PROXY, x, '23')
             self.retry()
         else:
-            print "Success with " + PROXY + ' CODE 0'
+            print "Success with " + PROXY + ' CODE 0 takes ' + str(time.time() - x)
             content = page.text
             # test data
             j_data = json.loads(content)
-            if j_data['status'] != 'OK':
+            if j_data['status'] not in ['OK', 'ZERO_RESULTS']:
                 raise Exception('Status:\t' + j_data['status'])
             data = (md5_url, url, content, flag)
             # print insert_crawled_html(data, table_name)
@@ -801,10 +801,11 @@ def craw_html(self, url, flag, table_name, **kwargs):
             task_id = kwargs.get('task_id', '')
             if task_id != '':
                 update_task(task_id=task_id)
-        return data
+        # return data
+        return 'OK' + str(len(data))
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        print "Error", exc
+        print "Error", exc, 'takes', str(time.time() - x)
         print traceback.print_exc()
         self.retry(exc=exc)
 
