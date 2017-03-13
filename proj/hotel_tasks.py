@@ -39,6 +39,12 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
 
         # agoda end
 
+        # venere start
+        if source == 'venere':
+            update_task(kwargs['task_id'])
+
+        # venere end
+
         # booking start
 
         headers['Referer'] = 'http://www.booking.com'
