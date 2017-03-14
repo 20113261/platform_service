@@ -1,6 +1,4 @@
 import re
-import time
-
 import lxml.html as HTML
 
 from data_object import Review
@@ -22,15 +20,18 @@ def parser(content, url):
             r.sid = source_id
             print 'sid', r.sid
             try:
-                times = float(each_review.xpath('./@data-review-date')[0].encode('utf-8')[:-3])
-                x = time.localtime(times)
-                r.date = time.strftime('%Y-%m-%d %H:%M:%S', x)
+                times = each_review.xpath('./div[@class="review-card-meta"]//span[@class="date"]/text()')[0].encode(
+                    'utf-8').strip()  # float(each_review.xpath('./@data-review-date')[0].encode('utf-8')[:-3])
+                # x = time.localtime(times)
+                # r.date = time.strftime('%Y-%m-%d %H:%M:%S', x)
+                r.date = times
                 print 'reviews_time', r.date
             except Exception, e:
                 print str(e)
 
             try:
-                r.rating = str(each_review.xpath('./@data-review-rating')[0].encode('utf-8'))
+                r.rating = each_review.xpath('.//div[@class="review-score"]/span/strong/text()')[0].encode(
+                    'utf-8').strip()  # str(each_review.xpath('./@data-review-rating')[0].encode('utf-8'))
                 print 'rating', r.rating
             except Exception, e:
                 print str(e)
@@ -50,7 +51,7 @@ def parser(content, url):
                 print str(e)
 
             try:
-                r.username = each_review.find_class('review-card-meta-reviewer')[0].text_content().encode('utf-8')
+                r.username = each_review.find_class('review-card-meta-reviewer')[0].xpath('./text()')[0].encode('utf-8')
                 print 'user_name', r.username
             except Exception, e:
                 print str(e)
