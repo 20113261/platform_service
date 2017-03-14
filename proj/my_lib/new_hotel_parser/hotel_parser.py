@@ -35,10 +35,10 @@ def parse_hotel(content, url, other_info, source, part):
     result = parser(content, url, other_info)
 
     # key words check
-    if result.map_info == 'NULL':
+    if result.map_info in ('NULL', ''):
         raise TypeError('Error map_info NULL')
 
-    if result.address == 'NULL':
+    if result.address in ('NULL', ''):
         raise TypeError('Error address NULL')
 
     if result.source == 'booking' and (result.img_items == '' or result.img_items == 'NULL'):
@@ -64,10 +64,10 @@ if __name__ == '__main__':
 
     source = 'expedia'
     # url = 'http://www.hrs.com/web3/hotelData.do?activity=photo&singleRooms=0&doubleRooms=1&adults=2&children=0&availability=true&hotelnumber=100'
-    url = 'https://www.expedia.cn/h6939573.Hotel-Information'
+    url = 'https://www.expedia.cn/h6935892.Hotel-Information'
     other_info = {
-        'source_id': '6066027',
-        'city_id': '20013'
+        'source_id': '6935892',
+        'city_id': '10162'
     }
 
     page = requests.get(url)

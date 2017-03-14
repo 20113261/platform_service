@@ -177,12 +177,11 @@ def expedia_parser(content, url, other_info):
         # map_info = map_temp[1] + ',' + map_temp[0]
         # hotel.map_info = map_info
         map_temp = re.findall(r'\"latlong\": \"(.*)\",', content)[0].encode('utf-8').split(',')
-        map_info = map_temp[1] + ',' + map_temp[0]
+        hotel.map_info = map_temp[1] + ',' + map_temp[0]
     except Exception, e:
-        map_info = 'NULL'
         print str(e)
 
-    print 'map_info=>%s' % map_info
+    print 'map_info=>%s' % hotel.map_info
     try:
         img_list = root.find_class('jumbo-wrapper')[0].find_class('jumbo-hero')[0].xpath('img')
         img_url_set = set()
