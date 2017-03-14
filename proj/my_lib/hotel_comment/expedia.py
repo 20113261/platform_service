@@ -25,13 +25,13 @@ def parser(content, url):
             print str(e)
 
         try:
-            r.username = hotel_reviews.get("userDisplayName").encode('utf-8')
+            r.username = hotel_reviews.get("userNickname").encode('utf-8')
             print 'username', r.username
         except Exception, e:
             print str(e)
 
         try:
-            r.rating = hotel_reviews.get("ratingOverall").encode('utf-8')
+            r.rating = hotel_reviews.get("ratingOverall")
             print 'rating', r.rating
         except Exception, e:
             print str(e)
@@ -58,7 +58,6 @@ def parser(content, url):
             print 'comment', r.comment
         except Exception, e:
             print str(e)
-
         print 'saved', r.save()
         flag = r.flag
     return flag
@@ -68,6 +67,7 @@ if __name__ == '__main__':
     import requests
 
     target_url = 'https://www.expedia.com/ugc/urs/api/hotelreviews/hotel/8210032/?_type=json&start=0&items=100000&sortBy=&categoryFilter=&languageFilter=&languageSort=en&expweb.activityId=f9158a1d-9d76      -4dbb-a2da-02d98ea79fcc&pageName=page.Hotels.Infosite.Information&orign=&caller=Expedia&_=1465961131865'
+    target_url = 'https://www.expedia.cn/ugc/urs/api/hotelreviews/hotel/1699407/?_type=json&start=0&items=100000&sortBy=&categoryFilter=&languageFilter=&anguageSort=zh&expweb.activityId=eb481338-67ef-4b6c-a81f-9dd2f8edf957&pageName=page.Hotels.Infosite.Information&origin=&caller=Expedia&guid=1b1ae9827ce1495b8e3995fda9024720'
     headers = {
         'User-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'
     }
