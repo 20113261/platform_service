@@ -1,6 +1,13 @@
 import hashlib
+import pymysql
 
-import db_localhost as db
+SQL_DICT = {
+    'host': '10.10.180.145',
+    'user': 'hourong',
+    'passwd': 'hourong',
+    'charset': 'utf8',
+    'db': 'hotel_comment'
+}
 
 
 def _get_md5(source):
@@ -21,8 +28,8 @@ class Review(object):
 
         self._flag = False
 
-        self.sql = 'insert ignore into hotel_comment.comment(source,sid,cid,date,username,language,rating,title,comment,comment_key) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
-        self._raw_sql = 'insert ignore into hotel_comment.comment(source,sid,cid,date,username,language,rating,title,comment,comment_key) values("%s","%s","%s","%s","%s","%s","%s","%s","%s","%s")'
+        self.sql = 'insert ignore into comment(source,sid,cid,date,username,language,rating,title,comment,comment_key) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+        self._raw_sql = 'insert ignore into comment(source,sid,cid,date,username,language,rating,title,comment,comment_key) values("%s","%s","%s","%s","%s","%s","%s","%s","%s","%s")'
 
     @property
     def comment(self):
@@ -113,7 +120,11 @@ class Review(object):
     def save(self):
         if self.sid and self.comment:
             self._flag = True
-            return db.ExecuteSQL(sql=self.get_sql(), args=self.get_args())
+            conn = pymysql.connect(**SQL_DICT)
+            with conn as cursor:
+                res = cursor.execute(query=self.get_sql(), args=self.get_args())
+            conn.close()
+            return res
         else:
             return 0
 
