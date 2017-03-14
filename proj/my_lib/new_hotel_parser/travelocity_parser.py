@@ -6,7 +6,6 @@ import sys
 
 import re
 import requests
-from common.logger import logger
 from lxml import html as HTML
 
 from data_obj import Hotel, DBSession
@@ -42,7 +41,6 @@ def travelocity_parser(content, url, other_info):
         hotel.hotel_name_en = hotel_name_en
     except Exception, e:
         print str(e)
-    logger.info('begin parse the travelocity!!!')
 
     try:
         address = ''

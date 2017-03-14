@@ -62,11 +62,12 @@ def parse_hotel(content, url, other_info, source, part):
 if __name__ == '__main__':
     import requests
 
-    source = 'hrs'
-    url = 'http://www.hrs.com/web3/hotelData.do?activity=photo&singleRooms=0&doubleRooms=1&adults=2&children=0&availability=true&hotelnumber=100'
+    source = 'expedia'
+    # url = 'http://www.hrs.com/web3/hotelData.do?activity=photo&singleRooms=0&doubleRooms=1&adults=2&children=0&availability=true&hotelnumber=100'
+    url = 'https://www.expedia.cn/h6939573.Hotel-Information'
     other_info = {
-        'source_id': '100',
-        'city_id': '10013'
+        'source_id': '6066027',
+        'city_id': '20013'
     }
 
     page = requests.get(url)
