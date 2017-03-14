@@ -1,13 +1,7 @@
 # coding=utf-8
-import db_localhost as db
 import lxml.html as HTML
 
 from data_object import Review
-
-
-def insert_finished_url(url):
-    sql = 'insert ignore into hotel_comment.finished_key(`url`) VALUES (%s)'
-    return db.ExecuteSQL(sql, url)
 
 
 def parser(content, url):
@@ -23,7 +17,7 @@ def parser(content, url):
         except:
             pass
         try:
-            r.username = row.find_class('review_item_reviewer')[0].xpath('div/h4/text()')[0].strip().encode('utf-8')
+            r.username = row.find_class('review_item_reviewer')[0].xpath('./h4/text()')[0].strip().encode('utf-8')
         except:
             pass
         try:
@@ -79,7 +73,6 @@ def parser(content, url):
             print len(r.comment)
             print r.comment
             print r.save()
-            insert_finished_url(url)
             flag = True
         count += 1
     return flag
@@ -89,6 +82,8 @@ if __name__ == '__main__':
     import requests
 
     target_url = 'http://www.booking.com/reviewlist.zh-cn.html?pagename=landmark-suites;cc1=ke;type=total;dist=1;offsets=200;rows=100;'
+    target_url = 'http://www.booking.com/reviewlist.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBA-gBAagCBA;sid=04bb4f5be7caced0d2801004dd9e9bec;pagename=la-goleta-de-mar-adults-only;cc1=es;type=total;score=;dist=1;rows=100;r_lang=en;'
+    target_url = 'http://www.booking.com/reviewlist.zh-cn.html?pagename=la-goleta-de-mar-adults-only;cc1=es;type=total;score=;dist=1;offsets=200;rows=100;'
     headers = {
         'User-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'
     }
