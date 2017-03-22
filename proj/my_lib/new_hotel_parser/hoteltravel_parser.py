@@ -10,7 +10,7 @@ import requests
 from lxml import etree
 from lxml import html as HTML
 
-from data_obj import Hotel, DBSession
+from data_obj import Hotel #, DBSession
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -80,11 +80,12 @@ def hoteltravel_parser(page, url, other_info):
     try:
         pattern = re.compile('rating-point">(.*?)/5</span>')
         match = pattern.findall(page)
-        hotel.grade = str(match[0])
+        hotel.grade = float(str(match[0])) * 2
     except:
         try:
             temp_grade = root.find_class('col-xs-4 col-sm-6 col-md-6 nopadding')[0].xpath('span/text()')[0]
-            hotel.grade = temp_grade.split('/')[0]
+            grade = temp_grade.split('/')[0]
+            hotel.grade = float(grade) * 2
         except Exception, e:
             print str(e)
             hotel.grade = -1

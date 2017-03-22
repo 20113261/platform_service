@@ -7,7 +7,7 @@ import re
 import requests
 from lxml import html as HTML
 
-from data_obj import Hotel, DBSession
+from data_obj import Hotel
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -60,8 +60,8 @@ def elong_parser(content, url, other_info):
     # print hotel.address
 
     try:
-        # map_temp = root.xpath('//img[@method="OpenMap"]/@data-src')[0]
-        # map_infos = map_pat.findall(map_temp)[0]
+        #map_temp = root.xpath('//img[@method="OpenMap"]/@data-src')[0]
+        #map_infos = map_pat.findall(map_temp)[0]
         map_infos = map_pat.findall(content)[0]
         hotel.map_info = map_infos[1] + ',' + map_infos[0]
     except Exception, e:
@@ -89,7 +89,7 @@ def elong_parser(content, url, other_info):
         tp = root.xpath('//div[contains(@class, "pertxt_num")]/text()')[0].encode('utf-8')
         # t_grade = grade_pat.findall(tp)[0]
         # print 't_grade', t_grade
-        hotel.grade = float(tp)  # float(t_grade) * 0.05
+        hotel.grade = float(tp) * 2 # float(t_grade) * 0.05
     except Exception, e:
         hotel.grade = 'NULL'
     print 'grade=>%s' % hotel.grade
@@ -197,17 +197,13 @@ def elong_parser(content, url, other_info):
 
 if __name__ == '__main__':
     # url = 'http://ihotel.elong.com/101703/'
-    url = 'http://ihotel.elong.com/670847/'
+    # url = 'http://ihotel.elong.com/670847/'
+    url = 'http://ihotel.elong.com/331466/'
     other_info = {u'source_id': u'670847', u'city_id': u'20236'}
     page = requests.get(url)
     page.encoding = 'utf8'
-    content = page.text
+    content = page.content
     result = elong_parser(content, url, other_info)
 
-    # try:
-    #     session = DBSession()
-    #     session.add(result)
-    #     session.commit()
-    #     session.close()
-    # except Exception as e:
-    #     print str(e)
+    # 如果需要，可以在这里用 print 打印 hotel 对象中的内容。也可直接使用 debug 调试查看 result
+    print result.address

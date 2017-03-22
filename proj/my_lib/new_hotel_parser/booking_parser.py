@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/python
 # coding=utf-8
 
 import sys
@@ -7,7 +7,7 @@ import re
 import requests
 from lxml import html as HTML
 
-from data_obj import Hotel, DBSession
+from data_obj import Hotel
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -117,10 +117,9 @@ def booking_parser(content, url, other_info):
     # print hotel.star
     # 解析酒店评分
     try:
-        grade_temp = root.xpath('//div[@class="location_score_tooltip"]/p[1]/text()')[0].strip()
-        gr = grade_pat.findall(grade_temp)[0].split('/')[0]
-        hotel.grade = int(gr)
-    except:
+        grade_temp = root.xpath('//div[contains(@class, "hotel_large_photp_score")]/@data-review-score')
+        hotel.grade = grade_temp[0]
+    except Exception as e:
         hotel.grade = 'NULL'
     print 'grade=>%s' % hotel.grade
     # print hotel.grade
@@ -257,6 +256,7 @@ def booking_parser(content, url, other_info):
 
     # parse all photos link of this hotel
     # try:
+    #     hotel.img_items = ''
     #     image_list = root.xpath('//div[@id="photos_distinct"]/a/@href')
     #     for each_img_link in image_list:
     #         hotel.img_items += each_img_link.encode('utf-8') + '|'
@@ -264,12 +264,17 @@ def booking_parser(content, url, other_info):
     # except Exception, e:
     #     print "kkkk"
     # new img func
-    # if hotel.img_items == 'NULL':
+    # if hotel.img_items == '':
     try:
-        hotelPhoto_str = re.findall('hotelPhotos:([\s\S]+?)]', content)[0] + ']'
-        hotel.img_items = '|'.join(
-            map(lambda x: x.replace('\'', '').strip() + '.jpg',
-                re.findall('large_url:([\s\S]+?).jpg', hotelPhoto_str)))
+        # hotelPhoto_str = re.findall('hotelPhotos:([\s\S]+?)]', content)[0] + ']'
+        # hotel.img_items = '|'.join(
+        #     map(lambda x: x.replace('\'', '').strip() + '.jpg',
+        #         re.findall('large_url:([\s\S]+?).jpg', hotelPhoto_str)))
+        hotels_class = root.find_class('hp-gallery-slides hp-gallery-top')[0]
+        img_src = hotels_class.xpath('.//img/@src')[0]
+        img_lazy = hotels_class.xpath('.//img/@data-lazy')
+        img_items = img_src + '|' + '|'.join(img_lazy)
+        hotel.img_items = img_items
     except Exception, e:
         hotel.img_items = 'NULL'
 
@@ -284,23 +289,24 @@ def booking_parser(content, url, other_info):
 
 
 if __name__ == '__main__':
-    # url = 'http://www.booking.com/hotel/it/appartamento-a-vernazza.zh-cn.html?aid=397647;label=bai408jc-index-XX-XX-XX-unspec-cn-com-L%3Azh-O%3Aabn-B%3Achrome-N%3Ayes-S%3Abo-U%3Asalo;sid=665e4fc13b1e35607e38785b60c65d80;checkin=2017-12-23;checkout=2017-12-24;ucfs=1;highlighted_blocks=101653301_90473868_4_0_0;all_sr_blocks=101653301_90473868_4_0_0;room1=A,A;hpos=7;dest_type=region;dest_id=1754;srfid=240bc37656e5dbbdb29d189f517070729a5f076aX7;highlight_room='
-    url = 'http://www.booking.com/hotel/es/can-daniel.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATK4AQTIAQTYAQPoAQH4AQuoAgM;sid=1a3888c9a794fa93c207d7706d195160;checkin=2017-01-29;checkout=2017-01-30;ucfs=1;soh=1;highlighted_blocks=;all_sr_blocks=;room1=A,A;soldout=0,0;hpos=8;dest_type=region;dest_id=767;srfid=7f4d0bb71de80e36e71921b5dbec9de897b1dbbbX578;highlight_room='
+    # url = 'http://www.booking.com/hotel/es/can-daniel.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATK4AQTIAQTYAQPoAQH4AQuoAgM;sid=1a3888c9a794fa93c207d7706d195160;checkin=2017-01-29;checkout=2017-01-30;ucfs=1;soh=1;highlighted_blocks=;all_sr_blocks=;room1=A,A;soldout=0,0;hpos=8;dest_type=region;dest_id=767;srfid=7f4d0bb71de80e36e71921b5dbec9de897b1dbbbX578;highlight_room='
+    # url = 'http://www.booking.com/hotel/es/agroturismo-vall-de-pollensa.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATK4AQTIAQTYAQHoAQH4AQuoAgM;sid=04bb4f5be7caced0d2801004dd9e9bec;src=clp;openedLpRecProp=1;ccpi=1'
+    url = 'http://www.booking.com/hotel/es/la-goleta-de-mar-adults-only.zh-cn.html?aid=304142;label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATK4AQTIAQTYAQHoAQH4AQuoAgM;sid=04bb4f5be7caced0d2801004dd9e9bec;dlpvhclck=1'
+    # url = 'http://www.booking.com/hotel/gr/boat-in-kalamaki-15-metres-1.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=8bdc392e7d5c8c230273f6a364f8310a;checkin=2017-03-21;checkout=2017-03-22;ucfs=1;highlighted_blocks=123898401_92835396_10_0_0;all_sr_blocks=123898401_92835396_10_0_0;room1=A;hpos=2;dest_type=city;dest_id=-814876;srfid=97c87e489585f18f0756927923581be7fc3f403dX437;from=searchresults;highlight_room='
     other_info = {
         'source_id': '1016533',
         'city_id': '10067'
     }
-    page = requests.get(url=url)
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+        'Referer': 'http://www.booking.com'
+    }
+    page = requests.get(url=url, headers=headers, timeout=30)
     page.encoding = 'utf8'
-    content = page.text
+    content = page.content
     result = booking_parser(content, url, other_info)
-    result
-    print result.map_info
+
+    # 如果需要，可以在这里用 print 打印 hotel 对象中的内容。也可直接使用 debug 调试查看 result
     print result.address
-    # try:
-    #     session = DBSession()
-    #     # session.merge(result)
-    #     session.commit()
-    #     session.close()
-    # except Exception as e:
-    #     print str(e)
+    print result.img_items
+    print result.grade
