@@ -9,6 +9,7 @@ from .celery import app
 from .my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from .my_lib.task_module.task_func import update_task
 from .my_lib.BaseTask import BaseTask
+from .my_lib.FileSaver import save_file
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='20/s')
@@ -50,7 +51,9 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         headers['Referer'] = 'http://www.booking.com'
 
         # booking end
+        save_file(kwargs['task_id'], self.request.id, content)
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
+
         if not result:
             update_proxy('Platform', PROXY, x, '23')
             self.retry()
