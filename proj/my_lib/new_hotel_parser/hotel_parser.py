@@ -50,14 +50,11 @@ def parse_hotel(content, url, other_info, source, part):
     result.continent = part
 
     task_finished = False
-    try:
-        session = DBSession()
-        session.merge(result)
-        session.commit()
-        session.close()
-        task_finished = True
-    except Exception as e:
-        print str(e)
+    session = DBSession()
+    session.merge(result)
+    session.commit()
+    session.close()
+    task_finished = True
 
     return task_finished
 

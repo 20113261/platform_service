@@ -56,7 +56,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
 
         if not result:
             update_proxy('Platform', PROXY, x, '23')
-            self.retry()
+            self.retry(exc=Exception('db error'))
         else:
             update_task(kwargs['task_id'])
             print "Success with " + PROXY + ' CODE 0'
