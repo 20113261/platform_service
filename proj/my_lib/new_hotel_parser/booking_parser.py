@@ -34,59 +34,82 @@ def booking_parser(content, url, other_info):
 
     # 解析酒店中英文名，如果没有中文名则置为英文名，如果都解析失败则退出
     try:
-        name_temp = root.xpath('//*[@id="hp_hotel_name"]')[0].text_content().encode('utf-8').strip('\t').strip('\n')
+        name_temp = root.xpath('//*[@id="hp_hotel_name"]')[
+            0].text_content().encode('utf-8').strip('\t').strip('\n')
         # print 'name_temp', name_temp
         # print '--heheheh', name_temp
-        hotel.hotel_name_en = name_temp.split('（')[0].replace('"', '""').strip()
+        hotel.hotel_name_en = name_temp.split('（')[0].replace('"',
+                                                              '""').strip()
         print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
         # print hotel.hotel_name_en
         try:
-            hotel.hotel_name = name_temp.split('（')[1].replace('）', '').replace('"', '""').strip()
+            hotel.hotel_name = name_temp.split('（')[1].replace(
+                '）', '').replace('"', '""').strip()
         except Exception, e:
             print str(e)
             hotel.hotel_name = hotel.hotel_name_en
     except:
         try:
-            name_temp = root.xpath('//*[@class="sr-hotel__name"]/text()')[0].strip().encode('utf-8')
+            name_temp = root.xpath('//*[@class="sr-hotel__name"]/text()')[
+                0].strip().encode('utf-8')
 
-            hotel.hotel_name_en = name_temp.split('（')[0].replace('"', '""').strip()
+            hotel.hotel_name_en = name_temp.split('（')[0].replace('"',
+                                                                  '""').strip()
             print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
             # print hotel.hotel_name_en
-        except Exception, e:
-            print '----------', str(e)
+        except:
+            try:
+                name_temp = root.xpath('//div[@id="b_mainContent"]/h1/text()')[
+                    0].strip().encode('utf-8')
+                hotel.hotel_name = name_temp
+            except Exception as e:
+                print '----------', str(e)
             # return hotel_tuple
-    # print 'vvvvvvvvvvvvvvvvv'
+            # print 'vvvvvvvvvvvvvvvvv'
     print 'hotel_name=>%s' % hotel.hotel_name
     # print hotel.hotel_name
     # 解析酒店品牌名称
     try:
-        hotel.brand_name = brand_pat.findall(content)[0].strip().replace('"', '""')
+        hotel.brand_name = brand_pat.findall(content)[0].strip().replace('"',
+                                                                         '""')
     except Exception, e:
         # print str(e)
         hotel.brand_name = 'NULL'
     print 'brad_name=>%s' % hotel.brand_name
     # print hotel.brand_name
     try:
-        pp = root.xpath('//*[@class="map_static_zoom_images"]/img/@src')[0].strip().encode('utf-8')
+        pp = root.xpath('//*[@class="map_static_zoom_images"]/img/@src')[
+            0].strip().encode('utf-8')
         try:
             map_infos = str(map_pat.findall(pp)[0])
-            hotel.map_info = map_infos.split(',')[1] + ',' + map_infos.split(',')[0]
+            hotel.map_info = map_infos.split(',')[1] + ',' + map_infos.split(
+                ',')[0]
         except Exception, e:
             print 'vvvvv\n'
     except:
         try:
-            map_infos = root.xpath('//span[contains(@class , "hp_address_subtitle")]/@data-bbox')[0].strip().split(',')
-            hotel.map_info = str(float(float(map_infos[0]) + float(map_infos[2])) / 2.0) + ',' + str(
-                float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
+            map_infos = root.xpath(
+                '//span[contains(@class , "hp_address_subtitle")]/@data-bbox')[
+                    0].strip().split(',')
+            hotel.map_info = str(
+                float(float(map_infos[0]) + float(map_infos[2])) /
+                2.0) + ',' + str(
+                    float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
         except Exception, e:
             print str(e)
             try:
                 # map_infos = root.xpath('//span[@itemprop="address"]/@data-bbox')[0].split(',')
-                map_infos = root.xpath('//span[contains(@class , "hp_location_address_line")]/@data-bbox')[
-                    0].strip().split(',')
-                hotel.map_info = str(float(float(map_infos[0]) + float(map_infos[2])) / 2.0) + ',' + str(
-                    float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
+                map_infos = root.xpath(
+                    '//span[contains(@class , "hp_location_address_line")]/@data-bbox'
+                )[0].strip().split(',')
+                hotel.map_info = str(
+                    float(float(map_infos[0]) + float(map_infos[2])) /
+                    2.0) + ',' + str(
+                        float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
             except Exception, e:
+                map_infos = root.xpath('//a[@id="show_map"]/@data-coords')
+                map_infos = str(map_infos[0]).split(',')
+                hotel.map_info = map_infos[0] + ',' + map_infos[1]
                 print str(e)
     print 'map_info=>%s' % hotel.map_info
 
@@ -95,20 +118,29 @@ def booking_parser(content, url, other_info):
     try:
         # hotel.address = root.get_element_by_id('hp_address_subtitle') \
         #     .xpath('text()')[0].encode('utf-8').strip().replace('"', '""')
-        strs = root.xpath('//span[contains(@class, "hp_address_subtitle")]/text()')
+        strs = root.xpath(
+            '//span[contains(@class, "hp_address_subtitle")]/text()')
         hotel.address = strs[0].encode('utf-8').strip().replace('"', '""')
     except Exception as e:
-        strs = root.xpath('//span[contains(@class, "hp_location_address_line")]/text()')
+        strs = root.xpath(
+            '//span[contains(@class, "hp_location_address_line")]/text()')
         if len(strs):
             hotel.address = strs[0].encode('utf-8').strip().replace('"', '""')
         else:
-            hotel.address = "NULL"
+            try:
+                adress_temp = root.xpath(
+                    '//p[@class="b_hotelAddress"]//text()')
+                adress_temp = ' '.join(map(lambda x: x.replace('\n', ''), adress_temp))
+                hotel.address = adress_temp.replace('显示地图', '')
+            except Exception as e:
+                print e
 
     print 'address=>%s' % hotel.address
     # print hotel.address
     # 解析酒店星级
     try:
-        star_temp = root.find_class('hp__hotel_ratings__stars')[0].xpath('i/@class')[0].strip()
+        star_temp = root.find_class('hp__hotel_ratings__stars')[0].xpath(
+            'i/@class')[0].strip()
         hotel.star = num_pat.findall(star_temp)[0]
         hotel.star = int(hotel.star)
     except Exception, e:
@@ -117,21 +149,37 @@ def booking_parser(content, url, other_info):
     # print hotel.star
     # 解析酒店评分
     try:
-        grade_temp = root.xpath('//div[contains(@class, "hotel_large_photp_score")]/@data-review-score')
-        hotel.grade = grade_temp[0]
-    except Exception as e:
-        hotel.grade = 'NULL'
+        grade_temp = root.xpath(
+            '//div[contains(@class, "hotel_large_photp_score")]/@data-review-score'
+        )
+        hotel.grade = str(grade_temp[0])
+    except:
+        try:
+            grade_temp = root.xpath(
+                '//div[@id="review_block_top"]/text()')[1].strip().encode('utf-8')
+            hotel.grade = grade_temp
+        except Exception as e:
+            hotel.grade = 'NULL'
     print 'grade=>%s' % hotel.grade
     # print hotel.grade
     # 解析酒店评论数
     try:
-        # re_start = root.find_class('trackit score_from_number_of_reviews')[0].xpath('strong/text()') \
-        #     [0].encode('utf-8').strip()
-        re_start = root.xpath('//div[@class="location_score_tooltip"]/p[1]/small/strong/text()')[0]
-        hotel.review_num = int(re_start)
-    except Exception, e:
-        print str(e)
-        hotel.review_num = -1
+        re_start = root.find_class('trackit score_from_number_of_reviews')[0].xpath('strong/text()') \
+            [0].encode('utf-8').strip()
+        hotel.review_num = re_start
+    except:
+        try:
+             re_start = root.xpath('//div[@class="location_score_tooltip"]/p[1]/small/strong/text()')[0]
+             hotel.review_num = int(re_start)
+        except:
+            try:
+                re_num = root.xpath(
+                    '//div[@id="review_block_top"]/text()')[0].strip().encode('utf-8')
+                re_num = re.findall(r'\d+', re_num)[0]
+                hotel.review_num = re_num
+            except Exception as e:
+                print e
+                hotel.review_num = -1
     print 'review_num=>%s' % hotel.review_num
     # print hotel.review_num
     # 解析酒店简介
@@ -139,11 +187,18 @@ def booking_parser(content, url, other_info):
         hotel.description = root.get_element_by_id('summary') \
             .text_content().encode('utf-8').strip().replace('"', '""').replace('\n', '')
         infos = root.xpath(
-            '//div[@class="hotel_description_wrapper_exp hp-description"]/p[@class="geo_information"]/text()')
+            '//div[@class="hotel_description_wrapper_exp hp-description"]/p[@class="geo_information"]/text()'
+        )
         if len(infos):
-            hotel.description += infos[0].strip().replace('\r', '').replace('\n', '')
+            hotel.description += infos[0].strip().replace('\r', '').replace(
+                '\n', '')
     except:
-        hotel.description = 'NULL'
+        try:
+            desc = root.xpath('//div[@class="b_hotelDescription"]/p/text()')
+            desc = ''.join(desc)
+            hotel.description = desc
+        except Exception as e:
+            hotel.description = 'NULL'
     print 'description=>%s' % hotel.description
     # print hotel.description
     # 解析酒店接受的银行卡
@@ -159,8 +214,18 @@ def booking_parser(content, url, other_info):
             hotel.accepted_cards += each_card_str + '|'
 
         hotel.accepted_cards = hotel.accepted_cards[:-1].replace('"', '""')
-    except Exception, e:
-        hotel.accepted_cards = 'NULL'
+        if not len(card_list):
+            try:
+                card_list = root.xpath('//div[@class="description"]/ul/li/text()')[:-1]
+                hotel.accepted_cards = '|'.join(card_list)
+            except Exception as e:
+                hotel.accepted_cards = 'NULL'
+    except:
+        try:
+            card_list = root.xpath('//div[@class="description"]/ul/li/text()')[:-1]
+            hotel.accepted_cards = '|'.join(card_list)
+        except Exception as e:
+            hotel.accepted_cards = 'NULL'
 
     print 'accepted_card=>%s' % hotel.accepted_cards
     # print hotel.accepted_cards
@@ -170,14 +235,24 @@ def booking_parser(content, url, other_info):
         hotel.check_in_time = root.get_element_by_id('checkin_policy').text_content() \
             .encode('utf-8').strip().replace('\n', ' ').replace('"', '""')
     except:
-        hotel.check_in_time = 'NULL'
+        try:
+            check_in_time = root.xpath(
+                '//div[@class="description"]/p[1]/text()')
+            hotel.check_in_time = check_in_time[0].strip().encode('utf-8')
+        except Exception as e:
+            hotel.check_in_time = 'NULL'
 
     # parse check out time info
     try:
         hotel.check_out_time = root.get_element_by_id('checkout_policy').text_content() \
             .encode('utf-8').strip().replace('\n', ' ').replace('"', '""')
     except:
-        hotel.check_out_time = 'NULL'
+        try:
+            check_out_time = root.xpath(
+                '//div[@class="description"]/p[2]/text()')
+            hotel.check_out_time = check_out_time[0].strip().encode('utf-8')
+        except Exception as e:
+            hotel.check_out_time = 'NULL'
 
     print 'checkintime=>%s' % hotel.check_in_time
     # print hotel.check_in_time
@@ -186,7 +261,8 @@ def booking_parser(content, url, other_info):
     # print hotel.check_out_time
     # parse all services at this hotel
     try:
-        service_temp_list = root.get_element_by_id('hp_facilities_box').xpath('div')
+        service_temp_list = root.get_element_by_id('hp_facilities_box').xpath(
+            'div')
         servce_ele_parents = []
         for each_service_parent in service_temp_list:
             try:
@@ -195,7 +271,8 @@ def booking_parser(content, url, other_info):
                     break
             except:
                 continue
-        service_ele_list = root.xpath('//div [@class="facilitiesChecklistSection"]')
+        service_ele_list = root.xpath(
+            '//div [@class="facilitiesChecklistSection"]')
         hotel.service = ''
         for each_service_ele in service_ele_list:
             try:
@@ -204,44 +281,86 @@ def booking_parser(content, url, other_info):
                     if s != '\n':
                         service_item_name = s.strip().decode('utf-8')
                         break
-                service_items = each_service_ele.xpath('ul/li/*/text()')  # \
+                service_items = each_service_ele.xpath('./ul/li//text()') or each_service_ele.xpath('./div/ul/li/text()') # \
+                service_items = [x for x in map(lambda x: x.replace('\n', '').strip().encode('utf-8'), service_items) if x]
+                service_temp = '|'.join(service_items)
+                service_temp = service_item_name + '::' + service_temp + '|'
+                if '停车场' in service_temp:
+                    hotel.has_parking = 'Yes'
+                    if ('付费' or '收费') in service_temp:
+                        hotel.is_parking_free = 'No'
+                    elif '免费' in service_temp:
+                        hotel.is_parking_free = 'Yes'
+                if 'WiFi' in service_temp:
+                    hotel.has_wifi = 'Yes'
+                    if ('付费' or '收费') in service_temp:
+                        hotel.is_wifi_free = 'No'
+                    elif '免费' in service_temp:
+                        hotel.is_wifi_free = 'Yes'
+                hotel.service += service_temp
                 # .strip().encode('utf-8').replace('\n', '')
-                if service_items[0] == '\n':
-                    service_item = each_service_ele.xpath('ul/li/p/span')[0] \
-                        .text_content().strip().encode('utf-8').replace('\n', '')
+                # if service_items[0]:
+                #     service_item = each_service_ele.xpath('ul/li/p/span')[0] \
+                #         .text_content().strip().encode('utf-8').replace('\n', '')
 
-                    if '停车场' in service_item_name:
-                        if '无' not in service_item or '不提供' not in service_items:
-                            hotel.has_parking = 'Yes'
-                        else:
-                            hotel.has_parking = 'No'
+                #     if '停车场' in service_item_name:
+                #         if '无' not in service_item or '不提供' not in service_items:
+                #             hotel.has_parking = 'Yes'
+                #         else:
+                #             hotel.has_parking = 'No'
 
-                        if '免费' in service_item:
-                            hotel.has_parking = 'Yes'
-                            hotel.is_parking_free = 'Yes'
+                #         if '免费' in service_item:
+                #             hotel.has_parking = 'Yes'
+                #             hotel.is_parking_free = 'Yes'
 
-                        if '收费' in service_item:
-                            hotel.has_parking = 'Yes'
-                            hotel.is_parking_free = 'No'
-                    if 'WiFi' in service_item_name:
-                        if 'WiFi' in service_item:
-                            hotel.has_wifi = 'Yes'
-                        if '免费' in service_item:
-                            hotel.is_wifi_free = 'Yes'
-                else:
-                    p = ''
-                    for each in service_items:
-                        p += each + ','
-                    service_item = p[:-1].replace('\n', '')
-
-                hotel.service += service_item_name + '::' + service_item + '|'
+                #         if '收费' in service_item:
+                #             hotel.has_parking = 'Yes'
+                #             hotel.is_parking_free = 'No'
+                #     if 'WiFi' in service_item_name:
+                #         if 'WiFi' in service_item:
+                #             hotel.has_wifi = 'Yes'
+                #         else:
+                #             hotel.has_wifi = 'No'
+                #         if '免费' in service_item:
+                #             hotel.is_wifi_free = 'Yes'
+                #         else:
+                #             hotel.is_wifi_free = 'No'
+                # else:
+                #     p = ''
+                #     for each in service_items:
+                #         p += each + ','
+                #     service_item = p[:-1].replace('\n', '')
             except:
+                '''There is a pit, I step on, the next person to continue'''
                 continue
         # :-1 delete one |
-        hotel.service = hotel.service[:-1].encode('utf-8')  # .replace('||','|').replace('"','""').encode('utf-8')
-    except Exception, e:
-        print str(e)
-        hotel.service = 'NULL'
+        hotel.service = hotel.service[:-1] # .replace('||','|').replace('"','""').encode('utf-8')
+    except:
+        try:
+            elements = root.xpath('//div[@class="hotel_facilities_block"]')
+            service = ''
+            for s in elements:
+                con = s.xpath('./ul[@class="b_newHotelFacilities"]/li/text()') or s.xpath('./p[@class="b_hotelFacilities"]/text()')
+                if not len(con):
+                    continue
+                title = s.xpath('./h3/text()')[0].strip().encode('utf-8')
+                temp = title + '::' + '|'.join(map(lambda x: x.strip().encode('utf-8'), con)) + '|'
+                if '停车场' in temp:
+                    hotel.has_parking = 'Yes'
+                    if ('付费' or '收费') in temp:
+                        hotel.is_parking_free = 'No'
+                    elif '免费' in temp:
+                        hotel.is_parking_free = 'Yes'
+                if 'WiFi' in temp:
+                    hotel.has_wifi = 'Yes'
+                    if ('付费' or '收费') in temp:
+                        hotel.is_wifi_free = 'No'
+                    elif '免费' in temp:
+                        hotel.is_wifi_free = 'Yes'
+                service += temp
+            hotel.service = service[:-1]
+        except Exception as e:
+            hotel.service = 'NULL'
 
     print 'service=>%s' % hotel.service
     # print hotel.service
@@ -266,17 +385,27 @@ def booking_parser(content, url, other_info):
     # new img func
     # if hotel.img_items == '':
     try:
-        # hotelPhoto_str = re.findall('hotelPhotos:([\s\S]+?)]', content)[0] + ']'
-        # hotel.img_items = '|'.join(
-        #     map(lambda x: x.replace('\'', '').strip() + '.jpg',
-        #         re.findall('large_url:([\s\S]+?).jpg', hotelPhoto_str)))
-        hotels_class = root.find_class('hp-gallery-slides hp-gallery-top')[0]
-        img_src = hotels_class.xpath('.//img/@src')[0]
-        img_lazy = hotels_class.xpath('.//img/@data-lazy')
-        img_items = img_src + '|' + '|'.join(img_lazy)
-        hotel.img_items = img_items
-    except Exception, e:
-        hotel.img_items = 'NULL'
+        hotelPhoto_str = re.findall('hotelPhotos:([\s\S]+?)]', content)[0] + ']'
+        hotel.img_items = '|'.join(
+            map(lambda x: x.replace('\'', '').strip() + '.jpg',
+                re.findall('large_url:([\s\S]+?).jpg', hotelPhoto_str)))
+    except:
+        pass
+
+    if hotel.img_items=='' or hotel.img_items=='NULL':
+        try:
+            hotels_class = root.find_class('hp-gallery-slides hp-gallery-top')[0]
+            img_src = hotels_class.xpath('.//img/@src')[0]
+            img_lazy = hotels_class.xpath('.//img/@data-lazy')
+            img_items = img_src + '|' + '|'.join(img_lazy)
+            hotel.img_items = img_items
+        except:
+            try:
+                img_items = root.xpath('//div[@id="b_imgList"]/ul/li/a/@href')
+                img_items = '|'.join(img_items)
+                hotel.img_items = img_items
+            except Exception as e:
+                hotel.img_items = 'NULL'
 
     print 'img_item=>%s' % hotel.img_items
     # print hotel.img_items
@@ -293,16 +422,13 @@ if __name__ == '__main__':
     # url = 'http://www.booking.com/hotel/es/agroturismo-vall-de-pollensa.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATK4AQTIAQTYAQHoAQH4AQuoAgM;sid=04bb4f5be7caced0d2801004dd9e9bec;src=clp;openedLpRecProp=1;ccpi=1'
     # url = 'http://www.booking.com/hotel/es/la-goleta-de-mar-adults-only.zh-cn.html?aid=304142;label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATK4AQTIAQTYAQHoAQH4AQuoAgM;sid=04bb4f5be7caced0d2801004dd9e9bec;dlpvhclck=1'
     # url = 'http://www.booking.com/hotel/gr/boat-in-kalamaki-15-metres-1.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=8bdc392e7d5c8c230273f6a364f8310a;checkin=2017-03-21;checkout=2017-03-22;ucfs=1;highlighted_blocks=123898401_92835396_10_0_0;all_sr_blocks=123898401_92835396_10_0_0;room1=A;hpos=2;dest_type=city;dest_id=-814876;srfid=97c87e489585f18f0756927923581be7fc3f403dX437;from=searchresults;highlight_room='
-    # url = 'http://www.booking.com/hotel/it/oasi-vico-equense.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATLCAQNhYm7IAQTYAQPoAQH4AQuoAgQ;sid=6df7421be6d8966d4ff148ed05dea438;checkin=2016-12-29;checkout=2016-12-30;ucfs=1;highlighted_blocks=100002602_88473711_2_0_0;all_sr_blocks=100002602_88473711_2_0_0;room1=A,A;dest_type=city;dest_id=-125592;srfid=fe305abf9a869839d26b686e379b3e7a54b9bf0eX126;highlight_room=;spdest=ci/-125592;spdist=6.7'
-    # url = 'http://www.booking.com/hotel/it/the-lodge-aosta.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBA-gBAagCBA;sid=5875b6f83ef95de6dae9208343b10797;checkin=2017-04-03;checkout=2017-04-04;ucfs=1;soh=1;highlighted_blocks=;all_sr_blocks=;room1=A,A;soldout=0,0;hpos=9;dest_type=city;dest_id=-110502;srfid=944ba4e83083c5ab51b37424d1cee4c21ce28c1cX144;highlight_room='
-    # url = 'http://www.booking.com/hotel/es/can-tugores.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATLCAQNhYm7IAQTYAQPoAQH4AQuoAgQ;sid=4458f7277f28011d4fd829c21ebcf473;checkin=2016-12-29;checkout=2016-12-30;ucfs=1;soh=1;room1=A,A;soldout=0,0;dest_type=region;dest_id=767;srfid=d5432fd9d9e4890a91197a4a04072ed472b89a03X565;highlight_room='
-    other_info = {
-        'source_id': '1016533',
-        'city_id': '10067'
-    }
+    url = 'http://www.booking.com/hotel/lu/b-amp-b-camping-um-gritt.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=04bb4f5be7caced0d2801004dd9e9bec;dest_id=-1735767;dest_type=city;dist=0;group_adults=2;hpos=1;room1=A%2CA;sb_price_type=total;srfid=8f81a85e275aeac120e90e6988461a380a6c849cX1;type=total;ucfs=1&#hotelTmpl'
+    other_info = {'source_id': '1016533', 'city_id': '10067'}
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-        'Referer': 'http://www.booking.com'
+        'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+        'Referer':
+        'http://www.booking.com'
     }
     page = requests.get(url=url, headers=headers, timeout=30)
     page.encoding = 'utf8'
@@ -311,5 +437,3 @@ if __name__ == '__main__':
 
     # 如果需要，可以在这里用 print 打印 hotel 对象中的内容。也可直接使用 debug 调试查看 result
     print result.address
-    print result.img_items
-    print result.grade
