@@ -962,13 +962,13 @@ if __name__ == '__main__':
     #     get_cities.delay(geo, country_id, offset)
 
     # todo test hotel_list_task
-    # from proj.hotel_list_task import hotel_list_task, hotel_list_database
+    # from proj.hotel_list_task import hotel_list_database
     #
     # # 21147 21378
     # # print hotel_list_database('hoteltravel', '21378')
     # # print hotel_list_database('elong', '21281')
     # # print hotel_list_database('hotels', '21029')
-    # print hotel_list_database('booking', '13108')
+    # print hotel_list_database('booking', '51211')
     # hotel_list_task('hoteltravel', '21447', 'remote_4_test_hotel_list', task_id='asdfasdf')
 
     # todo test qyer poi task
@@ -1012,6 +1012,25 @@ if __name__ == '__main__':
     #         data.append((task_id, worker, args, u'tp_attr_detail_0216'))
     #
     # print insert_task(data=data)
+
+    # from proj.tasks import tp_attr_city_page, tp_rest_city_page, tp_shop_city_page, tp_attr_list_page_num
+    #
+    # data = []
+    # worker = u'daodao_poi_base_data'
+    #
+    # city_id_dict = {
+    #     # '21472': 'http://www.tripadvisor.cn/Tourism-g1137932-Sukau_Kinabatangan_District_Sabah-Vacations.html',
+    #     '13513': 'http://www.tripadvisor.cn/Tourism-g274919-Veszprem_Veszprem_County_Central_Transdanubia-Vacations.html'
+    # }
+    # tp_attr_list_page_num(
+    #     'http://www.tripadvisor.cn/Attractions-g274919-Activities-Veszprem_Veszprem_County_Central_Transdanubia.html',
+    #     '13513', 'tp_attr_list_0411')
+
+    # for k, v in city_id_dict.items():
+    #     if u'Tourism' in v:
+    #         tp_attr_city_page.delay(v.strip(), k, 'tp_attr_list_0411')
+    #         tp_rest_city_page.delay(v.strip(), k, 'tp_rest_list_0411')
+    #         tp_shop_city_page.delay(v.strip(), k, 'tp_shop_list_0411')
 
     # todo qyer poi task init
     # import pandas
@@ -1109,3 +1128,7 @@ if __name__ == '__main__':
     # }
     # hotel_url = u'http://www.booking.com/hotel/ee/aarde-apartments.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBA-gBAagCBA;sid=182e979b96ee436b39da0638a459a059;checkin=2017-04-03;checkout=2017-04-04;ucfs=1;highlighted_blocks=178173702_97225128_2_0_0;all_sr_blocks=178173702_97225128_2_0_0;room1=A,A;hpos=12;dest_type=city;dest_id=-2625660;srfid=03110f676da63ae2e0d632d5ad163716751ccedeX267;highlight_room='
     # hotel_base_data(source, hotel_url, other_info, u'test123')
+
+    from proj.hotel_list_task import hotel_list_database, hotel_list_task
+
+    hotel_list_task(u'agoda', u'13513', u'new_hotel_list_17_04_12_10_11')

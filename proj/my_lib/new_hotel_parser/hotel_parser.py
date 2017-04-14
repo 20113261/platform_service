@@ -44,8 +44,8 @@ def parse_hotel(content, url, other_info, source, part):
     if result.source == 'booking' and (result.img_items == '' or result.img_items == 'NULL'):
         raise TypeError('booking has no img')
 
-    if result.grade in ('NULL', '-1', ''):
-        raise TypeError('Error Grade NULL')
+    # if result.grade in ('NULL', '-1', ''):
+    #     raise TypeError('Error Grade NULL')
 
     result.continent = part
 

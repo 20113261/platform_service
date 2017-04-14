@@ -28,14 +28,12 @@ hotel_rooms_c = {'check_in': '20170803', 'nights': 1, 'rooms': [{'adult': 1, 'ch
 
 def hotel_list_database(source, city_id):
     task = Task()
-    task.extra['hotel'] = hotel_default
-    task.content = str(city_id)
-    spider = factory.get_spider(source, 'hotelList')
+    task.content = str(city_id) + '&' + '2&{nights}&{check_in}'.format(**hotel_rooms)
+    spider = factory.get_spider_by_old_source(source + 'ListHotel')
     spider.task = task
-    return spider.crawl(required=['hotelList_hotel'])
+    print spider.crawl(required=['hotel'])
+    return spider.result
 
-
-#     return spider.crawl()
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
 def hotel_list_task(self, source, city_id, part, **kwargs):
@@ -43,7 +41,7 @@ def hotel_list_task(self, source, city_id, part, **kwargs):
         result = hotel_list_database(source=source, city_id=city_id)
         data = []
         part = part.replace('list', 'detail')
-        for sid, hotel_url in result[0]['hotelList_hotel']:
+        for sid, hotel_url in result['hotel']:
             other_info = {
                 u'source_id': unicode(sid),
                 u'city_id': unicode(city_id)
@@ -65,4 +63,4 @@ def hotel_list_task(self, source, city_id, part, **kwargs):
 
 
 if __name__ == '__main__':
-    print hotel_list_database('elong', '20651')
+    print hotel_list_database('booking', '51211')
