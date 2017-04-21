@@ -1110,3 +1110,39 @@ def tp_shop_detail_page_url(self, page_num_url, city_id, part):
             task_id = get_task_id(worker, args=args)
             data.append((task_id, worker, args, unicode(part).replace(u'list', u'detail')))
     print insert_task(data=data)
+
+
+@app.task(bind=True, max_retries=3, rate_limit='8/m')
+def vote(self):
+    import httplib
+    httplib.HTTPConnection.debuglevel = 1
+    httplib.HTTPSConnection.debuglevel = 1
+    PROXY = get_proxy(source="Platform")
+    proxies = {
+        'http': 'socks5://' + PROXY,
+        'https': 'socks5://' + PROXY
+    }
+    print "Now Proxy is " + PROXY
+    headers = {
+        'User-agent': GetUserAgent(),
+        'Referer': 'http://www.travelmeetingsawards-china.com/Events/Awards2015Business/Readers-Voting/?cat=5',
+        'Host': 'www.travelmeetingsawards-china.com',
+        'Origin': 'http://www.travelmeetingsawards-china.com',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate',
+        'Cookie': 'EktGUID=91ea164d-e2c6-4748-8e31-33c05e6e5439; EkAnalytics=0; ASP.NET_SessionId=piy2livrdw4nb4vulygiet4y; awardvotes=[{"AwardEventID":7,"AwardCategoryID":5,"AwardSubCategoryID":98,"Datetime":"\/Date(1492764048212)\/"}]; s_cc=true; s_nr=1492766246608-New; _ga=GA1.2.1289463038.1492764050; _gat=1; ecm=user_id=0&isMembershipUser=0&site_id=&username=&new_site=/&unique_id=0&site_preview=0&langvalue=0&DefaultLanguage=2052&NavLanguage=2052&LastValidLanguageID=2052&DefaultCurrency=840&SiteCurrency=840&ContType=&UserCulture=1033&dm=www.travelmeetingsawards-china.com&SiteLanguage=2052; s_sq=ntmntmmcchina%3D%2526pid%253D(5105)%252520%2525E8%2525AF%2525BB%2525E8%252580%252585%2525E6%25258A%252595%2525E7%2525A5%2525A8%252520-%2525202017%2525E4%2525B8%2525AD%2525E5%25259B%2525BD%2525E6%252597%252585%2525E6%2525B8%2525B8%2525E4%2525B8%25259A%2525E7%252595%25258C%2525E5%2525A5%252596%2525EF%2525BC%252588%2525E5%252595%252586%2525E5%25258A%2525A1%2525E7%2525B1%2525BB%2525EF%2525BC%252589%2525E8%2525AF%252584%2525E9%252580%252589%252520%25257C%2526pidt%253D1%2526oid%253DVote%252520%2525E6%25258A%252595%2525E7%2525A5%2525A8%2526oidt%253D3%2526ot%253DSUBMIT'
+    }
+
+    data = {
+        '__VIEWSTATE': '/wEPDwUKLTQ0MDg4MzI3MWRkhc6az5DCGMMce+MYab5BPdm3oOCc0QhMXjgPO+KlHJc=',
+        '__VIEWSTATEGENERATOR': 'C57773B4',
+        '__EVENTVALIDATION': '/wEdAApdhN7azgIf7udjNG5rBO36uJWyBmoVrn+KGuzxsc+IdAhrj7iGCUNTOfLFH3a+X2zXZyb9ZhM4Agf2PTEzU0NRt9vByiAtAO532pQGgxLMkPxQ4KIC5CcITHzHErIOKsL+X/4YFsqB/WKj97Ohz20ZIOo7mLBzjoLYCKAW/gNPwcKu4LFvmYccMsvGxcqsoFFypiSNmMf2UIdcHp3gKJUE1+/bEdftTH+meRV6Ro2Ps7Lou2EFvxJCcav33eyACAc=',
+        'ctl00$cphMain$ucVoting$rptVotingList$ctl02$rptTopThreeList$ctl02$btnVote': 'Vote 投票'
+    }
+    session = requests.session()
+    session.proxies = proxies
+    session.headers.update(headers)
+    page = session.get('http://www.travelmeetingsawards-china.com/Events/Awards2015Business/Readers-Voting/?cat=5')
+    page = session.post('http://www.travelmeetingsawards-china.com/Events/Awards2015Business/Readers-Voting/?cat=5',
+                        data=data)
+    return page.text

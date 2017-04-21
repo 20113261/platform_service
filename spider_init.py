@@ -536,7 +536,6 @@ if __name__ == '__main__':
     #     get_lost_poi_image.delay('attr_not_upload_celery', file_name.strip().split('.jpg')[0], src_url.strip())
 
     # todo get_daodao_image
-    # def get_daodao_image_url(self, source_url, mid):
     # from proj.tasks import get_daodao_image_url
     # import db_test
     # import db_114_35_shop
@@ -556,27 +555,40 @@ if __name__ == '__main__':
     #
     # already_set = get_already_mid()
     #
-    # def get_task():
-    #     sql = 'select id,url from chat_shopping'
-    #     for line in db_114_35_shop.QueryBySQL(sql):
-    #         if line['id'] in already_set:
-    #             continue
-    #         url_dict = json.loads(line['url'])
-    #         if 'daodao' in url_dict.keys():
-    #             yield line['id'], url_dict['daodao']
+    #
+    # def get_task(city_id_str, c_type):
+    #     if c_type == 'shop':
+    #         sql = 'select id,url from chat_shopping WHERE city_id in ({0})'.format(city_id_str)
+    #         for line in db_114_35_shop.QueryBySQL(sql):
+    #             if line['id'] in already_set:
+    #                 continue
+    #             url_dict = json.loads(line['url'])
+    #             if 'daodao' in url_dict.keys():
+    #                 yield line['id'], url_dict['daodao']
+    #     elif c_type == 'attr':
+    #         sql = 'select id,url from chat_attraction WHERE city_id in ({0})'.format(city_id_str)
+    #         for line in db_114_35_attr.QueryBySQL(sql):
+    #             if line['id'] in already_set:
+    #                 continue
+    #             url_dict = json.loads(line['url'])
+    #             if 'daodao' in url_dict.keys():
+    #                 yield line['id'], url_dict['daodao']
+    #     elif c_type == 'rest':
+    #         sql = 'select id,res_url from chat_restaurant where source like "%daodao%" and city_id in ({0})'.format(
+    #             city_id_str)
+    #         for line in db_114_35_rest.QueryBySQL(sql):
+    #             if line['id'] not in already_set:
+    #                 yield line['id'], line['res_url']
     #
     #
-    # # def get_task():
-    # #     sql = 'select id,res_url from chat_restaurant where source like "%daodao%" and city_id in ("10415","11534","11555","20045","10423","10426","11512","10427","10024","10059","10158","10242","10428","11529","11530","11531","11532","11552","11557","11560","10443","10109","10281","10300","11322","11527","11543","11548","10039","10110","10123","10133","10135","10140","10180","10192","10194","10408","10483","11123","11266","11517","11518","11541","11546","11553","11556","11564","10487","10494","10094","10147","10182","10199","10226","10249","10729","11338","11365","11537","11554","10141","10230","10075","10540","11535","11545","11550","11558","11561","11563","10055","10126","10152","10222","10315","10324","10541","11211","11549","11559","10549","10550","10551","10553","11528","10555","10556","11516","10561","11522","11523","11524","11525","11096","10186","10190","11544","10402","11070","10066","10080","10137","10155","10187","10272","10282","10303","10384","10388","11164","11413","11533","11536","11547","11562","11526","10598","10615","11488","11519","11520","11521","11542","10058","10060","10087","10129","10205","11429","10314","11300","11540","10067","10069","10125","10130","10150","10163","10183","10208","10210","10219","10221","10224","10263","10275","10356","10656","11106","11269","11513","11514","11515","11538","11539","10040","10044","10105","10139","10162","10232","10674","10680","10683","11010","11398","11405","11468","11551","20393")'
-    # #     for line in db_114_35_rest.QueryBySQL(sql):
-    # #         if line['id'] not in already_set:
-    # #             yield line['id'], line['res_url']
-    #
-    # _count = 0
-    # for mid, source_url in get_task():
-    #     get_daodao_image_url.delay(source_url, mid)
-    #     _count += 1
-    # print _count
+    # city_id_str = '"21472", "13513"'
+    # c_type = 'attr'
+    # for c_type in ['attr', 'rest', 'shop']:
+    #     _count = 0
+    #     for mid, source_url in get_task(city_id_str, c_type):
+    #         get_daodao_image_url.delay(source_url, mid)
+    #         _count += 1
+    #     print _count
 
     # # todo craw_html
     # # test
@@ -1013,7 +1025,9 @@ if __name__ == '__main__':
     #
     # print insert_task(data=data)
 
-    # from proj.tasks import tp_attr_city_page, tp_rest_city_page, tp_shop_city_page, tp_attr_list_page_num
+    # from proj.tasks import tp_attr_city_page, tp_rest_city_page, tp_shop_city_page, tp_attr_list_page_num, \
+    #     tp_shop_list_page_num, get_lost_shop
+
     #
     # data = []
     # worker = u'daodao_poi_base_data'
@@ -1022,9 +1036,17 @@ if __name__ == '__main__':
     #     # '21472': 'http://www.tripadvisor.cn/Tourism-g1137932-Sukau_Kinabatangan_District_Sabah-Vacations.html',
     #     '13513': 'http://www.tripadvisor.cn/Tourism-g274919-Veszprem_Veszprem_County_Central_Transdanubia-Vacations.html'
     # }
-    # tp_attr_list_page_num(
+    # tp_shop_city_page(
     #     'http://www.tripadvisor.cn/Attractions-g274919-Activities-Veszprem_Veszprem_County_Central_Transdanubia.html',
     #     '13513', 'tp_attr_list_0411')
+
+    # tp_shop_list_page_num(
+    #     'https://www.tripadvisor.cn/Attractions-g274919-Activities-c26-Veszprem_Veszprem_County_Central_Transdanubia.html',
+    #     '13513', 'tp_shop_list_0411')
+
+    # get_lost_shop(
+    #     'https://www.tripadvisor.cn/Attraction_Review-g274919-d6854618-Reviews-Balaton_Plaza-Veszprem_Veszprem_County_Central_Transdanubia.html',
+    #     '13513', task_id='')
 
     # for k, v in city_id_dict.items():
     #     if u'Tourism' in v:
@@ -1129,6 +1151,17 @@ if __name__ == '__main__':
     # hotel_url = u'http://www.booking.com/hotel/ee/aarde-apartments.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBA-gBAagCBA;sid=182e979b96ee436b39da0638a459a059;checkin=2017-04-03;checkout=2017-04-04;ucfs=1;highlighted_blocks=178173702_97225128_2_0_0;all_sr_blocks=178173702_97225128_2_0_0;room1=A,A;hpos=12;dest_type=city;dest_id=-2625660;srfid=03110f676da63ae2e0d632d5ad163716751ccedeX267;highlight_room='
     # hotel_base_data(source, hotel_url, other_info, u'test123')
 
-    from proj.hotel_list_task import hotel_list_database, hotel_list_task
+    # from proj.hotel_list_task import hotel_list_database, hotel_list_task
+    #
+    # hotel_list_task(u'agoda', u'13513', u'new_hotel_list_17_04_12_10_11')
 
-    hotel_list_task(u'agoda', u'13513', u'new_hotel_list_17_04_12_10_11')
+    # todo vote
+    from proj.tasks import vote
+
+    for i in range(100000):
+        vote.delay()
+
+    # for i in range(1000):
+    #     vote.delay()
+    # for i in range(100000):
+    #     vote.delay()
