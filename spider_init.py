@@ -1156,10 +1156,20 @@ if __name__ == '__main__':
     # hotel_list_task(u'agoda', u'13513', u'new_hotel_list_17_04_12_10_11')
 
     # todo vote
-    from proj.tasks import vote
+    # from proj.tasks import vote
+    #
+    # for i in range(100000):
+    #     vote.delay()
+    # from proj.tasks import vote
+    # print vote()
 
-    for i in range(100000):
-        vote.delay()
+    from proj.tasks import vote_workflow, save_ip, vote
+
+    # save_ip('192.168.1.1')
+    # vote.apply_async((2, 2), link=save_ip.s())
+    for i in range(50000):
+        vote.apply_async()
+    # vote_workflow()
 
     # for i in range(1000):
     #     vote.delay()
