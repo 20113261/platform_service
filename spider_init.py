@@ -1151,9 +1151,9 @@ if __name__ == '__main__':
     # hotel_url = u'http://www.booking.com/hotel/ee/aarde-apartments.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBA-gBAagCBA;sid=182e979b96ee436b39da0638a459a059;checkin=2017-04-03;checkout=2017-04-04;ucfs=1;highlighted_blocks=178173702_97225128_2_0_0;all_sr_blocks=178173702_97225128_2_0_0;room1=A,A;hpos=12;dest_type=city;dest_id=-2625660;srfid=03110f676da63ae2e0d632d5ad163716751ccedeX267;highlight_room='
     # hotel_base_data(source, hotel_url, other_info, u'test123')
 
-    # from proj.hotel_list_task import hotel_list_database, hotel_list_task
+    from proj.hotel_list_task import hotel_list_database, hotel_list_task
     #
-    # hotel_list_task(u'agoda', u'13513', u'new_hotel_list_17_04_12_10_11')
+    hotel_list_task.delay(u'agoda', u'13513', u'test_new_123')
 
     # todo vote
     # from proj.tasks import vote
@@ -1163,12 +1163,12 @@ if __name__ == '__main__':
     # from proj.tasks import vote
     # print vote()
 
-    from proj.tasks import vote_workflow, save_ip, vote
-
-    # save_ip('192.168.1.1')
-    # vote.apply_async((2, 2), link=save_ip.s())
-    for i in range(50000):
-        vote.apply_async()
+    # from proj.tasks import vote_workflow, save_ip, vote
+    #
+    # # save_ip('192.168.1.1')
+    # # vote.apply_async((2, 2), link=save_ip.s())
+    # for i in range(50000):
+    #     vote.apply_async()
     # vote_workflow()
 
     # for i in range(1000):

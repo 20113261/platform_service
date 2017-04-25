@@ -1154,7 +1154,6 @@ def vote(self):
     page = session.get('http://www.travelmeetingsawards-china.com/Events/Awards2015Business/Readers-Voting/?cat=5')
     page = session.post('http://www.travelmeetingsawards-china.com/Events/Awards2015Business/Readers-Voting/?cat=5',
                         data=data)
-    # save_ip.apply_async((out_ip,))
     save_ip(out_ip)
     return out_ip
 
@@ -1165,8 +1164,3 @@ def save_ip(self, ip_address):
     with conn as cursor:
         cursor.execute('INSERT INTO ip_used (`ip_address`) VALUES (%s)', (ip_address,))
     conn.close()
-
-
-def vote_workflow():
-    flow = (vote.s(debug=True) | save_ip.s(debug=True))
-    return flow()
