@@ -25,9 +25,6 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
     }
 
     try:
-        page = requests.get(url, proxies=proxies, headers=headers, timeout=240)
-        page.encoding = 'utf8'
-        content = page.text
         # agoda 特殊情况 start
 
         if source == 'agoda':
@@ -47,18 +44,25 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         # venere end
 
         # booking start
-
-        headers['Referer'] = 'http://www.booking.com'
+        if source == 'booking':
+            headers['Referer'] = 'http://www.booking.com'
 
         # booking end
-        save_file(kwargs['task_id'], self.request.id, content)
+        page = requests.get(url, headers=headers, proxies=proxies, timeout=240)
+        page.encoding = 'utf8'
+        content = page.text
+
+        if kwargs.get('task_id'):
+            save_file(kwargs['task_id'], self.request.id, content)
+
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
 
         if not result:
             update_proxy('Platform', PROXY, x, '23')
             self.retry(exc=Exception('db error'))
         else:
-            update_task(kwargs['task_id'])
+            if kwargs.get('task_id'):
+                update_task(kwargs['task_id'])
             print "Success with " + PROXY + ' CODE 0'
             update_proxy('Platform', PROXY, x, '0')
         return result

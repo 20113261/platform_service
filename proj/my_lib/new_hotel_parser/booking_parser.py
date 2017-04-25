@@ -8,6 +8,7 @@ import requests
 from lxml import html as HTML
 
 from data_obj import Hotel
+from common.common import get_proxy
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -64,8 +65,8 @@ def booking_parser(content, url, other_info):
                 hotel.hotel_name = name_temp
             except Exception as e:
                 print '----------', str(e)
-            # return hotel_tuple
-            # print 'vvvvvvvvvvvvvvvvv'
+                # return hotel_tuple
+                # print 'vvvvvvvvvvvvvvvvv'
     print 'hotel_name=>%s' % hotel.hotel_name
     # print hotel.hotel_name
     # 解析酒店品牌名称
@@ -90,11 +91,11 @@ def booking_parser(content, url, other_info):
         try:
             map_infos = root.xpath(
                 '//span[contains(@class , "hp_address_subtitle")]/@data-bbox')[
-                    0].strip().split(',')
+                0].strip().split(',')
             hotel.map_info = str(
                 float(float(map_infos[0]) + float(map_infos[2])) /
                 2.0) + ',' + str(
-                    float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
+                float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
         except Exception, e:
             print str(e)
             try:
@@ -105,7 +106,7 @@ def booking_parser(content, url, other_info):
                 hotel.map_info = str(
                     float(float(map_infos[0]) + float(map_infos[2])) /
                     2.0) + ',' + str(
-                        float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
+                    float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
             except Exception, e:
                 map_infos = root.xpath('//a[@id="show_map"]/@data-coords')
                 map_infos = str(map_infos[0]).split(',')
@@ -169,8 +170,8 @@ def booking_parser(content, url, other_info):
         hotel.review_num = re_start
     except:
         try:
-             re_start = root.xpath('//div[@class="location_score_tooltip"]/p[1]/small/strong/text()')[0]
-             hotel.review_num = int(re_start)
+            re_start = root.xpath('//div[@class="location_score_tooltip"]/p[1]/small/strong/text()')[0]
+            hotel.review_num = int(re_start)
         except:
             try:
                 re_num = root.xpath(
@@ -281,8 +282,10 @@ def booking_parser(content, url, other_info):
                     if s != '\n':
                         service_item_name = s.strip().decode('utf-8')
                         break
-                service_items = each_service_ele.xpath('./ul/li//text()') or each_service_ele.xpath('./div/ul/li/text()') # \
-                service_items = [x for x in map(lambda x: x.replace('\n', '').strip().encode('utf-8'), service_items) if x]
+                service_items = each_service_ele.xpath('./ul/li//text()') or each_service_ele.xpath(
+                    './div/ul/li/text()')  # \
+                service_items = [x for x in map(lambda x: x.replace('\n', '').strip().encode('utf-8'), service_items) if
+                                 x]
                 service_temp = '|'.join(service_items)
                 service_temp = service_item_name + '::' + service_temp + '|'
                 if '停车场' in service_temp:
@@ -334,13 +337,14 @@ def booking_parser(content, url, other_info):
                 '''There is a pit, I step on, the next person to continue'''
                 continue
         # :-1 delete one |
-        hotel.service = hotel.service[:-1] # .replace('||','|').replace('"','""').encode('utf-8')
+        hotel.service = hotel.service[:-1]  # .replace('||','|').replace('"','""').encode('utf-8')
     except:
         try:
             elements = root.xpath('//div[@class="hotel_facilities_block"]')
             service = ''
             for s in elements:
-                con = s.xpath('./ul[@class="b_newHotelFacilities"]/li/text()') or s.xpath('./p[@class="b_hotelFacilities"]/text()')
+                con = s.xpath('./ul[@class="b_newHotelFacilities"]/li/text()') or s.xpath(
+                    './p[@class="b_hotelFacilities"]/text()')
                 if not len(con):
                     continue
                 title = s.xpath('./h3/text()')[0].strip().encode('utf-8')
@@ -392,7 +396,7 @@ def booking_parser(content, url, other_info):
     except:
         pass
 
-    if hotel.img_items=='' or hotel.img_items=='NULL':
+    if hotel.img_items == '' or hotel.img_items == 'NULL':
         try:
             hotels_class = root.find_class('hp-gallery-slides hp-gallery-top')[0]
             img_src = hotels_class.xpath('.//img/@src')[0]
@@ -422,15 +426,22 @@ if __name__ == '__main__':
     # url = 'http://www.booking.com/hotel/es/agroturismo-vall-de-pollensa.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATK4AQTIAQTYAQHoAQH4AQuoAgM;sid=04bb4f5be7caced0d2801004dd9e9bec;src=clp;openedLpRecProp=1;ccpi=1'
     # url = 'http://www.booking.com/hotel/es/la-goleta-de-mar-adults-only.zh-cn.html?aid=304142;label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATK4AQTIAQTYAQHoAQH4AQuoAgM;sid=04bb4f5be7caced0d2801004dd9e9bec;dlpvhclck=1'
     # url = 'http://www.booking.com/hotel/gr/boat-in-kalamaki-15-metres-1.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=8bdc392e7d5c8c230273f6a364f8310a;checkin=2017-03-21;checkout=2017-03-22;ucfs=1;highlighted_blocks=123898401_92835396_10_0_0;all_sr_blocks=123898401_92835396_10_0_0;room1=A;hpos=2;dest_type=city;dest_id=-814876;srfid=97c87e489585f18f0756927923581be7fc3f403dX437;from=searchresults;highlight_room='
-    url = 'http://www.booking.com/hotel/lu/b-amp-b-camping-um-gritt.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=04bb4f5be7caced0d2801004dd9e9bec;dest_id=-1735767;dest_type=city;dist=0;group_adults=2;hpos=1;room1=A%2CA;sb_price_type=total;srfid=8f81a85e275aeac120e90e6988461a380a6c849cX1;type=total;ucfs=1&#hotelTmpl'
+    # url = 'http://www.booking.com/hotel/lu/b-amp-b-camping-um-gritt.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=04bb4f5be7caced0d2801004dd9e9bec;dest_id=-1735767;dest_type=city;dist=0;group_adults=2;hpos=1;room1=A%2CA;sb_price_type=total;srfid=8f81a85e275aeac120e90e6988461a380a6c849cX1;type=total;ucfs=1&#hotelTmpl'
+    # url = 'https://www.booking.com/hotel/th/happy-ville-1.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=760b4b8ac503b49f5d89e67ec36a2fa9;all_sr_blocks=206063304_100081577_2_0_0;checkin=2017-08-03;checkout=2017-08-04;dest_id=-3255732;dest_type=city;dist=0;highlighted_blocks=206063304_100081577_2_0_0;hpos=3;room1=A%2CA;sb_price_type=total;srfid=7078e96d0aca48337ba20a54f0a96429386a2fcfX3;type=total;ucfs=1&#hotelTmpl'
+    url = 'http://www.booking.com/hotel/th/baan-siripornchai.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=1ed4c8a52860a4f5a93489f7b31a8863;checkin=2017-08-03;checkout=2017-08-04;ucfs=1;highlighted_blocks=206274801_98817269_2_0_0;all_sr_blocks=206274801_98817269_2_0_0;room1=A%2CA;hpos=4;dest_type=city;dest_id=-3255732;srfid=7078e96d0aca48337ba20a54f0a96429386a2fcfX4;from=searchresults;highlight_room=#hotelTmpl'
     other_info = {'source_id': '1016533', 'city_id': '10067'}
     headers = {
         'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
         'Referer':
-        'http://www.booking.com'
+            'http://www.booking.com'
     }
-    page = requests.get(url=url, headers=headers, timeout=30)
+    PROXY = get_proxy(source="Platform")
+    proxies = {
+        'http': 'socks5://' + PROXY,
+        'https': 'socks5://' + PROXY
+    }
+    page = requests.get(url=url, headers=headers, proxies=proxies, timeout=30)
     page.encoding = 'utf8'
     content = page.content
     result = booking_parser(content, url, other_info)
