@@ -15,6 +15,7 @@ from proj.tasks import get_hotel_images_info
 from proj.poi_nearby_city_task import poi_nearby_city_task
 from proj.tasks import get_daodao_image_url
 from proj.daodao_img_rename_tasks import daodao_img_rename_task
+from proj.hotel_tax_task import hotel_tax_list_task, hotel_tax_detail
 
 
 def add_target(task_url, miaoji_id, special_str, **kwargs):
@@ -127,6 +128,15 @@ if __name__ == '__main__':
         if worker == 'daodao_img_rename_task':
             daodao_img_rename_task.delay(args['file_name'], args['src_path'], args['dst_path'], args['bucket_name'],
                                          args['img_url'], args['mid'], args['table_name'], task_id=task_id)
+            _count += 1
+
+        # todo hotel tax task
+        if worker == 'hotel_tax_list_task':
+            hotel_tax_list_task.delay(args['source'], args['city_id'], args['part'], task_id=task_id)
+            _count += 1
+
+        if worker == 'hotel_tax_detail':
+            hotel_tax_detail.delay(args['task_content'], args['city_id'], task_id=task_id)
             _count += 1
 
     print _count

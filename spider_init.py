@@ -1154,17 +1154,17 @@ if __name__ == '__main__':
     # from proj.hotel_list_task import hotel_list_database, hotel_list_task
     # #
     # hotel_list_task.delay(u'agoda', u'13513', u'test_new_123')
-    from proj.hotel_tasks import hotel_base_data
-
-    source = 'booking'
+    # from proj.hotel_tasks import hotel_base_data
+    #
+    # source = 'booking'
+    # # url = 'http://www.booking.com/hotel/th/fondness.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=1ed4c8a52860a4f5a93489f7b31a8863;checkin=2017-08-03;checkout=2017-08-04;ucfs=1;highlighted_blocks=202844501_94738597_2_0_0;all_sr_blocks=202844501_94738597_2_0_0;room1=A%2CA;hpos=1;dest_type=city;dest_id=-3255732;srfid=7078e96d0aca48337ba20a54f0a96429386a2fcfX1;from=searchresults;highlight_room=#hotelTmpl'
     # url = 'http://www.booking.com/hotel/th/fondness.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=1ed4c8a52860a4f5a93489f7b31a8863;checkin=2017-08-03;checkout=2017-08-04;ucfs=1;highlighted_blocks=202844501_94738597_2_0_0;all_sr_blocks=202844501_94738597_2_0_0;room1=A%2CA;hpos=1;dest_type=city;dest_id=-3255732;srfid=7078e96d0aca48337ba20a54f0a96429386a2fcfX1;from=searchresults;highlight_room=#hotelTmpl'
-    url = 'http://www.booking.com/hotel/th/fondness.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=1ed4c8a52860a4f5a93489f7b31a8863;checkin=2017-08-03;checkout=2017-08-04;ucfs=1;highlighted_blocks=202844501_94738597_2_0_0;all_sr_blocks=202844501_94738597_2_0_0;room1=A%2CA;hpos=1;dest_type=city;dest_id=-3255732;srfid=7078e96d0aca48337ba20a54f0a96429386a2fcfX1;from=searchresults;highlight_room=#hotelTmpl'
-    other_info = {
-        'source_id': 'test',
-        'city_id': 'test'
-    }
-
-    hotel_base_data(source, url, other_info, 'test')
+    # other_info = {
+    #     'source_id': 'test',
+    #     'city_id': 'test'
+    # }
+    #
+    # hotel_base_data(source, url, other_info, 'test')
 
     # todo vote
     # from proj.tasks import vote
@@ -1186,3 +1186,18 @@ if __name__ == '__main__':
     #     vote.delay()
     # for i in range(100000):
     #     vote.delay()
+
+    # from proj.tasks import vote
+    #
+    # for i in range(50000):
+    #     vote.delay()
+
+    # todo Expedia Tax
+    from proj.hotel_tax_task import hotel_tax_list_task, hotel_tax_detail
+
+    hotel_tax_list_task('expedia', '10001', 'test')
+    #
+    # hotel_url = "https://www.expedia.com.hk/cn/Hotels-Hotel-Romance-Malesherbes-By-Patrick-Hayat.h1753932.Hotel-Information?chkin=2017%2F5%2F20&chkout=2017%2F5%2F21&rm1=a2&regionId=0&hwrqCacheKey=95ac5f10-6c82-4163-9959-901ddc9c674aHWRQ1493094040336&vip=false&c=1993f64d-88df-4719-a274-c3cf51ad721f&&exp_dp=885.37&exp_ts=1493094041525&exp_curr=HKD&exp_pg=HSR"
+    # task_content = hotel_url.split('?')[0] + "?&1&20170910"
+    #
+    # print hotel_tax_detail(task_content, '10001', 'test')
