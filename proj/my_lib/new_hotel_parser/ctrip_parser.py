@@ -40,13 +40,12 @@ def ctrip_parser(page, url, other_info):
         print str(e)
     print root
     try:
-        hotel_name = root.xpath('//*[@class="name"]/text()')[0].encode('utf-8').strip()
-        k = hotel_name.find('(')
-        hotel.hotel_name_en = hotel_name[:k]
-        hotel.hotel_name = hotel_name[k:].replace('(', '').replace(')', '').strip()
-        if k == -1:
-            hotel.hotel_name = hotel_name.strip()
-            hotel.hotel_name_en = hotel_name.strip()
+        hotel.hotel_name = root.xpath('//*[@class="name"]/text()')[0].encode('utf-8').strip()
+    except Exception, e:
+        traceback.print_exc(e)
+
+    try:
+        hotel.hotel_name_en = root.xpath('//*[@class="name"]/span/text()')[0].encode('utf8').strip()
     except Exception, e:
         traceback.print_exc(e)
 
@@ -226,7 +225,7 @@ def ctrip_parser(page, url, other_info):
 
 
 if __name__ == '__main__':
-    url = 'http://hotels.ctrip.com/international/1039433.html'
+    url = 'http://hotels.ctrip.com/international/1000813.html'
     other_info = {
         'source_id': '1039433',
         'city_id': '10074'
@@ -235,7 +234,7 @@ if __name__ == '__main__':
     page.encoding = 'utf8'
     content = page.text
     result = ctrip_parser(content, url, other_info)
-
+    '''
     try:
         session = DBSession()
         session.add(result)
@@ -243,3 +242,4 @@ if __name__ == '__main__':
         session.close()
     except Exception as e:
         print str(e)
+    '''
