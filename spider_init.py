@@ -1187,15 +1187,15 @@ if __name__ == '__main__':
     # for i in range(100000):
     #     vote.delay()
 
-    # from proj.tasks import vote
-    #
-    # for i in range(50000):
-    #     vote.delay()
+    from proj.tasks import vote
+
+    for i in range(50000):
+        vote.delay()
 
     # todo Expedia Tax
-    from proj.hotel_tax_task import hotel_tax_list_task, hotel_tax_detail
-
-    hotel_tax_list_task('expedia', '10001', 'test')
+    # from proj.hotel_tax_task import hotel_tax_list_task, hotel_tax_detail
+    #
+    # hotel_tax_list_task('expedia', '10001', 'test')
     #
     # hotel_url = "https://www.expedia.com.hk/cn/Hotels-Hotel-Romance-Malesherbes-By-Patrick-Hayat.h1753932.Hotel-Information?chkin=2017%2F5%2F20&chkout=2017%2F5%2F21&rm1=a2&regionId=0&hwrqCacheKey=95ac5f10-6c82-4163-9959-901ddc9c674aHWRQ1493094040336&vip=false&c=1993f64d-88df-4719-a274-c3cf51ad721f&&exp_dp=885.37&exp_ts=1493094041525&exp_curr=HKD&exp_pg=HSR"
     # task_content = hotel_url.split('?')[0] + "?&1&20170910"
