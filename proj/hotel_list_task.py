@@ -47,6 +47,11 @@ def hotel_list_task(self, source, city_id, part, **kwargs):
                 u'city_id': unicode(city_id)
             }
             worker = u'hotel_base_data'
+            if source == 'booking':
+                try:
+                    hotel_url = hotel_url.split('?')[0]
+                except Exception:
+                    pass
             args = json.dumps(
                 {u'source': unicode(source), u'hotel_url': unicode(hotel_url), u'other_info': other_info,
                  u'part': unicode(part)})
