@@ -25,7 +25,7 @@ def get_task(worker=None, limit=30000):
 def get_task_total(limit=30000):
     conn = MySQLdb.connect(host='localhost', user='hourong', passwd='hourong', db='Task', charset="utf8")
     with conn as cursor:
-        sql = 'select id,args,used_times,worker from Task where finished=0 and used_times<5 order by priority desc ,update_time limit {0}'.format(
+        sql = 'select id,args,used_times,worker from Task where finished=0 and used_times<10 order by priority desc ,update_time limit {0}'.format(
             limit)
         update_sql = 'update Task set used_times=%s where id=%s'
         cursor.execute(sql)

@@ -13,11 +13,11 @@ from .celery import app
 from .my_lib.BaseTask import BaseTask
 from .my_lib.task_module.task_func import update_task, insert_task, get_task_id
 from mioji import spider_factory
-from mioji.common.utils import simple_get_http_proxy
+from mioji.common.utils import simple_get_socks_proxy
 
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
-get_proxy = simple_get_http_proxy
+get_proxy = simple_get_socks_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug)
 
