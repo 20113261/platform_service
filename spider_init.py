@@ -1189,7 +1189,7 @@ if __name__ == '__main__':
 
     from proj.tasks import vote
 
-    for i in range(50000):
+    for i in range(5000):
         vote.delay()
 
     # todo Expedia Tax

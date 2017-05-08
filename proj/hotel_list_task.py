@@ -47,7 +47,7 @@ def hotel_list_task(self, source, city_id, part, **kwargs):
                 u'city_id': unicode(city_id)
             }
             worker = u'hotel_base_data'
-            if source == 'booking':
+            if '?' in hotel_url:
                 try:
                     hotel_url = hotel_url.split('?')[0]
                 except Exception:

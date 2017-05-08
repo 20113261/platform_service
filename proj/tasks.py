@@ -1154,13 +1154,13 @@ def vote(self):
     page = session.get('http://www.travelmeetingsawards-china.com/Events/Awards2015Business/Readers-Voting/?cat=5')
     page = session.post('http://www.travelmeetingsawards-china.com/Events/Awards2015Business/Readers-Voting/?cat=5',
                         data=data)
-    save_ip(out_ip)
+    save_ip(out_ip, PROXY)
     return out_ip
 
 
 @app.task(bind=True, max_retries=3)
-def save_ip(self, ip_address):
+def save_ip(self, ip_address, local_proxy):
     conn = pymysql.connect(host='10.10.180.145', user='hourong', password='hourong', charset='utf8', db='IP')
     with conn as cursor:
-        cursor.execute('INSERT INTO ip_used (`ip_address`) VALUES (%s)', (ip_address,))
+        cursor.execute('INSERT INTO ip_used (`ip_address`, `local_proxy`) VALUES (%s, %s)', (ip_address, local_proxy))
     conn.close()
