@@ -43,7 +43,6 @@ def orbitz_parser(content, url, other_info):
             if hotel_name == '':
                 hotel_name = hotel_name_en
 
-
         hotel.hotel_name = hotel_name
         hotel.hotel_name_en = hotel_name_en
     except Exception, e:
@@ -184,6 +183,7 @@ def orbitz_parser(content, url, other_info):
         # hotel.map_info = map_info
         map_temp = re.findall(r'\"latlong\": \"(.*)\",', content)[0].encode('utf-8').split(',')
         map_info = map_temp[1] + ',' + map_temp[0]
+        hotel.map_info = map_info
     except Exception, e:
         map_info = 'NULL'
         print str(e)

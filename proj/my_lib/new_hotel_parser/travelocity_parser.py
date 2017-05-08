@@ -183,6 +183,7 @@ def travelocity_parser(content, url, other_info):
         # hotel.map_info = map_info
         map_temp = re.findall(r'\"latlong\": \"(.*)\",', content)[0].encode('utf-8').split(',')
         map_info = map_temp[1] + ',' + map_temp[0]
+        hotel.map_info = map_info
     except Exception, e:
         map_info = 'NULL'
         print str(e)

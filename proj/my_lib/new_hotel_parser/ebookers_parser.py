@@ -183,6 +183,7 @@ def ebookers_parser(content, url, other_info):
         # hotel.map_info = map_info
         map_temp = re.findall(r'\"latlong\": \"(.*)\",', content)[0].encode('utf-8').split(',')
         map_info = map_temp[1] + ',' + map_temp[0]
+        hotel.map_info = map_info
     except Exception, e:
         map_info = 'NULL'
         print str(e)
@@ -258,7 +259,8 @@ def encode_unicode(str):
 
 if __name__ == '__main__':
     # url = 'https://www.ebookers.com/Bruges-Woodlands-Hotels-Holiday-Park-Klein-Strand-Campground.h10000570.Hotel-Information?chkin=20%2F09%2F16&chkout=21%2F09%2F16&rm1=a3&hwrqCacheKey=935100a1-cb64-4bda-9c46-811850889621HWRQ1470785225733&c=03251cf4-f9ce-4d16-a4c8-e00d2f2ec790&'
-    url = 'https://www.expedia.cn/cn/Tainan-Hotels-The-Vintage-Maison-Tainan.h13323178.Hotel-Information'
+    # url = 'https://www.expedia.cn/cn/Tainan-Hotels-The-Vintage-Maison-Tainan.h13323178.Hotel-Information'
+    url = 'https://www.cheaptickets.com/Madrid-Hotels-Apartamentos-APR-Numancia.h7697796.Hotel-Information?chkin=03%2F24%2F2016&chkout=03%2F25%2F2016&rm1=a2&hwrqCacheKey=bc9d8860-f48b-4ecd-a279-930d9c6f586fHWRQ1457401312310&c=d72da196-df90-49cf-8049-1cb2dc1ed4bd&'
     other_info = {
         'source_id': '10000570',
         'city_id': '10041'
