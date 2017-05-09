@@ -38,9 +38,6 @@ def parse_hotel(content, url, other_info, source, part):
     if result.map_info in ('NULL', ''):
         raise TypeError('Error map_info NULL')
 
-    if result.address in ('NULL', ''):
-        raise TypeError('Error address NULL')
-
     if result.source == 'booking' and (result.img_items == '' or result.img_items == 'NULL'):
         raise TypeError('booking has no img')
 

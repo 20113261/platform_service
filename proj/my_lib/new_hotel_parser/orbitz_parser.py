@@ -43,6 +43,12 @@ def orbitz_parser(content, url, other_info):
             if hotel_name == '':
                 hotel_name = hotel_name_en
 
+        if hotel_name_en == hotel_name:
+            all_res = re.findall(u'([\u4e00-\u9fff]+)', unicode(hotel_name))
+            if len(all_res) != 0:
+                hotel_name_en = hotel_name.split(all_res[0].encode())[-1]
+                hotel_name = hotel_name.replace(hotel_name_en, '')
+
         hotel.hotel_name = hotel_name
         hotel.hotel_name_en = hotel_name_en
     except Exception, e:

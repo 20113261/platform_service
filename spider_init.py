@@ -1096,7 +1096,11 @@ if __name__ == '__main__':
     #         poi_nearby_city_task.delay(poi_id=mid, poi_city_id=m_city_id, poi_map_info=map_info, task_id='abcd')
     #         _count += 1
     # print _count
+    from proj.hotel_list_task import hotel_list_database
 
+    res = hotel_list_database('booking', '30154')
+    print res
+    print len(res)
     # todo test_daodao_img_rename task
 
     # def get_task():
@@ -1187,10 +1191,10 @@ if __name__ == '__main__':
     # for i in range(100000):
     #     vote.delay()
 
-    from proj.tasks import vote
-
-    for i in range(5000):
-        vote.delay()
+    # from proj.tasks import vote
+    #
+    # for i in range(5000):
+    #     vote.delay()
 
     # todo Expedia Tax
     # from proj.hotel_tax_task import hotel_tax_list_task, hotel_tax_detail

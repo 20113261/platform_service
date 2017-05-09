@@ -43,6 +43,12 @@ def ebookers_parser(content, url, other_info):
             if hotel_name == '':
                 hotel_name = hotel_name_en
 
+        if hotel_name_en == hotel_name:
+            all_res = re.findall(u'([\u4e00-\u9fff]+)', unicode(hotel_name))
+            if len(all_res) != 0:
+                hotel_name_en = hotel_name.split(all_res[0].encode())[-1]
+                hotel_name = hotel_name.replace(hotel_name_en, '')
+
         hotel.hotel_name = hotel_name
         hotel.hotel_name_en = hotel_name_en
     except Exception, e:
@@ -260,6 +266,7 @@ def encode_unicode(str):
 if __name__ == '__main__':
     # url = 'https://www.ebookers.com/Bruges-Woodlands-Hotels-Holiday-Park-Klein-Strand-Campground.h10000570.Hotel-Information?chkin=20%2F09%2F16&chkout=21%2F09%2F16&rm1=a3&hwrqCacheKey=935100a1-cb64-4bda-9c46-811850889621HWRQ1470785225733&c=03251cf4-f9ce-4d16-a4c8-e00d2f2ec790&'
     # url = 'https://www.expedia.cn/cn/Tainan-Hotels-The-Vintage-Maison-Tainan.h13323178.Hotel-Information'
+    # url = 'https://www.cheaptickets.com/Madrid-Hotels-Apartamentos-APR-Numancia.h7697796.Hotel-Information?chkin=03%2F24%2F2016&chkout=03%2F25%2F2016&rm1=a2&hwrqCacheKey=bc9d8860-f48b-4ecd-a279-930d9c6f586fHWRQ1457401312310&c=d72da196-df90-49cf-8049-1cb2dc1ed4bd&'
     url = 'https://www.cheaptickets.com/Madrid-Hotels-Apartamentos-APR-Numancia.h7697796.Hotel-Information?chkin=03%2F24%2F2016&chkout=03%2F25%2F2016&rm1=a2&hwrqCacheKey=bc9d8860-f48b-4ecd-a279-930d9c6f586fHWRQ1457401312310&c=d72da196-df90-49cf-8049-1cb2dc1ed4bd&'
     other_info = {
         'source_id': '10000570',
@@ -270,6 +277,9 @@ if __name__ == '__main__':
     page.encoding = 'utf8'
     content = page.text
     result = ebookers_parser(content, url, other_info)
+
+    print '#' * 100
+    print result.map_info
 
     # try:
     #     session = DBSession()
