@@ -14,16 +14,18 @@ from .my_lib.BaseTask import BaseTask
 from .my_lib.task_module.task_func import update_task, insert_task, get_task_id
 from mioji import spider_factory
 from mioji.common.utils import simple_get_socks_proxy
+import mioji.common.spider
 
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
 get_proxy = simple_get_socks_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug)
+mioji.common.spider.NEED_FLIP_LIMIT = False
 
-hotel_default = {'check_in': '20180103', 'nights': 1, 'rooms': [{}]}
-hotel_rooms = {'check_in': '20180103', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
-hotel_rooms_c = {'check_in': '20180103', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
+hotel_default = {'check_in': '20170703', 'nights': 1, 'rooms': [{}]}
+hotel_rooms = {'check_in': '20170703', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
+hotel_rooms_c = {'check_in': '20170703', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
 
 
 def hotel_list_database(source, city_id):

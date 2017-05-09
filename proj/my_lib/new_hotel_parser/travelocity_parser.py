@@ -38,10 +38,15 @@ def travelocity_parser(content, url, other_info):
         hotel_name_en = encode_unicode(eng_pattern.findall(name_all)[0])
         hotel_name = encode_unicode(name_all.split(name_en)[0])
 
-        if hotel_name.endswith(hotel_name_en):
-            hotel_name = hotel_name.replace(hotel_name_en, '').strip()
-            if hotel_name == '':
-                hotel_name = hotel_name_en
+        # 保存酒店名称
+        hotel.brand_name = hotel_name + '|' + hotel_name_en
+
+        # 处理酒店名称
+        if len(re.findall(u'([\u4e00-\u9fff]+)', unicode(hotel_name))) > 0:
+            if hotel_name.endswith(hotel_name_en):
+                hotel_name = hotel_name.replace(hotel_name_en, '').strip()
+                if hotel_name == '':
+                    hotel_name = hotel_name_en
 
         if hotel_name_en == hotel_name:
             all_res = re.findall(u'([\u4e00-\u9fff]+)', unicode(hotel_name))
@@ -53,7 +58,7 @@ def travelocity_parser(content, url, other_info):
         hotel.hotel_name_en = hotel_name_en
     except Exception, e:
         print str(e)
-    # logger.info('begin parse the expedia!!!')
+    print 'hotel_brand_name=>%s' % hotel.brand_name
     print 'hotel_name=>%s' % hotel.hotel_name
     print 'hotel_name_en=>%s' % hotel.hotel_name_en
     try:

@@ -1096,11 +1096,13 @@ if __name__ == '__main__':
     #         poi_nearby_city_task.delay(poi_id=mid, poi_city_id=m_city_id, poi_map_info=map_info, task_id='abcd')
     #         _count += 1
     # print _count
-    from proj.hotel_list_task import hotel_list_database
+    from proj.hotel_list_task import hotel_list_database, hotel_list_task
 
-    res = hotel_list_database('booking', '30154')
-    print res
-    print len(res)
+    # res = hotel_list_database('agoda', '10262')
+    # print res
+    # print len(res)
+    # hotel_list_task(u'booking', u'11703', u'new_hotel_list_17_05_06_08_59', task_id='52fe0d90408ede4becdb65684b731a04')
+    hotel_list_task(u'hotels', u'50197', u'new_hotel_list_17_05_06_08_59', task_id='cb49ad556aeb3dab4818d1758fbb5a90')
     # todo test_daodao_img_rename task
 
     # def get_task():

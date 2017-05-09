@@ -2,6 +2,7 @@ import pymysql
 import json
 import redis
 import socket
+import time
 from celery.task import Task
 
 
@@ -28,6 +29,8 @@ class BaseTask(Task):
             celery_task_id = task_id
             task_id = kwargs.get('task_id', '')
             kwargs.pop('task_id', None)
+            kwargs['local_ip'] = get_local_ip()
+            kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
             cursor.execute(
                 'INSERT INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
                 (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))

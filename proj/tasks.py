@@ -1113,7 +1113,7 @@ def tp_shop_detail_page_url(self, page_num_url, city_id, part):
     print insert_task(data=data)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='8/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='24/m')
 def vote(self):
     import httplib
     httplib.HTTPConnection.debuglevel = 1
