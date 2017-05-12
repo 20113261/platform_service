@@ -1,3 +1,4 @@
+# coding=utf-8
 import json
 import hashlib
 import MySQLdb
@@ -28,10 +29,27 @@ def get_task_total(limit=30000):
         sql = 'select id,args,used_times,worker from Task where finished=0 and used_times<10 order by priority desc ,update_time limit {0}'.format(
             limit)
         update_sql = 'update Task set used_times=%s where id=%s'
-        cursor.execute(sql)
+        res_count = cursor.execute(sql)
         for line in cursor.fetchall():
             cursor.execute(update_sql, (line[2] + 1, line[0]))
             yield line[0], json.loads(line[1]), line[3]
+
+        # 获得 Important 任务列表
+        important_task_set = set()
+        cursor.execute('select task_name from ImportantTask')
+        for line in cursor.fetchall():
+            important_task_set.add(line[0])
+
+        # 增加 Important 任务，直到成功为止
+        if res_count < 1000:
+            sql = 'select id,args,used_times,worker from Task where finished=0 AND task_name={1} order by priority desc ,update_time limit {0}'.format(
+                limit, ','.join(map(lambda x: '"' + x + '"', important_task_set)))
+            update_sql = 'update Task set used_times=%s where id=%s'
+            cursor.execute(sql)
+            for line in cursor.fetchall():
+                cursor.execute(update_sql, (line[2] + 1, line[0]))
+                yield line[0], json.loads(line[1]), line[3]
+
     conn.close()
 
 
@@ -47,8 +65,9 @@ def insert_task(data):
     conn = MySQLdb.connect(host='10.10.180.145', user='hourong', passwd='hourong', db='Task', charset="utf8")
     sql = 'insert ignore into Task (`id`,`worker`,`args`,`priority`, `task_name`) VALUES (%s, %s, %s, 3, %s)'
     with conn as cursor:
-        cursor.executemany(sql, data)
+        res = cursor.executemany(sql, data)
     conn.close()
+    return res
 
 
 if __name__ == '__main__':

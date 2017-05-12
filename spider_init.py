@@ -1102,7 +1102,16 @@ if __name__ == '__main__':
     # print res
     # print len(res)
     # hotel_list_task(u'booking', u'11703', u'new_hotel_list_17_05_06_08_59', task_id='52fe0d90408ede4becdb65684b731a04')
-    hotel_list_task(u'hotels', u'50197', u'new_hotel_list_17_05_06_08_59', task_id='cb49ad556aeb3dab4818d1758fbb5a90')
+    # hotel_list_task(u'hotels', u'50197', u'new_hotel_list_17_05_06_08_59', task_id='cb49ad556aeb3dab4818d1758fbb5a90')
+    # hotel_list_task.delay(u'booking', u'12408', u'new_hotel_list_17_05_06_08_59', task_id='579345c72392ac484b186ffd8a514388')
+    # hotel_list_task(u'booking', u'10812', u'new_hotel_list_17_05_06_08_59', task_id='5a32df12a1ddcd420d500e90f3e0a6f0')
+    # hotel_list_task(u'expedia', u'50288', u'new_hotel_list_17_05_06_08_59', task_id='66d7380714502bbfe9c6979bf94f6d85')
+    # hotel_list_database(u'hotels', u'12227')
+    # 10373	hoteltravel	166	13	0.07831325	65	0.39156626506
+    # 51378	expedia	99	51	0.51515152	84	0.848484848485
+    # res = hotel_list_database(u'agoda', u'10001')
+    # res = hotel_list_database(u'booking', u'12384')
+    # print 'Hello World'
     # todo test_daodao_img_rename task
 
     # def get_task():

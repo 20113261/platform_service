@@ -40,7 +40,7 @@ def agoda_parser(content, url, other_info):
     try:
         k = hotel_name.find('(')
         # print k
-        hotel.hotel_name = hotel_name[:k]
+        hotel.hotel_name = hotel_name[:k if k != -1 else None]
     except Exception, e:
         # print str(e)
         hotel.hotel_name = 'NULL'
@@ -48,7 +48,7 @@ def agoda_parser(content, url, other_info):
     # print hotel.hotel_name
 
     try:
-        hotel.hotel_name_en = hotel_name[k + 1:-1]
+        hotel.hotel_name_en = hotel_name[k + 1 if k != -1 else None:-1 if k != -1 else None]
     except Exception, e:
         hotel.hotel_name_en = 'NULL'
         # print str(e)
@@ -160,11 +160,25 @@ def agoda_parser(content, url, other_info):
 
 
 if __name__ == '__main__':
+    from util.UserAgent import GetUserAgent
+    from common.common import get_proxy
+
+    PROXY = get_proxy(source="Platform")
+    proxies = {
+        'http': 'socks5://' + PROXY,
+        'https': 'socks5://' + PROXY
+    }
     headers = {
-        # 'User-agent': GetUserAgent(),
+        'User-agent': GetUserAgent()
+    }
+    headers = {
+        'User-agent': GetUserAgent(),
         'Host': 'www.agoda.com'
     }
-    url = 'http://www.agoda.com/city-backpacker-biber/hotel/all/zurich-ch.html?checkin=2016-12-28&los=1&adults=1&rooms=1&cid=-1&searchrequestid=b31690e6-b5b6-4fb2-a924-b1daa147e9ae'
+    # url = 'http://www.agoda.com/city-backpacker-biber/hotel/all/zurich-ch.html?checkin=2016-12-28&los=1&adults=1&rooms=1&cid=-1&searchrequestid=b31690e6-b5b6-4fb2-a924-b1daa147e9ae'
+    # url = 'https://www.agoda.com/zh-cn/tropical-palms-elite-two-bedroom-cottage-104/hotel/all/orlando-fl-us.html?checkin=2017-08-03&los=1&adults=1&rooms=1&cid=-1&searchrequestid=3083d8d6-bbfe-45fd-a47c-2e5aa50b99a2'
+    # url = 'https://www.agoda.com/zh-cn/tropical-palms-elite-two-bedroom-cottage-104/hotel/all/orlando-fl-us.html?checkin=2017-08-03&los=1&adults=1&rooms=1&cid=-1&searchrequestid=3083d8d6-bbfe-45fd-a47c-2e5aa50b99a2'
+    url = 'https://www.agoda.com/zh-cn/tropical-palms-elite-two-bedroom-cottage-104/hotel/orlando-fl-us.html?asq=AbQz%2FJFl%2FcBA96vs5%2Fi%2FsKR3foYRS4x3%2F4l3z6pYa26QxEZ3vNxq0q36TUBn%2BpiKKVwQksJRNjhBbE6hOoyfwo4hZxgFVEtNaFLVyhOu6FnvZdIRAOWrnOYDO7qzRDkDXiyX8%2F8HJ3jSDjfHoaOyVQO0w7eSm%2B7cRtAD45wellgsMqeQTY%2FB1d0%2FmNL8J%2FOjkqBRDmLeOBeebtAGQt1SQjGopgB0OGhZuTdGK4p8iOg%3D&hotel=1705901&tick=636301764578&pagetypeid=7&origin=CN&cid=-1&tag=&gclid=&aid=130243&userId=eda0f3f0-783f-4202-8592-5e7f3ec626fd&languageId=8&sessionId=rsci0zuyujepom000loqtfso&storefrontId=3&currencyCode=CNY&htmlLanguage=zh-cn&trafficType=User&cultureInfoName=zh-CN&checkIn=2017-10-04&checkout=2017-10-05&los=1&rooms=1&adults=1&childs=0&ckuid=eda0f3f0-783f-4202-8592-5e7f3ec626fd'
     url = url.replace('www.agoda.com', 'www.agoda.com/zh-cn')
     other_info = {
         'source_id': '1006311',

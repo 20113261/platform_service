@@ -6,6 +6,8 @@ Created on 2017年2月8日
 
 @author: dujun
 '''
+from __future__ import absolute_import
+from celery.utils.log import get_task_logger
 import json
 from mioji.spider_factory import factory
 from mioji.common.task_info import Task
@@ -15,6 +17,7 @@ from .my_lib.task_module.task_func import update_task, insert_task, get_task_id
 from mioji import spider_factory
 from mioji.common.utils import simple_get_socks_proxy
 import mioji.common.spider
+import mioji.common.logger
 
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
@@ -23,9 +26,12 @@ debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug)
 mioji.common.spider.NEED_FLIP_LIMIT = False
 
-hotel_default = {'check_in': '20170703', 'nights': 1, 'rooms': [{}]}
-hotel_rooms = {'check_in': '20170703', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
-hotel_rooms_c = {'check_in': '20170703', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
+logger = get_task_logger(__name__)
+mioji.common.logger.logger = logger
+
+hotel_default = {'check_in': '20170903', 'nights': 1, 'rooms': [{}]}
+hotel_rooms = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
+hotel_rooms_c = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
 
 
 def hotel_list_database(source, city_id):
@@ -37,7 +43,7 @@ def hotel_list_database(source, city_id):
     return spider.result
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='7/s')
 def hotel_list_task(self, source, city_id, part, **kwargs):
     try:
         result = hotel_list_database(source=source, city_id=city_id)
@@ -49,11 +55,12 @@ def hotel_list_task(self, source, city_id, part, **kwargs):
                 u'city_id': unicode(city_id)
             }
             worker = u'hotel_base_data'
-            if '?' in hotel_url:
-                try:
-                    hotel_url = hotel_url.split('?')[0]
-                except Exception:
-                    pass
+            if source in (u'booking', u'expedia'):
+                if '?' in hotel_url:
+                    try:
+                        hotel_url = hotel_url.split('?')[0]
+                    except Exception:
+                        pass
             args = json.dumps(
                 {u'source': unicode(source), u'hotel_url': unicode(hotel_url), u'other_info': other_info,
                  u'part': unicode(part)})

@@ -4,6 +4,7 @@ from celery import Celery
 from celery.signals import setup_logging
 import logging
 from logging.handlers import RotatingFileHandler
+import mioji.common.logger
 
 app = Celery('proj', include=['proj.tasks',
                               'proj.hotel_tasks',
@@ -28,6 +29,10 @@ def initialize_logger(loglevel=logging.INFO, **kwargs):
         maxBytes=100 * 1024 * 1024,
         backupCount=10
     )
+    log = logging.getLogger('newframe')
+    log.addHandler(handler)
+    log.setLevel(logging.DEBUG)
+
     log = logging.getLogger('celery')
     log.addHandler(handler)
     log.setLevel(loglevel)
