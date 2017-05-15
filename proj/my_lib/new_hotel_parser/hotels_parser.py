@@ -7,7 +7,7 @@ import re
 import requests
 from lxml import html as HTML
 
-from data_obj import Hotel #, DBSession
+from data_obj import Hotel  # , DBSession
 
 star_pat = re.compile(r'在此页面中显示为 (.*) 星')
 num_pat = re.compile(r'\d+')
@@ -25,27 +25,39 @@ def hotels_parser(content, url, other_info):
     content = content.decode('utf-8')
     root = HTML.fromstring(content)
     try:
-        name_temp = root.xpath('//*[@class="vcard"]/h1/text()')[0].encode('utf-8')
-        # print name_temp
+        name_temp = root.xpath('// div[@class="widget-query-group widget-query-destination"]/input/@value')[0]
     except Exception, e:
         print str(e)
 
     try:
         hotel.hotel_name = name_temp.split('(')[0].strip().encode('utf-8')
         print 'hotel_name=>%s' % hotel.hotel_name
-        # print hotel.hotel_name
         try:
-            hotel.hotel_name_en = name_temp.split('(')[1].replace(')', '').strip().encode('utf-8')
-        except:
-            hotel.hotel_name_en = 'NULL'
-        # hotel.source_id = root.xpath('//*[@id="roomdesc_mainContainerSize1"]/input[1]/@value')[0]
+            hotel.hotel_name_en = re.findall('\(([\s\S]+?)\)', name_temp)[0].strip().encode('utf-8')
+        except Exception:
+            pass
         print 'hotel_name_en=>%s' % hotel.hotel_name_en
-        # print hotel.hotel_name_en
     except Exception, e:
         print str(e)
-        # return hotel_tuple
-    # print 'hotel.hotel_name_en'
-    # print hotel.hotel_name_en
+
+    if hotel.hotel_name_en == 'NULL' and hotel.hotel_name == 'NULL':
+        try:
+            name_temp = root.xpath('//*[@class="vcard"]/h1/text()')[0].encode('utf-8')
+        except Exception, e:
+            print str(e)
+
+        try:
+            hotel.hotel_name = name_temp.split('(')[0].strip().encode('utf-8')
+            print 'hotel_name=>%s' % hotel.hotel_name
+            try:
+                hotel.hotel_name_en = name_temp.split('(')[1].replace(')', '').strip().encode('utf-8')
+            except Exception:
+                hotel.hotel_name_en = 'NULL'
+            # hotel.source_id = root.xpath('//*[@id="roomdesc_mainContainerSize1"]/input[1]/@value')[0]
+            print 'hotel_name_en=>%s' % hotel.hotel_name_en
+        except Exception, e:
+            print str(e)
+
     try:
         hotel.address = root.find_class('postal-addr')[0].text_content() \
             .encode('utf-8').strip().replace('\n', '').replace('  ', '')
@@ -158,9 +170,9 @@ def hotels_parser(content, url, other_info):
                 title += li.strip().encode('utf-8') + ','
             # delete last comma
             service += title[:-1] + '|'
-        # service_list = root.find_class('main-amenities two-columned')[0].xpath('ul/li')
-        # for each in service_list:
-        #     service += each.text_content().encode('utf-8').strip() + '|'
+            # service_list = root.find_class('main-amenities two-columned')[0].xpath('ul/li')
+            # for each in service_list:
+            #     service += each.text_content().encode('utf-8').strip() + '|'
     except Exception, e:
         print str(e)
         hotel.service = 'NULL'
@@ -200,11 +212,11 @@ def hotels_parser(content, url, other_info):
         else:
             hotel.has_parking = 'No'
             hotel.is_parking_free = 'No'
-        # if car_text.find('免费自助停车'):
-        #     hotel.has_parking = 'Yes'
-        #     hotel.is_parking_free = 'Yes'
-        # if car_text.find('停车场'):
-        #     hotel.has_parking = 'Yes'
+            # if car_text.find('免费自助停车'):
+            #     hotel.has_parking = 'Yes'
+            #     hotel.is_parking_free = 'Yes'
+            # if car_text.find('停车场'):
+            #     hotel.has_parking = 'Yes'
     except Exception, e:
         print str(e)
         hotel.has_parking = 'NULL'
@@ -240,8 +252,9 @@ def hotels_parser(content, url, other_info):
 
 
 if __name__ == '__main__':
-    url = 'http://www.hotels.cn/hotel/details.html?WOE=2&q-localised-check-out=2015-11-10&WOD=1&q-room-0-children=0&pa=252&tab=description&q-localised-check-in=2015-11-09&hotel-id=119538&q-room-0-adults=2&YGF=14&MGT=1&ZSX=0&SYE=3'
+    # url = 'http://www.hotels.cn/hotel/details.html?WOE=2&q-localised-check-out=2015-11-10&WOD=1&q-room-0-children=0&pa=252&tab=description&q-localised-check-in=2015-11-09&hotel-id=119538&q-room-0-adults=2&YGF=14&MGT=1&ZSX=0&SYE=3'
     # url = 'https://ssl.hotels.cn/hotel/details.html?pa=1&tab=description&hotel-id=430714&q-room-0-adults=2&ZSX=0&SYE=3&q-room-0-children=0'
+    url = 'https://zh.hotels.com/ho182001/?MGT=1&SYE=3&WOD=6&WOE=7&YGF=14&ZSX=0&pa=188&q-check-in=2017-06-03&q-check-out=2017-06-04&q-room-0-adults=2&q-room-0-children=0&tab=description'
     other_info = {
         'source_id': '119538',
         'city_id': '10001'

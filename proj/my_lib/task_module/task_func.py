@@ -42,8 +42,9 @@ def get_task_total(limit=30000):
 
         # 增加 Important 任务，直到成功为止
         if res_count < 1000:
-            sql = 'select id,args,used_times,worker from Task where finished=0 AND task_name={1} order by priority desc ,update_time limit {0}'.format(
+            sql = 'select id,args,used_times,worker from Task where finished=0 AND task_name in ({1}) order by priority desc ,update_time limit {0}'.format(
                 limit, ','.join(map(lambda x: '"' + x + '"', important_task_set)))
+            print sql
             update_sql = 'update Task set used_times=%s where id=%s'
             cursor.execute(sql)
             for line in cursor.fetchall():
