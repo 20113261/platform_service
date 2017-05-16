@@ -1,5 +1,6 @@
 # coding=utf-8
 import time
+import re
 
 import requests
 from common.common import get_proxy, update_proxy
@@ -25,6 +26,11 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
     }
 
     try:
+        # hotels
+        if source == 'hotels':
+            hotel_id = re.findall('hotel-id=(\d+)', url)[0]
+            url = 'http://zh.hotels.com/hotel/details.html?hotel-id=' + hotel_id
+
         # agoda 特殊情况 start
 
         if source == 'agoda':
