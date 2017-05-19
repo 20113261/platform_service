@@ -1,3 +1,4 @@
+# coding=utf-8
 import agoda_parser
 import booking_parser
 import cheaptickets_parser
@@ -23,10 +24,10 @@ def parse_hotel(content, url, other_info, source, part):
         'hotels': hotels_parser.hotels_parser,
         'hoteltravel': hoteltravel_parser.hoteltravel_parser,
         'hrs': hrs_parser.hrs_parser,
-        'cheaptickets': cheaptickets_parser.cheaptickets_parser,
-        'orbitz': orbitz_parser.orbitz_parser,
-        'travelocity': travelocity_parser.travelocity_parser,
-        'ebookers': ebookers_parser.ebookers_parser,
+        'cheaptickets': expedia_parser.expedia_parser,
+        'orbitz': expedia_parser.expedia_parser,
+        'travelocity': expedia_parser.expedia_parser,
+        'ebookers': expedia_parser.expedia_parser,
     }
     if source not in function_dict.keys():
         raise TypeError('Error Parser Source')
@@ -48,6 +49,9 @@ def parse_hotel(content, url, other_info, source, part):
     #     raise TypeError('Error Grade NULL')
 
     result.continent = part
+
+    # expedia 五个源设置 source
+    result.source = source
 
     task_finished = False
     session = DBSession()
