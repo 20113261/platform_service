@@ -225,7 +225,7 @@ def ctrip_parser(page, url, other_info):
 
 
 if __name__ == '__main__':
-    url = 'http://hotels.ctrip.com/international/1000813.html'
+    url = 'http://hotels.ctrip.com/international/992466.html'
     other_info = {
         'source_id': '1039433',
         'city_id': '10074'

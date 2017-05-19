@@ -102,7 +102,7 @@ def hotels_parser(content, url, other_info):
     # print hotel.star
     try:
         hotel.grade = root.find_class('rating')[0].xpath('strong/text()')[0]
-        hotel.grade = float(hotel.grade) * 2
+        hotel.grade = float(hotel.grade)
     except Exception, e:
         print str(e)
         hotel.grade = -1.0

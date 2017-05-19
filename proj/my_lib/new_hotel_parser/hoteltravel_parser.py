@@ -80,7 +80,7 @@ def hoteltravel_parser(page, url, other_info):
     try:
         pattern = re.compile('rating-point">(.*?)/5</span>')
         match = pattern.findall(page)
-        hotel.grade = float(str(match[0])) * 2
+        hotel.grade = float(str(match[0]))
     except:
         try:
             temp_grade = root.find_class('col-xs-4 col-sm-6 col-md-6 nopadding')[0].xpath('span/text()')[0]
@@ -209,7 +209,8 @@ def hoteltravel_parser(page, url, other_info):
 
 
 if __name__ == '__main__':
-    url = 'http://www.hoteltravel.com/canada/banff/bandff_voyager.htm#reviews'
+    # url = 'http://www.hoteltravel.com/canada/banff/bandff_voyager.htm#reviews'
+    url = 'http://www.hoteltravel.com/cn/albania/sarande/apollon_hotel_srmapo_h.htm'
     other_info = {
         'source_id': 'canada/banff/bandff_voyager.htm',
         'city_id': '50846'

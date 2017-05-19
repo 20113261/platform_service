@@ -87,7 +87,7 @@ def expedia_parser(content, url, other_info):
     print 'address=>%s' % hotel.address
     try:
         grade = root.find_class('guest-rating')[0].find_class('rating-number')[0].text_content()
-        hotel.grade = float(grade) * 2
+        hotel.grade = float(grade)
     except Exception, e:
         print str(e)
 
@@ -274,7 +274,8 @@ if __name__ == '__main__':
     # url = 'https://www.expedia.cn/cn/Red-Lodge-Hotels-Rock-Creek-Resort.h4738480.Hotel-Information?chkin=2017%2F03%2F10&chkout=2017%2F03%2F11&rm1=a2&regionId=0&hwrqCacheKey=1b1ae982-7ce1-495b-8e39-95fda9024720HWRQ1489143096310&vip=false&c=f14b28c2-998c-4ed9-be72-b832c4eb08ff&&exp_dp=1071.2&exp_ts=1489143098007&exp_curr=CNY&exp_pg=HSR'
     # url = 'https://www.expedia.cn/cn/Billings-Hotels-Yellowstone-River-Lodge.h13180651.Hotel-Information?chkin=2017%2F03%2F10&chkout=2017%2F03%2F11&rm1=a2&regionId=0&hwrqCacheKey=1b1ae982-7ce1-495b-8e39-95fda9024720HWRQ1489143192290&vip=false&c=4c8a0d41-19d1-4a60-8cef-757c92a29e97&'
     # url = 'https://www.expedia.cn/cn/Tainan-Hotels-The-Vintage-Maison-Tainan.h13323178.Hotel-Information'
-    url = 'https://www.expedia.cn/h15421134.Hotel-Information'
+    # url = 'https://www.expedia.cn/h15421134.Hotel-Information'
+    url = 'https://www.expedia.com.hk/cn/h9999647.Hotel-Information'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'
