@@ -36,14 +36,26 @@ def parse_hotel(content, url, other_info, source, part):
     result = parser(content, url, other_info)
 
     # key words check
-    if result.map_info.upper() in ('NULL', ''):
-        raise TypeError('Error map_info NULL')
+    if result.map_info is not None:
+        if result.map_info.upper() in ('NULL', ''):
+            raise TypeError('Error map_info NULL')
 
-    if result.hotel_name.upper() in ('NULL', '') and result.hotel_name_en.upper() in ('NULL', ''):
+    hotel_name_none = False
+    hotel_name_en_none = False
+    if result.hotel_name is not None:
+        if result.hotel_name.upper() in ('NULL', ''):
+            hotel_name_none = True
+    if result.hotel_name_en is not None:
+        if result.hotel_name_en.upper() in ('NULL', ''):
+            hotel_name_en_none = True
+
+    if hotel_name_none and hotel_name_en_none:
         raise TypeError('Error hotel_name and hotel_name_en Both NULL')
 
-    if result.source == 'booking' and result.img_items.upper() in ('NULL', ''):
-        raise TypeError('booking has no img')
+    if result.source == 'booking':
+        if result.img_items is not None:
+            if result.img_items.upper() in ('NULL', ''):
+                raise TypeError('booking has no img')
 
     # if result.grade in ('NULL', '-1', ''):
     #     raise TypeError('Error Grade NULL')
