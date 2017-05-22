@@ -33,9 +33,11 @@ def agoda_parser(content, url, other_info):
 
     try:
         hotel_name = root.xpath('//*[@id="hotelname"]/text()')[0].encode('utf-8').strip()
-        # print hotel_name
     except Exception, e:
-        print str(e)
+        try:
+            hotel_name = root.xpath('//title/text()')[0].split('-')[0][:-1]
+        except Exception, e:
+            print str(e)
 
     try:
         k = hotel_name.find('(')
@@ -186,9 +188,10 @@ if __name__ == '__main__':
         'source_id': '1006311',
         'city_id': '11164'
     }
-    page = requests.get(url=url, headers=headers)
-    page.encoding = 'utf8'
-    content = page.text
+    # page = requests.get(url=url, headers=headers)
+    # page.encoding = 'utf8'
+    # content = page.text
+    content = open('/tmp/0970f333-3fd4-4e78-928f-edeb48a83968_0.html').read()
 
     url_about = 'https://www.agoda.com/NewSite/zh-cn/Hotel/AboutHotel?hotelId={0}&languageId=8&hasBcomChildPolicy=False'.format(
         other_info['source_id'])
