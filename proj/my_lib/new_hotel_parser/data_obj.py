@@ -36,11 +36,12 @@ class Hotel(Base):
     check_out_time = Column(String(128), default='NULL')
     hotel_url = Column(String(1024), default='NULL')
     continent = Column(String(96), default='NULL')
-    update_time = Column(TIMESTAMP, default=datetime.datetime.now, onupdate=datetime.datetime, index=True)
+    update_time = Column(TIMESTAMP, default=datetime.datetime.now, onupdate=datetime.datetime.now, index=True)
 
 
 # 初始化数据库连接:
-engine = create_engine('mysql+mysqlconnector://hourong:hourong@10.10.180.145:3306/hotel_adding')
+engine = create_engine('mysql+mysqlconnector://hourong:hourong@10.10.180.145:3306/hotel_adding',
+                       encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
 # 创建DBSession类型:
 DBSession = sessionmaker(bind=engine)
 

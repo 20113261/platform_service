@@ -32,14 +32,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             url = 'http://zh.hotels.com/hotel/details.html?hotel-id=' + hotel_id
 
         # agoda 特殊情况 start
-
-        if source == 'agoda':
-            url_about = 'https://www.agoda.com/NewSite/zh-cn/Hotel/AboutHotel?hotelId={0}&languageId=8&hasBcomChildPolicy=False'.format(
-                other_info['source_id'])
-            page_about = requests.get(url=url_about, headers=headers)
-            page_about.encoding = 'utf8'
-            about_content = page_about.text
-            other_info['about_content'] = about_content
+        # 转移 agoda 位置，防止 queue 挂掉
 
         # agoda end
 

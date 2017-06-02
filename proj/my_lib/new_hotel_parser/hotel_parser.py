@@ -72,7 +72,7 @@ def parse_hotel(content, url, other_info, source, part):
     session.close()
     task_finished = True
 
-    return task_finished
+    return task_finished, result.__dict__
 
 
 if __name__ == '__main__':
