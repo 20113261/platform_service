@@ -66,10 +66,10 @@ def parse_hotel(content, url, other_info, source, part):
     result.source = source
 
     task_finished = False
-    session = DBSession()
-    session.merge(result)
-    session.commit()
-    session.close()
+    # session = DBSession()
+    # session.merge(result)
+    # session.commit()
+    # session.close()
     task_finished = True
 
     return task_finished, result.__dict__
@@ -89,6 +89,8 @@ if __name__ == '__main__':
         'source_id': 'test',
         'city_id': 'test'
     }
+    url = 'https://www.agoda.com/zh-cn/hotel-piena-kobe/hotel/kobe-jp.html'
+    source = 'agoda'
 
     page = requests.get(url)
     page.encoding = 'utf8'
