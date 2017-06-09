@@ -13,6 +13,7 @@ import db_localhost
 import os
 import re
 import requests
+from celery.utils.log import logger
 from celery import platforms
 from common.common import get_proxy, update_proxy, save_image
 from lxml import html
@@ -310,7 +311,7 @@ def get_lost_rest_no_proxy(self, target_url):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='10/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='5/s')
 def get_images(self, source, target_url, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
@@ -322,7 +323,7 @@ def get_images(self, source, target_url, **kwargs):
         'User-agent': GetUserAgent()
     }
     try:
-        page = requests.get(target_url, headers=headers, proxies=proxies, timeout=120)
+        page = requests.get(target_url, headers=headers, proxies=proxies, timeout=(120, None))
         f = StringIO(page.content)
         flag, h, w = is_complete_scale_ok(f)
         file_name = hashlib.md5(target_url).hexdigest()
@@ -338,6 +339,7 @@ def get_images(self, source, target_url, **kwargs):
             update_proxy('Platform', PROXY, x, '0')
         return flag, h, w, file_name
     except Exception as exc:
+        logger.exception(exc.message)
         update_proxy('Platform', PROXY, x, '22')
         print "Image Error with Proxy " + PROXY + ' used time ' + str(time.time() - x)
         self.retry(exc=exc, countdown=2)

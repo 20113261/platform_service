@@ -1,10 +1,14 @@
 from __future__ import absolute_import
 
-from celery import Celery
+from celery import Celery, platforms
+from celery.app.log import TaskFormatter, get_current_task
+import sys
 from celery.signals import setup_logging
 import logging
 from logging.handlers import RotatingFileHandler
 import mioji.common.logger
+
+platforms.C_FORCE_ROOT = True
 
 app = Celery('proj', include=['proj.tasks',
                               'proj.hotel_tasks',
@@ -18,9 +22,43 @@ app = Celery('proj', include=['proj.tasks',
                               'proj.qyer_attr_task',
                               'proj.poi_nearby_city_task',
                               'proj.daodao_img_rename_tasks',
-                              #'proj.hotel_tax_task'
+                              # 'proj.hotel_tax_task'
                               ])
 app.config_from_object('proj.config')
+
+
+class StreamToLogger(object):
+    """
+    Fake file-like stream object that redirects writes to a logger instance.
+    """
+
+    def __init__(self, logger, log_level=logging.INFO):
+        self.logger = logger
+        self.log_level = log_level
+        self.linebuf = ''
+
+    def write(self, buf):
+        for line in buf.rstrip().splitlines():
+            self.logger.log(self.log_level, line.rstrip())
+
+
+class StdoutFormatter(logging.Formatter):
+    """Format Log For Stdout"""
+
+    def __init__(self):
+        self.fmt = "%(asctime)-15s %(threadName)s %(filename)s:%(lineno)d %(levelname)s name[%(task_name)s]" \
+                   " id[%(task_id)s] %(message)s"
+        super(StdoutFormatter, self).__init__(self.fmt)
+
+    def format(self, record):
+        task = get_current_task()
+        if task and task.request:
+            record.__dict__.update(task_id=task.request.id,
+                                   task_name=task.name)
+        else:
+            record.__dict__.setdefault('task_name', '???')
+            record.__dict__.setdefault('task_id', '???')
+            return logging.Formatter.format(self, record)
 
 
 def initialize_logger(loglevel=logging.INFO, **kwargs):
@@ -29,6 +67,21 @@ def initialize_logger(loglevel=logging.INFO, **kwargs):
         maxBytes=100 * 1024 * 1024,
         backupCount=10
     )
+    fmt = "%(asctime)-15s %(threadName)s %(filename)s:%(lineno)d %(levelname)s %(message)s"
+    formatter = logging.Formatter(fmt)
+    handler.setFormatter(formatter)
+
+    stdout_logger = logging.getLogger('STDOUT')
+    sl = StreamToLogger(stdout_logger, logging.INFO)
+    sys.stdout = sl
+
+    stderr_logger = logging.getLogger('STDERR')
+    sl = StreamToLogger(stderr_logger, logging.ERROR)
+    sys.stderr = sl
+
+    stdout_logger.addHandler(handler)
+    stderr_logger.addHandler(handler)
+
     log = logging.getLogger('newframe')
     log.addHandler(handler)
     log.setLevel(logging.DEBUG)

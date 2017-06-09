@@ -3,7 +3,10 @@ import json
 import redis
 import socket
 import time
+from celery.app.log import get_logger
 from celery.task import Task
+
+logger = get_logger(__name__)
 
 
 def get_local_ip():
@@ -46,9 +49,13 @@ class BaseTask(Task):
             celery_task_id = task_id
             task_id = kwargs.get('task_id', '')
             kwargs.pop('task_id', None)
-            cursor.execute(
-                'INSERT INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
-                (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))
+            try:
+                cursor.execute(
+                    'INSERT INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
+                    (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))
+            except Exception as exception:
+                logger.exception(str(exception.message))
+
         conn.close()
 
 
