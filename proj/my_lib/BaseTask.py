@@ -34,9 +34,12 @@ class BaseTask(Task):
             kwargs.pop('task_id', None)
             kwargs['local_ip'] = get_local_ip()
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
-            cursor.execute(
-                'INSERT INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
-                (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))
+            try:
+                cursor.execute(
+                    'INSERT INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
+                    (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))
+            except Exception as e:
+                logger.exception(str(e))
         conn.close()
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
