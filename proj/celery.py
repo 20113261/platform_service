@@ -27,22 +27,22 @@ app = Celery('proj', include=['proj.tasks',
 app.config_from_object('proj.config')
 
 
-class StreamToLogger(object):
-    """
-    Fake file-like stream object that redirects writes to a logger instance.
-    """
-
-    def __init__(self, logger, log_level=logging.INFO):
-        self.logger = logger
-        self.log_level = log_level
-        self.linebuf = ''
-
-    def write(self, buf):
-        for line in buf.rstrip().splitlines():
-            self.logger.log(self.log_level, line.rstrip())
-
-    def flush(self):
-        pass
+# class StreamToLogger(object):
+#     """
+#     Fake file-like stream object that redirects writes to a logger instance.
+#     """
+#
+#     def __init__(self, logger, log_level=logging.INFO):
+#         self.logger = logger
+#         self.log_level = log_level
+#         self.linebuf = ''
+#
+#     def write(self, buf):
+#         for line in buf.rstrip().splitlines():
+#             self.logger.log(self.log_level, line.rstrip())
+#
+#     def flush(self):
+#         pass
 
 
 class StdoutFormatter(logging.Formatter):
@@ -70,20 +70,20 @@ def initialize_logger(loglevel=logging.INFO, **kwargs):
         maxBytes=100 * 1024 * 1024,
         backupCount=10
     )
-    fmt = "%(asctime)-15s %(threadName)s %(filename)s:%(lineno)d %(levelname)s %(message)s"
-    formatter = logging.Formatter(fmt)
-    handler.setFormatter(formatter)
+    # fmt = "%(asctime)-15s %(threadName)s %(filename)s:%(lineno)d %(levelname)s %(message)s"
+    # formatter = logging.Formatter(fmt)
+    # handler.setFormatter(formatter)
 
-    stdout_logger = logging.getLogger('STDOUT')
-    sl = StreamToLogger(stdout_logger, logging.INFO)
-    sys.stdout = sl
+    # stdout_logger = logging.getLogger('STDOUT')
+    # sl = StreamToLogger(stdout_logger, logging.INFO)
+    # sys.stdout = sl
+    #
+    # stderr_logger = logging.getLogger('STDERR')
+    # sl = StreamToLogger(stderr_logger, logging.ERROR)
+    # sys.stderr = sl
 
-    stderr_logger = logging.getLogger('STDERR')
-    sl = StreamToLogger(stderr_logger, logging.ERROR)
-    sys.stderr = sl
-
-    stdout_logger.addHandler(handler)
-    stderr_logger.addHandler(handler)
+    # stdout_logger.addHandler(handler)
+    # stderr_logger.addHandler(handler)
 
     log = logging.getLogger('newframe')
     log.addHandler(handler)

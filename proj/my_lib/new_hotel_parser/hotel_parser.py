@@ -56,6 +56,8 @@ def parse_hotel(content, url, other_info, source, part):
         if result.img_items is not None:
             if result.img_items.upper() in ('NULL', ''):
                 raise TypeError('booking has no img')
+        else:
+            raise TypeError('booking has no img')
 
     # if result.grade in ('NULL', '-1', ''):
     #     raise TypeError('Error Grade NULL')

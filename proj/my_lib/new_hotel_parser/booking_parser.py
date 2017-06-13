@@ -443,7 +443,9 @@ if __name__ == '__main__':
     # url = 'https://www.booking.com/hotel/th/happy-ville-1.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=760b4b8ac503b49f5d89e67ec36a2fa9;all_sr_blocks=206063304_100081577_2_0_0;checkin=2017-08-03;checkout=2017-08-04;dest_id=-3255732;dest_type=city;dist=0;highlighted_blocks=206063304_100081577_2_0_0;hpos=3;room1=A%2CA;sb_price_type=total;srfid=7078e96d0aca48337ba20a54f0a96429386a2fcfX3;type=total;ucfs=1&#hotelTmpl'
     # url = 'http://www.booking.com/hotel/th/baan-siripornchai.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=1ed4c8a52860a4f5a93489f7b31a8863;checkin=2017-08-03;checkout=2017-08-04;ucfs=1;highlighted_blocks=206274801_98817269_2_0_0;all_sr_blocks=206274801_98817269_2_0_0;room1=A%2CA;hpos=4;dest_type=city;dest_id=-3255732;srfid=7078e96d0aca48337ba20a54f0a96429386a2fcfX4;from=searchresults;highlight_room=#hotelTmpl'
     # url = 'https://www.booking.com/hotel/tr/salim-bey-apartments.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATLCAQNhYm7IAQTYAQPoAQH4AQuoAgQ;sid=0eb36e254059b03c70de3b00ac4ecebd;dcid=12;checkin=2016-05-24;checkout=2016-05-25;ucfs=1;room1=A,A;dest_type=city;dest_id=-755070;srfid=f48fa56e2878c2360bafc2a5cd8bba475e908755X701;highlight_room='
-    url = 'https://www.booking.com/hotel/vn/monte-carlo.zh-cn.html'
+    # url = 'https://www.booking.com/hotel/vn/monte-carlo.zh-cn.html'
+    # url = 'http://www.booking.com/hotel/hk/m.zh-cn.html'
+    url = 'http://www.booking.com/hotel/hk/bridal-tea-house-hunghom.zh-cn.html'
     other_info = {'source_id': '1016533', 'city_id': '10067'}
     headers = {
         'User-Agent':
