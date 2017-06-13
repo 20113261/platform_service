@@ -65,14 +65,12 @@ def parse_hotel(content, url, other_info, source, part):
     # expedia 五个源设置 source
     result.source = source
 
-    task_finished = False
-    # session = DBSession()
-    # session.merge(result)
-    # session.commit()
-    # session.close()
-    task_finished = True
+    session = DBSession()
+    session.merge(result)
+    session.commit()
+    session.close()
 
-    return task_finished, result.__dict__
+    return result.__dict__
 
 
 if __name__ == '__main__':

@@ -113,8 +113,8 @@ def booking_parser(content, url, other_info):
                     map_infos = str(map_infos[0]).split(',')
                     hotel.map_info = map_infos[0] + ',' + map_infos[1]
                 else:
-                    latitude = re.findall('booking.env.b_map_center_latitude = (\d+.\d+);', content)
-                    longitude = re.findall('booking.env.b_map_center_longitude = (\d+.\d+);', content)
+                    latitude = re.findall('booking.env.b_map_center_latitude = (\d+.\d+);', content)[0]
+                    longitude = re.findall('booking.env.b_map_center_longitude = (\d+.\d+);', content)[0]
                     hotel.map_info = '{0},{1}'.format(longitude, latitude)
                 print str(e)
     print 'map_info=>%s' % hotel.map_info
