@@ -109,8 +109,13 @@ def booking_parser(content, url, other_info):
                     float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
             except Exception, e:
                 map_infos = root.xpath('//a[@id="show_map"]/@data-coords')
-                map_infos = str(map_infos[0]).split(',')
-                hotel.map_info = map_infos[0] + ',' + map_infos[1]
+                if map_infos:
+                    map_infos = str(map_infos[0]).split(',')
+                    hotel.map_info = map_infos[0] + ',' + map_infos[1]
+                else:
+                    latitude = re.findall('booking.env.b_map_center_latitude = (\d+.\d+);', content)
+                    longitude = re.findall('booking.env.b_map_center_longitude = (\d+.\d+);', content)
+                    hotel.map_info = '{0},{1}'.format(longitude, latitude)
                 print str(e)
     print 'map_info=>%s' % hotel.map_info
 
@@ -139,13 +144,21 @@ def booking_parser(content, url, other_info):
     print 'address=>%s' % hotel.address
     # print hotel.address
     # 解析酒店星级
+    hotel.star = -1
     try:
         star_temp = root.find_class('hp__hotel_ratings__stars')[0].xpath(
             'i/@class')[0].strip()
         hotel.star = num_pat.findall(star_temp)[0]
         hotel.star = int(hotel.star)
     except Exception, e:
-        hotel.star = -1
+        try:
+            star_title = root.xpath('//*[@class="nowrap hp__hotel_ratings"]//span[@class="invisible_spoken"]/text()')
+            if star_title:
+                star = re.findall('(\d+)', star_title[0])
+                if star:
+                    hotel.star = int(star[0])
+        except Exception as e:
+            pass
     print 'star=>%s' % hotel.star
     # print hotel.star
     # 解析酒店评分
@@ -429,7 +442,8 @@ if __name__ == '__main__':
     # url = 'http://www.booking.com/hotel/lu/b-amp-b-camping-um-gritt.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=04bb4f5be7caced0d2801004dd9e9bec;dest_id=-1735767;dest_type=city;dist=0;group_adults=2;hpos=1;room1=A%2CA;sb_price_type=total;srfid=8f81a85e275aeac120e90e6988461a380a6c849cX1;type=total;ucfs=1&#hotelTmpl'
     # url = 'https://www.booking.com/hotel/th/happy-ville-1.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=760b4b8ac503b49f5d89e67ec36a2fa9;all_sr_blocks=206063304_100081577_2_0_0;checkin=2017-08-03;checkout=2017-08-04;dest_id=-3255732;dest_type=city;dist=0;highlighted_blocks=206063304_100081577_2_0_0;hpos=3;room1=A%2CA;sb_price_type=total;srfid=7078e96d0aca48337ba20a54f0a96429386a2fcfX3;type=total;ucfs=1&#hotelTmpl'
     # url = 'http://www.booking.com/hotel/th/baan-siripornchai.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=1ed4c8a52860a4f5a93489f7b31a8863;checkin=2017-08-03;checkout=2017-08-04;ucfs=1;highlighted_blocks=206274801_98817269_2_0_0;all_sr_blocks=206274801_98817269_2_0_0;room1=A%2CA;hpos=4;dest_type=city;dest_id=-3255732;srfid=7078e96d0aca48337ba20a54f0a96429386a2fcfX4;from=searchresults;highlight_room=#hotelTmpl'
-    url = 'https://www.booking.com/hotel/tr/salim-bey-apartments.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATLCAQNhYm7IAQTYAQPoAQH4AQuoAgQ;sid=0eb36e254059b03c70de3b00ac4ecebd;dcid=12;checkin=2016-05-24;checkout=2016-05-25;ucfs=1;room1=A,A;dest_type=city;dest_id=-755070;srfid=f48fa56e2878c2360bafc2a5cd8bba475e908755X701;highlight_room='
+    # url = 'https://www.booking.com/hotel/tr/salim-bey-apartments.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATLCAQNhYm7IAQTYAQPoAQH4AQuoAgQ;sid=0eb36e254059b03c70de3b00ac4ecebd;dcid=12;checkin=2016-05-24;checkout=2016-05-25;ucfs=1;room1=A,A;dest_type=city;dest_id=-755070;srfid=f48fa56e2878c2360bafc2a5cd8bba475e908755X701;highlight_room='
+    url = 'https://www.booking.com/hotel/vn/monte-carlo.zh-cn.html'
     other_info = {'source_id': '1016533', 'city_id': '10067'}
     headers = {
         'User-Agent':
@@ -437,12 +451,12 @@ if __name__ == '__main__':
         'Referer':
             'http://www.booking.com'
     }
-    PROXY = get_proxy(source="Platform")
-    proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
-    page = requests.get(url=url, headers=headers, proxies=proxies, timeout=30)
+    # PROXY = get_proxy(source="Platform")
+    # proxies = {
+    #     'http': 'socks5://' + PROXY,
+    #     'https': 'socks5://' + PROXY
+    # }
+    page = requests.get(url=url, headers=headers, timeout=30)
     page.encoding = 'utf8'
     content = page.content
     result = booking_parser(content, url, other_info)
