@@ -445,22 +445,24 @@ if __name__ == '__main__':
     # url = 'https://www.booking.com/hotel/tr/salim-bey-apartments.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmaDGIAQGYATLCAQNhYm7IAQTYAQPoAQH4AQuoAgQ;sid=0eb36e254059b03c70de3b00ac4ecebd;dcid=12;checkin=2016-05-24;checkout=2016-05-25;ucfs=1;room1=A,A;dest_type=city;dest_id=-755070;srfid=f48fa56e2878c2360bafc2a5cd8bba475e908755X701;highlight_room='
     # url = 'https://www.booking.com/hotel/vn/monte-carlo.zh-cn.html'
     # url = 'http://www.booking.com/hotel/hk/m.zh-cn.html'
-    url = 'http://www.booking.com/hotel/hk/bridal-tea-house-hunghom.zh-cn.html'
+    # url = 'http://www.booking.com/hotel/hk/bridal-tea-house-hunghom.zh-cn.html'
+    url = 'http://www.booking.com/hotel/gb/fryup-hall-farm.zh-cn.html '
     other_info = {'source_id': '1016533', 'city_id': '10067'}
-    headers = {
-        'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-        'Referer':
-            'http://www.booking.com'
-    }
+    # headers = {
+    #     'User-Agent':
+    #         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+    #     'Referer':
+    #         'http://www.booking.com'
+    # }
     # PROXY = get_proxy(source="Platform")
     # proxies = {
     #     'http': 'socks5://' + PROXY,
     #     'https': 'socks5://' + PROXY
     # }
-    page = requests.get(url=url, headers=headers, timeout=30)
-    page.encoding = 'utf8'
-    content = page.content
+    # page = requests.get(url=url, headers=headers, timeout=30)
+    # page.encoding = 'utf8'
+    # content = page.content
+    content = open('/Users/hourong/Downloads/79351566-033a-4dea-8dba-33df726c9cd0_0.html').read()
     result = booking_parser(content, url, other_info)
 
     # 如果需要，可以在这里用 print 打印 hotel 对象中的内容。也可直接使用 debug 调试查看 result

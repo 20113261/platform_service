@@ -13,7 +13,7 @@ from .my_lib.BaseTask import BaseTask
 from .my_lib.FileSaver import save_file
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='25/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='2/s')
 def hotel_base_data(self, source, url, other_info, part, **kwargs):
     x = time.time()
     PROXY = get_proxy(source="Platform")
