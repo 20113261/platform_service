@@ -1112,8 +1112,8 @@ if __name__ == '__main__':
     # res = hotel_list_database(u'agoda', u'10001')
     # res = hotel_list_database(u'booking', u'12384')
     # print 'Hello World'
-    res = hotel_list_database('booking', '20215')
-    print 'Hello World'
+    # res = hotel_list_database('booking', '20215')
+    # print 'Hello World'
     # todo test_daodao_img_rename task
 
     # def get_task():

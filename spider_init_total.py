@@ -16,6 +16,7 @@ from proj.poi_nearby_city_task import poi_nearby_city_task
 from proj.tasks import get_daodao_image_url
 from proj.daodao_img_rename_tasks import daodao_img_rename_task
 from proj.hotel_tax_task import hotel_tax_list_task, hotel_tax_detail
+from proj.hotel_static_tasks import hotel_static_base_data
 
 
 def add_target(task_url, miaoji_id, special_str, **kwargs):
@@ -40,6 +41,11 @@ if __name__ == '__main__':
         # todo hotel base data init by Task
         if worker == 'hotel_base_data':
             hotel_base_data.delay(args['source'], args['hotel_url'], args['other_info'], args['part'], task_id=task_id)
+            _count += 1
+
+        # todo hotel static data init by Task
+        if worker == 'hotel_static_base_data':
+            hotel_static_base_data.delay(args['parent_task_id'], args['task_name'], task_id=task_id)
             _count += 1
 
         # todo get img by Task
