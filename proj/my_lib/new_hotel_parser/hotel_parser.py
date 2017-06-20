@@ -1,16 +1,12 @@
 # coding=utf-8
 import agoda_parser
 import booking_parser
-import cheaptickets_parser
 import ctrip_parser
-import ebookers_parser
 import elong_parser
 import expedia_parser
 import hotels_parser
 import hoteltravel_parser
 import hrs_parser
-import orbitz_parser
-import travelocity_parser
 from data_obj import DBSession
 
 

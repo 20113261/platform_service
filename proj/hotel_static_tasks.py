@@ -19,7 +19,7 @@ from .my_lib.BaseTask import BaseTask
 from .my_lib.PageSaver import get_task_and_page_content
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='2/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='200/s')
 def hotel_static_base_data(self, parent_task_id, task_name, **kwargs):
     try:
         # 获取保存的页面信息

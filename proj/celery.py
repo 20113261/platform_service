@@ -12,10 +12,11 @@ platforms.C_FORCE_ROOT = True
 
 app = Celery('proj', include=['proj.tasks',
                               'proj.hotel_tasks',
+                              'proj.hotel_static_tasks',
                               'proj.poi_pic_spider_tasks',
                               'proj.qyer_city_spider',
                               'proj.qyer_poi_tasks',
-                              'proj.tripadvisor_city_query_task',
+                              # 'proj.tripadvisor_city_query_task',
                               'proj.qyer_city_query_task',
                               'proj.tripadvisor_city',
                               # 'proj.hotel_list_task',
