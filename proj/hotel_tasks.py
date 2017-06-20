@@ -63,9 +63,9 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         else:
             if kwargs.get('task_id'):
                 # 保存抓取成功后的页面信息
-                save_task_and_page_content(task_name=part, content=content, task_id=kwargs['task_id'], source=source,
-                                           source_id=other_info['source_id'],
-                                           city_id=other_info['city_id'], url=url)
+                # save_task_and_page_content(task_name=part, content=content, task_id=kwargs['task_id'], source=source,
+                #                            source_id=other_info['source_id'],
+                #                            city_id=other_info['city_id'], url=url)
                 update_task(kwargs['task_id'])
             print "Success with " + PROXY + ' CODE 0'
             update_proxy('Platform', PROXY, x, '0')
