@@ -51,9 +51,23 @@ def get_task_and_page_content(parent_task_id, task_name, **kwargs):
 
     result = {k: res[k] for k in task_info_keys}
     result['content'] = zlib.decompress(res['content']).decode()
-    client.close()
     print 'Get Task Takes', time.time() - start
     return result
+
+
+def generate_task_and_page_content(start_task_id, task_name, limit, **kwargs):
+    start = time.time()
+    collection = client['PageSaver'][task_name]
+    if 'task_info_keys' in kwargs:
+        task_info_keys = kwargs['task_info_keys']
+    else:
+        task_info_keys = DEFAULT_TASK_INFO_KEYS
+
+    for each in collection.find({'task_id': {'$gte': start_task_id}}).sort("task_id").limit(limit):
+        result = {k: each[k] for k in task_info_keys}
+        result['content'] = zlib.decompress(each['content']).decode()
+        yield result
+    print 'Get {0} Tasks Takes {1}'.format(limit, time.time() - start)
 
 
 if __name__ == '__main__':
