@@ -2,11 +2,9 @@ from __future__ import absolute_import
 
 from celery import Celery, platforms
 from celery.app.log import TaskFormatter, get_current_task
-import sys
 from celery.signals import setup_logging
 import logging
 from logging.handlers import RotatingFileHandler
-import mioji.common.logger
 
 platforms.C_FORCE_ROOT = True
 

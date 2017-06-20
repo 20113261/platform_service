@@ -11,6 +11,7 @@ ENV LANG C.UTF-8
 RUN apt-get update && apt-get install -y --no-install-recommends \
 		tcl \
 		tk \
+		libgpgme11-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
 ENV GPG_KEY C01E1CAD5EA2C4F0B8E3571504C367C218ADD4FF
@@ -78,8 +79,7 @@ RUN set -ex; \
 
 COPY . /app
 WORKDIR /app
-RUN pip install pycurl && pip install -r requirements.txt
+RUN pip install pycurl && pip install -r requirements.txt && rm -rf ~/.cache/pip
 
-COPY /Users/hourong/lib/work/lib /app
 ENTRYPOINT ["bash"]
 CMD ["docker_start.sh"]
