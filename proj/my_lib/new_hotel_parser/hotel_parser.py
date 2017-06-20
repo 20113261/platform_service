@@ -63,6 +63,10 @@ def parse_hotel(content, url, other_info, source, part):
     # expedia 五个源设置 source
     result.source = source
 
+    # result 中 grade 修复
+    if result.grade == 'NULL':
+        result.grade = -1
+
     session = DBSession()
     session.merge(result)
     session.commit()
