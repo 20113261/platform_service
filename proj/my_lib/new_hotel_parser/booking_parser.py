@@ -157,6 +157,14 @@ def booking_parser(content, url, other_info):
                 star = re.findall('(\d+)', star_title[0])
                 if star:
                     hotel.star = int(star[0])
+
+            # 当初先非官方评定 start 时，使用 svg 中的 class 获取星级
+            if hotel.star == -1:
+                star_svg = root.xpath('//*[@class="nowrap hp__hotel_ratings"]//svg/@class')
+                if star_svg:
+                    star = re.findall('-sprite-ratings_circles_(\d+)', star_svg[0])
+                    if star:
+                        hotel.star = int(star[0])
         except Exception as e:
             pass
     print 'star=>%s' % hotel.star
@@ -446,23 +454,23 @@ if __name__ == '__main__':
     # url = 'https://www.booking.com/hotel/vn/monte-carlo.zh-cn.html'
     # url = 'http://www.booking.com/hotel/hk/m.zh-cn.html'
     # url = 'http://www.booking.com/hotel/hk/bridal-tea-house-hunghom.zh-cn.html'
-    url = 'http://www.booking.com/hotel/gb/fryup-hall-farm.zh-cn.html '
+    url = 'https://www.booking.com/hotel/de/langerfelder-hof.zh-cn.html'
     other_info = {'source_id': '1016533', 'city_id': '10067'}
-    # headers = {
-    #     'User-Agent':
-    #         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-    #     'Referer':
-    #         'http://www.booking.com'
-    # }
+    headers = {
+        'User-Agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+        'Referer':
+            'http://www.booking.com'
+    }
     # PROXY = get_proxy(source="Platform")
     # proxies = {
     #     'http': 'socks5://' + PROXY,
     #     'https': 'socks5://' + PROXY
     # }
-    # page = requests.get(url=url, headers=headers, timeout=30)
-    # page.encoding = 'utf8'
-    # content = page.content
-    content = open('/Users/hourong/Downloads/79351566-033a-4dea-8dba-33df726c9cd0_0.html').read()
+    page = requests.get(url=url, headers=headers, timeout=30)
+    page.encoding = 'utf8'
+    content = page.content
+    # content = open('/Users/hourong/Downloads/79351566-033a-4dea-8dba-33df726c9cd0_0.html').read()
     result = booking_parser(content, url, other_info)
 
     # 如果需要，可以在这里用 print 打印 hotel 对象中的内容。也可直接使用 debug 调试查看 result
