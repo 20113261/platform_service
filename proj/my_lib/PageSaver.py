@@ -70,5 +70,13 @@ def generate_task_and_page_content(start_task_id, task_name, limit, **kwargs):
     print 'Get {0} Tasks Takes {1}'.format(limit, time.time() - start)
 
 
+def get_page_content(task_id, task_name):
+    f = open(os.path.join('/data/nfs/page_saver', task_name, task_id), 'rb')
+    compressed_content = f.read()
+    f.close()
+    return zlib.decompress(compressed_content)
+
+
 if __name__ == '__main__':
-    print get_task_and_page_content('7ededbc01f00e0463f064e6ca9f8235f', 'hotel_base_data_170612')
+    # print get_task_and_page_content('7ededbc01f00e0463f064e6ca9f8235f', 'hotel_base_data_170612')
+    print get_page_content('7ededbc01f00e0463f064e6ca9f8235f', 'hotel_base_data_170612')
