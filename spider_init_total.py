@@ -45,7 +45,8 @@ if __name__ == '__main__':
 
         # todo hotel static data init by Task
         if worker == 'hotel_static_base_data':
-            hotel_static_base_data.delay(args['parent_task_id'], args['task_name'], task_id=task_id)
+            hotel_static_base_data.delay(args['parent_task_id'], args['task_name'], args['source'], args['source_id'],
+                                         args['city_id'], args['hotel_url'], task_id=task_id)
             _count += 1
 
         # todo get img by Task

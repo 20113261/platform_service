@@ -16,23 +16,24 @@ from .celery import app
 from .my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from .my_lib.task_module.task_func import update_task
 from .my_lib.BaseTask import BaseTask
-from .my_lib.PageSaver import get_task_and_page_content
+from .my_lib.PageSaver import get_page_content
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='2/s')
-def hotel_static_base_data(self, start_id, task_name, **kwargs):
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='10/s')
+def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, city_id, hotel_url, **kwargs):
     try:
         # 获取保存的页面信息
-        result = False
-        for each_mongo_result in get_task_and_page_content(start_id, task_name):
-            other_info = {
-                'source_id': each_mongo_result['source_id'],
-                'city_id': each_mongo_result['city_id']
-            }
-            result = parse_hotel(content=each_mongo_result['content'], url=each_mongo_result['url'],
-                                 other_info=other_info,
-                                 source=each_mongo_result['source'],
-                                 part=task_name)
+        other_info = {
+            'source_id': source_id,
+            'city_id': city_id
+        }
+        result = parse_hotel(
+            content=get_page_content(task_id=parent_task_id, task_name=task_name),
+            url=hotel_url,
+            other_info=other_info,
+            source=source,
+            part=task_name
+        )
 
         if not result:
             self.retry(exc=Exception('db error'))
