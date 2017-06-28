@@ -5,6 +5,7 @@ import sys
 
 import re
 import requests
+import execjs
 from lxml import html as HTML
 from util.UserAgent import GetUserAgent
 from data_obj import Hotel, DBSession
@@ -31,13 +32,24 @@ def agoda_parser(content, url, other_info):
     except Exception as e:
         print str(e)
 
+    page_params = None
     try:
-        hotel_name = root.xpath('//*[@id="hotelname"]/text()')[0].encode('utf-8').strip()
-    except Exception, e:
+        ph_runtime = execjs.get('PhantomJS')
+        page_js = ph_runtime.compile(root.xpath('//script[contains(text(),"propertyPageParams")]/text()')[0])
+        page_params = page_js.eval('propertyPageParams')
+    except Exception as e:
+        print "JS 解析部分加载异常"
+
+    try:
+        hotel_name = page_params['hotelInfo']['name']
+    except:
         try:
-            hotel_name = root.xpath('//title/text()')[0].split('-')[0][:-1]
+            hotel_name = root.xpath('//*[@id="hotelname"]/text()')[0].encode('utf-8').strip()
         except Exception, e:
-            print str(e)
+            try:
+                hotel_name = root.xpath('//title/text()')[0].split('-')[0][:-1]
+            except Exception, e:
+                print str(e)
 
     try:
         k = hotel_name.find('(')
@@ -58,12 +70,18 @@ def agoda_parser(content, url, other_info):
     # print hotel.hotel_name_en
 
     try:
-        hotel.address = root.xpath('//*[@id="hotel-map"]/text()')[0].encode('utf8').strip()
-    except Exception, e:
-        # print str(e)
-        hotel.address = 'NULL'
+        hotel.address = page_params['hotelInfo']['address']['full']
+    except:
+        hotel.address = "NULL"
     print 'hotel.address=>%s' % hotel.address
     # print hotel.address
+
+    try:
+        hotel.star = int(page_params['hotelInfo']['starRating']['icon'].split('-')[-1])
+    except:
+        hotel.star = -1
+
+    print 'hotel.star=>%s' % hotel.star
 
     try:
         lat_pat = re.compile(r'latitude\" content=(.*?) \/>', re.S)
@@ -78,35 +96,43 @@ def agoda_parser(content, url, other_info):
 
     print 'map_info=>%s' % hotel.map_info
     # print hotel.map_info
-
     try:
-        hotel.grade = root.find_class('review-score-value')[0].text
+        hotel.grade = float(page_params['reviews']['score'])
     except:
-        hotel.grade = 'NULL'
-
+        try:
+            hotel.grade = root.find_class('review-score-value')[0].text
+        except:
+            hotel.grade = -1
     print 'grade=>%s' % hotel.grade
     # print hotel.grade
-
     try:
-        review_num = root.find_class('review-based-on-section')[0].xpath('./strong/text()')[0].encode(
-            'utf8').strip()
-        hotel.review_num = review_num_pat.findall(review_num)[0]
+        hotel.review_num = page_params['reviews']['reviewsCount']
     except:
-        hotel.review_num = -1
+        try:
+            review_num = root.find_class('review-based-on-section')[0].xpath('./strong/text()')[0].encode(
+                'utf8').strip()
+            hotel.review_num = review_num_pat.findall(review_num)[0]
+        except:
+            hotel.review_num = -1
 
     print 'hotel.review_num=>%s' % hotel.review_num
     # print hotel.review_num
 
     try:
-        # hotel.img_items = '|'.join(
-        #     map(lambda x: 'http:' + x, root.get_element_by_id('hotel-gallery').xpath('./div/img/@src')))
-        img_json = images_url_pat.findall(content)[0]
-        location_pat = re.compile(r'"Location":"(.*?)",', re.S)
-        img_list = location_pat.findall(img_json)
-        hotel.img_items = '|'.join(
-            map(lambda x: 'http:' + x, img_list))
+        hotel.img_items = '|'.join(filter(lambda x: 'hotelImages' in x,
+                                          map(lambda x: 'http:' + x['Location'].split('?')[0],
+                                              page_params['mosaicInitData']['images'])))
     except:
-        hotel.img_items = ''
+        try:
+            # hotel.img_items = '|'.join(
+            #     map(lambda x: 'http:' + x, root.get_element_by_id('hotel-gallery').xpath('./div/img/@src')))
+            img_json = images_url_pat.findall(content)[0]
+            location_pat = re.compile(r'"Location":"(.*?)",', re.S)
+            img_list = location_pat.findall(img_json)
+            hotel.img_items = '|'.join(
+                map(lambda x: 'http:' + x, img_list))
+        except:
+            hotel.img_items = 'NULL'
 
     print 'img_items=>%s' % hotel.img_items
     # print hotel.img_items
@@ -190,7 +216,8 @@ if __name__ == '__main__':
     # url = 'https://www.agoda.com/zh-cn/tropical-palms-elite-two-bedroom-cottage-104/hotel/all/orlando-fl-us.html?checkin=2017-08-03&los=1&adults=1&rooms=1&cid=-1&searchrequestid=3083d8d6-bbfe-45fd-a47c-2e5aa50b99a2'
     # url = 'https://www.agoda.com/zh-cn/tropical-palms-elite-two-bedroom-cottage-104/hotel/orlando-fl-us.html?asq=AbQz%2FJFl%2FcBA96vs5%2Fi%2FsKR3foYRS4x3%2F4l3z6pYa26QxEZ3vNxq0q36TUBn%2BpiKKVwQksJRNjhBbE6hOoyfwo4hZxgFVEtNaFLVyhOu6FnvZdIRAOWrnOYDO7qzRDkDXiyX8%2F8HJ3jSDjfHoaOyVQO0w7eSm%2B7cRtAD45wellgsMqeQTY%2FB1d0%2FmNL8J%2FOjkqBRDmLeOBeebtAGQt1SQjGopgB0OGhZuTdGK4p8iOg%3D&hotel=1705901&tick=636301764578&pagetypeid=7&origin=CN&cid=-1&tag=&gclid=&aid=130243&userId=eda0f3f0-783f-4202-8592-5e7f3ec626fd&languageId=8&sessionId=rsci0zuyujepom000loqtfso&storefrontId=3&currencyCode=CNY&htmlLanguage=zh-cn&trafficType=User&cultureInfoName=zh-CN&checkIn=2017-10-04&checkout=2017-10-05&los=1&rooms=1&adults=1&childs=0&ckuid=eda0f3f0-783f-4202-8592-5e7f3ec626fd'
     # url = 'http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705137.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787526.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787533.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705131.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705122.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705124.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021111170039786134.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021111170039786135.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705103.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705119.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705120.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021111170039786138.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705133.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787527.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787528.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705098.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787529.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787530.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787531.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787532.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809190040534728.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809190040534729.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809250040536675.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809250040536674.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809180040534719.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809180040534720.jpg?s=1024x768'
-    url = 'https://www.agoda.com/zh-cn/hotel-piena-kobe/hotel/kobe-jp.html'
+    # url = 'https://www.agoda.com/zh-cn/hotel-piena-kobe/hotel/kobe-jp.html'
+    url = 'https://www.agoda.com/zh-cn/marriott-hotel-downtown-abu-dhabi/hotel/abu-dhabi-ae.html'
     if 'www.agoda.com/zh-cn' not in url:
         url = url.replace('www.agoda.com', 'www.agoda.com/zh-cn')
 
@@ -202,14 +229,6 @@ if __name__ == '__main__':
     page.encoding = 'utf8'
     content = page.text
     # content = open('/tmp/abfc3512-1119-4e89-841b-55b88fd821ff_0.html').read()
-
-    url_about = 'https://www.agoda.com/NewSite/zh-cn/Hotel/AboutHotel?hotelId={0}&languageId=8&hasBcomChildPolicy=False'.format(
-        other_info['source_id'])
-    page_about = requests.get(url=url_about, headers=headers)
-    page_about.encoding = 'utf8'
-    about_content = page_about.text
-
-    other_info['about_content'] = about_content
 
     result = agoda_parser(content, url, other_info)
     # try:
