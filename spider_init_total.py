@@ -3,6 +3,7 @@ from proj.my_lib.task_module.task_func import get_task_total
 from proj.poi_pic_spider_tasks import google_spider, shutter_spider, flickr_spider
 from proj.qyer_city_query_task import qyer_city_query_task
 from proj.qyer_city_spider import qyer_country_spider
+from proj.suggestion_task import ctrip_suggestion_task
 from proj.tasks import get_comment
 from proj.tasks import get_images
 from proj.tasks import venere_comment, booking_comment, expedia_comment
@@ -144,6 +145,11 @@ if __name__ == '__main__':
 
         if worker == 'hotel_tax_detail':
             hotel_tax_detail.delay(args['task_content'], args['city_id'], task_id=task_id)
+            _count += 1
+
+        # todo hotel suggestion task
+        if worker == 'hotel_suggestion':
+            ctrip_suggestion_task(args['city_id'], args['keyword'], task_id=task_id)
             _count += 1
 
     print _count
