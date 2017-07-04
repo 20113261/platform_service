@@ -32,13 +32,9 @@ def agoda_parser(content, url, other_info):
     except Exception as e:
         print str(e)
 
-    page_params = None
-    try:
-        ph_runtime = execjs.get('PhantomJS')
-        page_js = ph_runtime.compile(root.xpath('//script[contains(text(),"propertyPageParams")]/text()')[0])
-        page_params = page_js.eval('propertyPageParams')
-    except Exception as e:
-        print "JS 解析部分加载异常"
+    ph_runtime = execjs.get('PhantomJS')
+    page_js = ph_runtime.compile(root.xpath('//script[contains(text(),"propertyPageParams")]/text()')[0])
+    page_params = page_js.eval('propertyPageParams')
 
     try:
         hotel_name = page_params['hotelInfo']['name']
@@ -202,11 +198,11 @@ if __name__ == '__main__':
     from util.UserAgent import GetUserAgent
     from common.common import get_proxy
 
-    PROXY = get_proxy(source="Platform")
-    proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
+    # PROXY = get_proxy(source="Platform")
+    # proxies = {
+    #     'http': 'socks5://' + PROXY,
+    #     'https': 'socks5://' + PROXY
+    # }
     headers = {
         'User-agent': GetUserAgent(),
         "authority": "www.agoda.com"
@@ -217,15 +213,16 @@ if __name__ == '__main__':
     # url = 'https://www.agoda.com/zh-cn/tropical-palms-elite-two-bedroom-cottage-104/hotel/orlando-fl-us.html?asq=AbQz%2FJFl%2FcBA96vs5%2Fi%2FsKR3foYRS4x3%2F4l3z6pYa26QxEZ3vNxq0q36TUBn%2BpiKKVwQksJRNjhBbE6hOoyfwo4hZxgFVEtNaFLVyhOu6FnvZdIRAOWrnOYDO7qzRDkDXiyX8%2F8HJ3jSDjfHoaOyVQO0w7eSm%2B7cRtAD45wellgsMqeQTY%2FB1d0%2FmNL8J%2FOjkqBRDmLeOBeebtAGQt1SQjGopgB0OGhZuTdGK4p8iOg%3D&hotel=1705901&tick=636301764578&pagetypeid=7&origin=CN&cid=-1&tag=&gclid=&aid=130243&userId=eda0f3f0-783f-4202-8592-5e7f3ec626fd&languageId=8&sessionId=rsci0zuyujepom000loqtfso&storefrontId=3&currencyCode=CNY&htmlLanguage=zh-cn&trafficType=User&cultureInfoName=zh-CN&checkIn=2017-10-04&checkout=2017-10-05&los=1&rooms=1&adults=1&childs=0&ckuid=eda0f3f0-783f-4202-8592-5e7f3ec626fd'
     # url = 'http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705137.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787526.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787533.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705131.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705122.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705124.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021111170039786134.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021111170039786135.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705103.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705119.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705120.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021111170039786138.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705133.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787527.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787528.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_14082915180021705098.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787529.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787530.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787531.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16021112240039787532.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809190040534728.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809190040534729.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809250040536675.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809250040536674.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809180040534719.jpg?s=1024x768|http://pix6.agoda.net/hotelImages/148/148964/148964_16030809180040534720.jpg?s=1024x768'
     # url = 'https://www.agoda.com/zh-cn/hotel-piena-kobe/hotel/kobe-jp.html'
-    url = 'https://www.agoda.com/zh-cn/marriott-hotel-downtown-abu-dhabi/hotel/abu-dhabi-ae.html'
-    if 'www.agoda.com/zh-cn' not in url:
-        url = url.replace('www.agoda.com', 'www.agoda.com/zh-cn')
+    # url = 'https://www.agoda.com/zh-cn/marriott-hotel-downtown-abu-dhabi/hotel/abu-dhabi-ae.html'
+    # if 'www.agoda.com/zh-cn' not in url:
+    #     url = url.replace('www.agoda.com', 'www.agoda.com/zh-cn')
 
     other_info = {
         'source_id': '1006311',
         'city_id': '11164'
     }
-    page = requests.get(url=url, headers=headers, proxies=proxies)
+    url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_agoda&id=329cf4fa7c9196ce026aa1053c652c2f'
+    page = requests.get(url=url, headers=headers)
     page.encoding = 'utf8'
     content = page.text
     # content = open('/tmp/abfc3512-1119-4e89-841b-55b88fd821ff_0.html').read()

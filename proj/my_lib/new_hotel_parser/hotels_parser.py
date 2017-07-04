@@ -254,12 +254,12 @@ def hotels_parser(content, url, other_info):
 if __name__ == '__main__':
     # url = 'http://www.hotels.cn/hotel/details.html?WOE=2&q-localised-check-out=2015-11-10&WOD=1&q-room-0-children=0&pa=252&tab=description&q-localised-check-in=2015-11-09&hotel-id=119538&q-room-0-adults=2&YGF=14&MGT=1&ZSX=0&SYE=3'
     # url = 'https://ssl.hotels.cn/hotel/details.html?pa=1&tab=description&hotel-id=430714&q-room-0-adults=2&ZSX=0&SYE=3&q-room-0-children=0'
-    url = 'https://zh.hotels.com/ho182001/?MGT=1&SYE=3&WOD=6&WOE=7&YGF=14&ZSX=0&pa=188&q-check-in=2017-06-03&q-check-out=2017-06-04&q-room-0-adults=2&q-room-0-children=0&tab=description'
+    # url = 'https://zh.hotels.com/ho182001/?MGT=1&SYE=3&WOD=6&WOE=7&YGF=14&ZSX=0&pa=188&q-check-in=2017-06-03&q-check-out=2017-06-04&q-room-0-adults=2&q-room-0-children=0&tab=description'
     other_info = {
         'source_id': '119538',
         'city_id': '10001'
     }
-
+    url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_170619&id=02580f3faaae1217f00220716f88bffb'
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.text

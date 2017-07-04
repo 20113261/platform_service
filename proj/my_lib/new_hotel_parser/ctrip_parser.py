@@ -40,12 +40,11 @@ def ctrip_parser(page, url, other_info):
     except Exception, e:
         print str(e)
 
-    try:
-        ph_runtime = execjs.get('PhantomJS')
-        js_str = root.xpath('//script[contains(text(),"hotelDomesticConfig")]/text()')[0]
-        page_js = ph_runtime.compile(js_str[:js_str.index('function  loadCallback_roomList()')])
-    except Exception as e:
-        print "JS 解析部分加载异常"
+    ph_runtime = execjs.get('PhantomJS')
+    js_str = root.xpath('//script[contains(text(),"hotelDomesticConfig")]/text()')[0]
+    page_js = ph_runtime.compile(js_str[:js_str.index('function  loadCallback_roomList()')])
+    page_js.eval('hotelDomesticConfig')
+    page_js.eval('pictureConfigNew')
 
     try:
         hotel.hotel_name = root.xpath('//*[@class="name"]/text()')[0].encode('utf-8').strip()
@@ -229,7 +228,8 @@ def ctrip_parser(page, url, other_info):
 
 
 if __name__ == '__main__':
-    url = 'http://hotels.ctrip.com/international/992466.html'
+    # url = 'http://hotels.ctrip.com/international/992466.html'
+    url = 'http://hotels.ctrip.com/international/3723551.html?IsReposted=3723551'
     other_info = {
         'source_id': '1039433',
         'city_id': '10074'
