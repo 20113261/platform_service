@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
         # todo hotel suggestion task
         if worker == 'hotel_suggestion':
-            ctrip_suggestion_task(args['city_id'], args['keyword'], task_id=task_id)
+            ctrip_suggestion_task.delay(args['city_id'], args['keyword'], task_id=task_id)
             _count += 1
 
     print _count
