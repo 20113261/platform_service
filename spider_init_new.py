@@ -22,6 +22,10 @@ def add_target(task_url, miaoji_id, **kwargs):
 d_pattern = re.compile('-d(\d+)')
 
 if __name__ == '__main__':
-    from proj.hotel_static_tasks import hotel_static_base_data
+    # from proj.hotel_static_tasks import hotel_static_base_data
+    #
+    # print hotel_static_base_data('7ededbc01f00e0463f064e6ca9f8235f', 'hotel_base_data_170612')
 
-    print hotel_static_base_data('7ededbc01f00e0463f064e6ca9f8235f', 'hotel_base_data_170612')
+    from proj.suggestion_task import ctrip_suggestion_task
+
+    ctrip_suggestion_task('10001', '巴黎', task_id='test')

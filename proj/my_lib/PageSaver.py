@@ -77,6 +77,11 @@ def get_page_content(task_id, task_name):
     return zlib.decompress(compressed_content)
 
 
+def save_suggestions(args, source):
+    collection = client['Suggestions'][source]
+    collection.save(args)
+
+
 if __name__ == '__main__':
     # print get_task_and_page_content('7ededbc01f00e0463f064e6ca9f8235f', 'hotel_base_data_170612')
     print get_page_content('7ededbc01f00e0463f064e6ca9f8235f', 'hotel_base_data_170612')
