@@ -77,6 +77,12 @@ def agoda_parser(content, url, other_info):
     except:
         hotel.star = -1
 
+    if hotel.star > 5:
+        if hotel.star % 5 == 0:
+            hotel.star = int(hotel.star / 10)
+        else:
+            hotel.star = -1
+
     print 'hotel.star=>%s' % hotel.star
 
     try:
@@ -221,7 +227,10 @@ if __name__ == '__main__':
         'source_id': '1006311',
         'city_id': '11164'
     }
-    url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_agoda&id=329cf4fa7c9196ce026aa1053c652c2f'
+    # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_agoda&id=329cf4fa7c9196ce026aa1053c652c2f'
+    # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_agoda&id=49536fe85753dfd12ea88d0700bda26d'
+    # url = 'https://www.agoda.com/zh-cn/wingate-by-wyndham-arlington_2/hotel/all/arlington-tx-us.html?checkin=2017-08-03&los=1&adults=1&rooms=1&cid=-1&searchrequestid=09d590d3-cc17-4046-89a1-112b6ed35266'
+    url = 'http://www.agoda.com/criterion-pub-kitchen/hotel/newcastle-au.html?checkin=2016-11-22&los=1&adults=1&rooms=1&cid=-1&searchrequestid=8165bd8e-72e9-452a-a3c7-4ea693b1cee3'
     page = requests.get(url=url, headers=headers)
     page.encoding = 'utf8'
     content = page.text
