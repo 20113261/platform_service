@@ -28,4 +28,5 @@ if __name__ == '__main__':
 
     from proj.suggestion_task import ctrip_suggestion_task
 
-    ctrip_suggestion_task.delay('10001', '巴黎', task_id='test')
+    # ctrip_suggestion_task.delay('10001', '巴黎', task_id='test')
+    ctrip_suggestion_task("10025", "sk\u00e4rholmen")
