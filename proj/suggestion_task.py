@@ -43,6 +43,11 @@ def ctrip_suggestion_task(self, city_id, key_word, **kwargs):
         page = requests.get(req_url, headers=headers, proxies=proxies)
         data_str = re.findall('cQuery.jsonpResponse=([\s\S]+?);', page.text)[0]
         j_data = json.loads(data_str)
+        if j_data['key'] != "" and j_data['data'] == "":
+            if kwargs.get('task_id'):
+                update_task(kwargs['task_id'])
+
+            return "Empty Suggestion"
         if j_data['data']:
             if kwargs.get('task_id'):
                 save_suggestions({
