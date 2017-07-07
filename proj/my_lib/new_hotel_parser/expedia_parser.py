@@ -37,26 +37,25 @@ def expedia_parser(content, url, other_info):
         eng_pattern = re.compile(r'([a-zA-Z].*[a-zA-Z]?)', re.S)
         name_all = root.find_class('page-header')[0].find_class('section-header-main')[0].text_content().strip()
         hotel_name_en = encode_unicode(eng_pattern.findall(name_all)[0])
-        hotel_name = encode_unicode(name_all.split(name_en)[0])
+        hotel_name = encode_unicode(eng_pattern.findall(name_all)[0])
 
-        # 保存酒店名称
-        hotel.brand_name = hotel_name + '|' + hotel_name_en
-
+        # 爬虫中彻底去除酒店名称处理逻辑
         # 处理酒店名称
-        if len(re.findall(u'([\u4e00-\u9fff]+)', unicode(hotel_name))) > 0:
-            if hotel_name.endswith(hotel_name_en):
-                hotel_name = hotel_name.replace(hotel_name_en, '').strip()
-                if hotel_name == '':
-                    hotel_name = hotel_name_en
-
-        if hotel_name_en == hotel_name:
-            all_res = re.findall(u'([\u4e00-\u9fff]+)', unicode(hotel_name))
-            if len(all_res) != 0:
-                hotel_name_en = hotel_name.split(all_res[0].encode())[-1]
-                hotel_name = hotel_name.replace(hotel_name_en, '')
+        # if len(re.findall(u'([\u4e00-\u9fff]+)', unicode(hotel_name))) > 0:
+        #     if hotel_name.endswith(hotel_name_en):
+        #         hotel_name = hotel_name.replace(hotel_name_en, '').strip()
+        #         if hotel_name == '':
+        #             hotel_name = hotel_name_en
+        #
+        # if hotel_name_en == hotel_name:
+        #     all_res = re.findall(u'([\u4e00-\u9fff]+)', unicode(hotel_name))
+        #     if len(all_res) != 0:
+        #         hotel_name_en = hotel_name.split(all_res[0].encode())[-1]
+        #         hotel_name = hotel_name.replace(hotel_name_en, '')
 
         hotel.hotel_name = hotel_name
         hotel.hotel_name_en = hotel_name_en
+        hotel.brand_name = 'NULL'
     except Exception, e:
         print str(e)
     print 'hotel_brand_name=>%s' % hotel.brand_name
