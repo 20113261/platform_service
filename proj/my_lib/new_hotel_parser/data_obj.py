@@ -35,8 +35,8 @@ class Hotel(Base):
     check_in_time = Column(String(128), default='NULL')
     check_out_time = Column(String(128), default='NULL')
     hotel_url = Column(String(1024), default='NULL')
-    continent = Column(String(96), default='NULL')
     update_time = Column(TIMESTAMP, default=datetime.datetime.now, onupdate=datetime.datetime.now, index=True)
+    continent = Column(String(96), default='NULL')
 
 
 # 初始化数据库连接:
