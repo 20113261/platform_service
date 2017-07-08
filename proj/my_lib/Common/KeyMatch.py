@@ -5,11 +5,12 @@
 # @Site    : 
 # @File    : KeyMatch.py
 # @Software: PyCharm
+import types
 
 
 def key_is_legal(s):
     if s:
-        if isinstance(s, str):
+        if isinstance(s, types.StringTypes):
             if s.strip():
                 if s.lower() != 'null':
                     return True
@@ -21,3 +22,7 @@ def key_is_legal(s):
             if s > -1.0:
                 return True
     return False
+
+
+if __name__ == '__main__':
+    print key_is_legal(u'asdfasdf')
