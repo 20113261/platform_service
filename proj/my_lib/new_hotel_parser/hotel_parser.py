@@ -33,7 +33,7 @@ def parse_hotel(content, url, other_info, source, part):
     result = parser(content, url, other_info)
 
     # key words check
-    if key_is_legal(result.map_info):
+    if not key_is_legal(result.map_info):
         raise TypeError('Error map_info NULL')
 
     if not (key_is_legal(result.hotel_name) and key_is_legal(result.hotel_name_en)):
@@ -48,7 +48,7 @@ def parse_hotel(content, url, other_info, source, part):
             raise TypeError('booking has no img')
 
     if result.source == 'hotels':
-        if key_is_legal(result.img_items):
+        if not key_is_legal(result.img_items):
             raise TypeError('hotels has no img')
 
     # if result.grade in ('NULL', '-1', ''):
