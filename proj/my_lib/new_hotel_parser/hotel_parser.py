@@ -8,6 +8,7 @@ import hotels_parser
 import hoteltravel_parser
 import hrs_parser
 from data_obj import DBSession
+from proj.my_lib.Common.KeyMatch import key_is_legal
 
 
 def parse_hotel(content, url, other_info, source, part):
@@ -32,34 +33,22 @@ def parse_hotel(content, url, other_info, source, part):
     result = parser(content, url, other_info)
 
     # key words check
-    if result.map_info is not None:
-        if result.map_info.upper() in ('NULL', ''):
-            raise TypeError('Error map_info NULL')
+    if key_is_legal(result.map_info):
+        raise TypeError('Error map_info NULL')
 
-    hotel_name_none = False
-    hotel_name_en_none = False
-    if result.hotel_name is not None:
-        if result.hotel_name.upper() in ('NULL', ''):
-            hotel_name_none = True
-    if result.hotel_name_en is not None:
-        if result.hotel_name_en.upper() in ('NULL', ''):
-            hotel_name_en_none = True
-
-    if hotel_name_none and hotel_name_en_none:
+    if not (key_is_legal(result.hotel_name) and key_is_legal(result.hotel_name_en)):
         raise TypeError('Error hotel_name and hotel_name_en Both NULL')
 
     if result.source == 'booking':
-        if result.img_items is not None:
-            if result.img_items.upper() in ('NULL', ''):
-                raise TypeError('booking has no img')
-        else:
+        if not key_is_legal(result.hotel_name):
+            raise TypeError('booking has no hotel name')
+        if not key_is_legal(result.hotel_name_en):
+            raise TypeError('booking has no hotel name en')
+        if not key_is_legal(result.img_items):
             raise TypeError('booking has no img')
 
     if result.source == 'hotels':
-        if result.img_items is not None:
-            if result.img_items.upper() in ('NULL', ''):
-                raise TypeError('hotels has no img')
-        else:
+        if key_is_legal(result.img_items):
             raise TypeError('hotels has no img')
 
     # if result.grade in ('NULL', '-1', ''):
