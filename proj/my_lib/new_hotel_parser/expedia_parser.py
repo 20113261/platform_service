@@ -93,7 +93,7 @@ def expedia_parser(content, url, other_info):
     print 'grade=>%s' % hotel.grade
     try:
         star = root.find_class('star-rating-wrapper')[0].text_content().split('/')[0].strip()
-        hotel.star = str(star)
+        hotel.star = str(int(star))
     except:
         hotel.star = -1
     print 'star=>%s' % hotel.star
