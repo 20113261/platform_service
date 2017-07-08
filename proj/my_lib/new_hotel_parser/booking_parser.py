@@ -37,37 +37,28 @@ def booking_parser(content, url, other_info):
     try:
         name_temp = root.xpath('//*[@id="hp_hotel_name"]')[
             0].text_content().encode('utf-8').strip('\t').strip('\n')
-        # print 'name_temp', name_temp
-        # print '--heheheh', name_temp
-        hotel.hotel_name_en = name_temp.split('（')[0].replace('"',
-                                                              '""').strip()
-        print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
-        # print hotel.hotel_name_en
-        try:
-            hotel.hotel_name = name_temp.split('（')[1].replace(
-                '）', '').replace('"', '""').strip()
-        except Exception, e:
-            print str(e)
-            hotel.hotel_name = hotel.hotel_name_en
-    except:
-        try:
-            name_temp = root.xpath('//*[@class="sr-hotel__name"]/text()')[
-                0].strip().encode('utf-8')
-
-            hotel.hotel_name_en = name_temp.split('（')[0].replace('"',
-                                                                  '""').strip()
-            print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
-            # print hotel.hotel_name_en
-        except:
-            try:
-                name_temp = root.xpath('//div[@id="b_mainContent"]/h1/text()')[
-                    0].strip().encode('utf-8')
-                hotel.hotel_name = name_temp
-            except Exception as e:
-                print '----------', str(e)
-                # return hotel_tuple
-                # print 'vvvvvvvvvvvvvvvvv'
-    print 'hotel_name=>%s' % hotel.hotel_name
+        hotel.hotel_name = hotel.hotel_name_en = name_temp
+    except Exception:
+        pass
+        # try:
+        #     name_temp = root.xpath('//*[@class="sr-hotel__name"]/text()')[
+        #         0].strip().encode('utf-8')
+        #
+        #     hotel.hotel_name_en = name_temp.split('（')[0].replace('"',
+        #                                                           '""').strip()
+        #     print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
+        #     # print hotel.hotel_name_en
+        # except:
+        #     try:
+        #         name_temp = root.xpath('//div[@id="b_mainContent"]/h1/text()')[
+        #             0].strip().encode('utf-8')
+        #         hotel.hotel_name = name_temp
+        #     except Exception as e:
+        #         print '----------', str(e)
+        #         # return hotel_tuple
+        #         # print 'vvvvvvvvvvvvvvvvv'
+    print 'hotel.hotel_name=>%s' % hotel.hotel_name
+    print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
     # print hotel.hotel_name
     # 解析酒店品牌名称
     try:
@@ -456,21 +447,29 @@ if __name__ == '__main__':
     # url = 'http://www.booking.com/hotel/hk/bridal-tea-house-hunghom.zh-cn.html'
     url = 'https://www.booking.com/hotel/de/langerfelder-hof.zh-cn.html'
     other_info = {'source_id': '1016533', 'city_id': '10067'}
-    headers = {
-        'User-Agent':
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-        'Referer':
-            'http://www.booking.com'
-    }
+    # headers = {
+    #     'User-Agent':
+    #         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+    #     'Referer':
+    #         'http://www.booking.com'
+    # }
     # PROXY = get_proxy(source="Platform")
     # proxies = {
     #     'http': 'socks5://' + PROXY,
     #     'https': 'socks5://' + PROXY
     # }
-    page = requests.get(url=url, headers=headers, timeout=30)
-    page.encoding = 'utf8'
-    content = page.content
-    # content = open('/Users/hourong/Downloads/79351566-033a-4dea-8dba-33df726c9cd0_0.html').read()
+    # page = requests.get(url=url, headers=headers, timeout=30)
+    import pymongo
+    import zlib
+
+    # client = pymongo.MongoClient(host='10.10.231.105')
+    # collections = client['PageSaver']['hotel_base_data_170612']
+    #
+    # content = zlib.decompress(list(collections.find({'source_id': '482499'}).limit(1))[0]['content'])
+    content = requests.get(
+        'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_170612&id=d322d234bd538ea10b20455961b93f96').text
+
+    # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
     result = booking_parser(content, url, other_info)
 
     # 如果需要，可以在这里用 print 打印 hotel 对象中的内容。也可直接使用 debug 调试查看 result
