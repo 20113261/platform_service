@@ -14,11 +14,11 @@ def key_is_legal(s):
             if s.strip():
                 if s.lower() != 'null':
                     return True
-        elif isinstance(s, int):
+        elif isinstance(s, types.IntType):
             if s > -1:
                 return True
 
-        elif isinstance(s, float):
+        elif isinstance(s, types.FloatType):
             if s > -1.0:
                 return True
     return False
