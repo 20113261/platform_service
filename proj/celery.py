@@ -6,6 +6,8 @@ from celery.signals import setup_logging
 import logging
 from logging.handlers import RotatingFileHandler
 
+from kombu import Queue, Exchange
+
 platforms.C_FORCE_ROOT = True
 
 app = Celery('proj', include=['proj.tasks',
@@ -22,9 +24,17 @@ app = Celery('proj', include=['proj.tasks',
                               'proj.poi_nearby_city_task',
                               'proj.daodao_img_rename_tasks',
                               # 'proj.hotel_tax_task',
-                              'proj.suggestion_task'
+                              'proj.suggestion_task',
+                              'proj.full_website_spider_task'
                               ])
 app.config_from_object('proj.config')
+app.conf.update(
+    CELERY_QUEUES=(
+        Queue('full_site_task', exchange=Exchange('full_site_task', type='direct'), routing_key='full_site_task'),
+        Queue('hotel_task', exchange=Exchange('hotel_task', type='direct'), routing_key='hotel_task'),
+    ),
+
+)
 
 
 # class StreamToLogger(object):
