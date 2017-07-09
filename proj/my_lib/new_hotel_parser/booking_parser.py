@@ -467,7 +467,7 @@ if __name__ == '__main__':
     #
     # content = zlib.decompress(list(collections.find({'source_id': '482499'}).limit(1))[0]['content'])
     content = requests.get(
-        'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_170612&id=d322d234bd538ea10b20455961b93f96').text
+        'https://www.booking.com/hotel/es/hostal-lafosca.zh-cn.html').text
 
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
     result = booking_parser(content, url, other_info)
