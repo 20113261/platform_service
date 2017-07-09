@@ -1,3 +1,4 @@
+from proj.celery import app
 from proj.hotel_tasks import hotel_base_data
 from proj.my_lib.task_module.task_func import get_task_total
 from proj.poi_pic_spider_tasks import google_spider, shutter_spider, flickr_spider
@@ -41,7 +42,14 @@ if __name__ == '__main__':
 
         # todo hotel base data init by Task
         if worker == 'hotel_base_data':
-            hotel_base_data.delay(args['source'], args['hotel_url'], args['other_info'], args['part'], task_id=task_id)
+            # hotel_base_data.delay(args['source'], args['hotel_url'], args['other_info'], args['part'], task_id=task_id)
+            kwargs = {}
+            app.send_task('proj.full_website_spider_task.full_site_spider',
+                          args=(
+                              args['source'], args['hotel_url'], args['other_info'], args['part'],),
+                          kwargs={'task_id': task_id},
+                          queue='full_site_task',
+                          routing_key='full_site_task')
             _count += 1
 
         # todo hotel static data init by Task

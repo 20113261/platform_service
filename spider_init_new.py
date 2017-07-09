@@ -10,6 +10,7 @@
 # coding='utf8'
 import re
 
+from proj.celery import app
 from proj.tasks import get_comment
 
 
@@ -26,7 +27,14 @@ if __name__ == '__main__':
     #
     # print hotel_static_base_data('7ededbc01f00e0463f064e6ca9f8235f', 'hotel_base_data_170612')
 
-    from proj.suggestion_task import ctrip_suggestion_task
+    # from proj.suggestion_task import ctrip_suggestion_task
 
     # ctrip_suggestion_task.delay('10001', '巴黎', task_id='test')
-    ctrip_suggestion_task("10025", "sk\u00e4rholmen")
+    # ctrip_suggestion_task("10025", "sk\u00e4rholmen")
+
+    kwargs = {}
+    app.send_task('proj.full_website_spider_task.full_site_spider',
+                  args=('http://www.parcjeandrapeau.com', 0, 'http://www.parcjeandrapeau.com', {'id': 'v514490'},),
+                  kwargs=kwargs,
+                  queue='hotel_task',
+                  routing_key='hotel_task')
