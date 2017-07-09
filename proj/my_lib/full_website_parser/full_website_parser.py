@@ -45,7 +45,8 @@ def full_website_parser(content, url):
 if __name__ == '__main__':
     import requests
 
-    url = 'https://www.alhambradegranada.org/zh/info/%E5%8D%A1%E6%B4%9B%E6%96%AF%E4%BA%94%E4%B8%96%E7%9A%87%E5%AE%AB%E5%8F%8A%E5%A4%96%E5%9B%B4/%E5%8D%A1%E6%B4%9B%E6%96%AF%E4%BA%94%E4%B8%96%E7%9A%87%E5%AE%AB.asp'
+    # url = 'https://www.alhambradegranada.org/zh/info/%E5%8D%A1%E6%B4%9B%E6%96%AF%E4%BA%94%E4%B8%96%E7%9A%87%E5%AE%AB%E5%8F%8A%E5%A4%96%E5%9B%B4/%E5%8D%A1%E6%B4%9B%E6%96%AF%E4%BA%94%E4%B8%96%E7%9A%87%E5%AE%AB.asp'
+    url = 'http://www.parcjeandrapeau.com'
     page = requests.get(url)
     content = page.text
     page.headers['Content-type']
