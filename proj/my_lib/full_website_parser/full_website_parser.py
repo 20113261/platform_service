@@ -34,8 +34,13 @@ def full_website_parser(content, url):
 
     for item in doc('a').items():
         if url_is_legal(item.attr.href):
+            # pdf 入 pdf set
             if item.attr.href.lower().endswith('pdf'):
                 pdf_url_set.add(item.attr.href)
+            # 图像入 img set
+            elif any(map(lambda x: item.attr.href.lower().strip().endswith(x), ['.bmp', '.jpeg', '.jpg', '.gif', '.png', '.svg'])):
+                img_url_set.add(item.attr.href)
+            # 剩余无法判断的应该是 html 页面，进行下一次抓取
             elif urlparse(item.attr.href).netloc == urlparse(url).netloc:
                 next_url_set.add(item.attr.href)
 
