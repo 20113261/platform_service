@@ -18,10 +18,10 @@ urlSaver = UrlSaver()
 MAX_LEVEL = 5
 
 client = pymongo.MongoClient(host='10.10.231.105')
-collections = client['FullSiteSpider']['AttrFullSite']
+collections = client['FullSiteSpider']['AttrFullSiteNew']
 
 
-@app.task(bind=True, max_retries=3, rate_limit='6/s')
+@app.task(bind=True, max_retries=2, rate_limit='6/s')
 def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
     with MySession() as session:
         try:
@@ -52,6 +52,9 @@ def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
                                                                                                    next_url)
                     ):
                         if level < MAX_LEVEL - 1:
+                            # 发任务的时候就添加已抓取 url，防止因中间的时间间隔导致队列中任务指数暴增
+                            urlSaver.add_url(parent_url, url)
+
                             # full_site_spider.delay(next_url, level + 1, parent_url, parent_info, **kwargs)
                             app.send_task('proj.full_website_spider_task.full_site_spider',
                                           args=(next_url, level + 1, parent_url, parent_info,),
