@@ -48,8 +48,8 @@ if __name__ == '__main__':
                           args=(
                               args['source'], args['hotel_url'], args['other_info'], args['part'],),
                           kwargs={'task_id': task_id},
-                          queue='full_site_task',
-                          routing_key='full_site_task')
+                          queue='hotel_task',
+                          routing_key='hotel_task')
             _count += 1
 
         # todo hotel static data init by Task
