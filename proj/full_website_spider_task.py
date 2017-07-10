@@ -41,6 +41,7 @@ def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
                     'url': url,
                     'img_url': list(img_url_set),
                     'pdf_url': list(pdf_url_set),
+                    'unknown_static_file': [],
                     'next_url': list(next_url_set),
                     'insert_time': datetime.datetime.now()
                 })
@@ -74,6 +75,7 @@ def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
                     'url': url,
                     'img_url': [url, ],
                     'pdf_url': [],
+                    'unknown_static_file': [],
                     'next_url': [],
                     'insert_time': datetime.datetime.now()
                 })
@@ -92,11 +94,23 @@ def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
                     'url': url,
                     'img_url': [],
                     'pdf_url': [url, ],
+                    'unknown_static_file': [],
                     'next_url': [],
                     'insert_time': datetime.datetime.now()
                 })
             else:
                 # 将非 html 页面入 set 防止多次抓取，保存已抓取页面 url
+                collections.save({
+                    'parent_url': parent_url,
+                    'parent_info': parent_info,
+                    'level': level,
+                    'url': url,
+                    'img_url': [],
+                    'pdf_url': [],
+                    'unknown_static_file': [url, ],
+                    'next_url': [],
+                    'insert_time': datetime.datetime.now()
+                })
                 urlSaver.add_url('static_data', url)
 
         except Exception as exc:
