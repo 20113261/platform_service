@@ -468,8 +468,14 @@ if __name__ == '__main__':
     # collections = client['PageSaver']['hotel_base_data_170612']
     #
     # content = zlib.decompress(list(collections.find({'source_id': '482499'}).limit(1))[0]['content'])
+    # content = requests.get(
+    #     'https://www.booking.com/hotel/it/ai-piedi-delle-colline.zh-cn.html').text
+
+    # content = requests.get(
+    #     'https://www.booking.com/hotel/us/racpanos-modern-stays-jersey-city.zh-cn.html').text
+
     content = requests.get(
-        'https://www.booking.com/hotel/it/ai-piedi-delle-colline.zh-cn.html').text
+        'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_booking_new&id=3824a0f6469e5343d25b27f77be83cdc').text
 
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
     result = booking_parser(content, url, other_info)

@@ -44,7 +44,7 @@ if __name__ == '__main__':
         if worker == 'hotel_base_data':
             # hotel_base_data.delay(args['source'], args['hotel_url'], args['other_info'], args['part'], task_id=task_id)
             kwargs = {}
-            app.send_task('proj.full_website_spider_task.full_site_spider',
+            app.send_task('proj.hotel_tasks.hotel_base_data',
                           args=(
                               args['source'], args['hotel_url'], args['other_info'], args['part'],),
                           kwargs={'task_id': task_id},
