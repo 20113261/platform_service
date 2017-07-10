@@ -54,7 +54,7 @@ def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
                     ):
                         if level < MAX_LEVEL - 1:
                             # 发任务的时候就添加已抓取 url，防止因中间的时间间隔导致队列中任务指数暴增
-                            urlSaver.add_url(parent_url, url)
+                            urlSaver.add_url(parent_url, next_url)
 
                             # full_site_spider.delay(next_url, level + 1, parent_url, parent_info, **kwargs)
                             app.send_task('proj.full_website_spider_task.full_site_spider',
