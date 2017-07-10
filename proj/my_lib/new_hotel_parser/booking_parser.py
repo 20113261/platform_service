@@ -10,6 +10,8 @@ from lxml import html as HTML
 from data_obj import Hotel
 from common.common import get_proxy
 
+from proj.my_lib.Common.KeyMatch import key_is_legal
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -408,7 +410,7 @@ def booking_parser(content, url, other_info):
     except:
         pass
 
-    if hotel.img_items == '' or hotel.img_items == 'NULL':
+    if not key_is_legal(hotel.img_items):
         try:
             hotels_class = root.find_class('hp-gallery-slides hp-gallery-top')[0]
             img_src = hotels_class.xpath('.//img/@src')[0]
@@ -467,7 +469,7 @@ if __name__ == '__main__':
     #
     # content = zlib.decompress(list(collections.find({'source_id': '482499'}).limit(1))[0]['content'])
     content = requests.get(
-        'https://www.booking.com/hotel/es/hostal-lafosca.zh-cn.html').text
+        'https://www.booking.com/hotel/it/ai-piedi-delle-colline.zh-cn.html').text
 
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
     result = booking_parser(content, url, other_info)
