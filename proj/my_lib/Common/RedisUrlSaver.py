@@ -17,3 +17,9 @@ class UrlSaver(object):
 
     def has_crawled(self, key, url):
         return self.r.sismember(key, url)
+
+
+if __name__ == '__main__':
+    us = UrlSaver()
+    print us.has_crawled(u'http://www.castillosanfernando.org/',
+                         u'http://www.castillosanfernando.org/visita-virtual-castell-sant-ferran?id=185&vsig1_0=6')
