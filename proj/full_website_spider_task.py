@@ -26,7 +26,7 @@ def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
     with MySession() as session:
         try:
             page = session.get(url)
-            if 'text/html' in page.headers['Content-type']:
+            if ('text/html' in page.headers['Content-type']) or ('text/plain' in page.headers['Content-type']):
                 # 解析
                 img_url_set, pdf_url_set, next_url_set = full_website_parser(page.text, url)
 
@@ -58,7 +58,40 @@ def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
                                           kwargs=kwargs,
                                           queue='full_site_task',
                                           routing_key='full_site_task')
+            elif 'image' in page.headers['Content-type']:
+                # 无法直接从页面信息中查看到是否为图片的页面，通过 Content-type 检测是否为图片，并入库保存
+                # 保存已抓取页面 url
+                urlSaver.add_url(parent_url, url)
 
+                # 保存结果信息
+                collections.save({
+                    'parent_url': parent_url,
+                    'parent_info': parent_info,
+                    'level': level,
+                    'url': url,
+                    'img_url': [url, ],
+                    'pdf_url': [],
+                    'next_url': [],
+                    'insert_time': datetime.datetime.now()
+                })
+
+            elif 'application/pdf' in page.headers['Content-type']:
+                # 无法直接从页面信息中查看到是否为 pdf 的页面，通过 Content-type 检测是否为 pdf，并入库保存
+
+                # 保存已抓取页面 url
+                urlSaver.add_url(parent_url, url)
+
+                # 保存结果信息
+                collections.save({
+                    'parent_url': parent_url,
+                    'parent_info': parent_info,
+                    'level': level,
+                    'url': url,
+                    'img_url': [],
+                    'pdf_url': [url, ],
+                    'next_url': [],
+                    'insert_time': datetime.datetime.now()
+                })
             else:
                 # 将非 html 页面入 set 防止多次抓取，保存已抓取页面 url
                 urlSaver.add_url('static_data', url)
