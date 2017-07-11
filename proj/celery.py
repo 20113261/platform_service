@@ -19,7 +19,7 @@ app = Celery('proj', include=['proj.tasks',
                               # 'proj.tripadvisor_city_query_task',
                               'proj.qyer_city_query_task',
                               'proj.tripadvisor_city',
-                              # 'proj.hotel_list_task',
+                              'proj.hotel_list_task',
                               'proj.qyer_attr_task',
                               'proj.poi_nearby_city_task',
                               'proj.daodao_img_rename_tasks',
@@ -33,6 +33,7 @@ app.conf.update(
         Queue('hotel_suggestion', exchange=Exchange('hotel_suggestion', type='direct'), routing_key='hotel_suggestion'),
         Queue('full_site_task', exchange=Exchange('full_site_task', type='direct'), routing_key='full_site_task'),
         Queue('hotel_task', exchange=Exchange('hotel_task', type='direct'), routing_key='hotel_task'),
+        Queue('hotel_list_task', exchange=Exchange('hotel_list_task', type='direct'), routing_key='hotel_list_task'),
     ),
 
 )
