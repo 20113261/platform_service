@@ -15,7 +15,7 @@ from my_lib.full_website_parser.full_website_parser import full_website_parser
 from my_lib.Common.RedisUrlSaver import UrlSaver
 
 urlSaver = UrlSaver()
-MAX_LEVEL = 5
+MAX_LEVEL = 3
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['FullSiteSpider']['AttrFullSiteNew']
