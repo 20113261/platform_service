@@ -30,6 +30,7 @@ app = Celery('proj', include=['proj.tasks',
 app.config_from_object('proj.config')
 app.conf.update(
     CELERY_QUEUES=(
+        Queue('hotel_suggestion', exchange=Exchange('hotel_suggestion', type='direct'), routing_key='hotel_suggestion'),
         Queue('full_site_task', exchange=Exchange('full_site_task', type='direct'), routing_key='full_site_task'),
         Queue('hotel_task', exchange=Exchange('hotel_task', type='direct'), routing_key='hotel_task'),
     ),

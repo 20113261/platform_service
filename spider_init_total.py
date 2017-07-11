@@ -157,7 +157,15 @@ if __name__ == '__main__':
 
         # todo hotel suggestion task
         if worker == 'hotel_suggestion':
-            ctrip_suggestion_task.delay(args['city_id'], args['keyword'], task_id=task_id)
+            # ctrip_suggestion_task.delay(args['city_id'], args['keyword'], args['annotation'], task_id=task_id)
+
+            kwargs = {}
+            app.send_task('proj.suggestion_task.ctrip_suggestion_task',
+                          args=(
+                              args['city_id'], args['keyword'], args['annotation'],),
+                          kwargs={'task_id': task_id},
+                          queue='hotel_suggestion',
+                          routing_key='hotel_suggestion')
             _count += 1
 
     print _count

@@ -28,7 +28,7 @@ from .my_lib.PageSaver import save_suggestions
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')
-def ctrip_suggestion_task(self, city_id, key_word, **kwargs):
+def ctrip_suggestion_task(self, city_id, key_word, annotation=-1, **kwargs):
     x = time.time()
     PROXY = get_proxy(source="Platform")
     proxies = {
@@ -55,6 +55,7 @@ def ctrip_suggestion_task(self, city_id, key_word, **kwargs):
                     'city_id': city_id,
                     'key_word': key_word,
                     'u_time': datetime.datetime.now(),
+                    'annotation': annotation,
                     'data': j_data
                 }, 'ctrip')
                 update_task(kwargs['task_id'])
