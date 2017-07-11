@@ -37,7 +37,17 @@ if __name__ == '__main__':
 
         # todo hotel list init by Task
         if worker == 'hotel_list':
-            hotel_list_task.delay(args['source'], args['city_id'], args['part'], task_id=task_id)
+            # hotel_list_task.delay(args['source'], args['city_id'], args['part'], task_id=task_id)
+
+            kwargs = {}
+            app.send_task('proj.hotel_list_task.hotel_list_task',
+                          args=(
+                              args['source']
+
+                              , args['city_id'], args['check_in'], args['part'],),
+                          kwargs={'task_id': task_id},
+                          queue='hotel_list_task',
+                          routing_key='hotel_list_task')
             _count += 1
 
         # todo hotel base data init by Task

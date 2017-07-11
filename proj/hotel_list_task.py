@@ -18,7 +18,16 @@ from mioji import spider_factory
 from mioji.common.utils import simple_get_socks_proxy
 import mioji.common.spider
 import mioji.common.logger
+import datetime
+import pymongo
+import mioji.common.pool
+mioji.common.pool.NEED_MONKEY_PATCH = False
+mioji.common.pool.pool.set_size(2024)
 
+# pymongo client
+
+client = pymongo.MongoClient(host='10.10.231.105')
+collections = client['HotelList']['ctrip']
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
 get_proxy = simple_get_socks_proxy
@@ -34,42 +43,60 @@ hotel_rooms = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'chil
 hotel_rooms_c = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
 
 
-def hotel_list_database(source, city_id):
+# def hotel_list_database(source, city_id):
+#     task = Task()
+#     task.content = str(city_id) + '&' + '2&{nights}&{check_in}'.format(**hotel_rooms)
+#     spider = factory.get_spider_by_old_source(source + 'ListHotel')
+#     spider.task = task
+#     print spider.crawl(required=['hotel'])
+#     return spider.result
+
+def hotel_list_database(source, city_id, check_in):
     task = Task()
-    task.content = str(city_id) + '&' + '2&{nights}&{check_in}'.format(**hotel_rooms)
+    task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
     spider = factory.get_spider_by_old_source(source + 'ListHotel')
     spider.task = task
     print spider.crawl(required=['hotel'])
     return spider.result
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='7/s')
-def hotel_list_task(self, source, city_id, part, **kwargs):
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
+def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
     try:
-        result = hotel_list_database(source=source, city_id=city_id)
+        result = hotel_list_database(source=source, city_id=city_id, check_in=check_in)
         data = []
         part = part.replace('list', 'detail')
-        for sid, hotel_url in result['hotel']:
-            other_info = {
-                u'source_id': unicode(sid),
-                u'city_id': unicode(city_id)
-            }
-            worker = u'hotel_base_data'
-            if source in (u'booking', u'expedia'):
-                if '?' in hotel_url:
-                    try:
-                        hotel_url = hotel_url.split('?')[0]
-                    except Exception:
-                        pass
-            args = json.dumps(
-                {u'source': unicode(source), u'hotel_url': unicode(hotel_url), u'other_info': other_info,
-                 u'part': unicode(part)})
+        if source == 'ctrip':
+            for line in result['hotel']:
+                sid = line[3]
+                hotel_url = line[-1]
+                collections.save({
+                    'sid': sid,
+                    'hotel_url': hotel_url,
+                    'parent_info': {
+                        'source': source,
+                        'city_id': city_id,
+                        'check_in': check_in,
+                        'part': part,
+                        'task_id': kwargs['task_id']
+                    },
+                    'u_time': datetime.datetime.now()
+                })
+        else:
+            for sid, hotel_url in result['hotel']:
+                collections.save({
+                    'sid': sid,
+                    'hotel_url': hotel_url,
+                    'parent_info': {
+                        'source': source,
+                        'city_id': city_id,
+                        'check_in': check_in,
+                        'part': part,
+                        'task_id': kwargs['task_id']
+                    },
+                    'u_time': datetime.datetime.now()
+                })
 
-            special_hotel_task_args = json.dumps(
-                {u'source': unicode(source), u'other_info': other_info,
-                 u'part': unicode(part)})
-            task_id = get_task_id(worker, special_hotel_task_args)
-            data.append((task_id, worker, args, unicode(part)))
         update_task(kwargs['task_id'])
         print insert_task(data=data)
     except Exception as exc:
@@ -77,4 +104,4 @@ def hotel_list_task(self, source, city_id, part, **kwargs):
 
 
 if __name__ == '__main__':
-    print hotel_list_database('booking', '51211')
+    print hotel_list_database('booking', '51211', '20170801')

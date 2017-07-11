@@ -1218,3 +1218,9 @@ if __name__ == '__main__':
     # task_content = hotel_url.split('?')[0] + "?&1&20170910"
     #
     # print hotel_tax_detail(task_content, '10001', 'test')
+
+    # todo List Hotel
+    from proj.hotel_list_task import hotel_list_database, hotel_list_task
+
+    # result = hotel_list_database('ctrip', '10001', '20170801')
+    hotel_list_task('ctrip', '10001', '20170801', 'test_part', task_id='test_task')
