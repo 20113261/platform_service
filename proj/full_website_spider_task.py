@@ -21,7 +21,7 @@ client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['FullSiteSpider']['AttrFullSiteNew']
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='8/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='16/s')
 def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
     with MySession() as session:
         try:
