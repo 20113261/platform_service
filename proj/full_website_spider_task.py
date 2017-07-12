@@ -21,7 +21,7 @@ client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['FullSiteSpider']['AttrFullSiteNew']
 
 
-@app.task(bind=True, max_retries=2, rate_limit='6/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='8/s')
 def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
     with MySession() as session:
         try:
@@ -49,8 +49,9 @@ def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
                 # 分发新的任务
                 for next_url in next_url_set:
                     if not (
-                                urlSaver.has_crawled(parent_url, next_url) or urlSaver.has_crawled('static_data',
-                                                                                                   next_url)
+                                    urlSaver.has_crawled(parent_url, next_url) or
+                                    urlSaver.has_crawled('static_data', next_url) or
+                                    urlSaver.crawled_enough(parent_url)
                     ):
                         if level < MAX_LEVEL - 1:
                             # 发任务的时候就添加已抓取 url，防止因中间的时间间隔导致队列中任务指数暴增
