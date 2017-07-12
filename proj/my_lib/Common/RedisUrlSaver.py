@@ -8,6 +8,8 @@
 import redis
 import urlparse
 
+ENOUGH_PAGE = 1000
+
 
 class UrlSaver(object):
     def __init__(self):
@@ -26,6 +28,9 @@ class UrlSaver(object):
 
     def has_crawled(self, key, url):
         return self.unique_url.sismember(key, self.get_unique_url(url))
+
+    def crawled_enough(self, key):
+        return self.unique_url.scard(key) > ENOUGH_PAGE
 
 
 if __name__ == '__main__':
