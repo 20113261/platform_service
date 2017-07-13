@@ -34,10 +34,10 @@ def expedia_parser(content, url, other_info):
 
     try:
         # 匹配英文名
-        eng_pattern = re.compile(r'([a-zA-Z].*[a-zA-Z]?)', re.S)
+        # eng_pattern = re.compile(r'([a-zA-Z].*[a-zA-Z]?)', re.S)
         name_all = root.find_class('page-header')[0].find_class('section-header-main')[0].text_content().strip()
-        hotel_name_en = encode_unicode(eng_pattern.findall(name_all)[0])
-        hotel_name = encode_unicode(eng_pattern.findall(name_all)[0])
+        hotel_name_en = name_all
+        hotel_name = name_all
 
         # 爬虫中彻底去除酒店名称处理逻辑
         # 处理酒店名称
@@ -276,7 +276,8 @@ if __name__ == '__main__':
     # url = 'https://www.expedia.cn/h15421134.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/h9999647.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Savannah-Hotels-Best-Western-Savannah-Historic-District.h454.Hotel-Information'
-    url = 'https://www.expedia.com.hk/cn/Chiang-Mai-Hotels-VCSuanpaak-Hotel-Serviced-Apartments.h6713388.Hotel-Information?chkin=2016%2F12%2F14&chkout=2016%2F12%2F15&rm1=a3&hwrqCacheKey=f03a3186-af50-40c4-881f-b5f8c58d19a7HWRQ1480420091939&c=4617cc10-b9c1-46dc-992b-5a6fe87f7f49&'
+    # url = 'https://www.expedia.com.hk/cn/Chiang-Mai-Hotels-VCSuanpaak-Hotel-Serviced-Apartments.h6713388.Hotel-Information?chkin=2016%2F12%2F14&chkout=2016%2F12%2F15&rm1=a3&hwrqCacheKey=f03a3186-af50-40c4-881f-b5f8c58d19a7HWRQ1480420091939&c=4617cc10-b9c1-46dc-992b-5a6fe87f7f49&'
+    url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=a2203d7df9960a271e52eedf8c008f65'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'
@@ -286,7 +287,7 @@ if __name__ == '__main__':
     page.encoding = 'utf8'
     content = page.text
     result = expedia_parser(content, url, other_info)
-
+    print 'Hello World'
     # try:
     #     session = DBSession()
     #     session.merge(result)

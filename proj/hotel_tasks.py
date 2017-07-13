@@ -14,7 +14,7 @@ from .my_lib.FileSaver import save_file
 from .my_lib.PageSaver import save_task_and_page_content
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='2/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='8/s')
 def hotel_base_data(self, source, url, other_info, part, **kwargs):
     x = time.time()
     PROXY = get_proxy(source="Platform")

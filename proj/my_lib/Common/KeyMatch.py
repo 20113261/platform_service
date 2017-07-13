@@ -26,3 +26,8 @@ def key_is_legal(s):
 
 if __name__ == '__main__':
     print key_is_legal(u'asdfasdf')
+    print key_is_legal(None)
+    print key_is_legal(u'NULL')
+    print key_is_legal(u'')
+    print key_is_legal(b'NULL')
+    print not (key_is_legal(None) and key_is_legal('NULL'))
