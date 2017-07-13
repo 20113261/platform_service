@@ -21,6 +21,8 @@ from .my_lib.PageSaver import get_page_content
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='50/s')
 def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, city_id, hotel_url, **kwargs):
+    self.task_source = source.title()
+    self.task_type = 'HotelStaticDataParse'
     try:
         # 获取保存的页面信息
         other_info = {

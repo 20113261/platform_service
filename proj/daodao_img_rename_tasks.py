@@ -35,6 +35,9 @@ def insert_db(args, table_name):
 
 @app.task(bind=True, base=BaseTask, max_retries=1)
 def daodao_img_rename_task(self, file_name, src_path, dst_path, bucket_name, img_url, mid, table_name, **kwargs):
+    self.task_source = 'TripAdvisor'
+    self.task_type = 'ImgRename'
+
     try:
         src_file = os.path.join(src_path, file_name)
         flag, h, w = is_complete_scale_ok(src_file)

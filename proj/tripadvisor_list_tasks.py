@@ -36,6 +36,8 @@ def init_header(source_city_id, page_index):
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='3/s')
 def list_page_task(self, ctx, city_id, **kwargs):
+    self.task_source = 'TripAdvisor'
+    self.task_type = 'HotelList'
     with MySession() as session:
         try:
             session.headers.update(ctx['headers'])

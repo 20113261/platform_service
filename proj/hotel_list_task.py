@@ -62,6 +62,8 @@ def hotel_list_database(source, city_id, check_in):
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
+    self.task_source = source.title()
+    self.task_type = 'HotelList'
     try:
         result = hotel_list_database(source=source, city_id=city_id, check_in=check_in)
         data = []

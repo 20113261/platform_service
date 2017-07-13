@@ -1,8 +1,10 @@
+# coding=utf-8
 import pymysql
 import json
 import redis
 import socket
 import time
+import types
 from celery.app.log import get_logger
 from celery.task import Task
 
@@ -19,14 +21,32 @@ def get_local_ip():
     return res
 
 
+def get_str_type_object_attribute(obj, attr_name):
+    if hasattr(obj, attr_name):
+        attr_obj = getattr(obj, attr_name)
+        if isinstance(attr_obj, types.StringTypes):
+            return attr_obj
+    return 'NULL'
+
+
+def get_source(obj):
+    return get_str_type_object_attribute(obj, 'task_source')
+
+
+def get_type(obj):
+    return get_str_type_object_attribute(obj, 'task_type')
+
+
 class BaseTask(Task):
     default_retry_delay = 1
     max_retries = 3
 
     def on_success(self, retval, task_id, args, kwargs):
-        print 'on success called'
+        # 增加源以及抓取类型统计
+        task_source = get_source(self)
+        task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=3)
-        r.incr(self.name + '|_||_|' + get_local_ip() + '|_||_|success')
+        r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, 'success']))
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
         if self.name not in FAILED_TASK_BLACK_LIST:
@@ -46,9 +66,10 @@ class BaseTask(Task):
             conn.close()
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        print 'on failure called'
+        task_source = get_source(self)
+        task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=3)
-        r.incr(self.name + '|_||_|' + get_local_ip() + '|_||_|failure')
+        r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, 'failure']))
 
         if self.name not in FAILED_TASK_BLACK_LIST:
             conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', db='Task', charset='utf8')
