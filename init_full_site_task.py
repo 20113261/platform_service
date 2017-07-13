@@ -15,7 +15,7 @@ collections = client['Task']['FullSite']
 
 if __name__ == '__main__':
     kwargs = {}
-    for line in collections.find().sort('select_time', 1).limit(30):
+    for line in collections.find().sort('select_time', 1).limit(100):
         _id = line['_id']
         mid = line['mid']
         website_url = line['website_url']
