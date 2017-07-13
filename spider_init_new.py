@@ -32,9 +32,37 @@ if __name__ == '__main__':
     # ctrip_suggestion_task.delay('10001', '巴黎', task_id='test')
     # ctrip_suggestion_task("10025", "sk\u00e4rholmen")
 
-    kwargs = {}
-    app.send_task('proj.full_website_spider_task.full_site_spider',
-                  args=('http://www.parcjeandrapeau.com', 0, 'http://www.parcjeandrapeau.com', {'id': 'v514490'},),
-                  kwargs=kwargs,
-                  queue='hotel_task',
-                  routing_key='hotel_task')
+    # kwargs = {}
+    # app.send_task('proj.full_website_spider_task.full_site_spider',
+    #               args=('http://www.parcjeandrapeau.com', 0, 'http://www.parcjeandrapeau.com', {'id': 'v514490'},),
+    #               kwargs=kwargs,
+    #               queue='hotel_task',
+    #               routing_key='hotel_task')
+
+    # todo Trip Advisor List
+    import dataset
+    import re
+    from proj.tripadvisor_list_tasks import init_header
+
+    db = dataset.connect('mysql+pymysql://hourong:hourong@10.10.180.145/SuggestName?charset=utf8')
+
+    _count = 0
+    for line in db['DaodaoSuggestCityUrl']:
+        _count += 1
+        city_id = line['city_id']
+        try:
+            source_city_id = re.findall('-g(\d+)', line['daodao_url'])[-1]
+        except Exception:
+            continue
+        # print city_id, source_city_id
+        if _count % 1000 == 0:
+            print _count
+
+        ctx = init_header('187147', 0)
+        t_id = app.send_task('proj.tripadvisor_list_tasks.list_page_task',
+                             args=(ctx, '10001',),
+                             kwargs={'task_id': 'test'},
+                             queue='tripadvisor_list_tasks',
+                             routing_key='tripadvisor_list_tasks')
+        print t_id
+    print _count
