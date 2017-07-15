@@ -7,6 +7,7 @@ import expedia_parser
 import hotels_parser
 import hoteltravel_parser
 import hrs_parser
+import tripadvisor_parser
 from data_obj import DBSession
 from proj.my_lib.Common.KeyMatch import key_is_legal
 
@@ -25,6 +26,7 @@ def parse_hotel(content, url, other_info, source, part):
         'orbitz': expedia_parser.expedia_parser,
         'travelocity': expedia_parser.expedia_parser,
         'ebookers': expedia_parser.expedia_parser,
+        'tripadvisor': tripadvisor_parser.tripadvisor_parser,
     }
     if source not in function_dict.keys():
         raise TypeError('Error Parser Source')

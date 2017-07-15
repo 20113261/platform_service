@@ -26,7 +26,8 @@ app = Celery('proj', include=['proj.tasks',
                               # 'proj.hotel_tax_task',
                               'proj.suggestion_task',
                               'proj.full_website_spider_task',
-                              'proj.tripadvisor_list_tasks'
+                              'proj.tripadvisor_list_tasks',
+                              'proj.file_downloader_task'
                               ])
 app.config_from_object('proj.config')
 app.conf.update(
@@ -37,6 +38,8 @@ app.conf.update(
         Queue('hotel_list_task', exchange=Exchange('hotel_list_task', type='direct'), routing_key='hotel_list_task'),
         Queue('tripadvisor_list_tasks', exchange=Exchange('tripadvisor_list_tasks', type='direct'),
               routing_key='tripadvisor_list_tasks'),
+        Queue('file_downloader', exchange=Exchange('file_downloader', type='direct'),
+              routing_key='file_downloader'),
     ),
 
 )

@@ -9,7 +9,7 @@ Base = declarative_base()
 
 
 class Hotel(Base):
-    __tablename__ = 'hotelinfo_static_data'
+    __tablename__ = 'hotelinfo_tripadvisor'
     hotel_name = Column(String(512), default='NULL')
     hotel_name_en = Column(String(512), default='NULL')
     source = Column(String(64), default='NULL', primary_key=True)
@@ -40,7 +40,7 @@ class Hotel(Base):
 
 
 # 初始化数据库连接:
-engine = create_engine('mysql+mysqlconnector://hourong:hourong@10.10.180.145:3306/hotel_adding',
+engine = create_engine('mysql+mysqlconnector://mioji_admin:mioji1109@10.10.228.253:3306/hotel_adding',
                        encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
 # 创建DBSession类型:
 DBSession = sessionmaker(bind=engine)
