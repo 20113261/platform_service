@@ -14,5 +14,5 @@ export CONFIG_FILE="/data/lib/slave.spider.ini"
 #        Queue('full_site_task', exchange=Exchange('full_site_task', type='direct'), routing_key='full_site_task'),
 #        Queue('hotel_task', exchange=Exchange('hotel_task', type='direct'), routing_key='hotel_task'),
 #        Queue('hotel_list_task', exchange=Exchange('hotel_list_task', type='direct'), routing_key='hotel_list_task'),
-/usr/local/bin/celery worker -A proj -P eventlet --autoscale=2000,200 -Q tripadvisor_list_tasks -l info
+/usr/local/bin/celery worker -A proj -P eventlet --autoscale=2000,200 -Q tripadvisor_list_tasks,file_downloader -l info
 #/usr/local/bin/celery worker -A proj --autoscal=10,3 -l info --logfile=/search/log/celery.log

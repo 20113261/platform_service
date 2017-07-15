@@ -40,29 +40,47 @@ if __name__ == '__main__':
     #               routing_key='hotel_task')
 
     # todo Trip Advisor List
-    import dataset
-    import re
-    from proj.tripadvisor_list_tasks import init_header
+    # import dataset
+    # import re
+    # from proj.tripadvisor_list_tasks import init_header
+    #
+    # db = dataset.connect('mysql+pymysql://hourong:hourong@10.10.180.145/SuggestName?charset=utf8')
+    #
+    # _count = 0
+    # for line in db['DaodaoSuggestCityUrl']:
+    #     _count += 1
+    #     city_id = line['city_id']
+    #     if city_id == '10001':
+    #         continue
+    #
+    #     try:
+    #         source_city_id = re.findall('-g(\d+)', line['daodao_url'])[-1]
+    #     except Exception:
+    #         continue
+    #     # print city_id, source_city_id
+    #     if _count % 1000 == 0:
+    #         print _count
+    #
+    #     ctx = init_header(source_city_id, 0)
+    #     t_id = app.send_task('proj.tripadvisor_list_tasks.list_page_task',
+    #                          args=(ctx, city_id,),
+    #                          kwargs={'task_id': 'test'},
+    #                          queue='tripadvisor_list_tasks',
+    #                          routing_key='tripadvisor_list_tasks')
+    #     print t_id
+    # print _count
 
-    db = dataset.connect('mysql+pymysql://hourong:hourong@10.10.180.145/SuggestName?charset=utf8')
+    '''
+    File Downloader Task
+    '''
 
-    _count = 0
-    for line in db['DaodaoSuggestCityUrl']:
-        _count += 1
-        city_id = line['city_id']
-        try:
-            source_city_id = re.findall('-g(\d+)', line['daodao_url'])[-1]
-        except Exception:
-            continue
-        # print city_id, source_city_id
-        if _count % 1000 == 0:
-            print _count
+    from proj.file_downloader_task import file_downloader
 
-        ctx = init_header('187147', 0)
-        t_id = app.send_task('proj.tripadvisor_list_tasks.list_page_task',
-                             args=(ctx, '10001',),
-                             kwargs={'task_id': 'test'},
-                             queue='tripadvisor_list_tasks',
-                             routing_key='tripadvisor_list_tasks')
-        print t_id
-    print _count
+    # print file_downloader('https://ccm.ddcdn.com/ext/photo-s/01/bd/57/a2/kilauea-caldera.jpg', 'img', '/tmp/ab/c/d/', )
+    t_id = app.send_task('proj.file_downloader_task.file_downloader',
+                         args=('https://ccm.ddcdn.com/ext/photo-s/01/bd/57/a2/kilauea-caldera.jpg', 'img',
+                               '/tmp/ab/c/d/',),
+                         kwargs={'task_id': 'test'},
+                         queue='file_downloader',
+                         routing_key='file_downloader')
+    print t_id

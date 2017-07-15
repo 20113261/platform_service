@@ -8,17 +8,12 @@ import types
 from celery.app.log import get_logger
 from celery.task import Task
 
+from proj.my_lib.Common.Utils import get_local_ip
+from proj.my_lib.task_module.task_func import update_task
+
 logger = get_logger(__name__)
 
 FAILED_TASK_BLACK_LIST = {'proj.full_website_spider_task.full_site_spider'}
-
-
-def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    res = s.getsockname()[0]
-    s.close()
-    return res
 
 
 def get_str_type_object_attribute(obj, attr_name):
@@ -47,6 +42,8 @@ class BaseTask(Task):
         task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=3)
         r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, 'success']))
+        if 'task_id' in kwargs:
+            update_task(kwargs['task_id'])
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
         if self.name not in FAILED_TASK_BLACK_LIST:
@@ -59,7 +56,7 @@ class BaseTask(Task):
                 kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
                 try:
                     cursor.execute(
-                        'INSERT INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
+                        'REPLACE INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
                         (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))
                 except Exception as e:
                     logger.exception(str(e))
@@ -79,7 +76,7 @@ class BaseTask(Task):
                 kwargs.pop('task_id', None)
                 try:
                     cursor.execute(
-                        'INSERT INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
+                        'REPLACE INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
                         (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))
                 except Exception as exception:
                     logger.exception(str(exception.message))
