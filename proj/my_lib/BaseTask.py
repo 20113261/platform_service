@@ -10,6 +10,7 @@ from celery.task import Task
 
 from proj.my_lib.Common.Utils import get_local_ip
 from proj.my_lib.task_module.task_func import update_task
+from proj.my_lib.task_module.mongo_task_func import update_task as mongo_update_task
 
 logger = get_logger(__name__)
 
@@ -44,6 +45,8 @@ class BaseTask(Task):
         r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, 'success']))
         if 'task_id' in kwargs:
             update_task(kwargs['task_id'])
+        if 'mongo_task_id' in kwargs:
+            mongo_update_task(kwargs['mongo_task_id'])
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
         if self.name not in FAILED_TASK_BLACK_LIST:

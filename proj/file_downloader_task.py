@@ -9,6 +9,7 @@ import datetime
 import os
 import re
 
+from proj.my_lib.Common.MongoLog import save_log
 from proj.my_lib.is_complete_scale_ok import is_complete_scale_ok
 from .celery import app
 from .my_lib.BaseTask import BaseTask
@@ -17,7 +18,8 @@ from my_lib.Common.Utils import get_md5, get_local_ip
 from pyPdf import PdfFileReader
 from my_lib.Common.RedisAlreadyDownload import AlreadyDownload
 
-alreadyDownload = AlreadyDownload()
+
+# alreadyDownload = AlreadyDownload()
 
 
 def get_content_length_and_type(url, session):
@@ -54,7 +56,7 @@ def get_file_name(url, c_type):
     return '{0}.{1}'.format(url_md5, c_suffix)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='16/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='32/s')
 def file_downloader(self, url, file_type, file_path, **kwargs):
     """
     :param self:
@@ -68,16 +70,22 @@ def file_downloader(self, url, file_type, file_path, **kwargs):
     self.task_type = 'FileDownload'
     with MySession() as session:
         try:
-            # 已经下载的，不下载
-            if alreadyDownload.has_crawled(url):
-                return None
+            # 将去重放在 Task 中完成，本部分不做去重处理
+            # # 已经下载的，不下载
+            # if alreadyDownload.has_crawled(url):
+            #     return None
 
             # 获取文件大小
             total_length, content_type = get_content_length_and_type(url, session)
 
             # 小于 20KB 不下载
             if total_length < 20480:
-                alreadyDownload.add_url(url, '|_||_|'.join(['filter', get_local_ip(), str(total_length)]))
+                # alreadyDownload.add_url(url, '|_||_|'.join(['filter', get_local_ip(), str(total_length)]))
+                save_log(
+                    '|_||_|'.join(['filter', get_local_ip(), str(total_length)]),
+                    kwargs['mongo_task_id'],
+                    'attr_file_download'
+                )
                 return None
 
             # 文件下载
@@ -110,8 +118,13 @@ def file_downloader(self, url, file_type, file_path, **kwargs):
                         raise Exception('The file (type {}) is not fully loaded'.format(file_type))
 
             # todo 完成任务通知
-            alreadyDownload.add_url(url, '|_||_|'.join(
-                ['succeed', get_local_ip(), str(file_absolute_dir), str(total_length)]))
+            # alreadyDownload.add_url(url, '|_||_|'.join(
+            #     ['succeed', get_local_ip(), str(file_absolute_dir), str(total_length)]))
+            save_log(
+                '|_||_|'.join(['succeed', get_local_ip(), str(file_absolute_dir), str(total_length)]),
+                kwargs['mongo_task_id'],
+                'attr_file_download'
+            )
             return file_absolute_dir
 
         except Exception as exc:
