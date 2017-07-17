@@ -44,6 +44,8 @@ def tripadvisor_parser(content, url, other_info):
     star_temp_list = re.findall('star_(\d+)', star_temp)
     if star_temp_list:
         hotel.star = int(star_temp_list[-1])
+    else:
+        hotel.star = -1
 
     # 对 tripadvisor 中出现的 star 大于 5 进行特殊处理
     if hotel.star > 5:
@@ -55,7 +57,10 @@ def tripadvisor_parser(content, url, other_info):
     print 'hotel.star', hotel.star
 
     # grade float 值
-    hotel.grade = float(doc('.overallRating').text())
+    try:
+        hotel.grade = float(doc('.overallRating').text())
+    except Exception:
+        hotel.grade = -1
     print 'hotel.grade', hotel.grade
 
     # 评论数 int 值
@@ -63,11 +68,15 @@ def tripadvisor_parser(content, url, other_info):
     review_temp_list = re.findall('(\d+)', review_temp)
     if review_temp_list:
         hotel.review_num = int(review_temp_list[-1])
+    else:
+        hotel.review_num = -1
     print 'hotel.review_num', hotel.review_num
 
     #  酒店服务解析
     hotel.service = '|'.join(
         map(lambda x: x.text(), doc('.ui_columns.section_content .item:not([class*="title"])').items()))
+    if not hotel.service:
+        hotel.service = 'NULL'
     print 'hotel.service', hotel.service
 
     # 酒店图片采用 POI 部分抓取此处不处理
@@ -79,6 +88,8 @@ def tripadvisor_parser(content, url, other_info):
     if raw_encode_website_str:
         raw_tripadvisor_url = decode_raw_site(raw_encode_website_str)
         hotel.description = raw_tripadvisor_url
+    else:
+        hotel.description = 'NULL'
 
     print 'hotel.description', hotel.description
 
@@ -99,7 +110,8 @@ if __name__ == '__main__':
     # url = 'https://www.tripadvisor.cn/Hotel_Review-g143034-d282791-Reviews-Volcano_House-Hawaii_Volcanoes_National_Park_Island_of_Hawaii_Hawaii.html'
     # url = 'https://www.tripadvisor.cn/Hotel_Review-g187147-d265476-Reviews-Hotel_de_Londres_Eiffel-Paris_Ile_de_France.html'
     # url = 'https://www.tripadvisor.cn/Hotel_Review-g187147-d7182695-Reviews-Maison_Souquet-Paris_Ile_de_France.html'
-    url = 'https://www.tripadvisor.cn/Hotel_Review-g293974-d7053739-Reviews-Business_Life_Boutique_Hotel-Istanbul.html'
+    # url = 'https://www.tripadvisor.cn/Hotel_Review-g293974-d7053739-Reviews-Business_Life_Boutique_Hotel-Istanbul.html'
+    url = 'https://cn.tripadvisor.com/Hotel_Review-g187147-d6882422-Reviews-Hotel_du_Mont_Louis-Paris_Ile_de_France.html'
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.text
