@@ -27,7 +27,8 @@ app = Celery('proj', include=['proj.tasks',
                               'proj.suggestion_task',
                               'proj.full_website_spider_task',
                               'proj.tripadvisor_list_tasks',
-                              'proj.file_downloader_task'
+                              'proj.file_downloader_task',
+                              'proj.tripadvisor_website_task'
                               ])
 app.config_from_object('proj.config')
 app.conf.update(
@@ -40,6 +41,8 @@ app.conf.update(
               routing_key='tripadvisor_list_tasks'),
         Queue('file_downloader', exchange=Exchange('file_downloader', type='direct'),
               routing_key='file_downloader'),
+        Queue('tripadvisor_website', exchange=Exchange('tripadvisor_website', type='direct'),
+              routing_key='tripadvisor_website'),
     ),
 
 )

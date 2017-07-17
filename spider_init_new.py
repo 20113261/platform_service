@@ -74,13 +74,37 @@ if __name__ == '__main__':
     File Downloader Task
     '''
 
-    from proj.file_downloader_task import file_downloader
+    # from proj.file_downloader_task import file_downloader
+    #
+    # # print file_downloader('https://ccm.ddcdn.com/ext/photo-s/01/bd/57/a2/kilauea-caldera.jpg', 'img', '/tmp/ab/c/d/', )
+    # t_id = app.send_task('proj.file_downloader_task.file_downloader',
+    #                      args=('https://ccm.ddcdn.com/ext/photo-s/01/bd/57/a2/kilauea-caldera.jpg', 'img',
+    #                            '/tmp/ab/c/d/',),
+    #                      kwargs={'task_id': 'test'},
+    #                      queue='file_downloader',
+    #                      routing_key='file_downloader')
+    # print t_id
+    # import proj.tripadvisor_website_task
+    #
+    # proj.tripadvisor_website_task.website_url_task('233464',
+    #                                                'http://www.tripadvisor.cn/ShowUrl?&excludeFromVS=false&odc=BusinessListingsUrl&d=233464&url=0')
 
-    # print file_downloader('https://ccm.ddcdn.com/ext/photo-s/01/bd/57/a2/kilauea-caldera.jpg', 'img', '/tmp/ab/c/d/', )
-    t_id = app.send_task('proj.file_downloader_task.file_downloader',
-                         args=('https://ccm.ddcdn.com/ext/photo-s/01/bd/57/a2/kilauea-caldera.jpg', 'img',
-                               '/tmp/ab/c/d/',),
-                         kwargs={'task_id': 'test'},
-                         queue='file_downloader',
-                         routing_key='file_downloader')
-    print t_id
+    import pymysql
+
+    conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', db='hotel_adding',
+                           charset='utf8')
+    cursor = conn.cursor()
+    cursor.execute('''SELECT DISTINCT
+  source_id,
+  description
+FROM hotelinfo_tripadvisor
+WHERE description != 'NULL';''')
+    for line in cursor.fetchall():
+        source_id, website_url = line
+        t_id = app.send_task('proj.tripadvisor_website_task.website_url_task',
+                             args=(source_id,
+                                   website_url,),
+                             kwargs={},
+                             queue='tripadvisor_website',
+                             routing_key='tripadvisor_website')
+        print t_id
