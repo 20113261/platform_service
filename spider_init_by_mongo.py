@@ -15,7 +15,7 @@ if __name__ == '__main__':
         _count += 1
         t_id = app.send_task('proj.file_downloader_task.file_downloader',
                              args=(args['source_url'], args['type'],
-                                   os.path.join('/data/nfs/image/attr_whole_site', args['mid']),),
+                                   os.path.join('/data/nfs/image/attr_whole_site_new', args['mid']),),
                              kwargs={'mongo_task_id': mongo_task_id},
                              queue='file_downloader',
                              routing_key='file_downloader')

@@ -111,7 +111,8 @@ if __name__ == '__main__':
     # url = 'https://www.tripadvisor.cn/Hotel_Review-g187147-d265476-Reviews-Hotel_de_Londres_Eiffel-Paris_Ile_de_France.html'
     # url = 'https://www.tripadvisor.cn/Hotel_Review-g187147-d7182695-Reviews-Maison_Souquet-Paris_Ile_de_France.html'
     # url = 'https://www.tripadvisor.cn/Hotel_Review-g293974-d7053739-Reviews-Business_Life_Boutique_Hotel-Istanbul.html'
-    url = 'https://cn.tripadvisor.com/Hotel_Review-g187147-d6882422-Reviews-Hotel_du_Mont_Louis-Paris_Ile_de_France.html'
+    # url = 'https://cn.tripadvisor.com/Hotel_Review-g187147-d6882422-Reviews-Hotel_du_Mont_Louis-Paris_Ile_de_France.html'
+    url = 'https://cn.tripadvisor.com/Hotel_Review-g190507-d1153153-Reviews-Innvik_Fjordhotel-Sogn_og_Fjordane_Western_Norway.html'
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.text

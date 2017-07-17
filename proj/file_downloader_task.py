@@ -110,11 +110,15 @@ def file_downloader(self, url, file_type, file_path, **kwargs):
                 if file_type == 'img':
                     flag, h, w = is_complete_scale_ok(downloaded_file)
                     if flag in [1, 2]:
+                        # 当文件不符合要求的时候删除
+                        os.remove(file_absolute_dir)
                         raise Exception('The file (type {}) is not fully loaded'.format(file_type))
                 elif file_type == 'pdf':
                     try:
                         doc = PdfFileReader(downloaded_file)
                     except Exception:
+                        # 当文件不符合要求的时候删除
+                        os.remove(file_absolute_dir)
                         raise Exception('The file (type {}) is not fully loaded'.format(file_type))
 
             # todo 完成任务通知
