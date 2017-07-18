@@ -51,7 +51,7 @@ def get_content_length_and_type(url, session):
 
 
 def get_file_name(url, c_type):
-    c_suffix = c_type.split('/')[-1]
+    c_suffix = c_type.split(';')[0].split('/')[-1].strip()
     url_md5 = get_md5(url)
     return '{0}.{1}'.format(url_md5, c_suffix)
 
