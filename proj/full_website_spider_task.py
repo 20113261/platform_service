@@ -18,7 +18,7 @@ urlSaver = UrlSaver()
 MAX_LEVEL = 3
 
 client = pymongo.MongoClient(host='10.10.231.105')
-collections = client['FullSiteSpider']['AttrFullSiteNew']
+collections = client['FullSiteSpider']['HotelFullSite']
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='16/s')
