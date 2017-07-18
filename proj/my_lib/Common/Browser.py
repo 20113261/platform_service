@@ -7,6 +7,7 @@
 # @Software: PyCharm
 import requests
 import time
+import urlparse
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 
@@ -27,6 +28,12 @@ class MySession(requests.Session):
             self.change_proxies()
 
         self.verify = False
+
+    def send(self, request, **kwargs):
+        if 'Host' not in request.headers:
+            request.headers['Host'] = urlparse.urlparse(request.url).netloc
+
+        return super(MySession, self).send(request, **kwargs)
 
     def change_proxies(self):
         self.p_r_o_x_y = get_proxy(source="Platform")
@@ -56,10 +63,10 @@ if __name__ == '__main__':
     #         'http://www.tripadvisor.cn/ShowUrl?&excludeFromVS=false&odc=BusinessListingsUrl&d=10006331&url=0')
     #     print page.url
 
-    with MySession() as session:
-        session.headers.update({
-            'Host': 'www.tripadvisor.cn'
-        })
+    with MySession(need_proxies=False) as session:
+        # session.headers.update({
+        #     'Host': 'www.tripadvisor.cn'
+        # })
         page = session.get(
             'http://www.tripadvisor.cn/ShowUrl?&excludeFromVS=false&odc=BusinessListingsUrl&d=100368&url=1')
         print page.url

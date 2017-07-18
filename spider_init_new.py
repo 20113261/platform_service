@@ -114,16 +114,16 @@ WHERE description != 'NULL' AND description != '';''')
         if source_id not in sid_set:
             _count += 1
             print source_id, website_url
-            try:
-                proj.tripadvisor_website_task.website_url_task(source_id, website_url)
-            except Exception:
-                pass
+            # try:
+            #     proj.tripadvisor_website_task.website_url_task(source_id, website_url)
+            # except Exception:
+            #     pass
 
-            # t_id = app.send_task('proj.tripadvisor_website_task.website_url_task',
-            #                      args=(source_id,
-            #                            website_url,),
-            #                      kwargs={},
-            #                      queue='tripadvisor_website',
-            #                      routing_key='tripadvisor_website')
-            # print t_id
+            t_id = app.send_task('proj.tripadvisor_website_task.website_url_task',
+                                 args=(source_id,
+                                       website_url,),
+                                 kwargs={},
+                                 queue='tripadvisor_website',
+                                 routing_key='tripadvisor_website')
+            print t_id
     print _count
