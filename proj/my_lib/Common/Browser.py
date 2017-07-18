@@ -10,6 +10,8 @@ import time
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 
+requests.packages.urllib3.disable_warnings()
+
 
 class MySession(requests.Session):
     def __init__(self, need_proxies=True):
@@ -49,7 +51,15 @@ if __name__ == '__main__':
     #     page = session.get('http://www.baidu.com')
     #     print page.text
 
+    # with MySession() as session:
+    #     page = session.get(
+    #         'http://www.tripadvisor.cn/ShowUrl?&excludeFromVS=false&odc=BusinessListingsUrl&d=10006331&url=0')
+    #     print page.url
+
     with MySession() as session:
+        session.headers.update({
+            'Host': 'www.tripadvisor.cn'
+        })
         page = session.get(
-            'http://www.tripadvisor.cn/ShowUrl?&excludeFromVS=false&odc=BusinessListingsUrl&d=10006331&url=0')
+            'http://www.tripadvisor.cn/ShowUrl?&excludeFromVS=false&odc=BusinessListingsUrl&d=100368&url=1')
         print page.url

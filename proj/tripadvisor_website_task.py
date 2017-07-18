@@ -20,7 +20,10 @@ collections = client['TripAdvisor']['website']
 def website_url_task(self, source_id, before_website_url, **kwargs):
     try:
         with MySession() as session:
-            page = session.get(before_website_url, verify=False)
+            session.headers.update({
+                'Host': 'www.tripadvisor.cn'
+            })
+            page = session.get(before_website_url)
             website_url = page.url
             try:
                 collections.save({
