@@ -69,11 +69,11 @@ def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
                             urlSaver.add_url(parent_url, next_url)
 
                             # full_site_spider.delay(next_url, level + 1, parent_url, parent_info, **kwargs)
-                            # app.send_task('proj.full_website_spider_task.full_site_spider',
-                            #               args=(next_url, level + 1, parent_url, parent_info,),
-                            #               kwargs=kwargs,
-                            #               queue='full_site_task',
-                            #               routing_key='full_site_task')
+                            app.send_task('proj.full_website_spider_task.full_site_spider',
+                                          args=(next_url, level + 1, parent_url, parent_info,),
+                                          kwargs=kwargs,
+                                          queue='full_site_task',
+                                          routing_key='full_site_task')
             elif 'image' in page.headers['Content-type']:
                 # 无法直接从页面信息中查看到是否为图片的页面，通过 Content-type 检测是否为图片，并入库保存
                 urlSaver.add_url(parent_url, url)
