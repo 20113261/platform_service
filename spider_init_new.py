@@ -89,41 +89,67 @@ if __name__ == '__main__':
     # proj.tripadvisor_website_task.website_url_task('233464',
     #                                                'http://www.tripadvisor.cn/ShowUrl?&excludeFromVS=false&odc=BusinessListingsUrl&d=233464&url=0')
 
-    import pymysql
+    '''
+    init tripadvisor website crawl
+    '''
+    #     import pymysql
+    #     import pymongo
+    #     import proj.tripadvisor_website_task
+    #
+    #     client = pymongo.MongoClient(host='10.10.231.105')
+    #     collections = client['TripAdvisor']['website']
+    #
+    #     sid_set = set()
+    #     for line in collections.find():
+    #         sid_set.add(line['source_id'])
+    #
+    #     conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', db='hotel_adding',
+    #                            charset='utf8')
+    #     cursor = conn.cursor()
+    #     cursor.execute('''SELECT DISTINCT
+    #              source_id,
+    #              description
+    # FROM hotelinfo_tripadvisor_0717_bak
+    # WHERE description != 'NULL' AND description != '';''')
+    #     _count = 0
+    #     for line in cursor.fetchall():
+    #         source_id, website_url = line
+    #         if source_id not in sid_set:
+    #             _count += 1
+    #             print source_id, website_url
+    #             # try:
+    #             #     proj.tripadvisor_website_task.website_url_task(source_id, website_url)
+    #             # except Exception:
+    #             #     pass
+    #
+    #             t_id = app.send_task('proj.tripadvisor_website_task.website_url_task',
+    #                                  args=(source_id,
+    #                                        website_url,),
+    #                                  kwargs={},
+    #                                  queue='tripadvisor_website',
+    #                                  routing_key='tripadvisor_website')
+    #             print t_id
+    #     print _count
+
     import pymongo
-    import proj.tripadvisor_website_task
+    import datetime
 
     client = pymongo.MongoClient(host='10.10.231.105')
     collections = client['TripAdvisor']['website']
-
-    sid_set = set()
+    task_connections = client['Task']['FullSite']
     for line in collections.find():
-        sid_set.add(line['source_id'])
+        source_id = line['source_id'].strip()
+        site_url = line['website'].strip()
 
-    conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', db='hotel_adding',
-                           charset='utf8')
-    cursor = conn.cursor()
-    cursor.execute('''SELECT DISTINCT
-             source_id,
-             description
-FROM hotelinfo_tripadvisor_0717_bak
-WHERE description != 'NULL' AND description != '';''')
-    _count = 0
-    for line in cursor.fetchall():
-        source_id, website_url = line
-        if source_id not in sid_set:
-            _count += 1
-            print source_id, website_url
-            # try:
-            #     proj.tripadvisor_website_task.website_url_task(source_id, website_url)
-            # except Exception:
-            #     pass
-
-            t_id = app.send_task('proj.tripadvisor_website_task.website_url_task',
-                                 args=(source_id,
-                                       website_url,),
-                                 kwargs={},
-                                 queue='tripadvisor_website',
-                                 routing_key='tripadvisor_website')
-            print t_id
-    print _count
+        task_connections.save({
+            'mid': source_id,
+            'website_url': site_url,
+            'select_time': datetime.datetime.now()
+        })
+        print source_id, site_url
+    '''
+    _id:59624233e28b541ad12aa8be
+    mid:"v202939"
+    website_url:"http://www.alhambra-patronato.es/index.php/Visitar-la-Alhambra/8/0/"
+    select_time:2017-07-14 22:10:01.187
+    '''
