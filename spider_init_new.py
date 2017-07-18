@@ -91,6 +91,7 @@ if __name__ == '__main__':
 
     import pymysql
     import pymongo
+    import proj.tripadvisor_website_task
 
     client = pymongo.MongoClient(host='10.10.231.105')
     collections = client['TripAdvisor']['website']
@@ -107,10 +108,17 @@ if __name__ == '__main__':
              description
 FROM hotelinfo_tripadvisor_0717_bak
 WHERE description != 'NULL' AND description != '';''')
+    _count = 0
     for line in cursor.fetchall():
         source_id, website_url = line
         if source_id not in sid_set:
-            # print source_id, website_url
+            _count += 1
+            print source_id, website_url
+            # try:
+            #     proj.tripadvisor_website_task.website_url_task(source_id, website_url)
+            # except Exception:
+            #     pass
+            #
             t_id = app.send_task('proj.tripadvisor_website_task.website_url_task',
                                  args=(source_id,
                                        website_url,),
@@ -118,3 +126,4 @@ WHERE description != 'NULL' AND description != '';''')
                                  queue='tripadvisor_website',
                                  routing_key='tripadvisor_website')
             print t_id
+    print _count

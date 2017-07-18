@@ -24,6 +24,8 @@ class MySession(requests.Session):
         if need_proxies:
             self.change_proxies()
 
+        self.verify = False
+
     def change_proxies(self):
         self.p_r_o_x_y = get_proxy(source="Platform")
         proxies = {
@@ -43,6 +45,11 @@ class MySession(requests.Session):
 
 
 if __name__ == '__main__':
+    # with MySession() as session:
+    #     page = session.get('http://www.baidu.com')
+    #     print page.text
+
     with MySession() as session:
-        page = session.get('http://www.baidu.com')
-        print page.text
+        page = session.get(
+            'http://www.tripadvisor.cn/ShowUrl?&excludeFromVS=false&odc=BusinessListingsUrl&d=10006331&url=0')
+        print page.url
