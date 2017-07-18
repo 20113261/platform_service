@@ -24,9 +24,11 @@ def full_website_parser(content, url):
     next_url_set = set()
 
     # css background-image 爬取
-    for link in re.findall('background-image:url\(([\s\S]+?)\);', content):
+    for link in re.findall('background-image[\s\S]+url\(([\s\S]+?)\)', content):
         new_link = urljoin(url, link.strip('\'').strip())
-        img_url_set.add(new_link)
+        if all(map(lambda x: x not in new_link, ['icon', ])):
+            if url_is_legal(new_link):
+                img_url_set.add(new_link)
 
     doc = pyquery.PyQuery(content)
     doc.make_links_absolute(url)
@@ -38,12 +40,15 @@ def full_website_parser(content, url):
         if url_is_legal(item.attr.href):
             # 去除无用的请求信息，获取正确的请求链接
             parsed_obj = urlparse(item.attr.href.lower().strip())
-            parsed_link = '{0}://{1}{2}?{3}'.format(
+            parsed_link_prefix = '{0}://{1}{2}'.format(
                 parsed_obj.scheme.strip(),
                 parsed_obj.netloc.strip(),
                 parsed_obj.path.strip(),
-                parsed_obj.query.strip()
             )
+            if parsed_obj.query:
+                parsed_link = "{0}?{1}".format(parsed_link_prefix, parsed_obj.query.strip())
+            else:
+                parsed_link = parsed_link_prefix
 
             # pdf 入 pdf set
             if parsed_link.endswith('pdf'):
@@ -51,7 +56,8 @@ def full_website_parser(content, url):
             # 图像入 img set
             elif any(map(lambda x: parsed_link.endswith(x),
                          ['.bmp', '.jpeg', '.jpg', '.gif', '.png', '.svg'])):
-                img_url_set.add(parsed_link)
+                if all(map(lambda x: x not in parsed_link, ['icon', ])):
+                    img_url_set.add(parsed_link)
             # 剩余无法判断的应该是 html 页面，进行下一次抓取
             elif urlparse(parsed_link).netloc == urlparse(url).netloc:
                 next_url_set.add(parsed_link)

@@ -131,25 +131,29 @@ if __name__ == '__main__':
     #             print t_id
     #     print _count
 
-    import pymongo
-    import datetime
-
-    client = pymongo.MongoClient(host='10.10.231.105')
-    collections = client['TripAdvisor']['website']
-    task_connections = client['Task']['FullSite']
-    for line in collections.find():
-        source_id = line['source_id'].strip()
-        site_url = line['website'].strip()
-
-        task_connections.save({
-            'mid': source_id,
-            'website_url': site_url,
-            'select_time': datetime.datetime.now()
-        })
-        print source_id, site_url
+    # import pymongo
+    # import datetime
+    #
+    # client = pymongo.MongoClient(host='10.10.231.105')
+    # collections = client['TripAdvisor']['website']
+    # task_connections = client['Task']['FullSite']
+    # for line in collections.find():
+    #     source_id = line['source_id'].strip()
+    #     site_url = line['website'].strip()
+    #
+    #     task_connections.save({
+    #         'mid': source_id,
+    #         'website_url': site_url,
+    #         'select_time': datetime.datetime.now()
+    #     })
+    #     print source_id, site_url
     '''
     _id:59624233e28b541ad12aa8be
     mid:"v202939"
     website_url:"http://www.alhambra-patronato.es/index.php/Visitar-la-Alhambra/8/0/"
     select_time:2017-07-14 22:10:01.187
     '''
+
+    from proj.full_website_spider_task import full_site_spider
+
+    full_site_spider('http://www.legraziehotel.com/', 0, 'http://www.legraziehotel.com/', {'id': '261836'})
