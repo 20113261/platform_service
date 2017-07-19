@@ -27,8 +27,8 @@ if __name__ == '__main__':
                 }
             }, upsert=False, multi=False)
         print(mid, website_url)
-        # app.send_task('proj.full_website_spider_task.full_site_spider',
-        #               args=(website_url, 0, website_url, {'id': mid},),
-        #               kwargs=kwargs,
-        #               queue='full_site_task',
-        #               routing_key='full_site_task')
+        app.send_task('proj.full_website_spider_task.full_site_spider',
+                      args=(website_url, 0, website_url, {'id': mid},),
+                      kwargs=kwargs,
+                      queue='full_site_task',
+                      routing_key='full_site_task')
