@@ -11,11 +11,12 @@ import datetime
 from bson import ObjectId
 
 client = pymongo.MongoClient(host='10.10.231.105')
-collections = client['Task']['NewTask']
+collections = client['Task']['NewHotelTask']
 
 
 def get_task_total(limit=30000):
-    for line in collections.find({'finished': 0}).sort('used_times', 1).sort('utime', 1).limit(limit):
+    for line in collections.find({'finished': 0, "args.type": "img"}).sort('used_times', 1).sort('utime', 1).limit(
+            limit):
         _id = line['_id']
         collections.update({
             '_id': _id
