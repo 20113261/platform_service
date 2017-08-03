@@ -1,6 +1,6 @@
 # coding=utf-8
 import sys
-
+import pdb
 import pyquery
 import re
 
@@ -11,6 +11,7 @@ from data_obj import Qyer, DBSession
 
 
 def page_parser(content, target_url):
+    #pdb.set_trace()
     doc = pyquery.PyQuery(content)
     qyer = Qyer()
     try:
@@ -30,7 +31,10 @@ def page_parser(content, target_url):
     qyer.grade = doc('.points>.number').text()
     qyer.ranking = re.findall(r'(\d+)', doc('.infos .rank').text())[-1]
     qyer.beentocounts = doc('.golden').text()
-
+    if qyer.beentocounts:
+        qyer.beentocounts = int(qyer.beentocounts)
+    else:
+        qyer.beentocounts = -1
     # qyer tips
 
     for item in doc('.poi-tips>li').items():
@@ -86,14 +90,20 @@ def page_parser(content, target_url):
 if __name__ == '__main__':
     import requests
 
-    # target_url = 'http://place.qyer.com/poi/V2wJZ1FnBzBTZg/'
+
     target_url = 'http://place.qyer.com/poi/V2IJYVFlBzdTZg/'
     page = requests.get(target_url)
     page.encoding = 'utf8'
     content = page.text
-
+    with open('content.txt','w+') as temp:
+        temp.write(content)
     result = page_parser(content, target_url)
-    session = DBSession()
-    session.merge(result)
-    session.commit()
-    session.close()
+    try:
+        session = DBSession()
+        session.merge(result)
+    except Exception as e:
+       print e
+    else:
+        session.commit()
+    finally:
+        session.close()
