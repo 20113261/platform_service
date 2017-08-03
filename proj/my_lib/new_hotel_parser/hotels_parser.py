@@ -103,9 +103,15 @@ def hotels_parser(content, url, other_info):
     try:
         hotel.grade = root.find_class('rating')[0].xpath('strong/text()')[0]
         hotel.grade = float(hotel.grade)
-    except Exception, e:
-        print str(e)
-        hotel.grade = -1.0
+    except:
+        try:
+            if not hotel.grade:
+                grade = root.xpath('//div[@class="logo-wrap"]/span[1]/text()')[0].encode('utf-8')
+                grade = re.search(r'[0-9\.]+', grade).group(0)
+                hotel.grade = float(grade)
+        except Exception,e:
+            print e
+            hotel.grade = -1.0
 
     print 'hotel.grade=>%s' % hotel.grade
     # print hotel.grade
@@ -259,7 +265,7 @@ if __name__ == '__main__':
         'source_id': '119538',
         'city_id': '10001'
     }
-    url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_170619&id=02580f3faaae1217f00220716f88bffb'
+    url = 'http://zh.hotels.com/hotel/details.html?q-check-out=2018-01-04&q-check-in=2018-01-03&WOE=4&WOD=3&q-room-0-children=0&pa=157&tab=description&hotel-id=666153&q-room-0-adults=2&YGF=14&MGT=1&ZSX=0&SYE=3'
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.text

@@ -143,7 +143,7 @@ def booking_parser(content, url, other_info):
             'i/@class')[0].strip()
         hotel.star = num_pat.findall(star_temp)[0]
         hotel.star = int(hotel.star)
-    except Exception, e:
+    except:
         try:
             star_title = root.xpath('//*[@class="nowrap hp__hotel_ratings"]//span[@class="invisible_spoken"]/text()')
             if star_title:
@@ -158,6 +158,12 @@ def booking_parser(content, url, other_info):
                     star = re.findall('-sprite-ratings_circles_(\d+)', star_svg[0])
                     if star:
                         hotel.star = int(star[0])
+            if hotel.star == -1:
+                star_svg = root.xpath('//span[@class="hp__hotel_ratings__stars"]//svg[@class]')
+                print "star_svg:",star_svg
+                if star_svg:
+                    hotel.star = int(re.search(r'\d+',star_svg[0].attrib.get('class')).group(0))
+
         except Exception as e:
             pass
     print 'star=>%s' % hotel.star
@@ -173,8 +179,13 @@ def booking_parser(content, url, other_info):
             grade_temp = root.xpath(
                 '//div[@id="review_block_top"]/text()')[1].strip().encode('utf-8')
             hotel.grade = grade_temp
-        except Exception as e:
-            hotel.grade = 'NULL'
+        except:
+            try:
+                if not grade_temp:
+                    grade_temp = root.xpath('//span[@class="review-score-badge"]/text()')[0].strip().encode('utf-8')
+                    hotel.grade = grade_temp
+            except Exception as e:
+                hotel.grade = 'NULL'
     print 'grade=>%s' % hotel.grade
     # print hotel.grade
     # 解析酒店评论数
@@ -475,7 +486,7 @@ if __name__ == '__main__':
     #     'https://www.booking.com/hotel/us/racpanos-modern-stays-jersey-city.zh-cn.html').text
 
     content = requests.get(
-        'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_booking_new&id=3824a0f6469e5343d25b27f77be83cdc').text
+        'http://www.booking.com/hotel/de/herrnschloesschen-restaurant-garden.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBA-gBAagCBA;sid=3d969e4cc8674d68df680543feb7ff0d;checkin=2017-04-03;checkout=2017-04-04;ucfs=1;aer=1;highlighted_blocks=24291501_91114778_0_1_0;all_sr_blocks=24291501_91114778_0_1_0;room1=A,A;hpos=5;dest_type=city;dest_id=-1817437;srfid=13ee0960b417cce79615fa022726b9a0eded6c6eX65;highlight_room=;spdest=ci/-1817437;spdist=24.5').text
 
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
     result = booking_parser(content, url, other_info)
