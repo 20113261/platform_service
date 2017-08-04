@@ -6,7 +6,7 @@ import sys
 import re
 import requests
 from lxml import html as HTML
-from selenium.webdriver.phantomjs import webdriver
+# from selenium.webdriver.phantomjs import webdriver
 from data_obj import Hotel
 import json
 import execjs
@@ -271,7 +271,10 @@ if __name__ == '__main__':
     # url = 'http://ihotel.elong.com/101703/'
     # url = 'http://ihotel.elong.com/670847/'
     # url = 'http://ihotel.elong.com/331466/'
-    url = 'http://ihotel.elong.com/323558/'
+    # url = 'http://ihotel.elong.com/323558/'
+    url = 'http://ihotel.elong.com/343475/'
+    url = 'http://ihotel.elong.com/443150/'
+    url = 'http://ihotel.elong.com/589177/'
     other_info = {u'source_id': u'670847', u'city_id': u'20236'}
 
     page = requests.get(url)
