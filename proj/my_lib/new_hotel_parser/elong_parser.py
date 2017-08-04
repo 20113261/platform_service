@@ -6,9 +6,10 @@ import sys
 import re
 import requests
 from lxml import html as HTML
-
+from selenium.webdriver.phantomjs import webdriver
 from data_obj import Hotel
-
+import json
+import execjs
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -90,8 +91,12 @@ def elong_parser(content, url, other_info):
         # t_grade = grade_pat.findall(tp)[0]
         # print 't_grade', t_grade
         hotel.grade = float(tp)  # float(t_grade) * 0.05
-    except Exception, e:
-        hotel.grade = 'NULL'
+    except:
+        try:
+            grade = root.xpath('//div[@id="hover-hrela"]/p[1]')
+            hotel.grade = float(re.search(r'[0-9\.]+',grade[0].text).group(0))
+        except Exception as e:
+            hotel.grade = 'NULL'
     print 'grade=>%s' % hotel.grade
     # print hotel.grade
 
@@ -194,17 +199,90 @@ def elong_parser(content, url, other_info):
     hotel.city_id = other_info['city_id']
     return hotel
 
+# def elong_json_parser(url):
+#     browser = webdriver.WebDriver(executable_path='/Users/miojilx/Downloads/phantomjs-2.1.1-macosx/bin/phantomjs')
+#     browser.get(url)
+#     elong_json = browser.execute_script("return window.newDetailController")
+#     hotel = Hotel()
+#
+#     # 解析酒店中英文名，如果没有中文名则置为英文名，如果都解析失败则退出
+#     try:
+#         hotel_name = elong_json.get("AjaxHotelInfo",{}).get("HotelDisplayName",None)
+#         if hotel_name:
+#             hotel.hotel_name = re.search(r'(\W+)\(',hotel_name.decode('utf-8')).group(1)
+#             hotel.hotel_name_en = re.search(r'\(([\w ]*)\)',hotel_name.decode('utf-8')).group(1)
+#             print hotel.hotel_name,hotel.hotel_name_en
+#     except Exception as e:
+#         hotel.hotel_name_en = ''
+#         hotel.hotel_name = ''
+#     print "hotel_name:",hotel.hotel_name
+#     print "hotel_name_en:",hotel.hotel_name_en
+#     #解析酒店地址
+#     try:
+#         pass
+#     except Exception as e:
+#         print "address:",hotel.address
+#
+#     #解析酒店经纬度
+#     try:
+#         lon = elong_json.get("RecommendHotelRequest",{}).get("Geo_Info.lon",None)
+#         lat = elong_json.get("RecommendHotelRequest",{}).get("Geo_Info.lat")
+#         if  lon and lat :
+#             hotel.map_info = lon + ',' + lat
+#         else:
+#             lon = elong_json.get("AjaxHotelInfo",{}).get("HotelGeoInfo",{}).get("Long",None)
+#             lat = elong_json.get("AjaxHotelInfo",{}).get("HotelGeoInfo",{}).get("Lat",None)
+#             if lon and lat:
+#                 hotel.map_info = lon+','+lat
+#     except Exception as e:
+#         print e
+#     print "map_info:",hotel.map_info
+#
+#     # 解析酒店星级
+#     try:
+#         star = elong_json.get("RecommendHotelRequest",{}).get("starLevel",None)
+#         if star:
+#             hotel.star = re.search(r'[\d\.]+',star).group(0)
+#     except Exception as e:
+#         hotel.star = -1
+#     print "star:",hotel.star
+#
+#     #解析酒店评分
+#     try:
+#         grade = elong_json.get("scoreInfo",{}).get("comment_score",None)
+#         if grade:
+#             hotel.grade = float(grade)
+#     except Exception as e:
+#         hotel.grade = 'NULL'
+#
+#     #解析酒店评论数
+#     try:
+#         pass
+#     except Exception as e:
+#         hotel.review_num = -1
+#
+#     #图片列表解析
+#     try:
+#         pass
+#     except Exception as e:
+#         pass
 
 if __name__ == '__main__':
     # url = 'http://ihotel.elong.com/101703/'
     # url = 'http://ihotel.elong.com/670847/'
     # url = 'http://ihotel.elong.com/331466/'
-    url = 'http://hotel.elong.com/10101323/'
+    url = 'http://ihotel.elong.com/323558/'
     other_info = {u'source_id': u'670847', u'city_id': u'20236'}
+
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.content
+    # with open('content.txt','w+') as temp:
+    #     temp.write(content)
     result = elong_parser(content, url, other_info)
 
     # 如果需要，可以在这里用 print 打印 hotel 对象中的内容。也可直接使用 debug 调试查看 result
     print result.address
+
+
+
