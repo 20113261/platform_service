@@ -43,6 +43,10 @@ app.conf.update(
               routing_key='file_downloader'),
         Queue('tripadvisor_website', exchange=Exchange('tripadvisor_website', type='direct'),
               routing_key='tripadvisor_website'),
+        Queue('poi_task_1', exchange=Exchange('poi_task_1', type='direct'),
+              routing_key='poi_task_1'),
+        Queue('poi_task_2', exchange=Exchange('poi_task_2', type='direct'),
+              routing_key='poi_task_2'),
     ),
 
 )
