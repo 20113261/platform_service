@@ -31,7 +31,6 @@ def get_task_total(queue, used_times=5, limit=30000):
             },
             '$inc': {'used_times': 1}
         })
-        print line['utime']
         yield task_token, worker, queue, routing_key, line['args']
 
 
