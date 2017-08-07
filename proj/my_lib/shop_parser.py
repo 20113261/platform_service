@@ -1,16 +1,34 @@
-# coding=utf-8
-import json
+# coding:utf-8
+from __future__ import absolute_import
+
+
 import re
 
-import db_localhost as db
+from . import db_localhost
 from lxml import html
+from pyquery import PyQuery
+from .Common.Browser import MySession
+from common.common import get_proxy
+from util.UserAgent import GetUserAgent
 
 from .decode_raw_site import decode_raw_site
 
-BASIC_TABLE = 'tp_shop_basic_0801'
-PAGING_TABLE = 'tp_shop_paging_0801'
+img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
+'mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8'
 
 pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
+
+ss = MySession(need_proxies=False)
+PROXY = get_proxy(source="Platform")
+proxies = {
+        'http': 'socks5://' + PROXY,
+        'https': 'socks5://' + PROXY
+    }
+headers = {
+        'User-agent': GetUserAgent()
+    }
+ss.headers = headers
+ss.proxies = proxies
 
 
 def has_chinese(contents, encoding='utf-8'):
@@ -24,63 +42,35 @@ def has_chinese(contents, encoding='utf-8'):
         return False
 
 
-def get_site_encode_string(content):
-    root = html.fromstring(content)
-    items = root.find_class('fl')
-    result = ''
-    for item in items:
-        link_item = item.find_class('taLnk')
-        if len(link_item) != 0:
-            try:
-                onclick_text = link_item[0].xpath('./@onclick')[0]
-                if "ta.util.link.targetBlank" in onclick_text:
-                    result = pattern.findall(onclick_text)[0]
-                    break
-            except:
-                continue
-    return result
+def image_paser(detail_id):
+    page = ss.get(img_get_url+detail_id)
+    root = PyQuery(page.text)
+    images_list = []
+    for div in root('.photos.inHeroList div').items():
+        images_list.append(div.attr['data-bigurl'])
+    img_list = '|'.join(images_list)
+
+    return img_list
+
+# m@d
+# def get_site_encode_string(content):
+#     root = html.fromstring(content)
+#     items = root.find_class('fl')
+#     result = ''
+#     for item in items:
+#         link_item = item.find_class('taLnk')
+#         if len(link_item) != 0:
+#             try:
+#                 onclick_text = link_item[0].xpath('./@onclick')[0]
+#                 if "ta.util.link.targetBlank" in onclick_text:
+#                     result = pattern.findall(onclick_text)[0]
+#                     break
+#             except:
+#                 continue
+#     return result
 
 
-def image_paser(content, url):
-    dom = html.fromstring(content)
-    result = ''
-    if len(dom.find_class('flexible_photo_wrap')) != 0:
-        try:
-            raw_text = dom.find_class('flexible_photo_album_link')[0].find_class('count')[0].xpath('./text()')[0]
-            image_num = re.findall('\((\d+)\)', raw_text)[0]
-            pattern = re.compile('var lazyImgs = ([\s\S]+?);')
-            google_list = []
-            img_url_list = []
-            if len(pattern.findall(content)) != 0:
-                for each_img in json.loads((pattern.findall(content)[0]).replace('\n', '')):
-                    img_url = each_img[u'data']
-                    if 'ditu.google.cn' in img_url:
-                        google_list.append(img_url)
-                    elif 'photo-' in img_url:
-                        img_url_list.append(img_url.replace('photo-l', 'photo-s').replace('photo-f', 'photo-s'))
-
-            result = '|'.join(img_url_list[:int(image_num)])
-            print 'image_urls: ', result
-        except:
-            try:
-                image_num = len(dom.find_class('flexible_photo_wrap'))
-                pattern = re.compile('var lazyImgs = ([\s\S]+?);')
-                google_list = []
-                img_url_list = []
-                if len(pattern.findall(content)) != 0:
-                    for each_img in json.loads((pattern.findall(content)[0]).replace('\n', '')):
-                        img_url = each_img[u'data']
-                        if 'ditu.google.cn' in img_url:
-                            google_list.append(img_url)
-                        elif 'photo-' in img_url:
-                            img_url_list.append(img_url.replace('photo-l', 'photo-s').replace('photo-f', 'photo-s'))
-                result = '|'.join(img_url_list[:image_num])
-            except:
-                pass
-    return result
-
-
-def parse(content, url, city_id):
+def parse(content, url):
     result = []
     try:
         content = content.decode('utf8')
@@ -100,22 +90,37 @@ def parse(content, url, city_id):
 
     # 名字 name,name_en
     try:
-        name_en = root.find_class('heading_name_wrapper')[0].text_content().encode('utf-8').strip().split('\n')[1]
+
+          name_en = root.find_class('altHead')[0].text_content().encode('utf-8').strip()
     except:
         name_en = ''
+    if not name_en:
+        try:
+            # m@ori
+            name_en = root.find_class('heading_name_wrapper')[0].text_content().encode('utf-8').strip().split('\n')[1]
+        except:
+            name_en = ''
+
 
     try:
         try:
-            name = root.find_class('heading_name_wrapper')[0].text_content().encode('utf-8').strip()
+            # m@ class变更 name = root.find_class('heading_name_wrapper')[0].text_content().encode('utf-8').strip()
+            name = root.find_class('heading_title')[0].text_content().encode('utf-8').strip()
         except:
             name = root.get_element_by_id('HEADING').text_content().encode('utf-8').strip()
+
         if len(name.split('\n')) > 1:
             if name.find('停业') > -1 or name.find('移除') > -1:
                 print 'stop:', source_id, '\t', url
+                raise Exception
             else:
                 name = name.split('\n')[0]
-    except Exception as e:
+    except Exception, e:
+        name = ''
         print 'name error', url
+        # print str(e)
+        # 若出错则返回空的list
+        return "Error"
 
     if name == '' and name_en != '':
         name = name_en
@@ -134,6 +139,14 @@ def parse(content, url, city_id):
     # 经纬度map_info
     try:
         map_info = ''
+        if not map_info:
+            # m@add meta 节点查找
+            try:
+                location_content = root.xpath('//meta[@name="location"]/@content')[0].strip()
+                map_info = re.search('coord[=\s]+([\.\d\,\-]+)',location_content).group(1)
+            except:
+                map_info = ''
+
         if not map_info:
             try:
                 lng = root.xpath('//div[@class="mapContainer"]/@data-lng')[0]
@@ -161,13 +174,20 @@ def parse(content, url, city_id):
         if not map_info:
             map_info = ''
     except Exception as e:
+        map_info = ''
+        print 'map_info error', url
+        print str(e)
         return "Error"
     print 'map: %s' % map_info
 
     # 地址address
     try:
         address = ''
-        address = root.find_class('format_address')[0].text_content().strip().encode('utf-8').replace('地址: ', '')
+        # m@ 更新 address = root.find_class('format_address')[0].text_content().strip().encode('utf-8').replace('地址: ', '')
+        address = root.find_class('blEntry address')[0].text_content().strip().encode('utf-8')
+
+
+
     except Exception, e:
         address = ''
         # traceback.print_exc(e)
@@ -175,15 +195,27 @@ def parse(content, url, city_id):
 
     # 电话tel
     try:
-        tel = root.find_class('phoneNumber')[0].text
+        # m@ 更新 tel = root.find_class('phoneNumber')[0].text
+        tel = root.find_class('blEntry phone')[0].text_content()
+
     except:
         tel = ''
     print 'tel: %s' % tel
 
+    # m@add 官网url
+    site = ''
+    try:
+        site_data = root.find_class('blEntry website')[0].attrib['data-ahref']
+        site = decode_raw_site(site_data)
+    except Exception, e:
+        print(e)
+
     # 排名rank
     try:
         rank = ''
-        rank_text = root.find_class('slim_ranking')[0].text_content().encode('utf-8').replace(',', '')
+        # m@ rank_text = root.find_class('slim_ranking')[0].text_content().encode('utf-8').replace(',', '')
+        rank_text = re.split('\n+', root.find_class('rating_and_popularity')[0].text_content().strip())[1]
+
         nums = re.compile(r'(\d+)', re.S).findall(rank_text)
         # rank = nums[0] + '/' + nums[1]
         rank = nums[1]
@@ -193,10 +225,12 @@ def parse(content, url, city_id):
 
     # 评分rating
     try:
-        if len(root.find_class('rs rating')) != 0:
-            grade_temp = root.find_class('rs rating')[0]
-            rating = float(grade_temp.xpath('span/img/@content')[0])
-            reviews = int(grade_temp.xpath('a/@content')[0])
+        # m@ if len(root.find_class('rs rating')) != 0:
+        # class from 'rs rating' to 'rating'
+        if root.find_class('rating'):
+            grade_temp = root.find_class('rating')[0]
+            rating = float(grade_temp.xpath('//span[@class="overallRating"]')[0].text_content())
+            reviews = int(re.search('\d+',grade_temp.text_content().replace(',', '')).group())
         else:
             rating = -1
             reviews = -1
@@ -207,47 +241,55 @@ def parse(content, url, city_id):
     print 'rating: %s' % rating
     print 'reviews: %s' % reviews
 
-    try:
-        if reviews > 10:
-            urls = []
-            for offset in range(10, reviews, 10):
-                next_url = url.replace('Reviews', 'Reviews-or%s' % offset)
-                urls.append((next_url, source_id, int(offset) / 10, miaoji_id))
-                if offset > 100:
-                    break
-                # print 'insert paging', insert_paging(urls)
-    except Exception, e:
-        # print str(e)
-        pass
-
-    print 'rating: %s' % rating
-    print 'reviews: %s' % reviews
+    # try:
+    #     if reviews > 10:
+    #         urls = []
+    #         for offset in range(10, reviews, 10):
+    #             next_url = url.replace('Reviews', 'Reviews-or%s' % offset)
+    #             urls.append((next_url, source_id, int(offset) / 10, miaoji_id))
+    #             if offset > 100:
+    #                 break
+    #             print 'insert paging', insert_paging(urls)
+    # except Exception, e:
+    #     # print str(e)
+    #     pass
+    #
+    # print 'rating: %s' % rating
+    # print 'reviews: %s' % reviews
 
     # 开店时间 open_time
     try:
-        days = []
-        hours = []
-        if len(root.find_class('hoursOverlay')) != 0:
-            for i in root.find_class('hoursOverlay')[0].find_class('days'):
-                if len(i.xpath('text()')) != 0:
-                    days.append(i.xpath('text()')[0].encode('utf-8').strip())
-            for j in root.find_class('hoursOverlay')[0].find_class('hours'):
-                if len(j.xpath('text()')) != 0:
-                    hours.append(j.xpath('text()')[0].encode('utf-8').strip())
-        time = ''
-        for n in range(len(days)):
-            time += days[n]
-            time += ':'
-            time += hours[n]
-            if (n != len(days) - 1):
-                time += '|'
-        if time != '':
-            open_time = time
-        else:
-            open_time = ''
-    except Exception, e:
-        # traceback.print_exc(e)
+        open_time = root.find_class('hoursAll')[0].text_content()
+
+    except:
         open_time = ''
+
+    if not open_time:
+        try:
+            time = ''
+            days = []
+            hours = []
+            if len(root.find_class('hoursOverlay')) != 0:
+                for i in root.find_class('hoursOverlay')[0].find_class('days'):
+                    if len(i.xpath('text()')) != 0:
+                        days.append(i.xpath('text()')[0].encode('utf-8').strip())
+                for j in root.find_class('hoursOverlay')[0].find_class('hours'):
+                    if len(j.xpath('text()')) != 0:
+                        hours.append(j.xpath('text()')[0].encode('utf-8').strip())
+
+            for n in range(len(days)):
+                time += days[n]
+                time += ':'
+                time += hours[n]
+                if (n != len(days) - 1):
+                    time += '|'
+            if time != '':
+                open_time = time
+            else:
+                open_time = ''
+        except Exception, e:
+            # traceback.print_exc(e)
+            open_time = ''
     print 'open_time: %s' % open_time
 
     # tagid
@@ -287,8 +329,6 @@ def parse(content, url, city_id):
     except:
         pass
 
-    print 'Prize: ', prize
-
     # 旅行家标志
     traveler_choice = 0
     try:
@@ -298,10 +338,10 @@ def parse(content, url, city_id):
     except:
         pass
 
-    print "Traveler choice: ", traveler_choice
     # 图片抓取
     try:
-        image_urls = image_paser(content, url)
+        detail_id = source_id
+        image_urls = image_paser(detail_id)
     except:
         image_urls = ''
 
@@ -311,43 +351,61 @@ def parse(content, url, city_id):
         first_review_id = re.findall('review_(\d+)', raw_onclick)[0]
     except:
         first_review_id = ''
-    print 'First review id: ', first_review_id
-    print "Url: ", url
 
     print "source_city_id: ", source_city_id
     print "url: ", url
+    #
+    # encode_string = get_site_encode_string(content)
 
-    encode_string = get_site_encode_string(content)
+    # print "encode_string: ", encode_string
 
-    print "encode_string: ", encode_string
+    # raw_site = ''
+    # if encode_string != '':
+    #     raw_site = decode_raw_site(encode_string)
+    #
+    # print "raw_site: ", raw_site
 
-    raw_site = ''
-    if encode_string != '':
-        raw_site = decode_raw_site(encode_string)
-
-    print "raw_site: ", raw_site
-
-    result = (
-        source, name, name_en, tel, map_info, address, open_time, rating, rank, tagid, reviews, recommended_time, desc,
-        prize, traveler_choice, first_review_id, image_urls,
-        city_id, source_id, source_city_id, url, encode_string, raw_site)
-    print insert_db(result)
+    result = {
+        'source': source,
+        'name': name,
+        'name_en':  name_en,
+        'phone': tel,
+        'map_info': map_info,
+        'address': address,
+        'opentime': open_time,
+        'grade' : rating,
+        'ranking': rank,
+        'tagid': tagid,
+        'commentcounts': reviews,
+        'recommended_time': recommended_time,
+        'introduction': desc,
+        'prize': prize,
+        'traveler_choice': traveler_choice,
+        'first_review_id': first_review_id,
+        'imgurl': image_urls,
+        'site': site,
+        'id': source_id,
+        'source_city_id': source_city_id,
+        'url': url}
     return result
 
 
-def insert_db(args):
-    sql = "insert into tp_shop_basic (`source`, `name`, `name_en`, `phone`, `map_info`, `address`, `opentime`, `star`, `ranking`, `tagid`, `commentcounts`, `recommended_time`, `introduction`, `prize`, `traveler_choice`, `first_review_id`, `imgurl`,`city_id`, `id`, `source_city_id`, `url`, `site_raw`, `site_before_301`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-    return db.ExecuteSQL(sql, args)
 
 
-def get_tasks():
-    sql = 'select * from tp_eu36_shop_basic_0801 where map_info is null'
-    return db.QueryBySQL(sql)
+def insert_db(result, city_id):
+    result['city_id'] = city_id
+    db_localhost.insert('shop', **result)
 
+    # sql = "insert into tp_attr_basic (`source`, `name`, `name_en`, `phone`, `map_info`, `address`, `opentime`, `star`, `ranking`, `tagid`, `commentcounts`, `recommended_time`, `introduction`, `prize`, `traveler_choice`, `first_review_id`, `imgurl`,`miaoji_id`, `id`, `source_city_id`, `url`, `site_raw`, `site_before_301`, `city_id`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    # result = list(result)
+    # result.append(city_id)
+    # return db.ExecuteSQL(sql, tuple(result))
 
 if __name__ == '__main__':
-    for each_task in get_tasks():
-        url = each_task['url']
-        content = crawl_requests(url)
-        data = parse(content, url)
-        print data
+    #url = 'https://www.tripadvisor.cn/Attraction_Review-g143034-d108754-Reviews-Nahuku_Thurston_Lava_Tube-Hawaii_Volcanoes_National_Park_Island_of_Hawaii_Hawaii.html'
+    url = 'https://www.tripadvisor.cn/Attraction_Review-g297930-d2208173-Reviews-Magnifique_Tailor-Patong_Kathu_Phuket.html'
+    content = ss.get(url).content
+    result = parse(content,url)
+    insert_db(result, 10086)
+
+

@@ -48,10 +48,11 @@ def asdf(d):
 
 
 def decode_raw_site(raw_site):
-    return "http://www.tripadvisor.cn" + asdf(raw_site)
+    #"http://www.tripadvisor.cn" +
+    return asdf(raw_site)
 
 
 if __name__ == '__main__':
     encode_str = 'LqMWJQzZYUWJQpEcYGII26XombQQoqnQQQQoqnqgoqnQQQQoqnQQQQoqnQQQQoqnqgoqnQQQQoqnQQuuuQQoqnQQQQoqnxioqnQQQQoqnQQt9gIi2iEnGJEMQQoqnQQQQoqnxioqnQQQQoqnQQniaQQoqnQQQQoqnqgoqnQQQQoqnQQWJQzhY3Knd3ddXATXMMVmUoB'
     # encode_str = 'LqMWJQzZYUWJQpEcYGII26XombQQoqnQQQQoqnqgoqnQQQQoqnQQQQoqnQQQQoqnqgoqnQQQQoqnQQuuuQQoqnQQQQoqnxioqnQQQQoqnQQcVHEStIic2JEStQQoqnQQQQoqnxioqnQQQQoqnQQniaQQoqnQQQQoqnqgoqnQQQQoqnQQTEQQoqnQQQQoqnqgoqnQQQQoqnQQEVtIJpEJCItQQoqnQQQQoqnqHoqnQQQQoqnQQVIQQoqnQQQQoqnqHoqnQQQQoqnQQHJEtQQoqnQQQQoqnqgoqnQQQQoqnQQV2SnpEVQQoqnQQQQoqnqgoqnQQQQoqnQQWJQzhY3VddU3mVdHHMVvkMMB'
-    print decode_raw_site(encode_str)
+    print decode_raw_site('PFC2tYyisLGJsi')
