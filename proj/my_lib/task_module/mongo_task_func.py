@@ -10,6 +10,7 @@ import datetime
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['Task']
+failed_task_collections = client['MongoTask']['FailedTask']
 
 
 def get_task_total(queue, used_times=5, limit=30000):
@@ -46,6 +47,19 @@ def update_task(task_id):
 
 def get_per_task(task_id):
     return collections.find_one({'task_token': task_id})
+
+
+def insert_failed_task(task_id, celery_task_id, args, kwargs, einfo):
+    try:
+        failed_task_collections.save({
+            'task_id': task_id,
+            'celery_task_id': celery_task_id,
+            'args': args,
+            'kwargs': kwargs,
+            'einfo': einfo
+        })
+    except Exception:
+        pass
 
 
 if __name__ == '__main__':

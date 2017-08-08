@@ -5,6 +5,9 @@
 # @Site    : 
 # @File    : rabbitmq_watcher.py
 # @Software: PyCharm
+import sys
+
+sys.path.append('/root/data/lib')
 import json
 import requests
 import logging
@@ -78,3 +81,4 @@ def mongo_task_watcher():
 
 if __name__ == '__main__':
     schedule.start()
+    # mongo_task_watcher()

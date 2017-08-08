@@ -10,7 +10,8 @@ from celery.task import Task
 
 from proj.my_lib.Common.Utils import get_local_ip
 from proj.my_lib.task_module.task_func import update_task
-from proj.my_lib.task_module.mongo_task_func import update_task as mongo_update_task
+from proj.my_lib.task_module.mongo_task_func import update_task as mongo_update_task, \
+    insert_failed_task as mongo_insert_failed_task
 
 logger = get_logger(__name__)
 
@@ -49,21 +50,30 @@ class BaseTask(Task):
             mongo_update_task(kwargs['mongo_task_id'])
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
-        if self.name not in FAILED_TASK_BLACK_LIST:
-            conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', db='Task', charset='utf8')
-            with conn as cursor:
-                celery_task_id = task_id
-                task_id = kwargs.get('task_id', '')
-                kwargs.pop('task_id', None)
-                kwargs['local_ip'] = get_local_ip()
-                kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
-                try:
-                    cursor.execute(
-                        'REPLACE INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
-                        (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))
-                except Exception as e:
-                    logger.exception(str(e))
-            conn.close()
+        if 'mongo_task_id' in kwargs:
+            if self.name not in FAILED_TASK_BLACK_LIST:
+                conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', db='Task',
+                                       charset='utf8')
+                with conn as cursor:
+                    celery_task_id = task_id
+                    task_id = kwargs.get('task_id', '')
+                    kwargs.pop('task_id', None)
+                    kwargs['local_ip'] = get_local_ip()
+                    kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
+                    try:
+                        cursor.execute(
+                            'REPLACE INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
+                            (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))
+                    except Exception as e:
+                        logger.exception(str(e))
+                conn.close()
+        else:
+            celery_task_id = task_id
+            task_id = kwargs.get('mongo_task_id', '')
+            kwargs.pop('task_id', None)
+            kwargs['local_ip'] = get_local_ip()
+            kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
+            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo))
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         task_source = get_source(self)
@@ -71,20 +81,29 @@ class BaseTask(Task):
         r = redis.Redis(host='10.10.180.145', db=3)
         r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, 'failure']))
 
-        if self.name not in FAILED_TASK_BLACK_LIST:
-            conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', db='Task', charset='utf8')
-            with conn as cursor:
-                celery_task_id = task_id
-                task_id = kwargs.get('task_id', '')
-                kwargs.pop('task_id', None)
-                try:
-                    cursor.execute(
-                        'REPLACE INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
-                        (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))
-                except Exception as exception:
-                    logger.exception(str(exception.message))
+        if 'mongo_task_id' in kwargs:
+            if self.name not in FAILED_TASK_BLACK_LIST:
+                conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', db='Task',
+                                       charset='utf8')
+                with conn as cursor:
+                    celery_task_id = task_id
+                    task_id = kwargs.get('task_id', '')
+                    kwargs.pop('task_id', None)
+                    try:
+                        cursor.execute(
+                            'REPLACE INTO FailedTask(`id`, `task_id`, `args`, `kwargs`, error_info) VALUES (%s,%s,%s,%s,%s)',
+                            (task_id, celery_task_id, str(args), json.dumps(kwargs), str(einfo)))
+                    except Exception as exception:
+                        logger.exception(str(exception.message))
 
-            conn.close()
+                conn.close()
+        else:
+            celery_task_id = task_id
+            task_id = kwargs.get('mongo_task_id', '')
+            kwargs.pop('task_id', None)
+            kwargs['local_ip'] = get_local_ip()
+            kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
+            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo))
 
 
 if __name__ == '__main__':

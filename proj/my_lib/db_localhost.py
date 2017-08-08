@@ -6,7 +6,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
-#import pymysql
+
+
+# import pymysql
 
 class Attr(Base):
     __tablename__ = 'attr'
@@ -50,6 +52,7 @@ class Attr(Base):
     traveler_choice = Column(Integer(), default=0)
     insert_time = Column(TIMESTAMP, default=datetime.datetime.now)
 
+
 class Shop(Base):
     __tablename__ = 'shop'
     id = Column(String(32), nullable=False, primary_key=True)
@@ -92,6 +95,7 @@ class Shop(Base):
     traveler_choice = Column(Integer(), default=0)
     insert_time = Column(TIMESTAMP, default=datetime.datetime.now)
 
+
 # class Rest(Base):
 #     __tablename__ = 'rest'
 #     id = Column(String(64), nullable=False, primary_key=True)
@@ -131,15 +135,16 @@ class Shop(Base):
 #     traveler_choice = Column(Integer(), default=0)
 #     insert_time = Column(TIMESTAMP, default=datetime.datetime.now)
 # 初始化数据库连接:
-#engine = create_engine('mysql+pymysql://hourong:hourong@10.10.180.145:3306/Qyer')
+# engine = create_engine('mysql+pymysql://hourong:hourong@10.10.180.145:3306/Qyer')
 engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8',
                        encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
 # 创建DBSession类型:
 
 DBSession = sessionmaker(bind=engine)
 
-def insert(table,**kwargs):
-    content = {'attr': Attr,'shop': Shop}[table](**kwargs)
+
+def insert(table, **kwargs):
+    content = {'attr': Attr, 'shop': Shop}[table](**kwargs)
     ss = DBSession()
     ss.add(content)
     ss.commit()
@@ -148,5 +153,5 @@ def insert(table,**kwargs):
 if __name__ == '__main__':
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
-    #insert(id=123,source='dd',city_id='b69',url='http://www.com')
+    # insert(id=123,source='dd',city_id='b69',url='http://www.com')
     print dir(engine)

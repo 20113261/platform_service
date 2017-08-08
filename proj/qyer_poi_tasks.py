@@ -38,7 +38,6 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
             session.merge(result)
             session.commit()
             session.close()
-            update_task(kwargs['task_id'])
             print "Success with " + PROXY + ' CODE 0'
             update_proxy('Platform', PROXY, x, '0')
         return result
