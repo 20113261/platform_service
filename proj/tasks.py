@@ -158,7 +158,8 @@ def get_lost_attr(self, target_url, city_id, **kwargs):
             print "Success with " + PROXY + ' CODE 0'
             try:
                 print attr_insert_db(result, city_id)
-                save_task_and_page_content(task_name='daodao_poi_attr', content=page.content, task_id=kwargs['mongo_task_id'],
+                save_task_and_page_content(task_name='daodao_poi_attr', content=page.content,
+                                           task_id=kwargs['mongo_task_id'],
                                            source='daodao',
                                            source_id='NULL',
                                            city_id='NULL', url=target_url)

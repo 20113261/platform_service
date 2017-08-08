@@ -70,7 +70,7 @@ class BaseTask(Task):
         else:
             celery_task_id = task_id
             task_id = kwargs.get('mongo_task_id', '')
-            kwargs.pop('task_id', None)
+            kwargs.pop('mongo_task_id', None)
             kwargs['local_ip'] = get_local_ip()
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
             mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo))
@@ -100,7 +100,7 @@ class BaseTask(Task):
         else:
             celery_task_id = task_id
             task_id = kwargs.get('mongo_task_id', '')
-            kwargs.pop('task_id', None)
+            kwargs.pop('mongo_task_id', None)
             kwargs['local_ip'] = get_local_ip()
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
             mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo))
