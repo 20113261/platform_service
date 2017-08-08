@@ -20,6 +20,7 @@ from lxml import html
 from pyquery import PyQuery
 from util.UserAgent import GetUserAgent
 
+from proj.my_lib.PageSaver import save_task_and_page_content
 from .celery import app
 from .my_lib.attr_parser import insert_db as attr_insert_db
 from .my_lib.attr_parser import parse as attr_parser
@@ -134,7 +135,7 @@ def get_long_comment(self, target_url, language, miaoji_id, special_str):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')
 def get_lost_attr(self, target_url, city_id, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
@@ -157,7 +158,10 @@ def get_lost_attr(self, target_url, city_id, **kwargs):
             print "Success with " + PROXY + ' CODE 0'
             try:
                 print attr_insert_db(result, city_id)
-                update_task(task_id=kwargs['task_id'])
+                save_task_and_page_content(task_name='daodao_poi_attr', content=page.content, task_id=kwargs['mongo_task_id'],
+                                           source='daodao',
+                                           source_id='NULL',
+                                           city_id='NULL', url=target_url)
                 update_proxy('Platform', PROXY, x, '0')
             except Exception as exc:
                 self.retry(exc=exc)

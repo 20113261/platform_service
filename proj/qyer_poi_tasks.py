@@ -9,7 +9,6 @@ from proj.my_lib.PageSaver import save_task_and_page_content
 from .celery import app
 from .my_lib.my_qyer_parser.data_obj import DBSession
 from .my_lib.my_qyer_parser.my_parser import page_parser
-from .my_lib.task_module.task_func import update_task
 from .my_lib.BaseTask import BaseTask
 
 
