@@ -50,7 +50,7 @@ class BaseTask(Task):
             mongo_update_task(kwargs['mongo_task_id'])
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
-        if 'mongo_task_id' in kwargs:
+        if 'mongo_task_id' not in kwargs:
             if self.name not in FAILED_TASK_BLACK_LIST:
                 conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', db='Task',
                                        charset='utf8')
@@ -81,7 +81,7 @@ class BaseTask(Task):
         r = redis.Redis(host='10.10.180.145', db=3)
         r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, 'failure']))
 
-        if 'mongo_task_id' in kwargs:
+        if 'mongo_task_id' not in kwargs:
             if self.name not in FAILED_TASK_BLACK_LIST:
                 conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', db='Task',
                                        charset='utf8')
