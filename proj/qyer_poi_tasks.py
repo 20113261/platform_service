@@ -5,6 +5,7 @@ import requests
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 
+from proj.my_lib.PageSaver import save_task_and_page_content
 from .celery import app
 from .my_lib.my_qyer_parser.data_obj import DBSession
 from .my_lib.my_qyer_parser.my_parser import page_parser
@@ -28,6 +29,9 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
         page = requests.get(target_url, proxies=proxies, headers=headers, timeout=240)
         page.encoding = 'utf8'
         content = page.text
+        save_task_and_page_content(task_name='qyer_poi', content=content, task_id=kwargs['task_id'], source='qyer',
+                                   source_id='NULL',
+                                   city_id='NULL', url=target_url)
         result = page_parser(content=content, target_url=target_url)
         result.city_id = city_id
         if result.name == 'NULL' and result.map_info == 'NULL':
