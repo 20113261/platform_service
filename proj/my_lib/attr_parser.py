@@ -18,7 +18,7 @@ img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
 
 pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 
-ss = MySession(need_proxies=False)
+ss = MySession(need_proxies=True)
 PROXY = get_proxy(source="Platform")
 proxies = {
          'http': 'socks5://' + PROXY,
