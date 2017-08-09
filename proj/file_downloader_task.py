@@ -57,7 +57,7 @@ def get_file_name(url, c_type):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='32/s')
-def file_downloader(self, url, file_type, file_path, **kwargs):
+def file_downloader(self, url, file_type, file_path, need_filter=True, **kwargs):
     """
     :param self:
     :param url: 需要下载文件的 url
@@ -79,7 +79,7 @@ def file_downloader(self, url, file_type, file_path, **kwargs):
             total_length, content_type = get_content_length_and_type(url, session)
 
             # 小于 20KB 不下载
-            if total_length < 20480:
+            if total_length < 20480 and need_filter:
                 # alreadyDownload.add_url(url, '|_||_|'.join(['filter', get_local_ip(), str(total_length)]))
                 save_log(
                     '|_||_|'.join(['filter', get_local_ip(), str(total_length)]),
