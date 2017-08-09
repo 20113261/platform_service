@@ -30,6 +30,7 @@ from .my_lib.hotel_comment.venere import parser as venere_comment_parser
 from .my_lib.is_complete_scale_ok import is_complete_scale_ok
 from .my_lib.rest_parser import parse as rest_parser
 from .my_lib.shop_parser import parse as shop_parser
+from .my_lib.shop_parser import insert_db as shop_insert_db
 from .my_lib.tp_comment_parser import parse, long_comment_parse, insert_db
 from .my_lib.BaseTask import BaseTask
 from .my_lib.task_module.task_func import get_task_id, update_task, insert_task
@@ -135,46 +136,6 @@ def get_long_comment(self, target_url, language, miaoji_id, special_str):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')
-def get_lost_attr(self, target_url, city_id, **kwargs):
-    PROXY = get_proxy(source="Platform")
-    x = time.time()
-    proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
-    headers = {
-        'User-agent': GetUserAgent()
-    }
-
-    try:
-        page = requests.get(target_url, proxies=proxies, headers=headers, timeout=15)
-        page.encoding = 'utf8'
-        result = attr_parser(page.content, target_url)
-        if result == 'Error':
-            update_proxy('Platform', PROXY, x, '23')
-            self.retry()
-        else:
-            print "Success with " + PROXY + ' CODE 0'
-            try:
-                print attr_insert_db(result, city_id)
-                save_task_and_page_content(task_name='daodao_poi_attr', content=page.content,
-                                           task_id=kwargs['mongo_task_id'],
-                                           source='daodao',
-                                           source_id='NULL',
-                                           city_id='NULL', url=target_url)
-                update_proxy('Platform', PROXY, x, '0')
-            except Exception as exc:
-                self.retry(exc=exc)
-
-        return result
-        # data = long_comment_parse(page.content, target_url, language)
-        # return insert_db([data, ])
-    except Exception as exc:
-        update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
-
-
 def _get_site_url(target_url):
     PROXY = get_proxy(source="Platform")
     proxies = {
@@ -250,7 +211,47 @@ def get_lost_rest(self, target_url, **kwargs):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='45/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')
+def get_lost_attr(self, target_url, city_id, **kwargs):
+    PROXY = get_proxy(source="Platform")
+    x = time.time()
+    proxies = {
+        'http': 'socks5://' + PROXY,
+        'https': 'socks5://' + PROXY
+    }
+    headers = {
+        'User-agent': GetUserAgent()
+    }
+
+    try:
+        page = requests.get(target_url, proxies=proxies, headers=headers, timeout=15)
+        page.encoding = 'utf8'
+        result = attr_parser(page.content, target_url)
+        if result == 'Error':
+            update_proxy('Platform', PROXY, x, '23')
+            self.retry()
+        else:
+            print "Success with " + PROXY + ' CODE 0'
+            try:
+                print attr_insert_db(result, city_id)
+                save_task_and_page_content(task_name='daodao_poi_attr', content=page.content,
+                                           task_id=kwargs['mongo_task_id'],
+                                           source='daodao',
+                                           source_id='NULL',
+                                           city_id='NULL', url=target_url)
+                update_proxy('Platform', PROXY, x, '0')
+            except Exception as exc:
+                self.retry(exc=exc)
+
+        return result
+        # data = long_comment_parse(page.content, target_url, language)
+        # return insert_db([data, ])
+    except Exception as exc:
+        update_proxy('Platform', PROXY, x, '23')
+        self.retry(exc=exc)
+
+
+@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='6/s')
 def get_lost_shop(self, target_url, city_id, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
@@ -264,14 +265,22 @@ def get_lost_shop(self, target_url, city_id, **kwargs):
     try:
         page = requests.get(target_url, proxies=proxies, headers=headers, timeout=15)
         page.encoding = 'utf8'
-        result = shop_parser(page.content, target_url, city_id)
+        result = shop_parser(page.content, target_url)
         if result == 'Error':
             update_proxy('Platform', PROXY, x, '23')
             self.retry()
         else:
             print "Success with " + PROXY + ' CODE 0'
-            update_task(task_id=kwargs['task_id'])
-            update_proxy('Platform', PROXY, x, '0')
+            try:
+                print shop_insert_db(result, city_id)
+                save_task_and_page_content(task_name='daodao_poi_shop', content=page.content,
+                                           task_id=kwargs['mongo_task_id'],
+                                           source='daodao',
+                                           source_id='NULL',
+                                           city_id='NULL', url=target_url)
+                update_proxy('Platform', PROXY, x, '0')
+            except Exception as e:
+                self.retry(exc=e)
         return result
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
