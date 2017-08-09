@@ -63,6 +63,7 @@ def file_downloader(self, url, file_type, file_path, need_filter=True, **kwargs)
     :param url: 需要下载文件的 url
     :param file_type: 文件类型 img、pdf 等等，img 会检查文件是否完整下载
     :param file_path:
+    :param need_filter: is it need file size filter
     :param kwargs:
     :return:
     """
