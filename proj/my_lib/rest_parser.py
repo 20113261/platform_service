@@ -2,15 +2,20 @@
 import json
 import re
 
-import db_localhost as db
+import db_localhost
 from lxml import html
+from pyquery import PyQuery
+from proj.my_lib.Common.Browser import MySession
+
+img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
 
 pattern_g = re.compile('-g(\d+)')
 
 pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 
 pattern_d = re.compile('-d(\d+)')
-TASK_TABLE = "tp_rest_basic"
+
+ss = MySession(need_proxies=True)
 
 
 def dining_options_parser(content, url):
@@ -57,43 +62,15 @@ def has_chinese(contents, encoding='utf-8'):
         return False
 
 
-def image_paser(content, url):
-    dom = html.fromstring(content)
-    result = ''
-    if len(dom.find_class('flexible_photo_wrap')) != 0:
-        try:
-            raw_text = dom.find_class('flexible_photo_album_link')[0].find_class('count')[0].xpath('./text()')[0]
-            image_num = re.findall('\((\d+)\)', raw_text)[0]
-            pattern = re.compile('var lazyImgs = ([\s\S]+?);')
-            google_list = []
-            img_url_list = []
-            if len(pattern.findall(content)) != 0:
-                for each_img in json.loads((pattern.findall(content)[0]).replace('\n', '')):
-                    img_url = each_img[u'data']
-                    if 'ditu.google.cn' in img_url:
-                        google_list.append(img_url)
-                    elif 'photo-' in img_url:
-                        img_url_list.append(img_url.replace('photo-l', 'photo-s').replace('photo-f', 'photo-s'))
+def image_paser(detail_id):
+    page = ss.get(img_get_url+detail_id)
+    root = PyQuery(page.text)
+    images_list = []
+    for div in root('.photos.inHeroList div').items():
+        images_list.append(div.attr['data-bigurl'])
+    img_list = '|'.join(images_list)
 
-            result = '|'.join(img_url_list[:int(image_num)])
-            print 'image_urls: ', result
-        except:
-            try:
-                image_num = len(dom.find_class('flexible_photo_wrap'))
-                pattern = re.compile('var lazyImgs = ([\s\S]+?);')
-                google_list = []
-                img_url_list = []
-                if len(pattern.findall(content)) != 0:
-                    for each_img in json.loads((pattern.findall(content)[0]).replace('\n', '')):
-                        img_url = each_img[u'data']
-                        if 'ditu.google.cn' in img_url:
-                            google_list.append(img_url)
-                        elif 'photo-' in img_url:
-                            img_url_list.append(img_url.replace('photo-l', 'photo-s').replace('photo-f', 'photo-s'))
-                result = '|'.join(img_url_list[:image_num])
-            except:
-                pass
-    return result
+    return img_list
 
 
 def parse(content, url, city_id):
@@ -392,22 +369,53 @@ def parse(content, url, city_id):
     #     insert_comment_page(comment_data_list)
     try:
         dining_options = dining_options_parser(content, url)
-    except:
+    except Exception as exc:
         dining_options = ''
 
-    rest_info = (
-        name, tel, map_info, address, open_time, rating, rank, cuisines, dining_options, reviews, rating_by_category,
-        menu,
-        price, desc, service, payment, prize, traveler_choice, image_urls, source_id, url, first_review_id, price_level,
-        source_city_id, encode_string, city_id)
-    insert_db(rest_info)
-    return rest_info
+    result = {
+        'source': source,
+        'name': name,  #
+        'name_en': name_en,  #
+        'phone': tel,  #
+        'map_info': map_info,  #
+        'address': address,
+        'opentime': open_time,  #
+        'grade': rating,
+        'ranking': rank,
+        'cuisines': cuisines,
+        'dining_options': dining_options,
+        'menu': menu,
+        'price': price,
+        'price_level': price_level,
+        'payment': payment,
+        'service': service,
+        'tagid': tagid,
+        'commentcounts': reviews,
+        'recommended_time': recommended_time,
+        'introduction': desc,
+        'prize': prize,
+        'traveler_choice': traveler_choice,
+        'first_review_id': first_review_id,
+        'imgurl': image_urls,
+        'site': site,
+        'id': source_id,
+        'source_city_id': source_city_id,
+        'url': url}
+    return result
 
 
 # def insert_comment_page(args):
 #     sql = 'insert into tp_rest_paging_0801 (`url`,`source_id`,`source_city_id`,`page_num`) VALUES (%s,%s,%s,%s)'
 #     return db.ExecuteSQLs(sql, args)
 
-def insert_db(args):
-    sql = "INSERT INTO " + TASK_TABLE + " (`name`,`telphone`,`map_info`,`address`,`open_time`,`grade`,`real_ranking`,`cuisines`,`dining_options`,`review_num`,`rating_by_category`,`menu`,`price`,`description`,`service`,`payment`,`prize`,`traveler_choice`,`image_urls`,`id`,`res_url`,`first_review_id`,`price_level`,`source_city_id`,`site_raw`, `city_id`, `source`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'daodao')"
-    return db.ExecuteSQL(sql, args)
+# def insert_db(args):
+#     sql = "INSERT INTO " + TASK_TABLE + " (`name`,`telphone`,`map_info`,`address`,`open_time`,`grade`,`real_ranking`,`cuisines`,`dining_options`,`review_num`,`rating_by_category`,`menu`,`price`,`description`,`service`,`payment`,`prize`,`traveler_choice`,`image_urls`,`id`,`res_url`,`first_review_id`,`price_level`,`source_city_id`,`site_raw`, `city_id`, `source`) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'daodao')"
+#     return db.ExecuteSQL(sql, args)
+
+def insert_db(result, city_id):
+    result['city_id'] = city_id
+    db_localhost.insert('rest', **result)
+
+
+if __name__ == '__main__':
+    pass
