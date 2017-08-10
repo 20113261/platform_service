@@ -1,6 +1,7 @@
 # coding=utf-8
 import time
 import re
+import traceback
 
 import requests
 from common.common import get_proxy, update_proxy
@@ -71,4 +72,4 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         return result
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))

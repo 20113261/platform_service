@@ -4,6 +4,7 @@ import os
 import hashlib
 import redis
 import shutil
+import traceback
 from .celery import app
 from .my_lib.BaseTask import BaseTask
 from .my_lib.is_complete_scale_ok import is_complete_scale_ok
@@ -59,4 +60,4 @@ def daodao_img_rename_task(self, file_name, src_path, dst_path, bucket_name, img
         else:
             raise Exception('Error Flag')
     except Exception as exc:
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))

@@ -1,4 +1,5 @@
 import time
+import traceback
 
 from common.common import update_proxy
 
@@ -23,7 +24,7 @@ def booking_list_task(self, task):
     except Exception as exc:
         x = time.time()
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 # todo add crawl task
@@ -43,4 +44,4 @@ def booking_detail_task(self, url, task):
     except Exception as exc:
         x = time.time()
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))

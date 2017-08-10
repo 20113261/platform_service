@@ -8,6 +8,7 @@
 
 # coding=utf-8
 import sys
+import traceback
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -45,4 +46,4 @@ def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, c
             print "Success CODE 0"
         return result
     except Exception as exc:
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))

@@ -7,6 +7,7 @@
 # @Software: PyCharm
 import pymongo
 import urlparse
+import traceback
 
 from proj.my_lib.task_module.task_func import update_task
 from .my_lib.BaseTask import BaseTask
@@ -77,7 +78,7 @@ def list_page_task(self, ctx, city_id, **kwargs):
             update_task(kwargs['task_id'])
         except Exception as exc:
             session.update_proxy('23')
-            self.retry(exc=exc)
+            self.retry(exc=traceback.format_exc(exc))
 
 
 if __name__ == '__main__':

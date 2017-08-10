@@ -109,7 +109,7 @@ def get_comment(self, target_url, language, miaoji_id, special_str, **kwargs):
                 print "Success with " + PROXY + ' CODE 0'
         except Exception as exc:
             update_proxy('Platform', PROXY, x, '23')
-            self.retry(exc=exc, countdown=120)
+            self.retry(exc=traceback.format_exc(exc), countdown=120)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/s')
@@ -133,7 +133,7 @@ def get_long_comment(self, target_url, language, miaoji_id, special_str):
         return insert_db((data,), 'tp_comment_' + special_str)
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 def _get_site_url(target_url):
@@ -175,11 +175,11 @@ def get_site_url(self, target_url, source_id, table_name):
             update_site_url(res, source_id, table_name=table_name)
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
-def get_lost_rest(self, target_url, **kwargs):
+def get_lost_rest(self, target_url, city_id, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -208,7 +208,7 @@ def get_lost_rest(self, target_url, **kwargs):
         # return insert_db([data, ])
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')
@@ -241,14 +241,14 @@ def get_lost_attr(self, target_url, city_id, **kwargs):
                                            city_id='NULL', url=target_url)
                 update_proxy('Platform', PROXY, x, '0')
             except Exception as exc:
-                self.retry(exc=exc)
+                self.retry(exc=traceback.format_exc(exc))
 
         return result
         # data = long_comment_parse(page.content, target_url, language)
         # return insert_db([data, ])
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='6/s')
@@ -280,11 +280,11 @@ def get_lost_shop(self, target_url, city_id, **kwargs):
                                            city_id='NULL', url=target_url)
                 update_proxy('Platform', PROXY, x, '0')
             except Exception as e:
-                self.retry(exc=e)
+                self.retry(exc=traceback.format_exc(e))
         return result
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc, countdown=2)
+        self.retry(exc=traceback.format_exc(exc), countdown=2)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
@@ -309,7 +309,7 @@ def get_lost_rest_new(self, target_url, city_id, **kwargs):
             update_proxy('Platform', PROXY, x, '23')
         return result
     except Exception as exc:
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
@@ -322,7 +322,7 @@ def get_lost_rest_no_proxy(self, target_url):
             self.retry()
         return result
     except Exception as exc:
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='5/s')
@@ -356,7 +356,7 @@ def get_images(self, source, target_url, **kwargs):
         logger.exception(exc.message)
         update_proxy('Platform', PROXY, x, '22')
         print "Image Error with Proxy " + PROXY + ' used time ' + str(time.time() - x)
-        self.retry(exc=exc, countdown=2)
+        self.retry(exc=traceback.format_exc(exc), countdown=2)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
@@ -386,7 +386,7 @@ def booking_comment(self, target_url, **kwargs):
         return result
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
@@ -416,7 +416,7 @@ def venere_comment(self, target_url, **kwargs):
         return result
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='120/s')
@@ -434,7 +434,7 @@ def expedia_comment(self, target_url, **kwargs):
             update_task(kwargs['task_id'])
         return result
     except Exception as exc:
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 from .my_lib.tourico.tourico_func import queryGetHotelDetailsV3, get_per_data, insert_data as tourico_insert_data
@@ -481,7 +481,7 @@ def get_images_without_md5(self, source, target_url):
     except Exception as exc:
         # x = time.time()
         # update_proxy('Platform', PROXY, x, '22')
-        self.retry(exc=exc, countdown=2)
+        self.retry(exc=traceback.format_exc(exc), countdown=2)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
@@ -497,7 +497,7 @@ def get_images_without_md5_and_proxy(self, source, target_url):
             save_image(source, file_name, page.content)
         return flag, h, w
     except Exception as exc:
-        self.retry(exc=exc, countdown=2)
+        self.retry(exc=traceback.format_exc(exc), countdown=2)
 
 
 from .my_lib.tourico.tourico_city_func import queryGetHotelsByDestination, get_hotel_id, insert_hotel_id
@@ -536,7 +536,7 @@ def booking_comment_without_proxy(self, target_url):
             self.retry()
         return result
     except Exception as exc:
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=10)
@@ -547,7 +547,7 @@ def get_images_info(self, path):
                                       args=(path.split('/')[-1] + '_flag', '###'.join([str(flag), str(h), str(w)])))
         return flag, h, w
     except Exception as exc:
-        self.retry(exc=exc, countdown=5)
+        self.retry(exc=traceback.format_exc(exc), countdown=5)
 
 
 import hashlib
@@ -600,7 +600,7 @@ def get_hotel_images_info(self, path, part, desc_path, **kwargs):
         return flag, h, w
     except Exception as exc:
         print "Error Exception"
-        self.retry(exc=exc, countdown=10)
+        self.retry(exc=traceback.format_exc(exc), countdown=10)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='50/s')
@@ -624,7 +624,7 @@ def get_images_without_proxy(self, source, target_url, **kwargs):
         return flag, h, w
     except Exception as exc:
         print 'Exception', str(exc)
-        self.retry(exc=exc, countdown=2)
+        self.retry(exc=traceback.format_exc(exc), countdown=2)
 
 
 def qyer_img_parser(content):
@@ -705,7 +705,7 @@ def yelp_price_level(self, target_url, mid):
         return price_level
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='360/s')
@@ -724,7 +724,7 @@ def get_lost_poi_image(self, file_path, file_name, target_url):
             save_image(file_path, file_name, page.content)
         return flag, h, w
     except Exception as exc:
-        self.retry(exc=exc, countdown=2)
+        self.retry(exc=traceback.format_exc(exc), countdown=2)
 
 
 def insert_daodao_image_list(args):
@@ -769,7 +769,7 @@ def get_daodao_image_url(self, source_url, mid, **kwargs):
         return data
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 def insert_crawled_html(args, table_name):
@@ -824,7 +824,7 @@ def craw_html(self, url, flag, table_name, **kwargs):
         update_proxy('Platform', PROXY, x, '23')
         print "Error", exc, 'takes', str(time.time() - x)
         print traceback.print_exc()
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 # add lost attr

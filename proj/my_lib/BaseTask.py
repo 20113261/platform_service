@@ -73,7 +73,9 @@ class BaseTask(Task):
             kwargs.pop('mongo_task_id', None)
             kwargs['local_ip'] = get_local_ip()
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
-            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo))
+            einfo_i = str(einfo).index('Retry in')
+            real_einfo = str(einfo)[einfo_i:] if einfo_i > -1 else str(einfo)
+            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, real_einfo)
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         task_source = get_source(self)
@@ -103,7 +105,9 @@ class BaseTask(Task):
             kwargs.pop('mongo_task_id', None)
             kwargs['local_ip'] = get_local_ip()
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
-            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo))
+            einfo_i = str(einfo).index('Retry in')
+            real_einfo = str(einfo)[einfo_i:] if einfo_i>-1 else str(einfo)
+            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, real_einfo)
 
 
 if __name__ == '__main__':

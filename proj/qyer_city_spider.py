@@ -1,6 +1,7 @@
 # coding=utf-8
 import sys
 import time
+import traceback
 
 from common.common import get_proxy, update_proxy
 from lxml import etree
@@ -52,7 +53,7 @@ def qyer_city_spider(self, country_id, country_en, country_link, debug=False, **
         qyer_db.insert_many_data(*save_data)
     except Exception as exc:
         update_proxy('Platform', spider_proxy, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
@@ -84,4 +85,4 @@ def qyer_country_spider(self, country_id, country_link, debug=False, **kwargs):
         update_task(kwargs['task_id'])
     except Exception as exc:
         update_proxy('Platform', spider_proxy, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))

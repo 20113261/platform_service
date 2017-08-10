@@ -7,6 +7,7 @@ Created on 2017年2月8日
 @author: dujun
 '''
 import json
+import traceback
 import dataset
 import common.common
 from mioji.spider_factory import factory
@@ -69,7 +70,7 @@ def hotel_tax_list_task(self, source, city_id, part, **kwargs):
         update_task(kwargs['task_id'])
         print insert_task(data=data)
     except Exception as exc:
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='120/s')
@@ -85,7 +86,7 @@ def hotel_tax_detail(self, task_content, city_id, **kwargs):
         if kwargs.get('task_id'):
             update_task(kwargs['task_id'])
     except Exception as exc:
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 if __name__ == '__main__':

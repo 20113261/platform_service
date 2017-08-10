@@ -1,3 +1,4 @@
+import traceback
 from .celery import app
 from my_lib.GetPoiNearByCity.poi_nearby_city_task import insert_db, get_nearby_city
 from my_lib.BaseTask import BaseTask
@@ -11,4 +12,4 @@ def poi_nearby_city_task(self, poi_id, poi_city_id, poi_map_info, **kwargs):
         print insert_db((poi_id, poi_city_id, nearby_city))
         update_task(kwargs['task_id'])
     except Exception as exc:
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))

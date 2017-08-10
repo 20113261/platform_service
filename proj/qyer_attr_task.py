@@ -3,6 +3,7 @@ import requests
 import re
 import json
 import time
+import traceback
 
 from .celery import app
 from .my_lib.BaseTask import BaseTask
@@ -34,7 +35,7 @@ def get_pid_total_page(self, target_url, city_id, part):
             detail_page.delay(pid, page_num, city_id, part)
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='10/m')
@@ -80,7 +81,7 @@ def detail_page(self, pid, page_num, city_id, part):
         return result
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 if __name__ == '__main__':

@@ -3,6 +3,7 @@ import re
 import pyquery
 import pymysql
 import time
+import traceback
 
 from util.UserAgent import GetUserAgent
 from .celery import app
@@ -65,7 +66,7 @@ def get_cities(self, gid, country_id, offset):
             get_cities.delay(gid, country_id, offset + 1)
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 def get_task():

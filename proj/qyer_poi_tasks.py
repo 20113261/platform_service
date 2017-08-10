@@ -1,5 +1,6 @@
 # coding=utf-8
 import time
+import traceback
 
 import requests
 from common.common import get_proxy, update_proxy
@@ -45,5 +46,6 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
             update_proxy('Platform', PROXY, x, '0')
         return result
     except Exception as exc:
+        # print traceback.format_exc(exc)
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))

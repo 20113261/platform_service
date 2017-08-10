@@ -9,6 +9,7 @@
 import pymongo
 import pymongo.errors
 import datetime
+import traceback
 from .celery import app
 from .my_lib.BaseTask import BaseTask
 from my_lib.Common.Browser import MySession
@@ -90,4 +91,4 @@ def full_site_spider(self, url, level, parent_url, parent_info, **kwargs):
 
         except Exception as exc:
             session.update_proxy('23')
-            self.retry(exc=exc)
+            self.retry(exc=traceback.format_exc(exc))

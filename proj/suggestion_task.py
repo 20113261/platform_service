@@ -8,6 +8,7 @@
 
 # coding=utf-8
 import sys
+import traceback
 
 reload(sys)
 
@@ -65,4 +66,4 @@ def ctrip_suggestion_task(self, city_id, key_word, annotation=-1, **kwargs):
             update_proxy('Platform', PROXY, x, '0')
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))

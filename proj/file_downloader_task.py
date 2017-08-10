@@ -8,6 +8,7 @@
 import datetime
 import os
 import re
+import traceback
 
 from proj.my_lib.Common.MongoLog import save_log
 from proj.my_lib.is_complete_scale_ok import is_complete_scale_ok
@@ -133,4 +134,4 @@ def file_downloader(self, url, file_type, file_path, **kwargs):
 
         except Exception as exc:
             session.update_proxy('23')
-            self.retry(exc=exc)
+            self.retry(exc=traceback.format_exc(exc))

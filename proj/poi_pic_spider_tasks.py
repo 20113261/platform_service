@@ -3,6 +3,7 @@
 
 import sys
 import time
+import traceback
 
 from common.common import get_proxy, update_proxy
 
@@ -42,7 +43,7 @@ def google_spider(self, vid, search_kw, debug=False, **kwargs):
         update_task(kwargs['task_id'])
     except Exception as exc:
         update_proxy('Platform', spider_proxy, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
@@ -67,7 +68,7 @@ def flickr_spider(self, vid, search_kw, debug=False, **kwargs):
         update_task(kwargs['task_id'])
     except Exception as exc:
         update_proxy('Platform', spider_proxy, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
@@ -92,4 +93,4 @@ def shutter_spider(self, vid, search_kw, debug=False, **kwargs):
         update_task(kwargs['task_id'])
     except Exception as exc:
         update_proxy('Platform', spider_proxy, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))

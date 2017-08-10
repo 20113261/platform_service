@@ -3,6 +3,7 @@ import json
 import re
 import time
 from urllib import quote
+import traceback
 
 import pymysql
 import requests
@@ -78,7 +79,7 @@ def qyer_city_query_task(self, city_name, **kwargs):
         update_proxy('Platform', PROXY, x, '0')
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=exc)
+        self.retry(exc=traceback.format_exc(exc))
 
 
 if __name__ == '__main__':
