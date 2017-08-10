@@ -3,8 +3,8 @@ from __future__ import absolute_import
 # CELERY_RESULT_BACKEND = 'amqp://hourong:1220@10.10.114.35/celery'
 # BROKER_URL = 'amqp://hourong:1220@10.10.114.35/celery'
 CELERY_RESULT_BACKEND = 'amqp://hourong:1220@10.10.189.213/celery'
-# BROKER_URL = 'amqp://hourong:1220@10.10.189.213/celery'
-BROKER_URL = 'redis://127.0.0.1:6379/10'
+BROKER_URL = 'amqp://hourong:1220@10.10.189.213/celery'
+# BROKER_URL = 'redis://127.0.0.1:6379/10'
 from kombu import Queue, Exchange
 
 # CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/7'
