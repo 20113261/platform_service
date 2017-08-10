@@ -5,7 +5,9 @@ import re
 import db_localhost
 from lxml import html
 from pyquery import PyQuery
+
 from proj.my_lib.Common.Browser import MySession
+from decode_raw_site import decode_raw_site
 
 img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
 
@@ -63,7 +65,7 @@ def has_chinese(contents, encoding='utf-8'):
 
 
 def image_paser(detail_id):
-    page = ss.get(img_get_url+detail_id)
+    page = ss.get(img_get_url + detail_id)
     root = PyQuery(page.text)
     images_list = []
     for div in root('.photos.inHeroList div').items():
@@ -372,6 +374,13 @@ def parse(content, url, city_id):
     except Exception as exc:
         dining_options = ''
 
+    site = ''
+    try:
+        site_data = root.find_class('blEntry website')[0].attrib['data-ahref']
+        site = decode_raw_site(site_data)
+    except Exception, e:
+        print(e)
+
     result = {
         'source': source,
         'name': name,  #
@@ -389,9 +398,7 @@ def parse(content, url, city_id):
         'price_level': price_level,
         'payment': payment,
         'service': service,
-        'tagid': tagid,
         'commentcounts': reviews,
-        'recommended_time': recommended_time,
         'introduction': desc,
         'prize': prize,
         'traveler_choice': traveler_choice,
@@ -418,4 +425,9 @@ def insert_db(result, city_id):
 
 
 if __name__ == '__main__':
-    pass
+    import requests
+
+    url = 'https://www.tripadvisor.cn/Restaurant_Review-g187147-d9806534-Reviews-ASPIC-Paris_Ile_de_France.html'
+    page = requests.get(url)
+    result = parse(page.content, url, 'NULL')
+    insert_db(result, 'NULL')
