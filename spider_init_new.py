@@ -10,7 +10,6 @@
 # coding='utf8'
 import re
 
-from proj.celery import app
 from proj.tasks import get_comment
 
 
@@ -154,6 +153,10 @@ if __name__ == '__main__':
     select_time:2017-07-14 22:10:01.187
     '''
 
-    from proj.full_website_spider_task import full_site_spider
+    # from proj.full_website_spider_task import full_site_spider
+    #
+    # full_site_spider('http://www.legraziehotel.com/', 0, 'http://www.legraziehotel.com/', {'id': '261836'})
 
-    full_site_spider('http://www.legraziehotel.com/', 0, 'http://www.legraziehotel.com/', {'id': '261836'})
+    from proj.routine_tasks import test
+
+    test.delay()

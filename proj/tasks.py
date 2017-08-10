@@ -178,7 +178,7 @@ def get_site_url(self, target_url, source_id, table_name):
         self.retry(exc=exc)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')
 def get_lost_rest(self, target_url, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
@@ -193,7 +193,13 @@ def get_lost_rest(self, target_url, **kwargs):
     try:
         page = requests.get(target_url, proxies=proxies, headers=headers, timeout=15)
         page.encoding = 'utf8'
-        result = rest_parser(page.content, target_url, city_id=city_id)
+        result = rest_parser(page.content, target_url, city_id='NULL')
+        save_task_and_page_content(task_name='daodao_poi_attr', content=page.content,
+                                   task_id=kwargs['mongo_task_id'],
+                                   source='daodao',
+                                   source_id='NULL',
+                                   city_id='NULL', url=target_url)
+
         if result == 'Error':
             update_proxy('Platform', PROXY, x, '23')
             self.retry()
@@ -201,11 +207,7 @@ def get_lost_rest(self, target_url, **kwargs):
             print "Success with " + PROXY + ' CODE 0'
             update_proxy('Platform', PROXY, x, '0')
 
-        # print attr_insert_db(result)
-        update_task(task_id=kwargs['task_id'])
         return result
-        # data = long_comment_parse(page.content, target_url, language)
-        # return insert_db([data, ])
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
         self.retry(exc=exc)
