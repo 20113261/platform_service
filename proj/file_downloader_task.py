@@ -10,6 +10,7 @@ import os
 import re
 import traceback
 
+from StringIO import StringIO
 from proj.my_lib.Common.MongoLog import save_log
 from proj.my_lib.is_complete_scale_ok import is_complete_scale_ok
 from .celery import app
@@ -58,12 +59,14 @@ def get_file_name(url, c_type):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='32/s')
-def file_downloader(self, url, file_type, file_path, **kwargs):
+def file_downloader(self, url, file_type, file_path, need_filter="YES", file_split="YES", **kwargs):
     """
     :param self:
     :param url: 需要下载文件的 url
     :param file_type: 文件类型 img、pdf 等等，img 会检查文件是否完整下载
     :param file_path:
+    :param need_filter: is it need file size filter YES or NO
+    :param file_split: 是否需要分块下载
     :param kwargs:
     :return:
     """
@@ -80,7 +83,7 @@ def file_downloader(self, url, file_type, file_path, **kwargs):
             total_length, content_type = get_content_length_and_type(url, session)
 
             # 小于 20KB 不下载
-            if total_length < 20480:
+            if total_length < 20480 and need_filter == "YES":
                 # alreadyDownload.add_url(url, '|_||_|'.join(['filter', get_local_ip(), str(total_length)]))
                 save_log(
                     '|_||_|'.join(['filter', get_local_ip(), str(total_length)]),
@@ -102,25 +105,47 @@ def file_downloader(self, url, file_type, file_path, **kwargs):
             session.headers.pop('Range')
 
             file_req = session.get(url, stream=True)
-            with open(file_absolute_dir, 'wb') as f:
+
+            if file_split == "YES":
+                # fixme 当一个任务被多次分发后，会出现同步问题，A 在写数据，B 会覆盖。使用全量下载更新不会出现该问题
+                with open(file_absolute_dir, 'wb') as f:
+                    for chunk in file_req.iter_content(chunk_size=1024):
+                        if chunk:
+                            f.write(chunk)
+
+                with open(file_absolute_dir, 'rb') as downloaded_file:
+                    if file_type == 'img':
+                        flag, h, w = is_complete_scale_ok(downloaded_file)
+                        if flag in [1, 2]:
+                            # 当文件不符合要求的时候删除
+                            os.remove(file_absolute_dir)
+                            raise Exception('The file (type {}) is not fully loaded'.format(file_type))
+                    elif file_type == 'pdf':
+                        try:
+                            doc = PdfFileReader(downloaded_file)
+                        except Exception:
+                            # 当文件不符合要求的时候删除
+                            os.remove(file_absolute_dir)
+                            raise Exception('The file (type {}) is not fully loaded'.format(file_type))
+            else:
+                file_bytes = b''
                 for chunk in file_req.iter_content(chunk_size=1024):
                     if chunk:
-                        f.write(chunk)
+                        file_bytes += chunk
 
-            with open(file_absolute_dir, 'rb') as downloaded_file:
+                memory_file_obj = StringIO(file_bytes)
                 if file_type == 'img':
-                    flag, h, w = is_complete_scale_ok(downloaded_file)
+                    flag, h, w = is_complete_scale_ok(memory_file_obj)
                     if flag in [1, 2]:
-                        # 当文件不符合要求的时候删除
-                        os.remove(file_absolute_dir)
                         raise Exception('The file (type {}) is not fully loaded'.format(file_type))
                 elif file_type == 'pdf':
                     try:
-                        doc = PdfFileReader(downloaded_file)
+                        doc = PdfFileReader(memory_file_obj)
                     except Exception:
-                        # 当文件不符合要求的时候删除
-                        os.remove(file_absolute_dir)
                         raise Exception('The file (type {}) is not fully loaded'.format(file_type))
+
+                with open(file_absolute_dir, 'wb') as f:
+                    f.write(file_bytes)
 
             # todo 完成任务通知
             # alreadyDownload.add_url(url, '|_||_|'.join(

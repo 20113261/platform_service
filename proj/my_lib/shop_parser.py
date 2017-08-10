@@ -18,17 +18,7 @@ img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
 
 pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 
-ss = MySession(need_proxies=False)
-PROXY = get_proxy(source="Platform")
-proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
-headers = {
-        'User-agent': GetUserAgent()
-    }
-ss.headers = headers
-ss.proxies = proxies
+ss = MySession(need_proxies=True)
 
 
 def has_chinese(contents, encoding='utf-8'):

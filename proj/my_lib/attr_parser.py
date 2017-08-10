@@ -1,7 +1,6 @@
 # coding:utf-8
 from __future__ import absolute_import
 
-
 import re
 
 from . import db_localhost
@@ -19,16 +18,6 @@ img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
 pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 
 ss = MySession(need_proxies=True)
-PROXY = get_proxy(source="Platform")
-proxies = {
-         'http': 'socks5://' + PROXY,
-         'https': 'socks5://' + PROXY
-     }
-headers = {
-        'User-agent': GetUserAgent()
-    }
-ss.headers = headers
-ss.proxies = proxies
 
 
 def has_chinese(contents, encoding='utf-8'):
@@ -43,7 +32,7 @@ def has_chinese(contents, encoding='utf-8'):
 
 
 def image_paser(detail_id):
-    page = ss.get(img_get_url+detail_id)
+    page = ss.get(img_get_url + detail_id)
     root = PyQuery(page.text)
     images_list = []
     for div in root('.photos.inHeroList div').items():
@@ -51,6 +40,7 @@ def image_paser(detail_id):
     img_list = '|'.join(images_list)
 
     return img_list
+
 
 # m@d
 # def get_site_encode_string(content):
@@ -91,7 +81,7 @@ def parse(content, url):
     # 名字 name,name_en
     try:
 
-          name_en = root.find_class('altHead')[0].text_content().encode('utf-8').strip()
+        name_en = root.find_class('altHead')[0].text_content().encode('utf-8').strip()
     except:
         name_en = ''
     if not name_en:
@@ -100,7 +90,6 @@ def parse(content, url):
             name_en = root.find_class('heading_name_wrapper')[0].text_content().encode('utf-8').strip().split('\n')[1]
         except:
             name_en = ''
-
 
     try:
         try:
@@ -143,7 +132,7 @@ def parse(content, url):
             # m@add meta 节点查找
             try:
                 location_content = root.xpath('//meta[@name="location"]/@content')[0].strip()
-                map_info = re.search('coord[=\s]+([\.\d\,\-]+)',location_content).group(1)
+                map_info = re.search('coord[=\s]+([\.\d\,\-]+)', location_content).group(1)
             except:
                 map_info = ''
 
@@ -230,7 +219,7 @@ def parse(content, url):
         if root.find_class('rating'):
             grade_temp = root.find_class('rating')[0]
             rating = float(grade_temp.xpath('//span[@class="overallRating"]')[0].text_content())
-            reviews = int(re.search('\d+',grade_temp.text_content().replace(',', '')).group())
+            reviews = int(re.search('\d+', grade_temp.text_content().replace(',', '')).group())
         else:
             rating = -1
             reviews = -1
@@ -367,12 +356,12 @@ def parse(content, url):
     result = {
         'source': source,
         'name': name,
-        'name_en':  name_en,
+        'name_en': name_en,
         'phone': tel,
         'map_info': map_info,
         'address': address,
         'opentime': open_time,
-        'grade' : rating,
+        'grade': rating,
         'ranking': rank,
         'tagid': tagid,
         'commentcounts': reviews,
@@ -389,8 +378,6 @@ def parse(content, url):
     return result
 
 
-
-
 def insert_db(result, city_id):
     result['city_id'] = city_id
     db_localhost.insert('attr', **result)
@@ -399,11 +386,10 @@ def insert_db(result, city_id):
     # result.append(city_id)
     # return db.ExecuteSQL(sql, tuple(result))
 
+
 if __name__ == '__main__':
     url = 'https://www.tripadvisor.cn/Attraction_Review-g143034-d108754-Reviews-Nahuku_Thurston_Lava_Tube-Hawaii_Volcanoes_National_Park_Island_of_Hawaii_Hawaii.html'
     content = ss.get(url).content
     a = '阿什顿发斯蒂芬'
-    result = parse(content,url)
+    result = parse(content, url)
     insert_db(result, 10086)
-
-

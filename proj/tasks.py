@@ -193,7 +193,13 @@ def get_lost_rest(self, target_url, city_id, **kwargs):
     try:
         page = requests.get(target_url, proxies=proxies, headers=headers, timeout=15)
         page.encoding = 'utf8'
-        result = rest_parser(page.content, target_url, city_id=city_id)
+        result = rest_parser(page.content, target_url, city_id='NULL')
+        save_task_and_page_content(task_name='daodao_poi_attr', content=page.content,
+                                   task_id=kwargs['mongo_task_id'],
+                                   source='daodao',
+                                   source_id='NULL',
+                                   city_id='NULL', url=target_url)
+
         if result == 'Error':
             update_proxy('Platform', PROXY, x, '23')
             self.retry()
