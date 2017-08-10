@@ -179,7 +179,7 @@ def get_site_url(self, target_url, source_id, table_name):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
-def get_lost_rest(self, target_url, city_id, **kwargs):
+def get_lost_rest(self, target_url, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
