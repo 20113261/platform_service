@@ -104,7 +104,7 @@ def get_comment(self, target_url, language, miaoji_id, special_str, **kwargs):
                 update_proxy('Platform', PROXY, x, '23')
                 self.retry(countdown=120)
             else:
-                update_task(kwargs['task_id'])
+                update_task(kwargs['mongo_task_id'])
                 update_proxy('Platform', PROXY, x, '0')
                 print "Success with " + PROXY + ' CODE 0'
         except Exception as exc:
@@ -208,7 +208,7 @@ def get_lost_rest(self, target_url, **kwargs):
             update_proxy('Platform', PROXY, x, '0')
 
         # print attr_insert_db(result)
-        update_task(task_id=kwargs['task_id'])
+        update_task(task_id=kwargs['mongo_task_id'])
         return result
         # data = long_comment_parse(page.content, target_url, language)
         # return insert_db([data, ])
@@ -311,7 +311,7 @@ def get_lost_rest_new(self, target_url, city_id, **kwargs):
         if result == 'Error':
             self.retry()
         else:
-            update_task(task_id=kwargs['task_id'])
+            update_task(task_id=kwargs['mongo_task_id'])
             update_proxy('Platform', PROXY, x, '23')
         return result
     except Exception as exc:
@@ -354,7 +354,7 @@ def get_images(self, source, target_url, **kwargs):
         else:
             print "Success with " + PROXY + ' CODE 0 used time ' + str(time.time() - x)
             if 'task_id' in kwargs.keys():
-                update_task(kwargs['task_id'])
+                update_task(kwargs['mongo_task_id'])
             save_image(source, file_name, page.content)
             update_proxy('Platform', PROXY, x, '0')
         return flag, h, w, file_name
@@ -385,7 +385,7 @@ def booking_comment(self, target_url, **kwargs):
             update_proxy('Platform', PROXY, x, '23')
             self.retry()
         else:
-            update_task(kwargs['task_id'])
+            update_task(kwargs['mongo_task_id'])
             print "Success with " + PROXY + ' CODE 0'
             update_proxy('Platform', PROXY, x, '0')
 
@@ -415,7 +415,7 @@ def venere_comment(self, target_url, **kwargs):
             update_proxy('Platform', PROXY, x, '23')
             self.retry()
         else:
-            update_task(kwargs['task_id'])
+            update_task(kwargs['mongo_task_id'])
             print "Success with " + PROXY + ' CODE 0'
             update_proxy('Platform', PROXY, x, '0')
 
@@ -437,7 +437,7 @@ def expedia_comment(self, target_url, **kwargs):
         if not result:
             self.retry()
         else:
-            update_task(kwargs['task_id'])
+            update_task(kwargs['mongo_task_id'])
         return result
     except Exception as exc:
         self.retry(exc=traceback.format_exc(exc))
@@ -601,7 +601,7 @@ def get_hotel_images_info(self, path, part, desc_path, **kwargs):
             shutil.copy(path, os.path.join(desc_path, pic_md5))
         except IntegrityError as err:
             pass
-        print update_task(kwargs['task_id'])
+        print update_task(kwargs['mongo_task_id'])
         print 'Succeed'
         return flag, h, w
     except Exception as exc:
@@ -623,7 +623,7 @@ def get_images_without_proxy(self, source, target_url, **kwargs):
             print 'Img', target_url, 'Error in 1,2'
             self.retry(countdown=2)
         else:
-            update_task(kwargs['task_id'])
+            update_task(kwargs['mongo_task_id'])
             file_name = hashlib.md5(target_url).hexdigest()
             save_image(source, file_name, page.content)
             print source, file_name, 'success'
@@ -771,7 +771,7 @@ def get_daodao_image_url(self, source_url, mid, **kwargs):
             data = (mid, source_url, img_list)
             print insert_daodao_image_list(data)
             update_proxy('Platform', PROXY, x, '0')
-            update_task(kwargs['task_id'])
+            update_task(kwargs['mongo_task_id'])
         return data
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
