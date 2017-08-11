@@ -207,7 +207,7 @@ def get_lost_rest(self, target_url, **kwargs):
             print "Success with " + PROXY + ' CODE 0'
             update_proxy('Platform', PROXY, x, '0')
 
-        # print attr_insert_db(result)
+        attr_insert_db(result)
         update_task(task_id=kwargs['mongo_task_id'])
         return result
         # data = long_comment_parse(page.content, target_url, language)
