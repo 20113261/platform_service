@@ -29,6 +29,7 @@ from .my_lib.hotel_comment.expedia import parser as expedia_comment_parser
 from .my_lib.hotel_comment.venere import parser as venere_comment_parser
 from .my_lib.is_complete_scale_ok import is_complete_scale_ok
 from .my_lib.rest_parser import parse as rest_parser
+from .my_lib.rest_parser import insert_db as rest_insert_db
 from .my_lib.shop_parser import parse as shop_parser
 from .my_lib.shop_parser import insert_db as shop_insert_db
 from .my_lib.tp_comment_parser import parse, long_comment_parse, insert_db
@@ -179,7 +180,7 @@ def get_site_url(self, target_url, source_id, table_name):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
-def get_lost_rest(self, target_url, **kwargs):
+def get_lost_rest(self, target_url, city_id, **kwargs):
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -193,7 +194,7 @@ def get_lost_rest(self, target_url, **kwargs):
     try:
         page = requests.get(target_url, proxies=proxies, headers=headers, timeout=15)
         page.encoding = 'utf8'
-        result = rest_parser(page.content, target_url, city_id='NULL')
+        result = rest_parser(page.content, target_url, city_id=city_id)
         save_task_and_page_content(task_name='daodao_poi_attr', content=page.content,
                                    task_id=kwargs['mongo_task_id'],
                                    source='daodao',
@@ -207,7 +208,7 @@ def get_lost_rest(self, target_url, **kwargs):
             print "Success with " + PROXY + ' CODE 0'
             update_proxy('Platform', PROXY, x, '0')
 
-        attr_insert_db(result)
+        rest_insert_db(result, city_id)
         update_task(task_id=kwargs['mongo_task_id'])
         return result
         # data = long_comment_parse(page.content, target_url, language)

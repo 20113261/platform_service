@@ -110,7 +110,7 @@ class Rest(Base):
     grade = Column(String(11), default='NULL')
     commentcounts = Column(Integer(), default=-1)
     cuisines = Column(String(256), default='NULL')
-    dining_options = Column(String(256), default='NULL')
+    dining_options = Column(String(1024), default='NULL')
     payment = Column(String(256), default='NULL')
     service = Column(String(1024), default='NULL')
     level = Column(Integer(), default=-1)
