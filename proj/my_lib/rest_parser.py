@@ -136,8 +136,7 @@ def parse(content, url, city_id):
         map_info = ''
         if not map_info:
             try:
-                a = root.xpath('//div[@class="mapContainer"]')
-                lng = root.xpath('//div[@class="mapContainer"]/@data-lng')
+                lng = root.xpath('//div[@class="mapContainer"]/@data-lng')[0]
                 lat = root.xpath('//div[@class="mapContainer"]/@data-lat')[0]
                 map_info = str(lng) + ',' + str(lat)
             except Exception, e:
@@ -217,10 +216,10 @@ def parse(content, url, city_id):
     # 价格 price
     try:
         cuisines = ''
-        cuisines = root.find_class('table_section')[0]
+        table_section = root.find_class('table_section')[0]
         open_time = ''
         price = ''
-        for ele in cuisines[1:]:
+        for ele in table_section[1:]:
             if ele.xpath('div')[0].text.find('菜系')>-1:
                 cuisines = ele.xpath('div/a')[0].text
             if ele.xpath('div')[0].text.find('参考价位')>-1:
@@ -325,7 +324,7 @@ def parse(content, url, city_id):
     except Exception, e:
         image_urls = ''
 
-    print 'image_urls ', image_urls
+    print 'Image_urls: ', image_urls
 
     # 第一条评论的review id 用于没有介绍时使用
     try:
@@ -338,6 +337,7 @@ def parse(content, url, city_id):
 
     # 新添字段价格等级
     try:
+        price_level = ''
         price_level_ele = root.find_class('ui_column is-6 price')
         if price_level_ele:
             price_level = price_level_ele[0].xpath('span')[0].text
@@ -405,6 +405,7 @@ def parse(content, url, city_id):
         'id': source_id,
         'source_city_id': source_city_id,
         'url': url}
+    print result
     return result
 
 
