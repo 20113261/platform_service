@@ -10,6 +10,7 @@ from proj.my_lib.Common.Browser import MySession
 from decode_raw_site import decode_raw_site
 
 img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
+introduction_url = 'https://www.tripadvisor.cn/MetaPlacementAjax?detail=%s&placementName=hr_btf_north_star_about&servletClass=com.TripResearch.servlet.accommodation.AccommodationDetail&servletName=Hotel_Review&more_content_request=true'
 
 pattern_g = re.compile('-g(\d+)')
 
@@ -74,6 +75,10 @@ def image_paser(detail_id):
 
     return img_list
 
+def intro_parse(detail_id):
+    page = ss.get(introduction_url % detail_id)
+    root = PyQuery(page.text)
+    return root('.description .section_content').text()
 
 def parse(content, url, city_id):
     print 'url: %s' % url
@@ -298,7 +303,6 @@ def parse(content, url, city_id):
     # print 'price:', price
     print 'feature:', feature
     print 'dining_options:', dining_options
-    desc = ''
     menu = ''
     service = ''
     payment = ''
@@ -327,13 +331,22 @@ def parse(content, url, city_id):
     print "Traveler choice: ", traveler_choice
 
     # 图片抓取
+    image_urls = ''
     try:
         image_urls = image_paser(re.search(pattern_d, url).groups()[0])
     except Exception, e:
-        print e, '------------------------url_img'
         image_urls = ''
 
     print 'Image_urls: ', image_urls
+
+    # 简介抓取
+    desc = ''
+    try:
+        desc = intro_parse(re.search(pattern_d, url).groups()[0])
+    except Exception, e:
+        desc = ''
+
+    print 'desc: ', desc
 
     # 第一条评论的review id 用于没有介绍时使用
     try:
@@ -414,7 +427,6 @@ def parse(content, url, city_id):
         'id': source_id,
         'source_city_id': source_city_id,
         'url': url}
-    print result
     return result
 
 
