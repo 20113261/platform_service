@@ -20,7 +20,7 @@ class Attr(Base):
     map_info = Column(String(64), default='NULL')
     city_id = Column(String(64), nullable=False, primary_key=True)
     source_city_id = Column(String(16), default='NULL')
-    address = Column(String(128), default='NULL')
+    address = Column(String(512), default='NULL')
     star = Column(Float(), default=-1)
     recommend_lv = Column(String(100), default='NULL')
     pv = Column(Integer(), default=-1)
