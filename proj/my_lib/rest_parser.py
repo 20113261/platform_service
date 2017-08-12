@@ -135,11 +135,19 @@ def parse(content, url, city_id):
     try:
         map_info = ''
         if not map_info:
+            # m@add meta 节点查找
+            try:
+                location_content = root.xpath('//meta[@name="location"]/@content')[0].strip()
+                map_info = re.search('coord[=\s]+([\.\d\,\-]+)', location_content).group(1)
+            except:
+                map_info = ''
+
+        if not map_info:
             try:
                 lng = root.xpath('//div[@class="mapContainer"]/@data-lng')[0]
                 lat = root.xpath('//div[@class="mapContainer"]/@data-lat')[0]
                 map_info = str(lng) + ',' + str(lat)
-            except Exception, e:
+            except:
                 map_info = ''
 
         if not map_info:
@@ -160,7 +168,7 @@ def parse(content, url, city_id):
                         map_temp = ''
         if not map_info:
             map_info = ''
-    except Exception, e:
+    except Exception as e:
         map_info = ''
         print 'map_info error', url
         print str(e)
@@ -322,6 +330,7 @@ def parse(content, url, city_id):
     try:
         image_urls = image_paser(re.search(pattern_d, url).groups()[0])
     except Exception, e:
+        print e, '------------------------url_img'
         image_urls = ''
 
     print 'Image_urls: ', image_urls
@@ -344,7 +353,7 @@ def parse(content, url, city_id):
     except Exception, e:
         price_level = ''
 
-    print 'Price level', price_level
+    print 'Price level: ', price_level
 
     try:
         source_city_id = pattern_g.findall(url)[0]
