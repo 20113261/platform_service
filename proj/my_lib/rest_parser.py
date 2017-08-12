@@ -136,10 +136,11 @@ def parse(content, url, city_id):
         map_info = ''
         if not map_info:
             try:
-                lng = root.xpath('//div[@class="mapContainer"]/@data-lng')[0]
+                a = root.xpath('//div[@class="mapContainer"]')
+                lng = root.xpath('//div[@class="mapContainer"]/@data-lng')
                 lat = root.xpath('//div[@class="mapContainer"]/@data-lat')[0]
                 map_info = str(lng) + ',' + str(lat)
-            except:
+            except Exception, e:
                 map_info = ''
 
         if not map_info:
@@ -178,7 +179,7 @@ def parse(content, url, city_id):
 
     # 电话tel
     try:
-        tel = root.find_class('phoneNumber')[0].text
+        tel = root.find_class('blEntry phone')[0][1].text
     except:
         tel = ''
     print 'tel: %s' % tel
@@ -186,7 +187,7 @@ def parse(content, url, city_id):
     # 排名rank
     try:
         rank = ''
-        rank_text = root.find_class('slim_ranking')[0].text_content().encode('utf-8').replace(',', '')
+        rank_text = root.find_class('header_popularity popIndexValidation')[0].text_content().encode('utf-8').replace(',', '')
         nums = re.compile(r'(\d+)', re.S).findall(rank_text)
         # orank = nums[0] + '/' + nums[1]
         rank = nums[1]
@@ -199,8 +200,8 @@ def parse(content, url, city_id):
     try:
         if len(root.find_class('rs rating')) != 0:
             grade_temp = root.find_class('rs rating')[0]
-            rating = float(grade_temp.xpath('span/img/@content')[0])
-            reviews = int(grade_temp.xpath('a/@content')[0])
+            rating = float(grade_temp.xpath('div/span/@content')[0])
+            reviews = int(grade_temp.xpath('a/span')[0].text)
         else:
             rating = -1
             reviews = -1
@@ -211,46 +212,37 @@ def parse(content, url, city_id):
     print 'rating: %s' % rating
     print 'reviews: %s' % reviews
 
-    # 开店时间 open_time
-    try:
-        days = []
-        hours = []
-        if len(root.find_class('hoursOverlay')) != 0:
-            for i in root.find_class('hoursOverlay')[0].find_class('days'):
-                if len(i.xpath('text()')) != 0:
-                    days.append(i.xpath('text()')[0].encode('utf-8').strip())
-            for j in root.find_class('hoursOverlay')[0].find_class('hours'):
-                if len(j.xpath('text()')) != 0:
-                    hours.append(j.xpath('text()')[0].encode('utf-8').strip())
-        time = ''
-        for n in range(len(days)):
-            time += days[n]
-            time += ' '
-            time += hours[n]
-            if (n != len(days) - 1):
-                time += '|'
-        if time != '':
-            open_time = time
-        else:
-            open_time = ''
-
-            # if len( root.find_class('hoursOverlay') ) != 0 :
-            #    open_time = root.find_class('hoursOverlay')[0].text_content().encode('utf-8')
-    except Exception, e:
-        # traceback.print_exc(e)
-        open_time = ''
-    print 'open_time: %s' % open_time
-
     # 菜式 cuisines
+    # 开店时间 open_time
+    # 价格 price
     try:
         cuisines = ''
-        cuisines = root.find_class('heading_details')[0].text_content().strip().encode('utf-8').split('\n')[-1].replace(
-            ', 更多', '').replace(',', '|')
+        cuisines = root.find_class('table_section')[0]
+        open_time = ''
+        price = ''
+        for ele in cuisines[1:]:
+            if ele.xpath('div')[0].text.find('菜系')>-1:
+                cuisines = ele.xpath('div/a')[0].text
+            if ele.xpath('div')[0].text.find('参考价位')>-1:
+                price = ele.xpath('div/span')[0].text.replace('\n', ' ')
+            if ele.xpath('div')[0].text.find('营业时间')>-1:
+                opentime_detail = ele.xpath('.//div')[1]
+                for ele_d in opentime_detail.xpath('div'):
+                    open_week = ele_d.xpath('span')[0].text + '  '
+                    time_ = ''
+                    for ele_t in ele_d.xpath('span//div'):
+                        time_ += ele_t.text + ' | '
+                    open_time += open_week + time_[:-3] + '\n'
+        open_time = open_time[:-1]
     except Exception, e:
         cuisines = ''
-    if cuisines.find('+新增菜系') > -1:
-        cuisines = ''
+        open_time = ''
+        price = ''
+    # if cuisines.find('+新增菜系') > -1:
+    #     cuisines = ''
     print 'cuisines: %s' % cuisines
+    print 'open_time: %s' % open_time
+    print 'price: ', price
 
     # 评级 rating_by_category
     try:
@@ -276,15 +268,15 @@ def parse(content, url, city_id):
     # 价格 price
     # 氛围类别 feature
     try:
-        price = ''
+        # price = ''
         feature = ''
         dining_options = ''
         infos = root.find_class('details_tab')[0].find_class('table_section')[0].find_class('row')
         rows = []
         for info in infos:
             row = info.text_content().encode('utf-8').strip()
-            if row.find('价格') > -1:
-                price = info.find_class('content')[0].text_content().encode('utf-8').strip().replace('\n', '')
+            # if row.find('价格') > -1:
+            #     price = info.find_class('.ui_columns')[0].xpath('span/span').text_content().encode('utf-8').strip().replace('\n', '')
             if row.find('用餐选择') > -1:
                 dining_options = info.find_class('content')[0].text_content().encode('utf-8').strip().replace('\n', '')
             if row.find('氛围类别') > -1:
@@ -292,11 +284,11 @@ def parse(content, url, city_id):
 
     except Exception, e:
         print str(e)
-        price = ''
+        # price = ''
         feature = ''
         dining_options = ''
 
-    print 'price:', price
+    # print 'price:', price
     print 'feature:', feature
     print 'dining_options:', dining_options
     desc = ''
@@ -307,18 +299,19 @@ def parse(content, url, city_id):
     # 卓越奖
     prize = 0
     try:
-        test = root.find_class('taLnk text')
-        if len(test) > 0:
-            prize = 1
-    except:
-        pass
+        prize_ele = root.find_class('award award-coe ui_column is-6')
+        if prize_ele:
+            if prize_ele[0].xpath('div/span')[0].text.find('卓越奖')>-1:
+                prize = 1
+    except Exception, e:
+        prize = 0
 
     print "Prize: ", prize
 
     # 旅行家标志
     traveler_choice = 0
     try:
-        test = root.find_class('tchAward')
+        test = root.find_class('ui_icon travelers-choice-badge')
         if len(test) > 0:
             traveler_choice = 1
     except:
@@ -328,9 +321,11 @@ def parse(content, url, city_id):
 
     # 图片抓取
     try:
-        image_urls = image_paser(content, url)
-    except:
+        image_urls = image_paser(re.search(pattern_d, url).groups()[0])
+    except Exception, e:
         image_urls = ''
+
+    print 'image_urls ', image_urls
 
     # 第一条评论的review id 用于没有介绍时使用
     try:
@@ -343,8 +338,10 @@ def parse(content, url, city_id):
 
     # 新添字段价格等级
     try:
-        price_level = root.find_class('price_rating')[0].xpath('./text()')[0].strip()
-    except:
+        price_level_ele = root.find_class('ui_column is-6 price')
+        if price_level_ele:
+            price_level = price_level_ele[0].xpath('span')[0].text
+    except Exception, e:
         price_level = ''
 
     print 'Price level', price_level
