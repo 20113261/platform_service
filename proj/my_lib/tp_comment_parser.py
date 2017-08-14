@@ -31,22 +31,23 @@ def parse(content, url, language, miaoji_id, special_str):
             review_id = re.compile(r'-r(\d+)').findall(review_url)[0]
             review_city_id = re.compile(r'-g(\d+)').findall(review_url)[0]
             review_attr_id = re.compile(r'-d(\d+)').findall(review_url)[0]
-
-            if is_more_text == 0:
-                # 短评论
-                short_data = short_comment_parse(rev, review_url, miaoji_id, url, language)
-                data_list.append(short_data)
-            else:
-                # 长评论
-                long_comment_url = 'http://www.tripadvisor.cn/ExpandedUserReviews-g%s-d%s?target=%s&context=1&reviews=%s&servlet=Restaurant_Review&expand=1' % (
-                    review_city_id, review_attr_id, review_id, review_id)
-                print 'long_comment_url:   %s' % long_comment_url
-                long_count += 1
-                print 'insert long:', \
-                    insert_long((long_comment_url.strip(), language, miaoji_id), 'tp_comment_long_' + special_str)
         except Exception, e:
             print 'comment parse error:'
             print str(e)
+
+        if is_more_text == 0:
+            # 短评论
+            short_data = short_comment_parse(rev, review_url, miaoji_id, url, language)
+            data_list.append(short_data)
+        else:
+            # 长评论
+            long_comment_url = 'http://www.tripadvisor.cn/ExpandedUserReviews-g%s-d%s?target=%s&context=1&reviews=%s&servlet=Restaurant_Review&expand=1' % (
+                review_city_id, review_attr_id, review_id, review_id)
+            print 'long_comment_url:   %s' % long_comment_url
+            long_count += 1
+            print 'insert long:', \
+                insert_long((long_comment_url.strip(), language, miaoji_id), 'tp_comment_long_' + special_str)
+
         count += 1
     if len(data_list) != 0:
         print 'insert comment', insert_db(data_list, 'tp_comment_' + special_str), url
@@ -179,7 +180,7 @@ def long_comment_parse(content, url, language, miaoji_id='NULL'):
 
 
 def insert_db(args, table_name):
-    conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', charset='utf8', db='Comment')
+    conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', passwd='mioji1109', charset='utf8', db='base_data')
     with conn as cursor:
         sql = 'replace into {0} (source, source_city_id, source_id, review_id, review_title, review_text, review_link, comment_time, comment_rating, user_name, user_link, review_from, miaoji_id, language) values(%s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s,%s)'.format(
             table_name)
@@ -189,7 +190,7 @@ def insert_db(args, table_name):
 
 
 def insert_long(args, table_name):
-    conn = pymysql.connect(host='10.10.180.145', user='hourong', passwd='hourong', charset='utf8', db='Comment')
+    conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', passwd='mioji1109', charset='utf8', db='base_data')
     with conn as cursor:
         sql = 'replace into {0} (`url`,`language`,`miaoji_id`) values(%s, %s, %s)'.format(table_name)
         res = cursor.executemany(sql, args)
