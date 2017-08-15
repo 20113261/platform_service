@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import division
 import pymysql
 import re
 from lxml import html
@@ -25,6 +26,7 @@ def parse(content, url, language, miaoji_id, special_str):
         review_date = ''
         review_grade = ''
         review_user = ''
+        is_more_text = 0
         try:
             is_more_text = len(rev.find_class('partial_entry')[0].find_class('partnerRvw'))
             review_url = 'http://www.tripadvisor.cn' + \
@@ -81,16 +83,17 @@ def short_comment_parse(rev, review_url, miaoji_id, url, language):
     except Exception, e:
         review_date = ''
 
+    grade = '-1'
+    review_grade = '-1'
     try:
-        grade = '-1'
-        review_grade = '-1'
-        grade = rev.find_class('rate sprite-rating_s rating_s')[0].xpath('img/@alt')[0].strip().encode('utf-8')
-        grade_num = re.compile(r'(\d+)').findall(grade)
-        if len(grade_num) > 1:
-            review_grade = grade_num[0] + '.' + grade_num[1]
-        else:
-            review_grade = grade_num[0]
-    except:
+        # grade = rev.find_class('rate sprite-rating_s rating_s')[0].xpath('img/@alt')[0].strip().encode('utf-8')
+        # grade_num = re.compile(r'(\d+)').findall(grade)
+        # if len(grade_num) > 1:
+        #     review_grade = grade_num[0] + '.' + grade_num[1]
+        # else:
+        #     review_grade = grade_num[0]
+        review_grade = int(rev.find_class('rating reviewItemInline')[0].xpath('span')[0].attrib['class'][-2:]) / 10
+    except Exception, e:
         grade = '-1'
         review_grade = '-1'
 
@@ -103,17 +106,16 @@ def short_comment_parse(rev, review_url, miaoji_id, url, language):
         except:
             pass
 
+    user_link = ''
     try:
-        user_link = \
-            re.compile(r'window.open\(\'(.*)\'\)').findall(rev.find_class('memberBadging')[0].xpath('div/@onclick')[0])[
-                0].strip().encode('utf-8')
-    except:
+        # user_link = \
+        #     re.compile(r'window.open\(\'(.*)\'\)').findall(rev.find_class('memberBadging')[0].xpath('div/@onclick')[0])[
+        #         0].strip().encode('utf-8')
+        meber = rev.find_class('username mo')[0].xpath('span')[0].text
+        if meber:
+            user_link = 'https://www.tripadvisor.cn/members' + user_link
+    except Exception, e:
         user_link = ''
-    if user_link.find('http://www.tripadvisor') > -1:
-        pass
-    else:
-        if user_link:
-            user_link = 'http://www.tripadvisor.cn' + user_link
 
     print 'review_city_id: %s' % review_city_id
     print 'review_attr_id: %s' % review_attr_id
@@ -213,3 +215,14 @@ def insert_long(args, table_name):
         res = cursor.executemany(sql, args)
     conn.close()
     return res
+
+if __name__ == '__main__':
+    from Common.Browser import MySession
+
+    target_url = 'http://www.tripadvisor.cn/Restaurant_Review-g293917-d4710227-Reviews-Tong_Tem_Toh-Chiang_Mai.html'
+    with MySession() as sess:
+        page = sess.post(url=target_url,
+                  data={'mode': 'filterReviews', 'filterLang': 'en'})
+        page.encoding = 'utf8'
+        res = parse(page.text, target_url, 'en', 'NULL', '0814')
+
