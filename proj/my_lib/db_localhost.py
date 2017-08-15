@@ -206,7 +206,7 @@ DBSession = sessionmaker(bind=engine)
 
 
 def insert(table, **kwargs):
-    content = {'attr': Attr, 'shop': Shop, 'rest': Rest, 'tp_comment_0814': ShortComment,}[table](**kwargs)
+    content = {'attr': Attr, 'shop': Shop, 'rest': Rest, 'tp_comment_0815': ShortComment,}[table](**kwargs)
     ss = DBSession()
     ss.merge(content)
     ss.commit()
