@@ -198,7 +198,7 @@ class ShortComment(Base):
 #     insert_time = Column(TIMESTAMP, default=datetime.datetime.now)
 # 初始化数据库连接:
 # engine = create_engine('mysql+pymysql://hourong:hourong@10.10.180.145:3306/Qyer')
-engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8',
+engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8mb4',
                        encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
 # 创建DBSession类型:
 
