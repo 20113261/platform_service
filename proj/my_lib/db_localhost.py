@@ -135,6 +135,29 @@ class Rest(Base):
     insert_time = Column(TIMESTAMP, default=datetime.datetime.now)
 
 
+class ShortComment(Base):
+    __tablename__ = 'tp_comment_0814'
+    source = Column(String(128), nullable=False, default='NULL')
+    city = Column(String(256))
+    source_city_id = Column(String(54), primary_key=True)
+    source_id = Column(String(128), default='NULL', primary_key=True)
+    name = Column(String(256), default=' ')
+    review_id = Column(String(54), primary_key=True)
+    review_title = Column(String(1024))
+    review_text = Column(Text(), nullable=False, default='NULL')
+    review_link = Column(String(512))
+    comment_time = Column(String(54))
+    comment_rating = Column(Float(), default=-1)
+    user_id = Column(String(54))
+    user_name = Column(String(54))
+    user_rating = Column(Float(), default=-1)
+    user_link = Column(String(512))
+    likes = Column(Integer(), default=-1)
+    review_from = Column(String(256), index=True, default='NULL')
+    language = Column(String(64), primary_key=True)
+    insert_time = Column(TIMESTAMP, default=datetime.datetime.now)
+    miaoji_id = Column(String(32), primary_key=True)
+
 # class Rest(Base):
 #     __tablename__ = 'rest'
 #     id = Column(String(64), nullable=False, primary_key=True)
@@ -183,7 +206,7 @@ DBSession = sessionmaker(bind=engine)
 
 
 def insert(table, **kwargs):
-    content = {'attr': Attr, 'shop': Shop, 'rest': Rest}[table](**kwargs)
+    content = {'attr': Attr, 'shop': Shop, 'rest': Rest, 'tp_comment_0814': ShortComment,}[table](**kwargs)
     ss = DBSession()
     ss.merge(content)
     ss.commit()

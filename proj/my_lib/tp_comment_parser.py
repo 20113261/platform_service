@@ -2,6 +2,7 @@
 import pymysql
 import re
 from lxml import html
+from proj.my_lib import db_localhost
 
 
 def parse(content, url, language, miaoji_id, special_str):
@@ -124,10 +125,22 @@ def short_comment_parse(rev, review_url, miaoji_id, url, language):
     print 'review_grade: %s' % review_grade
     print 'review_user: %s' % review_user
     print 'user_link: %s' % user_link
-    data = (
-        source, review_city_id, review_attr_id, review_id, review_title, review_text, review_url, review_date,
-        review_grade,
-        review_user, user_link, url, miaoji_id, language)
+    data = {
+        'source': source,
+        'source_city_id': review_city_id,
+        'source_id': review_attr_id,
+        'review_id': review_id,
+        'review_title': review_title,
+        'review_text': review_text,
+        'review_link': review_url,
+        'comment_time':review_date,
+        'comment_rating': review_grade,
+        'user_name': review_user,
+        'user_link': user_link,
+        'review_from': url,
+        'miaoji_id': miaoji_id,
+        'language': language,
+    }
     return data
 
 
@@ -180,13 +193,17 @@ def long_comment_parse(content, url, language, miaoji_id='NULL'):
 
 
 def insert_db(args, table_name):
-    conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', passwd='mioji1109', charset='utf8', db='base_data')
-    with conn as cursor:
-        sql = 'replace into {0} (source, source_city_id, source_id, review_id, review_title, review_text, review_link, comment_time, comment_rating, user_name, user_link, review_from, miaoji_id, language) values(%s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s,%s)'.format(
-            table_name)
-        res = cursor.executemany(sql, args)
-    conn.close()
-    return res
+    # conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', passwd='mioji1109', charset='utf8', db='base_data')
+    # with conn as cursor:
+    #     sql = 'replace into {0} (source, source_city_id, source_id, review_id, review_title, review_text, review_link, comment_time, comment_rating, user_name, user_link, review_from, miaoji_id, language) values(%s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s,%s)'.format(
+    #         table_name)
+    #     res = cursor.executemany(sql, args)
+    # conn.close()
+
+    for one in args:
+        print table_name, '  ========  ', one, '---end'
+        db_localhost.insert(table_name, **one)
+    # return res
 
 
 def insert_long(args, table_name):
