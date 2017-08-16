@@ -75,19 +75,25 @@ def page_parser(content, target_url):
         qyer.source_city_id = re.findall(r'PLACE\.CITYID = "(\d+)";', content)[0]
     except:
         pass
-    qyer.source = 'qyer'
-    qyer.name = doc('.cn').text()
-    qyer.name_en = doc('.en').text()
-    qyer.map_info = doc('meta[@property="og:location:longitude"]').attr.content + ',' + doc(
-        'meta[@property="og:location:latitude"]').attr.content
-    qyer.star = len(doc('.poi-stars>.single-star.full')) + 0.5 * len(doc('.poi-stars>.single-star.half'))
-    qyer.grade = doc('.points>.number').text()
-    qyer.ranking = re.findall(r'(\d+)', doc('.infos .rank').text())[-1]
-    qyer.beentocounts = doc('.golden').text()
-    if qyer.beentocounts:
-        qyer.beentocounts = int(qyer.beentocounts)
-    else:
-        qyer.beentocounts = -1
+
+    try:
+        qyer.source = 'qyer'
+        qyer.name = doc('.cn').text()
+        qyer.name_en = doc('.en').text()
+        qyer.map_info = doc('meta[@property="og:location:longitude"]').attr.content + ',' + doc(
+            'meta[@property="og:location:latitude"]').attr.content
+        qyer.star = len(doc('.poi-stars>.single-star.full')) + 0.5 * len(doc('.poi-stars>.single-star.half'))
+        qyer.grade = doc('.points>.number').text()
+        qyer.ranking = re.findall(r'(\d+)', doc('.infos .rank').text())[-1]
+        qyer.beentocounts = doc('.golden').text()
+        if qyer.beentocounts:
+            qyer.beentocounts = int(qyer.beentocounts)
+        else:
+            qyer.beentocounts = -1
+    except Exception as e:
+        print target_url
+        print traceback.format_exc(e)
+
     # qyer tips
 
     for item in doc('.poi-tips>li').items():
