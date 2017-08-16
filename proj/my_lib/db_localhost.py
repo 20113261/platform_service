@@ -198,16 +198,25 @@ class ShortComment(Base):
 #     insert_time = Column(TIMESTAMP, default=datetime.datetime.now)
 # 初始化数据库连接:
 # engine = create_engine('mysql+pymysql://hourong:hourong@10.10.180.145:3306/Qyer')
-engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8mb4',
+engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8',
+                       encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
+engine_mb4 = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8mb4',
                        encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
 # 创建DBSession类型:
 
 DBSession = sessionmaker(bind=engine)
+DBSession_mb4 = sessionmaker(bind=engine_mb4)
 
 
 def insert(table, **kwargs):
-    content = {'attr': Attr, 'shop': Shop, 'rest': Rest, 'tp_comment_0814': ShortComment,}[table](**kwargs)
+    content = {'attr': Attr, 'shop': Shop, 'rest': Rest,}[table](**kwargs)
     ss = DBSession()
+    ss.merge(content)
+    ss.commit()
+
+def insert_mb4(table, **kwargs):
+    content = {'tp_comment_0814': ShortComment,}[table](**kwargs)
+    ss = DBSession_mb4()
     ss.merge(content)
     ss.commit()
 

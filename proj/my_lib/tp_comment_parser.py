@@ -204,7 +204,7 @@ def insert_db(args, table_name):
 
     for one in args:
         print table_name, '  ========  ', one, '---end'
-        db_localhost.insert(table_name, **one)
+        db_localhost.insert_mb4(table_name, **one)
     # return res
 
 
