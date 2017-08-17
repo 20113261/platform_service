@@ -60,7 +60,6 @@ def parse_comment(qyer):
         # comment.comment_rating = item.get('userinfo', {}).get('name')
 
         db_localhost.insert_mb4('tp_comment_0814', **comment)
-        print 'aaaa'
 
 
 def page_parser(content, target_url):
@@ -69,12 +68,12 @@ def page_parser(content, target_url):
     qyer = Qyer()
     try:
         qyer.id = re.findall(r'PID :\'(\d+)\'', content)[0]
-    except:
-        pass
+    except Exception as e:
+        print traceback.format_exc(e)
     try:
         qyer.source_city_id = re.findall(r'PLACE\.CITYID = "(\d+)";', content)[0]
-    except:
-        pass
+    except Exception as e:
+        print traceback.format_exc(e)
 
     try:
         qyer.source = 'qyer'
@@ -143,8 +142,8 @@ def page_parser(content, target_url):
             qyer.cateid = '交通'
         else:
             qyer.cateid = '其他'
-    except:
-        pass
+    except Exception as e:
+        print traceback.format_exc(e)
 
     try:
         # qyer.commentcounts = re.findall(r'(\d+)', doc('.summery').text())[0]
@@ -164,14 +163,15 @@ def page_parser(content, target_url):
     except Exception as e:
         print traceback.format_exc(e)
 
+    print qyer
     return qyer
 
 
 if __name__ == '__main__':
     import requests
 
-    # target_url = 'http://place.qyer.com/poi/V2IJYVFlBzdTZg/'
-    target_url = 'http://place.qyer.com/poi/V2cJYFFvBzdTYQ/'
+    target_url = 'http://place.qyer.com/poi/V2AJZVFlBzNTYVI2/'
+    # target_url = 'http://place.qyer.com/poi/V2cJYFFvBzdTYQ/'
     page = requests.get(target_url)
     page.encoding = 'utf8'
     content = page.text
