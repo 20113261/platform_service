@@ -14,15 +14,18 @@ sys.setdefaultencoding('utf8')
 from proj.my_lib import db_localhost
 from data_obj import Qyer, DBSession
 from proj.my_lib.Common.Browser import MySession
+from proj.my_lib.Common.Utils import try3times
 
 ss = MySession(need_proxies=True)
 comment_counts_url = 'http://place.qyer.com/poi.php?action=starlevel'
 comment_url = 'http://place.qyer.com/poi.php?action=comment&page=1&order=5&poiid=57110&starLevel=all&_=1494983732352'
 
+@try3times()
 def parse_comment_counts(poi_id):
     start_level = ss.post(comment_counts_url, data={'poiid':poi_id})
     return json.loads(start_level.text).get('data', {}).get('all', -1)
 
+@try3times()
 def parse_image_urls(target_url):
     image_page = ss.get(target_url+'/photo').content.decode('utf8')
     page = pyquery.PyQuery(image_page)

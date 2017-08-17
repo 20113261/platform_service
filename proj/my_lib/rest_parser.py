@@ -7,6 +7,7 @@ from lxml import html
 from pyquery import PyQuery
 
 from proj.my_lib.Common.Browser import MySession
+from proj.my_lib.Common.Utils import try3times
 from decode_raw_site import decode_raw_site
 
 img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
@@ -64,7 +65,7 @@ def has_chinese(contents, encoding='utf-8'):
     else:
         return False
 
-
+@try3times()
 def image_paser(detail_id):
     page = ss.get(img_get_url + detail_id)
     root = PyQuery(page.text)
@@ -75,6 +76,7 @@ def image_paser(detail_id):
 
     return img_list
 
+@try3times()
 def intro_parse(detail_id):
     page = ss.get(introduction_url % detail_id)
     root = PyQuery(page.text)
@@ -446,7 +448,8 @@ def insert_db(result, city_id):
 if __name__ == '__main__':
     import requests
 
-    url = 'https://www.tripadvisor.cn/Restaurant_Review-g187147-d9806534-Reviews-ASPIC-Paris_Ile_de_France.html'
+    # url = 'https://www.tripadvisor.cn/Restaurant_Review-g187147-d9806534-Reviews-ASPIC-Paris_Ile_de_France.html'
+    url = 'http://www.tripadvisor.cn/Restaurant_Review-g298490-d10001137-Reviews-Mimino-Blagoveshchensk_Amur_Oblast_Far_Eastern_District.html'
     page = requests.get(url)
     result = parse(page.content, url, 'NULL')
-    insert_db(result, 'NULL')
+    # insert_db(result, 'NULL')
