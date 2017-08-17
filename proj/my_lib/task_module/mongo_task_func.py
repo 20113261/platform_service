@@ -18,7 +18,8 @@ def get_task_total(queue, used_times=5, limit=30000):
             {
                 'finished': 0,
                 'queue': queue,
-                'used_times': {'$lte': used_times}
+                'used_times': {'$lte': used_times},
+                'running': 0
             }
     ).sort([('priority', -1), ('used_times', 1), ('utime', 1)]).limit(limit):
         task_token = line['task_token']
@@ -28,7 +29,8 @@ def get_task_total(queue, used_times=5, limit=30000):
             'task_token': task_token
         }, {
             '$set': {
-                'utime': datetime.datetime.now()
+                'utime': datetime.datetime.now(),
+                'running': 1
             },
             '$inc': {'used_times': 1}
         })
@@ -40,7 +42,8 @@ def update_task(task_id):
         'task_token': task_id
     }, {
         '$set': {
-            "finished": 1
+            "finished": 1,
+            'running': 0
         }
     })
 
@@ -56,7 +59,8 @@ def insert_failed_task(task_id, celery_task_id, args, kwargs, einfo):
             'celery_task_id': celery_task_id,
             'args': args,
             'kwargs': kwargs,
-            'einfo': einfo
+            'einfo': einfo,
+            'running': 0
         })
     except Exception:
         pass
