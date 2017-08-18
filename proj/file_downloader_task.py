@@ -57,7 +57,7 @@ def get_file_name(url, c_type):
     return '{0}.{1}'.format(url_md5, c_suffix)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='3/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='1/s')
 def file_downloader(self, url, file_type, file_path, need_filter="YES", file_split="YES", **kwargs):
     """
     :param self:
@@ -69,8 +69,8 @@ def file_downloader(self, url, file_type, file_path, need_filter="YES", file_spl
     :param kwargs:
     :return:
     """
-    # self.task_source = 'Any'
-    # self.task_type = 'FileDownload'
+    self.task_source = 'Any'
+    self.task_type = 'FileDownload'
     # print '+++++++++++++++++++++++++++++++++++\n', url, '\n+++++++++++++++++++++++++++++++++++'
     with MySession() as session:
         # 将去重放在 Task 中完成，本部分不做去重处理

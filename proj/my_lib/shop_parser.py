@@ -4,14 +4,14 @@ from __future__ import absolute_import
 
 import re
 
-from . import db_localhost
+import db_localhost
 from lxml import html
 from pyquery import PyQuery
-from .Common.Browser import MySession
+from proj.my_lib.Common.Browser import MySession
 from common.common import get_proxy
 from util.UserAgent import GetUserAgent
 
-from .decode_raw_site import decode_raw_site
+from proj.my_lib.decode_raw_site import decode_raw_site
 
 img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
 'mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8'
@@ -285,7 +285,8 @@ def parse(content, url):
     # tagid
     try:
         tagid = ''
-        tagid = root.find_class('heading_details')[0].text_content().strip().encode('utf-8').split('\n')[-1].replace(
+        tagid = root.find_class('header_detail attraction_details')[0].xpath('div')[0].text_content().strip().encode(
+            'utf-8').split('\n')[-1].replace(
             ',', '|')
     except Exception, e:
         tagid = ''
@@ -393,7 +394,7 @@ def insert_db(result, city_id):
 
 if __name__ == '__main__':
     #url = 'https://www.tripadvisor.cn/Attraction_Review-g143034-d108754-Reviews-Nahuku_Thurston_Lava_Tube-Hawaii_Volcanoes_National_Park_Island_of_Hawaii_Hawaii.html'
-    url = 'https://www.tripadvisor.cn/Attraction_Review-g297930-d2208173-Reviews-Magnifique_Tailor-Patong_Kathu_Phuket.html'
+    url = 'https://www.tripadvisor.cn/Attraction_Review-g1024140-d10000541-Reviews-Castaway_Yoga-Ko_Lipe_Satun_Province.html'
     content = ss.get(url).content
     result = parse(content,url)
     insert_db(result, 10086)

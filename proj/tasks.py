@@ -15,6 +15,7 @@ import re
 import requests
 from celery.utils.log import logger
 from celery import platforms
+from celery.exceptions import MaxRetriesExceededError
 from common.common import get_proxy, update_proxy, save_image
 from lxml import html
 from pyquery import PyQuery
@@ -36,6 +37,7 @@ from .my_lib.tp_comment_parser import parse, long_comment_parse, insert_db
 from .my_lib.BaseTask import BaseTask
 from .my_lib.task_module.task_func import get_task_id, update_task, insert_task
 from .my_lib.get_rate_limit import get_rate_limit
+from .my_lib.Common.Browser import MySession
 
 platforms.C_FORCE_ROOT = True
 
@@ -71,7 +73,7 @@ def add(x, y):
     return x + y
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/s')
 def get_comment(self, target_url, language, miaoji_id, special_str, **kwargs):
     if language == 'en':
         data = {
@@ -105,7 +107,7 @@ def get_comment(self, target_url, language, miaoji_id, special_str, **kwargs):
                 update_proxy('Platform', PROXY, x, '23')
                 self.retry(countdown=120)
             else:
-                update_task(kwargs['mongo_task_id'])
+                # update_task(kwargs['mongo_task_id'])
                 update_proxy('Platform', PROXY, x, '0')
                 print "Success with " + PROXY + ' CODE 0'
         except Exception as exc:
@@ -181,18 +183,8 @@ def get_site_url(self, target_url, source_id, table_name):
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
 def get_lost_rest(self, target_url, city_id, **kwargs):
-    PROXY = get_proxy(source="Platform")
-    x = time.time()
-    proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
-    headers = {
-        'User-agent': GetUserAgent()
-    }
-
-    try:
-        page = requests.get(target_url, proxies=proxies, headers=headers, timeout=15)
+    with MySession() as session:
+        page = session.get(target_url, timeout=15)
         page.encoding = 'utf8'
         result = rest_parser(page.content, target_url, city_id=city_id)
         save_task_and_page_content(task_name='daodao_poi_attr', content=page.content,
@@ -202,43 +194,22 @@ def get_lost_rest(self, target_url, city_id, **kwargs):
                                    city_id='NULL', url=target_url)
 
         if result == 'Error':
-            update_proxy('Platform', PROXY, x, '23')
-            self.retry()
-        else:
-            print "Success with " + PROXY + ' CODE 0'
-            update_proxy('Platform', PROXY, x, '0')
+            raise Exception, 'parse %s Error' % target_url
 
         rest_insert_db(result, city_id)
         update_task(task_id=kwargs['mongo_task_id'])
         return result
-        # data = long_comment_parse(page.content, target_url, language)
-        # return insert_db([data, ])
-    except Exception as exc:
-        update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=traceback.format_exc(exc))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')
 def get_lost_attr(self, target_url, city_id, **kwargs):
-    PROXY = get_proxy(source="Platform")
-    x = time.time()
-    proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
-    headers = {
-        'User-agent': GetUserAgent()
-    }
-
-    try:
-        page = requests.get(target_url, proxies=proxies, headers=headers, timeout=15)
+    with MySession() as session:
+        page = session.get(target_url, timeout=15)
         page.encoding = 'utf8'
         result = attr_parser(page.content, target_url)
         if result == 'Error':
-            update_proxy('Platform', PROXY, x, '23')
-            self.retry()
+            raise Exception, 'parse %s Error' % target_url
         else:
-            print "Success with " + PROXY + ' CODE 0'
             try:
                 print attr_insert_db(result, city_id)
                 save_task_and_page_content(task_name='daodao_poi_attr', content=page.content,
@@ -246,38 +217,22 @@ def get_lost_attr(self, target_url, city_id, **kwargs):
                                            source='daodao',
                                            source_id='NULL',
                                            city_id='NULL', url=target_url)
-                update_proxy('Platform', PROXY, x, '0')
             except Exception as exc:
                 self.retry(exc=traceback.format_exc(exc))
 
         return result
-        # data = long_comment_parse(page.content, target_url, language)
-        # return insert_db([data, ])
-    except Exception as exc:
-        update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=traceback.format_exc(exc))
+
 
 
 @app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='6/s')
 def get_lost_shop(self, target_url, city_id, **kwargs):
-    PROXY = get_proxy(source="Platform")
-    x = time.time()
-    proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
-    headers = {
-        'User-agent': GetUserAgent()
-    }
-    try:
-        page = requests.get(target_url, proxies=proxies, headers=headers, timeout=15)
+    with MySession() as session:
+        page = session.get(target_url, timeout=15)
         page.encoding = 'utf8'
         result = shop_parser(page.content, target_url)
         if result == 'Error':
-            update_proxy('Platform', PROXY, x, '23')
-            self.retry()
+            raise Exception, 'parse %s Error' % target_url
         else:
-            print "Success with " + PROXY + ' CODE 0'
             try:
                 print shop_insert_db(result, city_id)
                 save_task_and_page_content(task_name='daodao_poi_shop', content=page.content,
@@ -285,13 +240,9 @@ def get_lost_shop(self, target_url, city_id, **kwargs):
                                            source='daodao',
                                            source_id='NULL',
                                            city_id='NULL', url=target_url)
-                update_proxy('Platform', PROXY, x, '0')
             except Exception as e:
                 self.retry(exc=traceback.format_exc(e))
         return result
-    except Exception as exc:
-        update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=traceback.format_exc(exc), countdown=2)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='45/s')
