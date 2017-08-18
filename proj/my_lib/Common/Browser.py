@@ -10,6 +10,8 @@ import time
 import urlparse
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
+from requests import ConnectionError, ConnectTimeout
+from requests.adapters import SSLError, ProxyError
 
 requests.packages.urllib3.disable_warnings()
 
@@ -51,6 +53,12 @@ class MySession(requests.Session):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
+        if not exc_type:
+            self.update_proxy(0)
+        elif exc_type in (SSLError, ProxyError):
+            self.update_proxy(22)
+        elif exc_type in (ConnectionError, ConnectTimeout):
+            self.update_proxy(23)
 
 
 if __name__ == '__main__':

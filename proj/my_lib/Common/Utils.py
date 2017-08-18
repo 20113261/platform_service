@@ -9,7 +9,7 @@ import hashlib
 import socket
 import traceback
 from requests import ConnectionError, ConnectTimeout
-from requests.adapters import SSLError
+from requests.adapters import SSLError, ProxyError
 
 
 def get_local_ip():
@@ -30,7 +30,7 @@ def try3times(try_again_times=3, others_exptions=None):
             for i in range(try_again_times):
                 try:
                     return func(*args, **kwargs)
-                except (SSLError, ConnectionError, ConnectTimeout, others_exptions) as e:
+                except (SSLError, ConnectionError, ConnectTimeout, ProxyError, others_exptions) as e:
                     print traceback.format_exc(e)
 
         return try_
