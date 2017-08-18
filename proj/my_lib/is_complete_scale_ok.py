@@ -27,7 +27,8 @@ def is_complete_scale_ok(image_name, min_sum_pixels=200000, min_scale=0.9, max_s
         img = misc.imread(image_name)
     except IOError:
         # open fails
-        print 'open image file ' + image_name + ' fails'
+        if isinstance(image_name, str):
+            print 'open image file ' + image_name + ' fails'
         flag = 1
         return flag, -1, -1
 
