@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import re
 
-import db_localhost
+from proj.my_lib import db_localhost
 from lxml import html
 from pyquery import PyQuery
 from proj.my_lib.Common.Browser import MySession
