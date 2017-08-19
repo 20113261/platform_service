@@ -71,7 +71,7 @@ def file_downloader(self, url, file_type, file_path, need_filter="YES", file_spl
     """
     self.task_source = 'Any'
     self.task_type = 'FileDownload'
-    # print '+++++++++++++++++++++++++++++++++++\n', url, '\n+++++++++++++++++++++++++++++++++++'
+    print '+++++++++++++++++++++++++++++++++++\n', url, '\n+++++++++++++++++++++++++++++++++++'
     with MySession() as session:
         # 将去重放在 Task 中完成，本部分不做去重处理
         # # 已经下载的，不下载
@@ -90,7 +90,7 @@ def file_downloader(self, url, file_type, file_path, need_filter="YES", file_spl
                 'attr_file_download'
             )
             return None
-        file_path = '/Users/luwn/test/image'
+        
         # 文件下载
         file_name = get_file_name(url, content_type)
 
