@@ -57,7 +57,7 @@ def get_file_name(url, c_type):
     return '{0}.{1}'.format(url_md5, c_suffix)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='5/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='12/s')
 def file_downloader(self, url, file_type, file_path, need_filter="YES", file_split="YES", **kwargs):
     """
     :param self:
@@ -90,7 +90,7 @@ def file_downloader(self, url, file_type, file_path, need_filter="YES", file_spl
                 'attr_file_download'
             )
             return None
-        
+
         # 文件下载
         file_name = get_file_name(url, content_type)
 
