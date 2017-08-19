@@ -37,12 +37,12 @@ def get_task_total(queue, used_times=5, limit=30000):
         yield task_token, worker, queue, routing_key, line['args']
 
 
-def update_task(task_id):
+def update_task(task_id, finish_code):
     return collections.update({
         'task_token': task_id
     }, {
         '$set': {
-            "finished": 1,
+            "finished": finish_code,
             'running': 0
         }
     })
@@ -60,7 +60,6 @@ def insert_failed_task(task_id, celery_task_id, args, kwargs, einfo):
             'args': args,
             'kwargs': kwargs,
             'einfo': einfo,
-            'running': 0
         })
     except Exception:
         pass

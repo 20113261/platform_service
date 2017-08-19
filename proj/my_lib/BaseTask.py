@@ -47,7 +47,7 @@ class BaseTask(Task):
         if 'task_id' in kwargs:
             update_task(kwargs['task_id'])
         if 'mongo_task_id' in kwargs:
-            mongo_update_task(kwargs['mongo_task_id'])
+            mongo_update_task(kwargs['mongo_task_id'], 1)
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
         if 'mongo_task_id' not in kwargs:
@@ -108,6 +108,7 @@ class BaseTask(Task):
             einfo_i = str(einfo).find('Retry in')
             real_einfo = str(einfo)[einfo_i:] if einfo_i>-1 else str(einfo)
             mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, real_einfo)
+            mongo_update_task(kwargs['mongo_task_id'], 0)
 
 
 if __name__ == '__main__':
