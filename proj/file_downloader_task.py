@@ -12,8 +12,8 @@ import re
 from StringIO import StringIO
 from proj.my_lib.Common.MongoLog import save_log
 from proj.my_lib.is_complete_scale_ok import is_complete_scale_ok
-from .celery import app
-from .my_lib.BaseTask import BaseTask
+from proj.celery import app
+from proj.my_lib.BaseTask import BaseTask
 from my_lib.Common.Browser import MySession
 from my_lib.Common.Utils import get_md5, get_local_ip
 from pyPdf import PdfFileReader
@@ -57,7 +57,7 @@ def get_file_name(url, c_type):
     return '{0}.{1}'.format(url_md5, c_suffix)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='18/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='10/s')
 def file_downloader(self, url, file_type, file_path, need_filter="YES", file_split="YES", **kwargs):
     """
     :param self:
