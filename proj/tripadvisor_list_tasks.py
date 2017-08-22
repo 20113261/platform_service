@@ -10,10 +10,10 @@ import urlparse
 import traceback
 
 from proj.my_lib.task_module.task_func import update_task
-from .my_lib.BaseTask import BaseTask
+from proj.my_lib.BaseTask import BaseTask
 from my_lib.Common.Browser import MySession
 from pyquery import PyQuery
-from .celery import app
+from proj.celery import app
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['HotelList']['TripAdvisor']

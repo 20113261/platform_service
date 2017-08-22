@@ -10,8 +10,8 @@ import pymongo
 import pymongo.errors
 import datetime
 import traceback
-from .celery import app
-from .my_lib.BaseTask import BaseTask
+from proj.celery import app
+from proj.my_lib.BaseTask import BaseTask
 from my_lib.Common.Browser import MySession
 from my_lib.full_website_parser.full_website_parser import full_website_parser
 from my_lib.Common.RedisUrlSaver import UrlSaver

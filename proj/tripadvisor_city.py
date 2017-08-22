@@ -6,9 +6,9 @@ import time
 import traceback
 
 from util.UserAgent import GetUserAgent
-from .celery import app
+from proj.celery import app
 from common.common import get_proxy, update_proxy
-from .my_lib.BaseTask import BaseTask
+from proj.my_lib.BaseTask import BaseTask
 
 
 def insert_db(data):

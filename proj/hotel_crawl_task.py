@@ -3,7 +3,7 @@ import traceback
 
 from common.common import update_proxy
 
-from .celery import app
+from proj.celery import app
 from my_lib.hotel_crawl_task.booking_crawl import booking_list_crawl, booking_detail_crawl
 
 

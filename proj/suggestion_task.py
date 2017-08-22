@@ -22,10 +22,10 @@ import datetime
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 
-from .celery import app
-from .my_lib.BaseTask import BaseTask
-from .my_lib.task_module.task_func import update_task
-from .my_lib.PageSaver import save_suggestions
+from proj.celery import app
+from proj.my_lib.BaseTask import BaseTask
+from proj.my_lib.task_module.task_func import update_task
+from proj.my_lib.PageSaver import save_suggestions
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')

@@ -12,9 +12,9 @@ import json
 import traceback
 from mioji.spider_factory import factory
 from mioji.common.task_info import Task
-from .celery import app
-from .my_lib.BaseTask import BaseTask
-from .my_lib.task_module.task_func import update_task, insert_task, get_task_id
+from proj.celery import app
+from proj.my_lib.BaseTask import BaseTask
+from proj.my_lib.task_module.task_func import update_task, insert_task, get_task_id
 from mioji import spider_factory
 from mioji.common.utils import simple_get_socks_proxy
 import mioji.common.spider

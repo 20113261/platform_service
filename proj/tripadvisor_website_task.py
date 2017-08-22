@@ -8,9 +8,9 @@
 import pymongo
 import pymongo.errors
 
-from .my_lib.BaseTask import BaseTask
+from proj.my_lib.BaseTask import BaseTask
 from my_lib.Common.Browser import MySession
-from .celery import app
+from proj.celery import app
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['TripAdvisor']['website']

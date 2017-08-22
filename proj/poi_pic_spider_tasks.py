@@ -7,15 +7,15 @@ import traceback
 
 from common.common import get_proxy, update_proxy
 
-from .celery import app
-from .my_lib.parse_view_pic.base_parse import GooglePicSpider, FlickrPicSpider, ShutterShockPicSpider
-from .my_lib.parse_view_pic.mysql_ext import PicModel
-from .my_lib.parse_view_pic.pic_data_assembly import flickr_pic_data_assembly
-from .my_lib.parse_view_pic.pic_data_assembly import google_pic_data_assembly
-from .my_lib.parse_view_pic.pic_data_assembly import shutter_pic_data_assembly
-from .my_lib.parse_view_pic.poi_pic_config import save_db_config
-from .my_lib.task_module.task_func import update_task
-from .my_lib.BaseTask import BaseTask
+from proj.celery import app
+from proj.my_lib.parse_view_pic.base_parse import GooglePicSpider, FlickrPicSpider, ShutterShockPicSpider
+from proj.my_lib.parse_view_pic.mysql_ext import PicModel
+from proj.my_lib.parse_view_pic.pic_data_assembly import flickr_pic_data_assembly
+from proj.my_lib.parse_view_pic.pic_data_assembly import google_pic_data_assembly
+from proj.my_lib.parse_view_pic.pic_data_assembly import shutter_pic_data_assembly
+from proj.my_lib.parse_view_pic.poi_pic_config import save_db_config
+from proj.my_lib.task_module.task_func import update_task
+from proj.my_lib.BaseTask import BaseTask
 
 reload(sys)
 sys.setdefaultencoding("utf-8")

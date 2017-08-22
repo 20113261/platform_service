@@ -13,11 +13,11 @@ import traceback
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-from .celery import app
-from .my_lib.new_hotel_parser.hotel_parser import parse_hotel
-from .my_lib.task_module.task_func import update_task
-from .my_lib.BaseTask import BaseTask
-from .my_lib.PageSaver import get_page_content
+from proj.celery import app
+from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
+from proj.my_lib.task_module.task_func import update_task
+from proj.my_lib.BaseTask import BaseTask
+from proj.my_lib.PageSaver import get_page_content
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='50/s')

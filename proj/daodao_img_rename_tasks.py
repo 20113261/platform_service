@@ -5,10 +5,10 @@ import hashlib
 import redis
 import shutil
 import traceback
-from .celery import app
-from .my_lib.BaseTask import BaseTask
-from .my_lib.is_complete_scale_ok import is_complete_scale_ok
-from .my_lib.task_module.task_func import update_task
+from proj.celery import app
+from proj.my_lib.BaseTask import BaseTask
+from proj.my_lib.is_complete_scale_ok import is_complete_scale_ok
+from proj.my_lib.task_module.task_func import update_task
 
 
 def get_md5(src):

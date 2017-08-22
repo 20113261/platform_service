@@ -6,14 +6,14 @@ import traceback
 from common.common import get_proxy, update_proxy
 from lxml import etree
 
-from .celery import app
-from .my_lib.platform_qyer_city.conf.config import save_db_config
-from .my_lib.platform_qyer_city.lib.mysql_ext import QyerModel
-from .my_lib.platform_qyer_city.lib.qyer_http import init_qyer_session
-from .my_lib.platform_qyer_city.lib.qyer_parse import find_max_page
-from .my_lib.platform_qyer_city.lib.qyer_parse import platform_page_parse, city_state
-from .my_lib.task_module.task_func import update_task
-from .my_lib.BaseTask import BaseTask
+from proj.celery import app
+from proj.my_lib.platform_qyer_city.conf.config import save_db_config
+from proj.my_lib.platform_qyer_city.lib.mysql_ext import QyerModel
+from proj.my_lib.platform_qyer_city.lib.qyer_http import init_qyer_session
+from proj.my_lib.platform_qyer_city.lib.qyer_parse import find_max_page
+from proj.my_lib.platform_qyer_city.lib.qyer_parse import platform_page_parse, city_state
+from proj.my_lib.task_module.task_func import update_task
+from proj.my_lib.BaseTask import BaseTask
 
 reload(sys)
 sys.setdefaultencoding("utf-8")

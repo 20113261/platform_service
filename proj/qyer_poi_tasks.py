@@ -7,10 +7,10 @@ from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 
 from proj.my_lib.PageSaver import save_task_and_page_content
-from .celery import app
-from .my_lib.my_qyer_parser.data_obj import DBSession
-from .my_lib.my_qyer_parser.my_parser import page_parser
-from .my_lib.BaseTask import BaseTask
+from proj.celery import app
+from proj.my_lib.my_qyer_parser.data_obj import DBSession
+from proj.my_lib.my_qyer_parser.my_parser import page_parser
+from proj.my_lib.BaseTask import BaseTask
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')

@@ -5,11 +5,11 @@ import json
 import time
 import traceback
 
-from .celery import app
-from .my_lib.BaseTask import BaseTask
+from proj.celery import app
+from proj.my_lib.BaseTask import BaseTask
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
-from .my_lib.task_module.task_func import insert_task, get_task_id
+from proj.my_lib.task_module.task_func import insert_task, get_task_id
 
 
 @app.task(bind=True, base=BaseTask, max_retries=7, rate_limit='10/m')

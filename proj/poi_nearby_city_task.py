@@ -1,5 +1,5 @@
 import traceback
-from .celery import app
+from proj.celery import app
 from my_lib.GetPoiNearByCity.poi_nearby_city_task import insert_db, get_nearby_city
 from my_lib.BaseTask import BaseTask
 from my_lib.task_module.task_func import update_task
