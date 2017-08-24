@@ -13,7 +13,7 @@ from celery.app.log import get_logger
 from celery.task import Task
 
 from proj.my_lib.Common.Utils import get_local_ip
-from proj.my_lib.task_module.mongo_task_func import insert_failed_task
+from proj.my_lib.task_module.routine_task_func import insert_failed_task,get_routine_task_total,update_task
 
 logger = get_logger(__name__)
 
@@ -46,6 +46,7 @@ class BaseRoutineTask(Task):
         task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=15)
         error_code = 0
+        update_task(kwargs['mongo_task_id'])
         r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'success']))
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
@@ -53,6 +54,7 @@ class BaseRoutineTask(Task):
         task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=15)
         error_code = exc.error_code
+        update_task(kwargs['mongo_task_id'])
         r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'failure']))
 
         # insert exc into failed task
