@@ -164,6 +164,11 @@ if __name__ == '__main__':
     '''
     hotel routine list task test
     '''
-    from proj.hotel_list_routine_tasks import hotel_routine_list_task
+    from proj.hotel_list_routine_tasks import hotel_routine_list_task, hotel_list_database
+
     # source, city_id, check_in
-    print hotel_routine_list_task('booking', '51211', '20171001')
+    # print hotel_routine_list_task('booking', '51211', '20171001')
+    result = hotel_list_database('ctrip', '10001', '20171001')
+
+    for line in result['hotel']:
+        print line
