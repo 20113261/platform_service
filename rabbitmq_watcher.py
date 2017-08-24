@@ -15,6 +15,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from requests.auth import HTTPBasicAuth
 from proj.celery import app
 from proj.my_lib.task_module.mongo_task_func import get_task_total
+from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 
 schedule = BlockingScheduler()
 
@@ -57,6 +58,20 @@ def insert_task(queue, limit):
             queue=queue,
             routing_key=routing_key
         )
+
+    for task_token, worker, queue, routing_key, args in get_routine_task_total(queue=queue, limit=limit - _count):
+        _count += 1
+        kwargs = {
+            'mongo_task_id': task_token
+        }
+        kwargs.update(args)
+        app.send_task(
+            worker,
+            kwargs=kwargs,
+            queue=queue,
+            routing_key=routing_key
+        )
+
     logger.info("Insert queue: {0} task count: {1}".format(queue, _count))
 
 

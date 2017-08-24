@@ -8,18 +8,18 @@
 
 # coding=utf-8
 # coding='utf8'
-import re
-
-from proj.tasks import get_comment
-
-
-def add_target(task_url, miaoji_id, **kwargs):
-    res1 = get_comment.delay(task_url, 'zhCN', miaoji_id, **kwargs)
-    res2 = get_comment.delay(task_url, 'en', miaoji_id, **kwargs)
-    return res1, res2
-
-
-d_pattern = re.compile('-d(\d+)')
+# import re
+#
+# from proj.tasks import get_comment
+#
+#
+# def add_target(task_url, miaoji_id, **kwargs):
+#     res1 = get_comment.delay(task_url, 'zhCN', miaoji_id, **kwargs)
+#     res2 = get_comment.delay(task_url, 'en', miaoji_id, **kwargs)
+#     return res1, res2
+#
+#
+# d_pattern = re.compile('-d(\d+)')
 
 if __name__ == '__main__':
     # from proj.hotel_static_tasks import hotel_static_base_data
@@ -157,6 +157,13 @@ if __name__ == '__main__':
     #
     # full_site_spider('http://www.legraziehotel.com/', 0, 'http://www.legraziehotel.com/', {'id': '261836'})
 
-    from proj.routine_tasks import test
+    # from proj.routine_tasks import test
+    #
+    # test.delay()
 
-    test.delay()
+    '''
+    hotel routine list task test
+    '''
+    from proj.hotel_list_routine_tasks import hotel_routine_list_task
+    # source, city_id, check_in
+    print hotel_routine_list_task('booking', '51211', '20171001')
