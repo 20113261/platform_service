@@ -14,7 +14,7 @@ log_path = "/data/log/service_platform"
 
 class NamedRotatingFileHandler(RotatingFileHandler):
     def __init__(self, filename):
-        super(NamedRotatingFileHandler, self).__init__((os.path.join(log_path, filename, '.log')))
+        super(NamedRotatingFileHandler, self).__init__((os.path.join(log_path, "{0}.log".format(filename))))
         self.maxBytes = 100 * 1024 * 1024,
         self.backupCount = 3
 
