@@ -13,7 +13,7 @@ from celery.app.log import get_logger
 from celery.task import Task
 
 from proj.my_lib.Common.Utils import get_local_ip
-from proj.my_lib.task_module.routine_task_func import insert_failed_task,get_routine_task_total,update_task
+from proj.my_lib.task_module.routine_task_func import insert_failed_task, update_task
 
 logger = get_logger(__name__)
 
@@ -36,6 +36,10 @@ def get_type(obj):
     return get_str_type_object_attribute(obj, 'task_type')
 
 
+def get_error_code(obj):
+    return get_str_type_object_attribute(obj, 'error_code')
+
+
 class BaseRoutineTask(Task):
     default_retry_delay = 1
     max_retries = 3
@@ -45,7 +49,7 @@ class BaseRoutineTask(Task):
         task_source = get_source(self)
         task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=15)
-        error_code = 0
+        error_code = get_error_code(self)
         update_task(kwargs['mongo_task_id'])
         r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'success']))
 
@@ -53,7 +57,7 @@ class BaseRoutineTask(Task):
         task_source = get_source(self)
         task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=15)
-        error_code = exc.error_code
+        error_code = get_error_code(self)
         update_task(kwargs['mongo_task_id'])
         r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'failure']))
 

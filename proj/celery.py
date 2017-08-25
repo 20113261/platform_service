@@ -110,16 +110,21 @@ def initialize_logger(loglevel=logging.INFO, **kwargs):
 
     # stdout_logger.addHandler(handler)
     # stderr_logger.addHandler(handler)
-
-    log = logging.getLogger('newframe')
-    log.addHandler(handler)
-    log.setLevel(logging.DEBUG)
-
     log = logging.getLogger('celery')
     log.addHandler(handler)
     log.setLevel(loglevel)
     return log
 
+
+NewFrameHandler = RotatingFileHandler(
+    '/data/log/service_platform/newframe.log',
+    maxBytes=100 * 1024 * 1024,
+    backupCount=3
+)
+
+new_frame_log = logging.getLogger('newframe')
+new_frame_log.addHandler(NewFrameHandler)
+new_frame_log.setLevel(logging.DEBUG)
 
 setup_logging.connect(initialize_logger)
 
