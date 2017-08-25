@@ -53,6 +53,7 @@ class BaseRoutineTask(Task):
             error_code = get_error_code(self)
             update_task(kwargs['mongo_task_id'])
             r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'success']))
+            logger.debug('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'success']))
         except Exception as exc:
             logger.exception(exc)
 
@@ -64,6 +65,7 @@ class BaseRoutineTask(Task):
             error_code = get_error_code(self)
             update_task(kwargs['mongo_task_id'])
             r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'failure']))
+            logger.debug('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'failure']))
 
             # insert exc into failed task
             celery_task_id = task_id
@@ -72,6 +74,7 @@ class BaseRoutineTask(Task):
             kwargs['local_ip'] = get_local_ip()
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
             insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo))
+            logger.debug('Insert Mongo Task, Task ID: {0}'.format(task_id))
         except Exception as exc:
             logger.exception(exc)
 
