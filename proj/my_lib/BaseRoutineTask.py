@@ -9,13 +9,13 @@
 import redis
 import time
 import types
-from celery.app.log import get_logger
 from celery.task import Task
+from logger import get_logger
 
 from proj.my_lib.Common.Utils import get_local_ip
 from proj.my_lib.task_module.routine_task_func import insert_failed_task, update_task
 
-logger = get_logger(__name__)
+logger = get_logger('BaseRoutineTask')
 
 FAILED_TASK_BLACK_LIST = {'proj.full_website_spider_task.full_site_spider'}
 
@@ -46,28 +46,34 @@ class BaseRoutineTask(Task):
 
     def on_success(self, retval, task_id, args, kwargs):
         # 增加源以及抓取类型统计
-        task_source = get_source(self)
-        task_type = get_type(self)
-        r = redis.Redis(host='10.10.180.145', db=15)
-        error_code = get_error_code(self)
-        update_task(kwargs['mongo_task_id'])
-        r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'success']))
+        try:
+            task_source = get_source(self)
+            task_type = get_type(self)
+            r = redis.Redis(host='10.10.180.145', db=15)
+            error_code = get_error_code(self)
+            update_task(kwargs['mongo_task_id'])
+            r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'success']))
+        except Exception as exc:
+            logger.exception(exc)
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        task_source = get_source(self)
-        task_type = get_type(self)
-        r = redis.Redis(host='10.10.180.145', db=15)
-        error_code = get_error_code(self)
-        update_task(kwargs['mongo_task_id'])
-        r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'failure']))
+        try:
+            task_source = get_source(self)
+            task_type = get_type(self)
+            r = redis.Redis(host='10.10.180.145', db=15)
+            error_code = get_error_code(self)
+            update_task(kwargs['mongo_task_id'])
+            r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'failure']))
 
-        # insert exc into failed task
-        celery_task_id = task_id
-        task_id = kwargs.get('mongo_task_id', '')
-        kwargs.pop('mongo_task_id', None)
-        kwargs['local_ip'] = get_local_ip()
-        kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
-        insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo))
+            # insert exc into failed task
+            celery_task_id = task_id
+            task_id = kwargs.get('mongo_task_id', '')
+            kwargs.pop('mongo_task_id', None)
+            kwargs['local_ip'] = get_local_ip()
+            kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
+            insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo))
+        except Exception as exc:
+            logger.exception(exc)
 
 
 if __name__ == '__main__':

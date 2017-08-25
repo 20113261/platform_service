@@ -19,14 +19,14 @@ class NamedRotatingFileHandler(RotatingFileHandler):
         self.backupCount = 3
 
 
-def get_api_logger(logger_name):
+def get_logger(logger_name):
     """
     初始化 短信服务的 logger 部分，无返回值，logger 的模式，可以随时get到
     """
     if not os.path.exists(log_path):
         os.makedirs(log_path)
         os.mkdir(log_path)
-        
+
     # getLogger 为单例模式
     api_logger = logging.getLogger(logger_name)
     api_logger.setLevel(logging.DEBUG)
