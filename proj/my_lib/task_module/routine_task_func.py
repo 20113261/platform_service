@@ -10,7 +10,7 @@ import datetime
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['RoutineTask']
-failed_task_collections = client['MongoTask']['FailedTask']
+failed_task_collections = client['MongoTask']['RoutineFailedTask']
 
 
 def get_routine_task_total(queue, limit=30000):

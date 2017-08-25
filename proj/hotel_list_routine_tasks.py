@@ -72,7 +72,7 @@ def hotel_list_database(source, city_id, check_in):
     return spider.result
 
 
-@app.task(bind=True, base=BaseRoutineTask, max_retries=3, rate_limit='2/s')
+@app.task(bind=True, base=BaseRoutineTask, max_retries=3, rate_limit='5/s')
 def hotel_routine_list_task(self, source, city_id, check_in, **kwargs):
     self.task_source = source.title()
     self.task_type = 'HotelList'
