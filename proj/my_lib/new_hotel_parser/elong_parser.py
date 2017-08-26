@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import sys
-
+import traceback
 import re
 import requests
 from lxml import html as HTML
@@ -67,6 +67,7 @@ def elong_parser(content, url, other_info):
         hotel.map_info = lat + ',' + lon
     except Exception, e:
         hotel.map_info = 'NULL'
+        print traceback.format_exc(e)
 
     print 'map_info=>%s' % hotel.map_info
     # print hotel.map_info
