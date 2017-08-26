@@ -10,6 +10,7 @@ from lxml import html as HTML
 from data_obj import Hotel
 import json
 import execjs
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -37,8 +38,12 @@ def elong_parser(content, url, other_info):
         hotel.hotel_name = temp_name[:k]
         hotel.hotel_name_en = temp_name[k + 1:j]
     except Exception, e:
-        print str(e)
-        # return hotel_tuple
+        try:
+            hotel.hotel_name = root.find_class('hrela_name-cn')[0].xpath('./text()')[0].strip()
+            hotel.hotel_name_en = root.find_class('hrela_name-en')[0].xpath('./text()')[0].strip()
+        except Exception as e:
+            print str(e)
+            # return hotel_tuple
 
     print 'hotel.hotel_name=>%s' % hotel.hotel_name
     # print hotel.hotel_name
@@ -94,7 +99,7 @@ def elong_parser(content, url, other_info):
     except:
         try:
             grade = root.xpath('//div[@id="hover-hrela"]/p[1]')
-            hotel.grade = float(re.search(r'[0-9\.]+',grade[0].text).group(0))
+            hotel.grade = float(re.search(r'[0-9\.]+', grade[0].text).group(0))
         except Exception as e:
             hotel.grade = 'NULL'
     print 'grade=>%s' % hotel.grade
@@ -199,6 +204,7 @@ def elong_parser(content, url, other_info):
     hotel.city_id = other_info['city_id']
     return hotel
 
+
 # def elong_json_parser(url):
 #     browser = webdriver.WebDriver(executable_path='/Users/miojilx/Downloads/phantomjs-2.1.1-macosx/bin/phantomjs')
 #     browser.get(url)
@@ -275,6 +281,7 @@ if __name__ == '__main__':
     url = 'http://ihotel.elong.com/343475/'
     url = 'http://ihotel.elong.com/443150/'
     url = 'http://ihotel.elong.com/589177/'
+    url = 'http://ihotel.elong.com/31131/'
     other_info = {u'source_id': u'670847', u'city_id': u'20236'}
 
     page = requests.get(url)
@@ -286,6 +293,3 @@ if __name__ == '__main__':
 
     # 如果需要，可以在这里用 print 打印 hotel 对象中的内容。也可直接使用 debug 调试查看 result
     print result.address
-
-
-
