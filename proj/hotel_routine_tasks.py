@@ -33,7 +33,7 @@ def hotel_routine_base_data(self, source, url, other_info, **kwargs):
             url = 'http://zh.hotels.com/hotel/details.html?hotel-id=' + hotel_id
     except Exception as e:
         self.error_code = 12
-        logger.exception()
+        logger.exception(e)
         raise e
 
     # 修改请求参数
@@ -41,7 +41,7 @@ def hotel_routine_base_data(self, source, url, other_info, **kwargs):
         pass
     except Exception as e:
         self.error_code = 101
-        logger.exception()
+        logger.exception(e)
         raise e
 
     try:
@@ -51,18 +51,18 @@ def hotel_routine_base_data(self, source, url, other_info, **kwargs):
         content = page.text
     except Exception as e:
         self.error_code = 22
-        logger.exception()
+        logger.exception(e)
         raise e
 
     try:
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
     except TypeCheckError as e:
         self.error_code = 102
-        logger.exception()
+        logger.exception(e)
         raise e
     except Exception as e:
         self.error_code = 27
-        logger.exception()
+        logger.exception(e)
         raise e
 
     try:
@@ -72,7 +72,7 @@ def hotel_routine_base_data(self, source, url, other_info, **kwargs):
         session.close()
     except Exception as e:
         self.error_code = 33
-        logger.exception()
+        logger.exception(e)
         raise e
 
     try:
@@ -83,5 +83,5 @@ def hotel_routine_base_data(self, source, url, other_info, **kwargs):
                                    city_id=other_info['city_id'], url=url)
     except Exception as e:
         self.error_code = 104
-        logger.exception()
+        logger.exception(e)
         raise e
