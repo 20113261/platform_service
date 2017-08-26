@@ -8,8 +8,11 @@ import hotels_parser
 import hoteltravel_parser
 import hrs_parser
 import tripadvisor_parser
-from data_obj import DBSession
 from proj.my_lib.Common.KeyMatch import key_is_legal
+
+
+class TypeCheckError(TypeError):
+    pass
 
 
 def parse_hotel(content, url, other_info, source, part):
@@ -29,29 +32,29 @@ def parse_hotel(content, url, other_info, source, part):
         'tripadvisor': tripadvisor_parser.tripadvisor_parser,
     }
     if source not in function_dict.keys():
-        raise TypeError('Error Parser Source')
+        raise TypeCheckError('Error Parser Source')
 
     parser = function_dict[source]
     result = parser(content, url, other_info)
 
     # key words check
     if not key_is_legal(result.map_info):
-        raise TypeError('Error map_info NULL')
+        raise TypeCheckError('Error map_info NULL')
 
     if not (key_is_legal(result.hotel_name) and key_is_legal(result.hotel_name_en)):
-        raise TypeError('Error hotel_name and hotel_name_en Both NULL')
+        raise TypeCheckError('Error hotel_name and hotel_name_en Both NULL')
 
     if result.source == 'booking':
         if not key_is_legal(result.hotel_name):
-            raise TypeError('booking has no hotel name')
+            raise TypeCheckError('booking has no hotel name')
         if not key_is_legal(result.hotel_name_en):
-            raise TypeError('booking has no hotel name en')
+            raise TypeCheckError('booking has no hotel name en')
         if not key_is_legal(result.img_items):
-            raise TypeError('booking has no img')
+            raise TypeCheckError('booking has no img')
 
     if result.source == 'hotels':
         if not key_is_legal(result.img_items):
-            raise TypeError('hotels has no img')
+            raise TypeCheckError('hotels has no img')
 
     # if result.grade in ('NULL', '-1', ''):
     #     raise TypeError('Error Grade NULL')
@@ -65,12 +68,7 @@ def parse_hotel(content, url, other_info, source, part):
     if result.grade == 'NULL':
         result.grade = -1
 
-    session = DBSession()
-    session.merge(result)
-    session.commit()
-    session.close()
-
-    return result.__dict__
+    return result
 
 
 if __name__ == '__main__':

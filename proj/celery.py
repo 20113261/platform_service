@@ -29,7 +29,8 @@ app = Celery('proj', include=['proj.tasks',
                               'proj.tripadvisor_list_tasks',
                               'proj.file_downloader_task',
                               'proj.tripadvisor_website_task',
-                              'proj.hotel_list_routine_tasks'
+                              'proj.hotel_list_routine_tasks',
+                              'proj.hotel_routine_tasks'
                               ])
 app.config_from_object('proj.config')
 app.conf.update(

@@ -28,6 +28,13 @@ def get_str_type_object_attribute(obj, attr_name):
     return 'NULL'
 
 
+def get_object_attribute(obj, attr_name):
+    if hasattr(obj, attr_name):
+        attr_obj = getattr(obj, attr_name)
+        return str(attr_obj)
+    return 'NULL'
+
+
 def get_source(obj):
     return get_str_type_object_attribute(obj, 'task_source')
 
@@ -37,7 +44,7 @@ def get_type(obj):
 
 
 def get_error_code(obj):
-    return get_str_type_object_attribute(obj, 'error_code')
+    return get_object_attribute(obj, 'error_code')
 
 
 class BaseRoutineTask(Task):
