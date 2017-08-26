@@ -61,10 +61,10 @@ def elong_parser(content, url, other_info):
     # print hotel.address
 
     try:
-        # map_temp = root.xpath('//img[@method="OpenMap"]/@data-src')[0]
-        # map_infos = map_pat.findall(map_temp)[0]
+        lat = re.findall(r'"lat":"([-+\d\.]*)"', content)
+        lon = re.findall(r'"lon":"([-+\d\.]*)"', content)
         map_infos = map_pat.findall(content)[0]
-        hotel.map_info = map_infos[1] + ',' + map_infos[0]
+        hotel.map_info = lat + ',' + lon
     except Exception, e:
         hotel.map_info = 'NULL'
 
@@ -286,6 +286,8 @@ if __name__ == '__main__':
 
     # 如果需要，可以在这里用 print 打印 hotel 对象中的内容。也可直接使用 debug 调试查看 result
     print result.address
+
+
 
 
 
