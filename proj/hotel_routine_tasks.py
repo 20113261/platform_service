@@ -16,7 +16,7 @@ from proj.my_lib.Common.Browser import MySession
 
 
 @app.task(bind=True, base=BaseRoutineTask, max_retries=2, rate_limit='8/s')
-def hotel_base_data(self, source, url, other_info, part, **kwargs):
+def hotel_routine_base_data(self, source, url, other_info, part, **kwargs):
     self.task_source = source.title()
     self.task_type = 'Hotel'
 
