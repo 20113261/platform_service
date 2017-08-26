@@ -55,7 +55,7 @@ def hotel_routine_base_data(self, source, url, other_info, **kwargs):
         raise e
 
     try:
-        result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
+        result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part="NULL")
     except TypeCheckError as e:
         self.error_code = 102
         logger.exception(e)
