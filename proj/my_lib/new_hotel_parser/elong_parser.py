@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import sys
-
+import traceback
 import re
 import requests
 from lxml import html as HTML
@@ -66,12 +66,13 @@ def elong_parser(content, url, other_info):
     # print hotel.address
 
     try:
-        # map_temp = root.xpath('//img[@method="OpenMap"]/@data-src')[0]
-        # map_infos = map_pat.findall(map_temp)[0]
-        map_infos = map_pat.findall(content)[0]
-        hotel.map_info = map_infos[1] + ',' + map_infos[0]
+        lat = re.findall(r'"lat":"([-+\d\.]*)"', content)[0]
+        lon = re.findall(r'"lon":"([-+\d\.]*)"', content)[0]
+        # map_infos = map_pat.findall(content)[0]
+        hotel.map_info = str(lat) + ',' + str(lon)
     except Exception, e:
         hotel.map_info = 'NULL'
+        print traceback.format_exc(e)
 
     print 'map_info=>%s' % hotel.map_info
     # print hotel.map_info
