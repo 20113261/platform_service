@@ -132,7 +132,7 @@ def expedia_parser(content, url, other_info):
         hotel.is_parking_free = is_parking_free
     except Exception as e:
         hotel.has_parking = 'No'
-        Hotel.is_parking_free = 'No'
+        hotel.is_parking_free = 'No'
         print str(e)
     print 'has_wifi=>%s' % hotel.has_wifi
     print 'is_wifi_free=>%s' % hotel.is_wifi_free
