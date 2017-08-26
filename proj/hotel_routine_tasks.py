@@ -78,7 +78,7 @@ def hotel_routine_base_data(self, source, url, other_info, **kwargs):
     try:
         # 保存抓取成功后的页面信息
         save_task_and_page_content(task_name='hotelinfo_routine_{0}'.format(source), content=content,
-                                   task_id=kwargs['task_id'], source=source,
+                                   task_id=kwargs['mongo_task_id'], source=source,
                                    source_id=other_info['source_id'],
                                    city_id=other_info['city_id'], url=url)
     except Exception as e:
