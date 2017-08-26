@@ -64,7 +64,7 @@ def elong_parser(content, url, other_info):
         lat = re.findall(r'"lat":"([-+\d\.]*)"', content)[0]
         lon = re.findall(r'"lon":"([-+\d\.]*)"', content)[0]
         # map_infos = map_pat.findall(content)[0]
-        hotel.map_info = lat + ',' + lon
+        hotel.map_info = str(lat) + ',' + str(lon)
     except Exception, e:
         hotel.map_info = 'NULL'
         print traceback.format_exc(e)
