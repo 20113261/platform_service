@@ -8,7 +8,7 @@ import requests
 import execjs
 from lxml import html as HTML
 from util.UserAgent import GetUserAgent
-from data_obj import Hotel, DBSession
+from data_obj import AgodaHotel, DBSession
 
 # pattern
 review_num_pat = re.compile(r'(\d+)')
@@ -25,7 +25,7 @@ sys.setdefaultencoding('utf-8')
 
 
 def agoda_parser(content, url, other_info):
-    hotel = Hotel()
+    hotel = AgodaHotel()
     try:
         content = content.decode('utf-8')
         root = HTML.fromstring(content)

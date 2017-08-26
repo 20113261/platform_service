@@ -9,7 +9,7 @@ import requests
 # from common.logger import logger
 from lxml import html as HTML
 
-from data_obj import Hotel  # DBSession
+from data_obj import ExpediaHotel  # DBSession
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -17,7 +17,7 @@ map_pattern = re.compile(r'center=(.*?)')
 
 
 def expedia_parser(content, url, other_info):
-    hotel = Hotel()
+    hotel = ExpediaHotel()
 
     try:
         html = HTML.fromstring(content.decode('utf-8'))

@@ -7,7 +7,7 @@ import re
 import requests
 from lxml import html as HTML
 
-from data_obj import Hotel  # , DBSession
+from data_obj import HotelsHotel  # , DBSession
 
 star_pat = re.compile(r'在此页面中显示为 (.*) 星')
 num_pat = re.compile(r'\d+')
@@ -21,7 +21,7 @@ sys.setdefaultencoding('utf-8')
 
 
 def hotels_parser(content, url, other_info):
-    hotel = Hotel()
+    hotel = HotelsHotel()
     content = content.decode('utf-8')
     root = HTML.fromstring(content)
     try:

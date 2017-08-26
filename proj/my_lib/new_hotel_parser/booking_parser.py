@@ -7,7 +7,7 @@ import re
 import requests
 from lxml import html as HTML
 
-from data_obj import Hotel
+from data_obj import BookingHotel
 from common.common import get_proxy
 
 from proj.my_lib.Common.KeyMatch import key_is_legal
@@ -26,7 +26,7 @@ re_num_pat2 = re.compile(r'来自.*?(\d+).*?条评语', re.S)
 
 
 def booking_parser(content, url, other_info):
-    hotel = Hotel()
+    hotel = BookingHotel()
     print 'url=>%s' % url
     # print url
     try:
@@ -160,9 +160,9 @@ def booking_parser(content, url, other_info):
                         hotel.star = int(star[0])
             if hotel.star == -1:
                 star_svg = root.xpath('//span[@class="hp__hotel_ratings__stars"]//svg[@class]')
-                print "star_svg:",star_svg
+                print "star_svg:", star_svg
                 if star_svg:
-                    hotel.star = int(re.search(r'\d+',star_svg[0].attrib.get('class')).group(0))
+                    hotel.star = int(re.search(r'\d+', star_svg[0].attrib.get('class')).group(0))
 
         except Exception as e:
             pass

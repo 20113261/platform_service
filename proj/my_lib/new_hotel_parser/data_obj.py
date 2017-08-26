@@ -8,8 +8,7 @@ from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 
 
-class Hotel(Base):
-    __tablename__ = 'hotelinfo_tripadvisor'
+class HotelBase(object):
     hotel_name = Column(String(512), default='NULL')
     hotel_name_en = Column(String(512), default='NULL')
     source = Column(String(64), default='NULL', primary_key=True)
@@ -37,6 +36,30 @@ class Hotel(Base):
     hotel_url = Column(String(1024), default='NULL')
     update_time = Column(TIMESTAMP, default=datetime.datetime.now, onupdate=datetime.datetime.now, index=True)
     continent = Column(String(96), default='NULL')
+
+
+class Hotel(HotelBase, Base):
+    __tablename__ = 'hotelinfo_static_data'
+
+
+class BookingHotel(HotelBase, Base):
+    __tablename__ = 'hotelinfo_routine_booking'
+
+
+class AgodaHotel(HotelBase, Base):
+    __tablename__ = 'hotelinfo_routine_agoda'
+
+
+class ExpediaHotel(HotelBase, Base):
+    __tablename__ = 'hotelinfo_routine_expedia'
+
+
+class HotelsHotel(HotelBase, Base):
+    __tablename__ = 'hotelinfo_routine_hotels'
+
+
+class ElongHotel(HotelBase, Base):
+    __tablename__ = 'hotelinfo_routine_elong'
 
 
 # 初始化数据库连接:

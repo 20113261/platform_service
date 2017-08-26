@@ -7,7 +7,7 @@ import re
 import requests
 from lxml import html as HTML
 # from selenium.webdriver.phantomjs import webdriver
-from data_obj import Hotel
+from data_obj import ElongHotel
 import json
 import execjs
 
@@ -21,7 +21,7 @@ grade_pat = re.compile(r'(\d+)', re.S)
 
 
 def elong_parser(content, url, other_info):
-    hotel = Hotel()
+    hotel = ElongHotel()
 
     try:
         root = HTML.fromstring(content.decode('utf-8'))
