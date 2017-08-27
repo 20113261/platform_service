@@ -80,7 +80,7 @@ class BaseRoutineTask(Task):
             kwargs.pop('mongo_task_id', None)
             kwargs['local_ip'] = get_local_ip()
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
-            insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo))
+            insert_failed_task(task_id, celery_task_id, args, kwargs, str(einfo), task_source, task_type, error_code)
             logger.debug('Insert Mongo Task, Task ID: {0}'.format(task_id))
         except Exception as exc:
             logger.exception(exc)

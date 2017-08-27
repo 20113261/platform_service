@@ -48,10 +48,13 @@ def get_per_task(task_id):
     return collections.find_one({'task_token': task_id})
 
 
-def insert_failed_task(task_id, celery_task_id, args, kwargs, einfo):
+def insert_failed_task(task_id, celery_task_id, args, kwargs, einfo, source, s_type, error_code):
     try:
         failed_task_collections.save({
             'task_id': task_id,
+            'source': source,
+            'type': s_type,
+            'error_code': error_code,
             'celery_task_id': celery_task_id,
             'args': args,
             'kwargs': kwargs,
