@@ -42,7 +42,7 @@ def parse_hotel(content, url, other_info, source, part):
         raise TypeCheckError('Error map_info NULL')
 
     if not (key_is_legal(result.hotel_name) and key_is_legal(result.hotel_name_en)):
-        raise TypeCheckError('Error hotel_name and hotel_name_en Both NULL')
+        raise TypeCheckError('Error hotel_name and hotel_name_en Both NULL        with parser %s' % parser.fun_name)
 
     if result.source == 'booking':
         if not key_is_legal(result.hotel_name):
