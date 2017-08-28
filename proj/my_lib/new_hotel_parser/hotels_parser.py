@@ -30,10 +30,13 @@ def hotels_parser(content, url, other_info):
         print str(e)
 
     try:
-        hotel.hotel_name = name_temp.split('(')[0].strip().encode('utf-8')
+        args = re.split('[(（]', name_temp, 2)
+        # hotel.hotel_name = name_temp.split('(')[0].strip().encode('utf-8')
+        hotel.hotel_name = args[0].strip().encode('utf-8')
         print 'hotel_name=>%s' % hotel.hotel_name
         try:
-            hotel.hotel_name_en = re.findall('\(([\s\S]+?)\)', name_temp)[0].strip().encode('utf-8')
+            hotel.hotel_name_en = args[-1][1:].strip(')').strip('）')
+            # hotel.hotel_name_en = re.findall('\(([\s\S]+?)\)', name_temp)[0].strip().encode('utf-8')
         except Exception:
             pass
         print 'hotel_name_en=>%s' % hotel.hotel_name_en

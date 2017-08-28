@@ -37,11 +37,13 @@ def booking_parser(content, url, other_info):
 
     # 解析酒店中英文名，如果没有中文名则置为英文名，如果都解析失败则退出
     try:
-        name_temp = root.xpath('//*[@id="hp_hotel_name"]')[
+        name_temp = root.xpath('//*[@class="hp__hotel-name"]')[
             0].text_content().encode('utf-8').strip('\t').strip('\n')
-        hotel.hotel_name = hotel.hotel_name_en = name_temp
-    except Exception:
-        pass
+        args = re.split('[(（]', name_temp, 2)
+        hotel.hotel_name = args[-1][1:].strip(')').strip('）')
+        hotel.hotel_name_en = args[0]
+    except Exception as e:
+        print e
         # try:
         #     name_temp = root.xpath('//*[@class="sr-hotel__name"]/text()')[
         #         0].strip().encode('utf-8')
