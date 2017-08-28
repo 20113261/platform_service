@@ -58,13 +58,21 @@ class BaseRoutineTask(Task):
             task_type = get_type(self)
             r = redis.Redis(host='10.10.180.145', db=15)
             error_code = get_error_code(self)
-            if int(error_code) == 0:
-                finished = True
+            if error_code == 'NULL':
+                r.incr('|_||_|'.join(
+                    map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, 27, 'success'])))
+                logger.debug('|_||_|'.join(
+                    map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, 27, 'success'])))
             else:
-                finished = False
-            update_task(kwargs['mongo_task_id'], finished=finished)
-            r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'success']))
-            logger.debug('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'success']))
+                if int(error_code) == 0:
+                    finished = True
+                else:
+                    finished = False
+                update_task(kwargs['mongo_task_id'], finished=finished)
+                r.incr('|_||_|'.join(
+                    map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'success'])))
+                logger.debug('|_||_|'.join(
+                    map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'success'])))
         except Exception as exc:
             logger.exception(exc)
 
@@ -75,8 +83,19 @@ class BaseRoutineTask(Task):
             r = redis.Redis(host='10.10.180.145', db=15)
             error_code = get_error_code(self)
             update_task(kwargs['mongo_task_id'])
-            r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'failure']))
-            logger.debug('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'failure']))
+
+            if error_code == 'NULL':
+                # 未在框架中设置 error code 的异常
+                r.incr('|_||_|'.join(
+                    map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'failure'])))
+                logger.debug('|_||_|'.join(
+                    map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'failure'])))
+            else:
+                # 正确设置了 error code 的情况
+                r.incr('|_||_|'.join(
+                    map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'success'])))
+                logger.debug('|_||_|'.join(
+                    map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'success'])))
 
             # insert exc into failed task
             celery_task_id = task_id
