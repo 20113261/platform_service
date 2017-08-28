@@ -32,7 +32,7 @@ def parse_hotel(content, url, other_info, source, part):
         'tripadvisor': tripadvisor_parser.tripadvisor_parser,
     }
     if source not in function_dict.keys():
-        raise TypeCheckError('Error Parser Source        with source %s' % source)
+        raise TypeCheckError('Error Parser Source        with source %s   url %s ' % (source, url))
 
     parser = function_dict[source]
     result = parser(content, url, other_info)
@@ -42,19 +42,19 @@ def parse_hotel(content, url, other_info, source, part):
         raise TypeCheckError('Error map_info NULL        with parser %s' % parser.func_name)
 
     if not (key_is_legal(result.hotel_name) and key_is_legal(result.hotel_name_en)):
-        raise TypeCheckError('Error hotel_name and hotel_name_en Both NULL        with parser %s' % parser.func_name)
+        raise TypeCheckError('Error hotel_name and hotel_name_en Both NULL        with parser %s    url %s' % (parser.func_name, url))
 
     if result.source == 'booking':
         if not key_is_legal(result.hotel_name):
-            raise TypeCheckError('booking has no hotel name        with parser %s' % parser.func_name)
+            raise TypeCheckError('booking has no hotel name        with parser %s    url %s' % (parser.func_name, url))
         if not key_is_legal(result.hotel_name_en):
-            raise TypeCheckError('booking has no hotel name en        with parser %s' % parser.func_name)
+            raise TypeCheckError('booking has no hotel name en        with parser %s    url %s' % (parser.func_name, url))
         if not key_is_legal(result.img_items):
-            raise TypeCheckError('booking has no img        with parser %s' % parser.func_name)
+            raise TypeCheckError('booking has no img        with parser %s    url %s' % (parser.func_name, url))
 
     if result.source == 'hotels':
         if not key_is_legal(result.img_items):
-            raise TypeCheckError('hotels has no img        with parser %s' % parser.func_name)
+            raise TypeCheckError('hotels has no img        with parser %s    url %s' % (parser.func_name, url))
 
     # if result.grade in ('NULL', '-1', ''):
     #     raise TypeError('Error Grade NULL')
