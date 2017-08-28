@@ -38,10 +38,21 @@ def booking_parser(content, url, other_info):
     # 解析酒店中英文名，如果没有中文名则置为英文名，如果都解析失败则退出
     try:
         name_temp = root.xpath('//*[@class="hp__hotel-name"]')[
-            0].text_content().encode('utf-8').strip('\t').strip('\n')
-        args = re.split('[(（]', name_temp, 2)
-        hotel.hotel_name = args[-1][1:].strip(')').strip('）')
-        hotel.hotel_name_en = args[0]
+            0].text_content().strip('\t').strip('\n')
+
+        temp = re.findall(ur'([\u4e00-\u9fa5\s]*)', name_temp)
+        zh_name_tmep = [t for t in temp if t and t!=' ']
+        if len(zh_name_tmep)>0:
+            hotel.hotel_name = zh_name_tmep[0].encode('utf8')
+        else:
+            hotel.hotel_name = ''
+
+        if not zh_name_tmep:
+            hotel.hotel_name_en = name_temp.strip(')').strip('(').strip('）').strip('（').strip().encode('utf8')
+        else:
+            name_en_temp = name_temp[:name_temp.find(zh_name_tmep[0][0])] + name_temp[
+                                                                            name_temp.find(zh_name_tmep[0][-1])+1:]
+            hotel.hotel_name_en = name_en_temp.strip(')').strip('(').strip('）').strip('（').strip().encode('utf8')
     except Exception as e:
         print e
         # try:
@@ -108,8 +119,8 @@ def booking_parser(content, url, other_info):
                     map_infos = str(map_infos[0]).split(',')
                     hotel.map_info = map_infos[0] + ',' + map_infos[1]
                 else:
-                    latitude = re.findall('booking.env.b_map_center_latitude = (\d+.\d+);', content)[0]
-                    longitude = re.findall('booking.env.b_map_center_longitude = (\d+.\d+);', content)[0]
+                    latitude = re.findall('booking.env.b_map_center_latitude = (-+\d+.\d+);', content)[0]
+                    longitude = re.findall('booking.env.b_map_center_longitude = (-+\d+.\d+);', content)[0]
                     hotel.map_info = '{0},{1}'.format(longitude, latitude)
                 print str(e)
     print 'map_info=>%s' % hotel.map_info
@@ -486,7 +497,8 @@ if __name__ == '__main__':
 
     # content = requests.get(
     #     'https://www.booking.com/hotel/us/racpanos-modern-stays-jersey-city.zh-cn.html').text
-    url = 'http://www.booking.com/hotel/de/convita.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=92b989ea6f07f4de2b13417b5ee27147;checkin=2017-06-03;checkout=2017-06-04;ucfs=1;aer=1;group_adults=3;group_children=0;req_adults=3;req_children=0;room1=A%2CA%2CA;highlighted_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;all_sr_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;hpos=6;dest_type=city;dest_id=-1876189;srfid=c597a73a7c35b00d3a02a668f2b753cada34ce8aX21;from=searchresults;highlight_room=;spdest=ci/-1876189;spdist=9.1;shp=1#hotelTmpl'
+    # url = 'http://www.booking.com/hotel/de/convita.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=92b989ea6f07f4de2b13417b5ee27147;checkin=2017-06-03;checkout=2017-06-04;ucfs=1;aer=1;group_adults=3;group_children=0;req_adults=3;req_children=0;room1=A%2CA%2CA;highlighted_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;all_sr_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;hpos=6;dest_type=city;dest_id=-1876189;srfid=c597a73a7c35b00d3a02a668f2b753cada34ce8aX21;from=searchresults;highlight_room=;spdest=ci/-1876189;spdist=9.1;shp=1#hotelTmpl'
+    url = 'https://www.booking.com/hotel/gb/albany-hove.zh-cn.html'
     content = requests.get(url).text
 
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
