@@ -19,7 +19,7 @@ def get_routine_task_total(queue, limit=30000):
                 'queue': queue,
                 'running': 0
             }
-    ).sort([('priority', -1), ('utime', 1)]).limit(limit):
+    ).sort([('priority', -1), ('finished', 1), ('utime', 1)]).limit(limit):
         task_token = line['task_token']
         worker = line['worker']
         routing_key = line['routing_key']
@@ -70,6 +70,8 @@ if __name__ == '__main__':
     #     print line
     # print update_task('537019182ea35ad39e8223f534f6cdd3')
     # print get_per_task('596a3208e28b5414c164c3b1')
-    print get_per_task('537019182ea35ad39e8223f534f6cdd3')
+    # print get_per_task('537019182ea35ad39e8223f534f6cdd3')
     # for each in get_task_total('test'):
     #     print each
+    for each in get_routine_task_total('hotel_task', 10):
+        print each
