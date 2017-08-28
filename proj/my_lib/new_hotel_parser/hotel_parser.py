@@ -88,6 +88,9 @@ if __name__ == '__main__':
     url = 'https://www.agoda.com/zh-cn/hotel-piena-kobe/hotel/kobe-jp.html'
     source = 'agoda'
 
+    source = 'elong'
+    url = 'http://ihotel.elong.com/117200/'
+
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.text

@@ -58,7 +58,11 @@ class BaseRoutineTask(Task):
             task_type = get_type(self)
             r = redis.Redis(host='10.10.180.145', db=15)
             error_code = get_error_code(self)
-            update_task(kwargs['mongo_task_id'])
+            if int(error_code) == 0:
+                finished = True
+            else:
+                finished = False
+            update_task(kwargs['mongo_task_id'], finished=finished)
             r.incr('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'success']))
             logger.debug('|_||_|'.join([self.name, get_local_ip(), task_source, task_type, error_code, 'success']))
         except Exception as exc:

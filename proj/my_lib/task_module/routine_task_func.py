@@ -34,12 +34,13 @@ def get_routine_task_total(queue, limit=30000):
         yield task_token, worker, queue, routing_key, line['args']
 
 
-def update_task(task_id):
+def update_task(task_id, finished=False):
     return collections.update({
         'task_token': task_id
     }, {
         '$set': {
-            'running': 0
+            'running': 0,
+            'finished': 1 if finished else 0
         }
     })
 
