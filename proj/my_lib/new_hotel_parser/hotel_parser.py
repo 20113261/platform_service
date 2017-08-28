@@ -45,10 +45,10 @@ def parse_hotel(content, url, other_info, source, part):
         raise TypeCheckError('Error hotel_name and hotel_name_en Both NULL        with parser %s    url %s' % (parser.func_name, url))
 
     if result.source == 'booking':
-        if not key_is_legal(result.hotel_name):
-            raise TypeCheckError('booking has no hotel name        with parser %s    url %s' % (parser.func_name, url))
-        if not key_is_legal(result.hotel_name_en):
-            raise TypeCheckError('booking has no hotel name en        with parser %s    url %s' % (parser.func_name, url))
+        # if not key_is_legal(result.hotel_name):
+        #     raise TypeCheckError('booking has no hotel name        with parser %s    url %s' % (parser.func_name, url))
+        # if not key_is_legal(result.hotel_name_en):
+        #     raise TypeCheckError('booking has no hotel name en        with parser %s    url %s' % (parser.func_name, url))
         if not key_is_legal(result.img_items):
             raise TypeCheckError('booking has no img        with parser %s    url %s' % (parser.func_name, url))
 
