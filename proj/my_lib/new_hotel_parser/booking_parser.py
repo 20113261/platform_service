@@ -119,8 +119,10 @@ def booking_parser(content, url, other_info):
                     map_infos = str(map_infos[0]).split(',')
                     hotel.map_info = map_infos[0] + ',' + map_infos[1]
                 else:
-                    latitude = re.findall('booking.env.b_map_center_latitude = (-+\d+.\d+);', content)[0]
-                    longitude = re.findall('booking.env.b_map_center_longitude = (-+\d+.\d+);', content)[0]
+                    lat_tmp = re.findall('booking.env.b_map_center_latitude = (-+\d+.\d+);', content)
+                    latitude = lat_tmp[0] if len(lat_tmp) > 0 else 0
+                    lon_tmp = re.findall('booking.env.b_map_center_longitude = (-+\d+.\d+);', content)
+                    longitude = lon_tmp[0] if len(lon_tmp) > 0 else 0
                     hotel.map_info = '{0},{1}'.format(longitude, latitude)
                 print str(e)
     print 'map_info=>%s' % hotel.map_info
@@ -498,7 +500,7 @@ if __name__ == '__main__':
     # content = requests.get(
     #     'https://www.booking.com/hotel/us/racpanos-modern-stays-jersey-city.zh-cn.html').text
     # url = 'http://www.booking.com/hotel/de/convita.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=92b989ea6f07f4de2b13417b5ee27147;checkin=2017-06-03;checkout=2017-06-04;ucfs=1;aer=1;group_adults=3;group_children=0;req_adults=3;req_children=0;room1=A%2CA%2CA;highlighted_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;all_sr_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;hpos=6;dest_type=city;dest_id=-1876189;srfid=c597a73a7c35b00d3a02a668f2b753cada34ce8aX21;from=searchresults;highlight_room=;spdest=ci/-1876189;spdist=9.1;shp=1#hotelTmpl'
-    url = 'http://www.booking.com/hotel/ua/apartamienti-z-vidom-na-fortietsiu-i-starie-misto.zh-cn.html'
+    url = 'http://www.booking.com/hotel/es/tagara-apartment.zh-cn.html'
     content = requests.get(url).text
 
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
