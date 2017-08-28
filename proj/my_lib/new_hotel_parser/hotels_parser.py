@@ -25,7 +25,7 @@ def hotels_parser(content, url, other_info):
     content = content.decode('utf-8')
     root = HTML.fromstring(content)
     try:
-        name_temp = root.xpath('// div[@class="widget-query-group widget-query-destination"]/input/@value')[0]
+        name_temp = root.xpath('//div[@class="property-description"]/div[@class="vcard"]/h1/text()')[0]
     except Exception, e:
         print str(e)
 
