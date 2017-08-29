@@ -91,7 +91,8 @@ def hotel_rest_list_task(self, source, url, city_id, **kwargs):
         code, result = hotel_list_database(source, url)
         logger.info("code : %s" % str(code))
         logger.info("=======================0=========================\n")
-        logger.info(str(result))
+        if int(code) != 0:
+            logger.info(str(result))
         logger.info("\n=======================1=========================")
         assert int(code)==0 , '返回值错误'
 
