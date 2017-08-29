@@ -35,14 +35,23 @@ def get_routine_task_total(queue, limit=30000):
 
 
 def update_task(task_id, finished=False):
-    return collections.update({
-        'task_token': task_id
-    }, {
-        '$set': {
-            'running': 0,
-            'finished': 1 if finished else 0
-        }
-    })
+    if finished:
+        return collections.update({
+            'task_token': task_id
+        }, {
+            '$set': {
+                'running': 0,
+                'finished': 1
+            }
+        })
+    else:
+        return collections.update({
+            'task_token': task_id
+        }, {
+            '$set': {
+                'running': 0,
+            }
+        })
 
 
 def get_per_task(task_id):
