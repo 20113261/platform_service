@@ -140,6 +140,7 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
         logger.exception(url)
         logger.exception(city_id)
         logger.exception(traceback.format_exc(e))
+        raise Exception(e)
 
 
 if __name__ == '__main__':
