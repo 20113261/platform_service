@@ -54,8 +54,8 @@ def hotel_list_database(source, url):
     task = Task()
     task.content = URL+url
     task.source = source.lower().capitalize() + 'ListInfo'
-    spider = factory.get_spider('daodao', task.source)
-    # spider = factory.get_spider_by_old_source(task.source)
+    # spider = factory.get_spider('daodao', task.source)
+    spider = factory.get_spider_by_old_source(task.source)
     # spider = DaodaoViewSpider()
     spider.task = task
     code = spider.crawl(required=['view'])
@@ -63,7 +63,7 @@ def hotel_list_database(source, url):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
-def hotel_view_list_task(self, source, url, city_id, check_in, **kwargs):
+def hotel_view_list_task(self, source, url, city_id, **kwargs):
     self.task_source = source.title()
     self.task_type = 'DaodaoListInfo'
 
