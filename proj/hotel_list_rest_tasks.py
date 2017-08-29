@@ -60,9 +60,9 @@ db_config = dict(
     host='10.10.228.253',
     database='base_data'
 )
-conn = mysql.connector.connect(pool_name="hotel-list-value-pool",
-                               pool_size=10,
-                               **db_config)
+# conn = mysql.connector.connect(pool_name="hotel-list-value-pool",
+#                                pool_size=10,
+#                                **db_config)
 URL = 'https://www.tripadvisor.com.hk'
 
 engine_mb4 = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8mb4',
