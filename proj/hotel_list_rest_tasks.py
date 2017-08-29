@@ -93,6 +93,7 @@ def hotel_rest_list_task(self, source, url, city_id, **kwargs):
         logger.info("=======================0=========================\n")
         logger.info(str(result))
         logger.info("\n=======================1=========================")
+        assert int(code)==0 , '返回值错误'
 
         self.error_code = str(code)
 
