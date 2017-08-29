@@ -62,7 +62,7 @@ def hotel_list_database(source, url):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
-def hotel_routine_list_task(self, source, url, city_id, check_in, **kwargs):
+def hotel_view_list_task(self, source, url, city_id, check_in, **kwargs):
     self.task_source = source.title()
     self.task_type = 'DaodaoListInfo'
 
@@ -85,4 +85,4 @@ def hotel_routine_list_task(self, source, url, city_id, check_in, **kwargs):
 
 
 if __name__ == '__main__':
-    print hotel_routine_list_task('daodao', '/Tourism-g4665321-Mendocino_County_California-Vacations.html', '29106')
+    print hotel_view_list_task('daodao', '/Tourism-g4665321-Mendocino_County_California-Vacations.html', '29106')
