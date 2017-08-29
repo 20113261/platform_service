@@ -54,7 +54,8 @@ def hotel_list_database(source, url):
     task = Task()
     task.content = URL+url
     task.source = source.lower().capitalize() + 'ListInfo'
-    spider = factory.get_spider_by_old_source(task.source)
+    spider = factory.get_spider('daodao', task.source)
+    # spider = factory.get_spider_by_old_source(task.source)
     # spider = DaodaoViewSpider()
     spider.task = task
     code = spider.crawl(required=['restaurant'])
