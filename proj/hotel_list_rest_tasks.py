@@ -80,8 +80,8 @@ def hotel_rest_list_task(self, source, url, city_id, **kwargs):
     cursor = conn.cursor()
     sql = "REPLACE INTO hotel_list_rest (source, source_id, city_id, url, name, utime) VALUES (%s,%s,%s,%s,%s,%s)"
     cursor.executemany(sql, data_res)
-    cursor.close()
     conn.commit()
+    cursor.close()
     return True
 
 
