@@ -110,14 +110,15 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
                 # data_res.append((source, int(view['source_id']), int(city_id), view['view_url'], view['view_name'].strip('\n').strip(), datetime.datetime.now()))
 
                 try:
-                    logger.info("======================= sql 开始=========================")
+                    # logger.info("======================= sql 开始=========================")
                     ss = DBSession_mb4()
                     ss.merge(View)
                     ss.commit()
                 except Exception as e:
+                    logger.info("======================= sql 异常=========================")
                     logger.exception(traceback.format_exc(e))
-                finally:
-                    logger.info("======================= sql 结束=========================")
+                # finally:
+                #     logger.info("======================= sql 结束=========================")
 
         logger.info("======================= for 结束=========================")
 
@@ -134,6 +135,10 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
         # logger.info("======================= sql conn close 1=========================")
         return True
     except Exception as e:
+        logger.exception('==================  异常  ==================')
+        logger.exception(source)
+        logger.exception(url)
+        logger.exception(city_id)
         logger.exception(traceback.format_exc(e))
 
 
