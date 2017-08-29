@@ -51,6 +51,8 @@ app.conf.update(
               routing_key='poi_task_1'),
         Queue('poi_task_2', exchange=Exchange('poi_task_2', type='direct'),
               routing_key='poi_task_2'),
+        Queue('poi_list', exchange=Exchange('poi_list', type='direct'),
+              routing_key='poi_list'),
     ),
 
 )
