@@ -96,6 +96,7 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
             logger.info("=======================0=========================\n")
             logger.info(str(code)+'   |   '+str(result))
             logger.info("\n=======================1=========================")
+        raise Exception
 
         # data_res = []
         logger.info("======================= for 开始=========================")

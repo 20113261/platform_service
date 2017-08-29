@@ -96,6 +96,7 @@ def hotel_rest_list_task(self, source, url, city_id, **kwargs):
                 logger.info("=======================0=========================\n")
                 logger.info(str(code) + '   |   ' + str(result))
                 logger.info("\n=======================1=========================")
+                raise Exception
 
         self.error_code = str(code)
 
