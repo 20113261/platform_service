@@ -31,6 +31,7 @@ from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 
 class HotelRestList(Base):
+    __tablename__ = 'hotel_list_rest'
     source = Column(String(64), primary_key=True)
     source_id = Column(Integer, primary_key=True)
     city_id = Column(Integer, primary_key=True)
