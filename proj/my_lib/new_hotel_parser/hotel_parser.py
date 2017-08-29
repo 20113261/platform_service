@@ -9,6 +9,9 @@ import hoteltravel_parser
 import hrs_parser
 import tripadvisor_parser
 from proj.my_lib.Common.KeyMatch import key_is_legal
+from proj.my_lib.logger import get_logger
+
+logger = get_logger("HotelDetail")
 
 
 class TypeCheckError(TypeError):
@@ -42,7 +45,7 @@ def parse_hotel(content, url, other_info, source, part):
         raise TypeCheckError('Error map_info NULL        with parser %ss    url %s' % (parser.func_name, url))
 
     if key_is_legal(result.hotel_name) or result.hotel_name_en:
-        pass
+        logger.info(result.hotel_name + '  ----------  ' +result.hotel_name_en)
     else:
         raise TypeCheckError('Error hotel_name and hotel_name_en Both NULL        with parser %s    url %s' % (parser.func_name, url))
 
