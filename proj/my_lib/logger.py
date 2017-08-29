@@ -14,9 +14,11 @@ log_path = "/data/log/service_platform"
 
 class NamedRotatingFileHandler(RotatingFileHandler):
     def __init__(self, filename):
-        super(NamedRotatingFileHandler, self).__init__((os.path.join(log_path, "{0}.log".format(filename))))
-        self.maxBytes = 100 * 1024 * 1024,
-        self.backupCount = 3
+        super(NamedRotatingFileHandler, self).__init__(
+            filename=os.path.join(log_path, "{0}.log".format(filename)),
+            maxBytes=100 * 1024 * 1024,
+            backupCount=3
+        )
 
 
 def get_logger(logger_name):
