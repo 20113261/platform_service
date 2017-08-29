@@ -22,6 +22,7 @@ import datetime
 import mioji.common.pool
 from proj.my_lib.logger import get_logger
 logger = get_logger("restDaodao")
+import traceback
 
 mioji.common.spider.NEED_FLIP_LIMIT = False
 mioji.common.pool.pool.set_size(2024)
@@ -64,25 +65,30 @@ def hotel_list_database(source, url):
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
 def hotel_rest_list_task(self, source, url, city_id, **kwargs):
-    self.task_source = source.title()
-    self.task_type = 'DaodaoListInfo'
+    try:
+        self.task_source = source.title()
+        self.task_type = 'DaodaoListInfo'
 
-    code, result = hotel_list_database(source, url)
+        code, result = hotel_list_database(source, url)
 
-    self.error_code = str(code)
+        self.error_code = str(code)
 
-    data_res = []
+        data_res = []
 
-    for one in result:
-        for key, view in one.items():
-            data_res.append((source, int(view['source_id']), city_id, view['view_url'], view['view_name'].strip('\n').strip(), datetime.datetime.now()))
+        for one in result:
+            for key, view in one.items():
+                data_res.append((source, int(view['source_id']), city_id, view['view_url'], view['view_name'].strip('\n').strip(), datetime.datetime.now()))
 
-    cursor = conn.cursor()
-    sql = "REPLACE INTO hotel_list_rest (source, source_id, city_id, url, name, utime) VALUES (%s,%s,%s,%s,%s,%s)"
-    cursor.executemany(sql, data_res)
-    conn.commit()
-    cursor.close()
-    return True
+        cursor = conn.cursor()
+        sql = "REPLACE INTO hotel_list_rest (source, source_id, city_id, url, name, utime) VALUES (%s,%s,%s,%s,%s,%s)"
+        cursor.executemany(sql, data_res)
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+    except Exception as e:
+        logger.exception(traceback.format_exc(e))
 
 
 if __name__ == '__main__':

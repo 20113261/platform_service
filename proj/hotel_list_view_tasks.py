@@ -84,6 +84,7 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
         cursor.executemany(sql, data_res)
         conn.commit()
         cursor.close()
+        conn.close()
         return True
     except Exception as e:
         logger.exception(traceback.format_exc(e))
