@@ -91,12 +91,11 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
         logger.info("任务进行中。。。")
         code, result = hotel_list_database(source, url)
         logger.info("code : %s" % str(code))
-        logger.info("=======================0=========================\n")
+
         if int(code) != 0:
-            logger.info(str(result))
-        logger.info("\n=======================1=========================")
-        assert int(code) == 0, '返回值错误'
-        self.error_code = str(code)
+            logger.info("=======================0=========================\n")
+            logger.info(str(code)+'   |   '+str(result))
+            logger.info("\n=======================1=========================")
 
         # data_res = []
         logger.info("======================= for 开始=========================")
@@ -136,11 +135,10 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
         # logger.info("======================= sql conn close 1=========================")
         return True
     except Exception as e:
-        logger.exception('==================  异常  ==================')
-        logger.exception(source)
-        logger.exception(url)
-        logger.exception(city_id)
+        logger.exception('==================  异常  0==================')
+        logger.exception(source+' | '+str(city_id)+' | '+url)
         logger.exception(traceback.format_exc(e))
+        logger.exception('==================  异常  1==================')
         raise Exception(e)
 
 
