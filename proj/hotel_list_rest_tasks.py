@@ -68,24 +68,34 @@ def hotel_rest_list_task(self, source, url, city_id, **kwargs):
     try:
         self.task_source = source.title()
         self.task_type = 'DaodaoListInfo'
-
+        logger.info("任务进行中。。。")
         code, result = hotel_list_database(source, url)
+        logger.info("code : %s" % str(code))
+        logger.info("=======================0=========================\n")
+        logger.info(str(result))
+        logger.info("\n=======================1=========================")
 
         self.error_code = str(code)
 
         data_res = []
 
+        logger.info("======================= for 开始=========================")
         for one in result:
             for key, view in one.items():
                 data_res.append((source, int(view['source_id']), city_id, view['view_url'], view['view_name'].strip('\n').strip(), datetime.datetime.now()))
+        logger.info("======================= for 结束=========================")
 
+        logger.info("======================= sql 开始=========================")
         cursor = conn.cursor()
         sql = "REPLACE INTO hotel_list_rest (source, source_id, city_id, url, name, utime) VALUES (%s,%s,%s,%s,%s,%s)"
         cursor.executemany(sql, data_res)
-
+        logger.info("======================= sql executmany 0=========================")
         conn.commit()
+        logger.info("======================= sql commit 1=========================")
         cursor.close()
+        logger.info("======================= sql cursor close 1=========================")
         conn.close()
+        logger.info("======================= sql conn close 1=========================")
         return True
     except Exception as e:
         logger.exception(traceback.format_exc(e))
