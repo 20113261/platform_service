@@ -197,7 +197,6 @@ def get_lost_rest(self, target_url, city_id, **kwargs):
             raise Exception, 'parse %s Error' % target_url
 
         rest_insert_db(result, city_id)
-        update_task(task_id=kwargs['mongo_task_id'])
         return result
 
 
