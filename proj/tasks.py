@@ -305,7 +305,9 @@ def get_images(self, source, target_url, **kwargs):
             # print "Success with " + PROXY + ' CODE 0 used time ' + str(time.time() - x)
             # if 'task_id' in kwargs.keys():
             #     update_task(kwargs['mongo_task_id'])
-            save_image(source, file_name, page.content)
+            code = save_image(source, file_name, page.content)
+            if code != 0:
+                raise Exception('保存文件失败')
             # update_proxy('Platform', PROXY, x, '0')
         return flag, h, w, file_name
     # except Exception as exc:
