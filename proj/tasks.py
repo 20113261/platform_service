@@ -300,7 +300,7 @@ def get_images(self, source, target_url, **kwargs):
         flag, h, w = is_complete_scale_ok(f)
         file_name = hashlib.md5(target_url).hexdigest()
         if flag in [1, 2]:
-            raise Exception, "Image Error with Proxy " + session.p_r_o_x_y + " used time " + str(time.time() - x)
+            raise Exception, "Image Error with Proxy " + session.p_r_o_x_y
         else:
             # print "Success with " + PROXY + ' CODE 0 used time ' + str(time.time() - x)
             # if 'task_id' in kwargs.keys():
