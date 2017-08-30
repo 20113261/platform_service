@@ -28,7 +28,7 @@ from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 
 class HotelViewList(Base):
-    __tablename__ = 'hotel_list_view'
+    __tablename__ = 'poi_attr_new'
     source = Column(String(64), primary_key=True)
     source_id = Column(Integer, primary_key=True)
     city_id = Column(Integer, primary_key=True)
