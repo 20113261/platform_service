@@ -217,7 +217,7 @@ def get_lost_attr(self, target_url, city_id, **kwargs):
                                            source_id='NULL',
                                            city_id='NULL', url=target_url)
             except Exception as exc:
-                self.retry(exc=traceback.format_exc(exc))
+                print traceback.format_exc(exc)
 
         return result
 
