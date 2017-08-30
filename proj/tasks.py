@@ -284,36 +284,35 @@ def get_lost_rest_no_proxy(self, target_url):
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='5/s')
 def get_images(self, source, target_url, **kwargs):
-    PROXY = get_proxy(source="Platform")
-    x = time.time()
-    proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
-    headers = {
-        'User-agent': GetUserAgent()
-    }
-    try:
-        page = requests.get(target_url, headers=headers, proxies=proxies, timeout=(120, None))
+    # PROXY = get_proxy(source="Platform")
+    # x = time.time()
+    # proxies = {
+    #     'http': 'socks5://' + PROXY,
+    #     'https': 'socks5://' + PROXY
+    # }
+    # headers = {
+    #     'User-agent': GetUserAgent()
+    # }
+    # try:
+    with MySession() as session:
+        page = session.get(target_url, timeout=(120, None))
         f = StringIO(page.content)
         flag, h, w = is_complete_scale_ok(f)
         file_name = hashlib.md5(target_url).hexdigest()
         if flag in [1, 2]:
-            update_proxy('Platform', PROXY, x, '22')
-            print "Image Error with Proxy " + PROXY + " used time " + str(time.time() - x)
-            self.retry(countdown=2)
+            raise Exception, "Image Error with Proxy " + session.p_r_o_x_y + " used time " + str(time.time() - x)
         else:
-            print "Success with " + PROXY + ' CODE 0 used time ' + str(time.time() - x)
-            if 'task_id' in kwargs.keys():
-                update_task(kwargs['mongo_task_id'])
+            # print "Success with " + PROXY + ' CODE 0 used time ' + str(time.time() - x)
+            # if 'task_id' in kwargs.keys():
+            #     update_task(kwargs['mongo_task_id'])
             save_image(source, file_name, page.content)
-            update_proxy('Platform', PROXY, x, '0')
+            # update_proxy('Platform', PROXY, x, '0')
         return flag, h, w, file_name
-    except Exception as exc:
-        logger.exception(exc.message)
-        update_proxy('Platform', PROXY, x, '22')
-        print "Image Error with Proxy " + PROXY + ' used time ' + str(time.time() - x)
-        self.retry(exc=traceback.format_exc(exc), countdown=2)
+    # except Exception as exc:
+    #     logger.exception(exc.message)
+    #     update_proxy('Platform', PROXY, x, '22')
+    #     print "Image Error with Proxy " + PROXY + ' used time ' + str(time.time() - x)
+    #     self.retry(exc=traceback.format_exc(exc), countdown=2)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
