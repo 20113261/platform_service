@@ -294,7 +294,7 @@ def get_images(self, source, target_url, **kwargs):
     #     'User-agent': GetUserAgent()
     # }
     # try:
-    file_path = '/search/nfs/image/meizhilv'
+    file_path = '/data/nfs/image/meizhilv'
     with MySession() as session:
         page = session.get(target_url, timeout=(120, None))
         f = StringIO(page.content)
