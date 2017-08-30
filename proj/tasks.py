@@ -240,7 +240,7 @@ def get_lost_shop(self, target_url, city_id, **kwargs):
                                            source_id='NULL',
                                            city_id='NULL', url=target_url)
             except Exception as e:
-                self.retry(exc=traceback.format_exc(e))
+                print traceback.format_exc(e)
         return result
 
 
