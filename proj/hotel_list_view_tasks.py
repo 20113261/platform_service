@@ -9,7 +9,7 @@ from __future__ import absolute_import
 # import os
 # os.environ["CONFIG_FILE"] = '/root/data/lib/slave_develop_new/workspace/spider/SpiderClient/conf/conf_lwn.ini'
 # from celery.utils.log import get_task_logger
-import mysql.connector
+# import mysql.connector
 from mioji.spider_factory import factory
 from mioji.common.task_info import Task
 from proj.celery import app
@@ -62,9 +62,7 @@ db_config = dict(
     host='10.10.228.253',
     database='base_data'
 )
-# conn = mysql.connector.connect(pool_name="hotel-list-value-pool",
-#                                pool_size=10,
-#                                **db_config)
+
 URL = 'https://www.tripadvisor.com.hk'
 
 engine_mb4 = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8mb4',
@@ -98,8 +96,6 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
             logger.info("\n=======================1=========================")
             raise Exception
 
-        # data_res = []
-        logger.info("======================= for 开始=========================")
         for one in result:
             for key, view in one.items():
                 View = HotelViewList()
@@ -108,32 +104,16 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
                 View.city_id = int(city_id)
                 View.url = view['view_url']
                 View.name = view['view_name'].strip('\n').strip()
-                # data_res.append((source, int(view['source_id']), int(city_id), view['view_url'], view['view_name'].strip('\n').strip(), datetime.datetime.now()))
 
                 try:
-                    # logger.info("======================= sql 开始=========================")
                     ss = DBSession_mb4()
                     ss.merge(View)
                     ss.commit()
                 except Exception as e:
                     logger.info("======================= sql 异常=========================")
                     logger.exception(traceback.format_exc(e))
-                # finally:
-                #     logger.info("======================= sql 结束=========================")
-
-        logger.info("======================= for 结束=========================")
 
 
-        # cursor = conn.cursor()
-        # sql = "REPLACE INTO hotel_list_view (source, source_id, city_id, url, name, utime) VALUES (%s,%s,%s,%s,%s,%s)"
-        # cursor.executemany(sql, data_res)
-        # logger.info("======================= sql executmany 0=========================")
-        # conn.commit()
-        # logger.info("======================= sql commit 1=========================")
-        # cursor.close()
-        # logger.info("======================= sql cursor close 1=========================")
-        # conn.close()
-        # logger.info("======================= sql conn close 1=========================")
         return True
     except Exception as e:
         logger.exception('==================  异常  0==================')
