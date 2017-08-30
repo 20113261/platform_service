@@ -9,7 +9,7 @@ from __future__ import absolute_import
 # import os
 # os.environ["CONFIG_FILE"] = '/root/data/lib/slave_develop_new/workspace/spider/SpiderClient/conf/conf_lwn.ini'
 # from celery.utils.log import get_task_logger
-import mysql.connector
+# import mysql.connector
 from mioji.spider_factory import factory
 from mioji.common.task_info import Task
 from proj.celery import app
@@ -20,8 +20,6 @@ import mioji.common.spider
 import mioji.common.logger
 import datetime
 import mioji.common.pool
-from proj.my_lib.logger import get_logger
-logger = get_logger("restDaodao")
 import traceback
 
 from sqlalchemy import Column, String, Text, create_engine, TIMESTAMP, Float, Integer, DateTime
@@ -38,6 +36,10 @@ class HotelRestList(Base):
     url = Column(Text, nullable=False)
     name = Column(String(512), nullable=False)
     utime = Column(DateTime, default=datetime.datetime.now)
+
+
+from proj.my_lib.logger import get_logger
+logger = get_logger("restDaodao")
 
 mioji.common.spider.NEED_FLIP_LIMIT = False
 mioji.common.pool.pool.set_size(2024)
@@ -90,11 +92,10 @@ def hotel_rest_list_task(self, source, url, city_id, **kwargs):
         logger.info("code : %s" % str(code))
 
         if int(code) != 0:
-            if int(code) != 0:
-                logger.info("=======================0=========================\n")
-                logger.info(str(code) + '   |   ' + str(result))
-                logger.info("\n=======================1=========================")
-                raise Exception
+            logger.info("=======================0=========================\n")
+            logger.info(str(code)+'   |   '+str(result))
+            logger.info("\n=======================1=========================")
+            raise Exception
 
         self.error_code = str(code)
 
