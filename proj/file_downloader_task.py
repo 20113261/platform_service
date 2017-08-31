@@ -58,7 +58,7 @@ def get_file_name(url, c_type):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='3/s')
-def file_downloader(self, url, file_type, file_path, need_filter="YES", file_split="YES", **kwargs):
+def file_downloader(self, url, file_type, file_path, need_filter=False, file_split=False, **kwargs):
     """
     :param self:
     :param url: 需要下载文件的 url
@@ -82,7 +82,7 @@ def file_downloader(self, url, file_type, file_path, need_filter="YES", file_spl
         total_length, content_type = get_content_length_and_type(url, session)
 
         # 小于 20KB 不下载
-        if total_length < 20480 and need_filter == "YES":
+        if total_length < 20480 and need_filter:
             # alreadyDownload.add_url(url, '|_||_|'.join(['filter', get_local_ip(), str(total_length)]))
             save_log(
                 '|_||_|'.join(['filter', get_local_ip(), str(total_length)]),
@@ -107,7 +107,7 @@ def file_downloader(self, url, file_type, file_path, need_filter="YES", file_spl
         if file_req.status_code != 200:
             session.file_req = file_req
 
-        if file_split == "YES":
+        if file_split:
             # fixme 当一个任务被多次分发后，会出现同步问题，A 在写数据，B 会覆盖。使用全量下载更新不会出现该问题
             with open(file_absolute_dir, 'wb') as f:
                 for chunk in file_req.iter_content(chunk_size=1024):
