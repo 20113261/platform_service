@@ -86,7 +86,7 @@ def daodao_img_filter_task(self, file_name, src_path, dst_path, bucket_name, img
 
     url_md5 = hashlib.md5(img_url).hexdigest()
     __used = u'1' if flag == 0 else u'0'
-    data = (file_name.replace(u'.jpg', u''), source, source_id, img_url, size, bucket_name, url_md5, unicode(f_md5), __used, part)
+    data = (file_name, source, source_id, img_url, size, bucket_name, url_md5, f_md5, __used, part)
     try:
         # 暂时没有解决这三个函数的事务关系，所以将重要性最低的函数前置执行
         shutil.copy(src_file, os.path.join(dst_path, file_name))
