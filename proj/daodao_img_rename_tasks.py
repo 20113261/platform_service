@@ -33,6 +33,16 @@ def insert_db(args, table_name):
     conn.close()
     return res
 
+def insert_db_new(args, table_name):
+    conn = pymysql.connect(host='10.10.189.213', user='yanlihua', passwd='yanlihua', charset='utf8', db='update_img')
+    with conn as cursor:
+        res = cursor.execute(
+            'insert into {0} (file_name, source, sid, url, pic_size, bucket_name, url_md5, pic_md5, `use`, part) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'.format(
+                table_name),
+            args)
+    conn.close()
+    return res
+
 
 @app.task(bind=True, base=BaseTask, max_retries=1)
 def daodao_img_rename_task(self, file_name, src_path, dst_path, bucket_name, img_url, mid, table_name, **kwargs):
@@ -61,3 +71,26 @@ def daodao_img_rename_task(self, file_name, src_path, dst_path, bucket_name, img
             raise Exception('Error Flag')
     except Exception as exc:
         self.retry(exc=traceback.format_exc(exc))
+
+@app.task(bind=True, base=BaseTask, max_retries=8)
+def daodao_img_filter_task(self, file_name, src_path, dst_path, bucket_name, img_url, source, source_id, part, **kwargs):
+    self.task_source = 'TripAdvisor_new'
+    self.task_type = 'ImgRename_new'
+
+    src_file = os.path.join(src_path, file_name)
+    flag, h, w = is_complete_scale_ok(src_file)
+    f_md5 = file_md5(src_file)
+    size = unicode((h, w))
+    if not (flag == 0 or flag == 4):
+        raise Exception('Error Flag')
+
+    url_md5 = hashlib.md5(img_url).hexdigest()
+    __used = u'1' if flag == 0 else u'0'
+    data = (file_name.replace(u'.jpg', u''), source, source_id, img_url, size, bucket_name, url_md5, unicode(f_md5), __used, part)
+    try:
+        # 暂时没有解决这三个函数的事务关系，所以将重要性最低的函数前置执行
+        shutil.copy(src_file, os.path.join(dst_path, file_name))
+        print insert_db_new(data, 'poi_bucket_relation')
+    except Exception as e:
+        raise e
+
