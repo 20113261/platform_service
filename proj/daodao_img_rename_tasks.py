@@ -72,7 +72,7 @@ def daodao_img_rename_task(self, file_name, src_path, dst_path, bucket_name, img
     except Exception as exc:
         self.retry(exc=traceback.format_exc(exc))
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='5/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='30/s')
 def daodao_img_filter_task(self, file_name, src_path, dst_path, bucket_name, img_url, source, source_id, part, **kwargs):
     self.task_source = 'TripAdvisor_new'
     self.task_type = 'ImgRename_new'
