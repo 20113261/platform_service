@@ -92,5 +92,5 @@ def daodao_img_filter_task(self, file_name, src_path, dst_path, bucket_name, img
         shutil.copy(src_file, os.path.join(dst_path, file_name))
         print insert_db_new(data, 'poi_bucket_relation')
     except Exception as e:
-        raise traceback.format_exc(e)
+        raise Exception(traceback.format_exc(e))
 
