@@ -526,48 +526,48 @@ from pymysql.err import IntegrityError
 redis_dict = redis.Redis(host='10.10.180.145', db=5)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='14/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='8/s')
 def get_hotel_images_info(self, path, part, desc_path, **kwargs):
+    # try:
+    print 'Get File',
+    if os.path.getsize(path) > 10485760:
+        raise Exception('Too Large')
+    file_md5 = get_file_md5(path)
+    flag, h, w = is_complete_scale_ok(path)
+    # (`source`, `source_id`, `pic_url`, `pic_md5`, `part`, `size`, `flag`)
+    pic_md5 = path.split('/')[-1]
+    res_flag = 1 if flag == 0 else 0
+    raw = redis_dict.get(pic_md5.replace('.jpg', ''))
+    if not raw:
+        raise Exception("Error Raw")
+
+    source, sid, pic_url = raw.split('###')
+    size = str((h, w))
+    if size == '(-1, -1)':
+        raise Exception('Error Size')
+
+    data = (
+        source,  # source
+        sid,  # source_id
+        pic_url,  # pic_url
+        pic_md5,  # pic_md5
+        part,  # part
+        size,  # size
+        res_flag,  # flag
+        file_md5  # file_md5
+    )
+    print 'Data', data
     try:
-        print 'Get File',
-        if os.path.getsize(path) > 10485760:
-            raise Exception('Too Large')
-        file_md5 = get_file_md5(path)
-        flag, h, w = is_complete_scale_ok(path)
-        # (`source`, `source_id`, `pic_url`, `pic_md5`, `part`, `size`, `flag`)
-        pic_md5 = path.split('/')[-1]
-        res_flag = 1 if flag == 0 else 0
-        raw = redis_dict.get(pic_md5.replace('.jpg', ''))
-        if not raw:
-            print "Error Raw"
-            self.retry()
-        source, sid, pic_url = raw.split('###')
-        size = str((h, w))
-        if size == '(-1, -1)':
-            print "Error Size"
-            self.retry()
-        data = (
-            source,  # source
-            sid,  # source_id
-            pic_url,  # pic_url
-            pic_md5,  # pic_md5
-            part,  # part
-            size,  # size
-            res_flag,  # flag
-            file_md5  # file_md5
-        )
-        print 'Data', data
-        try:
-            print hotel_images_info_insert_db(data)
-            shutil.copy(path, os.path.join(desc_path, pic_md5))
-        except IntegrityError as err:
-            pass
-        print update_task(kwargs['mongo_task_id'])
-        print 'Succeed'
-        return flag, h, w
-    except Exception as exc:
-        print "Error Exception"
-        self.retry(exc=traceback.format_exc(exc), countdown=10)
+        print hotel_images_info_insert_db(data)
+        shutil.copy(path, os.path.join(desc_path, pic_md5))
+    except IntegrityError as err:
+        raise Exception(err)
+    # print update_task(kwargs['mongo_task_id'])
+    print 'Succeed'
+    return flag, h, w
+    # except Exception as exc:
+    #     print "Error Exception"
+    #     self.retry(exc=traceback.format_exc(exc), countdown=10)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='50/s')
