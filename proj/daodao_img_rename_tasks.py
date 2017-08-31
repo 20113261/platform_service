@@ -34,7 +34,7 @@ def insert_db(args, table_name):
     return res
 
 def insert_db_new(args, table_name):
-    conn = pymysql.connect(host='10.10.189.213', user='yanlihua', passwd='yanlihua', charset='utf8', db='update_img')
+    conn = pymysql.connect(host='10.10.189.213', user='hourong', passwd='hourong', charset='utf8', db='update_img')
     with conn as cursor:
         res = cursor.execute(
             'insert into {0} (file_name, source, sid, url, pic_size, bucket_name, url_md5, pic_md5, `use`, part) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'.format(
