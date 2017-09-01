@@ -31,7 +31,7 @@ def has_chinese(contents, encoding='utf-8'):
     else:
         return False
 
-@try3times()
+@try3times(try_again_times=10)
 def image_paser(detail_id):
     page = ss.get(img_get_url + detail_id)
     root = PyQuery(page.text)
