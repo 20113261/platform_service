@@ -336,6 +336,9 @@ def parse(content, url):
     except:
         image_urls = ''
 
+    if image_urls=='':
+        raise Exception('NO IMAGES')
+
     # 第一条评论的review id 用于没有介绍时使用
     try:
         raw_onclick = root.find_class('reviewSelector')[1].xpath('./@id')[0]
