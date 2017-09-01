@@ -9,6 +9,7 @@ from pyquery import PyQuery
 from proj.my_lib.Common.Browser import MySession
 from common.common import get_proxy
 from util.UserAgent import GetUserAgent
+from proj.my_lib.Common.Utils import try3times
 
 from proj.my_lib.decode_raw_site import decode_raw_site
 
@@ -30,7 +31,7 @@ def has_chinese(contents, encoding='utf-8'):
     else:
         return False
 
-
+@try3times()
 def image_paser(detail_id):
     page = ss.get(img_get_url + detail_id)
     root = PyQuery(page.text)
@@ -390,7 +391,8 @@ def insert_db(result, city_id):
 
 if __name__ == '__main__':
     # url = 'https://www.tripadvisor.cn/Attraction_Review-g143034-d108754-Reviews-Nahuku_Thurston_Lava_Tube-Hawaii_Volcanoes_National_Park_Island_of_Hawaii_Hawaii.html'
-    url = 'https://www.tripadvisor.cn/Attraction_Review-g298490-d8514477-Reviews-Triumphal_Arch-Blagoveshchensk_Amur_Oblast_Far_Eastern_District.html'
+    # url = 'https://www.tripadvisor.cn/Attraction_Review-g298490-d8514477-Reviews-Triumphal_Arch-Blagoveshchensk_Amur_Oblast_Far_Eastern_District.html'
+    url = 'https://www.tripadvisor.com.hk/Attraction_Review-g60742-d6863129-Reviews-Oddfellows_Antique_Warehouse-Asheville_North_Carolina.html'
     content = ss.get(url).content
     a = '阿什顿发斯蒂芬'
     result = parse(content, url)
