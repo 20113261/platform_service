@@ -213,7 +213,7 @@ DBSession_mb4 = sessionmaker(bind=engine_mb4)
 logger = get_logger("ImgList")
 
 def insert(table, **kwargs):
-    logger.info(str(kwargs))
+    logger.info('------------4--------      '+str(kwargs))
     content = {'attr': Attr, 'shop': Shop, 'rest': Rest,}[table](**kwargs)
     ss = DBSession()
     ss.merge(content)

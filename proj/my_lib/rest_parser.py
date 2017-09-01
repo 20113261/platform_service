@@ -9,6 +9,9 @@ from pyquery import PyQuery
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.Common.Utils import try3times
 from decode_raw_site import decode_raw_site
+from proj.my_lib.logger import get_logger
+
+logger = get_logger('ImgList')
 
 img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
 introduction_url = 'https://www.tripadvisor.cn/MetaPlacementAjax?detail=%s&placementName=hr_btf_north_star_about&servletClass=com.TripResearch.servlet.accommodation.AccommodationDetail&servletName=Hotel_Review&more_content_request=true'
@@ -75,6 +78,7 @@ def image_paser(detail_id):
     img_list = '|'.join(images_list)
     assert img_list != '', 'NO IMAGES'
 
+    logger.info('----0---------      '+img_list)
     return img_list
 
 @try3times(try_again_times=10)
@@ -345,6 +349,7 @@ def parse(content, url, city_id):
     if image_urls=='':
         raise Exception('NO IMAGES')
 
+    logger.info('----2---------      ' + image_urls)
     # 简介抓取
     desc = ''
     try:

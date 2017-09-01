@@ -42,7 +42,9 @@ from .my_lib.Common.Browser import MySession
 platforms.C_FORCE_ROOT = True
 
 _rate_limit_dict = get_rate_limit()
+from proj.my_lib.logger import get_logger
 
+logger = get_logger('ImgList')
 
 @app.task
 def add_task():
@@ -196,6 +198,7 @@ def get_lost_rest(self, target_url, city_id, **kwargs):
         if result == 'Error':
             raise Exception, 'parse %s Error' % target_url
 
+        logger.info('-------3-----------     '+str(result))
         rest_insert_db(result, city_id)
         return result
 
