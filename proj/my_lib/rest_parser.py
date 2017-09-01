@@ -76,7 +76,7 @@ def image_paser(detail_id):
     for div in root('.photos.inHeroList div').items():
         images_list.append(div.attr['data-bigurl'])
     img_list = '|'.join(images_list)
-    assert img_list != '', 'NO IMAGES'
+    assert img_list != '' or img_list != None, 'NO IMAGES'
 
     logger.info('----0---------      '+img_list)
     return img_list
@@ -346,7 +346,7 @@ def parse(content, url, city_id):
 
     print 'Image_urls: ', image_urls
 
-    if image_urls=='':
+    if not image_urls:
         raise Exception('NO IMAGES')
 
     logger.info('----2---------      ' + image_urls)
@@ -411,6 +411,8 @@ def parse(content, url, city_id):
     except Exception, e:
         print(e)
 
+    if not image_urls:
+        raise Exception('NO IMAGES')
     result = {
         'source': source,
         'name': name,  #
@@ -451,6 +453,8 @@ def parse(content, url, city_id):
 
 def insert_db(result, city_id):
     result['city_id'] = city_id
+    if not result['imgurl']:
+        raise Exception('zhao bu dao tupian')
     db_localhost.insert('rest', **result)
 
 

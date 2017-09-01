@@ -198,6 +198,8 @@ def get_lost_rest(self, target_url, city_id, **kwargs):
         if result == 'Error':
             raise Exception, 'parse %s Error' % target_url
 
+        if not result['imgurl']:
+            raise Exception('zhao bu dao tupian')
         logger.info('-------3-----------     '+str(result))
         rest_insert_db(result, city_id)
         return result
