@@ -209,15 +209,12 @@ def get_lost_attr(self, target_url, city_id, **kwargs):
         if result == 'Error':
             raise Exception, 'parse %s Error' % target_url
         else:
-            try:
-                print attr_insert_db(result, city_id)
-                save_task_and_page_content(task_name='daodao_poi_attr', content=page.content,
-                                           task_id=kwargs['mongo_task_id'],
-                                           source='daodao',
-                                           source_id='NULL',
-                                           city_id='NULL', url=target_url)
-            except Exception as exc:
-                print traceback.format_exc(exc)
+            print attr_insert_db(result, city_id)
+            save_task_and_page_content(task_name='daodao_poi_attr', content=page.content,
+                                       task_id=kwargs['mongo_task_id'],
+                                       source='daodao',
+                                       source_id='NULL',
+                                       city_id='NULL', url=target_url)
 
         return result
 
