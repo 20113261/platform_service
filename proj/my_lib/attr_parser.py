@@ -39,6 +39,7 @@ def image_paser(detail_id):
     for div in root('.photos.inHeroList div').items():
         images_list.append(div.attr['data-bigurl'])
     img_list = '|'.join(images_list)
+    assert img_list!='', 'NO IMAGES'
 
     return img_list
 
