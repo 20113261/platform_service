@@ -1,9 +1,12 @@
 # coding=utf-8
 import datetime
 
+import sys
 from sqlalchemy import Column, String, Text, create_engine, TIMESTAMP, Float, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
+from proj.my_lib.logger import get_logger
 
 Base = declarative_base()
 
@@ -207,8 +210,10 @@ engine_mb4 = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:
 DBSession = sessionmaker(bind=engine)
 DBSession_mb4 = sessionmaker(bind=engine_mb4)
 
+logger = get_logger("ImgList")
 
 def insert(table, **kwargs):
+    logger.info(str(kwargs))
     content = {'attr': Attr, 'shop': Shop, 'rest': Rest,}[table](**kwargs)
     ss = DBSession()
     ss.merge(content)
