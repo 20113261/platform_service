@@ -65,7 +65,7 @@ def has_chinese(contents, encoding='utf-8'):
     else:
         return False
 
-@try3times()
+@try3times(try_again_times=20)
 def image_paser(detail_id):
     page = ss.get(img_get_url + detail_id)
     root = PyQuery(page.text)
@@ -76,7 +76,7 @@ def image_paser(detail_id):
 
     return img_list
 
-@try3times()
+@try3times(try_again_times=20)
 def intro_parse(detail_id):
     page = ss.get(introduction_url % detail_id)
     root = PyQuery(page.text)
