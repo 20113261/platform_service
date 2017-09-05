@@ -76,7 +76,7 @@ class BaseTask(Task):
             # 成功后记录成功内容
             celery_task_id = task_id
             task_id = kwargs.get('mongo_task_id', '')
-            mongo_update_task(kwargs['mongo_task_id'], 0)
+            # mongo_update_task(kwargs['mongo_task_id'], 0)
             kwargs.pop('mongo_task_id', None)
             kwargs['local_ip'] = get_local_ip()
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())

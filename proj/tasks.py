@@ -345,10 +345,10 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
                 f.write(page.content)
         except exc.SQLAlchemyError as err:
             self.error_code = 34
-            raise Exception(traceback.format_exc(err))
+            raise Exception(err)
         except IOError as err:
             self.error_code = 108
-            raise Exception(traceback.format_exc(err))
+            raise Exception(err)
 
     return flag, h, w
 
