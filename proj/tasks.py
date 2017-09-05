@@ -319,7 +319,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             self.code = 106
             raise Exception('Too Large')
 
-        file_md5 = get_file_md5(f_stream)
+        file_md5 = get_stream_md5(f_stream)
         res_flag = 1 if flag == 0 else 0
         size = str((h, w))
 
@@ -559,7 +559,7 @@ def get_hotel_images_info(self, path, part, desc_path, **kwargs):
     print 'Get File',
     if os.path.getsize(path) > 10485760:
         raise Exception('Too Large')
-    file_md5 = get_stream_md5(path)
+    file_md5 = get_file_md5(path)
     flag, h, w = is_complete_scale_ok(path)
     # (`source`, `source_id`, `pic_url`, `pic_md5`, `part`, `size`, `flag`)
     pic_md5 = path.split('/')[-1]
