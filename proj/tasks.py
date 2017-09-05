@@ -46,6 +46,7 @@ from proj.my_lib.logger import get_logger
 
 logger = get_logger('ImgList')
 
+
 @app.task
 def add_task():
     for i in range(10):
@@ -200,7 +201,7 @@ def get_lost_rest(self, target_url, city_id, **kwargs):
 
         if not result['imgurl']:
             raise Exception('zhao bu dao tupian')
-        logger.info('-------3-----------     '+str(result))
+        logger.info('-------3-----------     ' + str(result))
         rest_insert_db(result, city_id)
         return result
 
@@ -222,7 +223,6 @@ def get_lost_attr(self, target_url, city_id, **kwargs):
                                        city_id='NULL', url=target_url)
 
         return result
-
 
 
 @app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='6/s')
@@ -315,17 +315,17 @@ def get_images(self, source, target_url, **kwargs):
 
             with open(temp_file, 'wb') as f:
                 f.write(page.content)
-            # code = save_image(source, file_name, page.content)
+                # code = save_image(source, file_name, page.content)
 
-            # if code != 0:
-            #     raise Exception('保存文件失败')
-            # update_proxy('Platform', PROXY, x, '0')
+                # if code != 0:
+                #     raise Exception('保存文件失败')
+                # update_proxy('Platform', PROXY, x, '0')
         return flag, h, w, file_name
-    # except Exception as exc:
-    #     logger.exception(exc.message)
-    #     update_proxy('Platform', PROXY, x, '22')
-    #     print "Image Error with Proxy " + PROXY + ' used time ' + str(time.time() - x)
-    #     self.retry(exc=traceback.format_exc(exc), countdown=2)
+        # except Exception as exc:
+        #     logger.exception(exc.message)
+        #     update_proxy('Platform', PROXY, x, '22')
+        #     print "Image Error with Proxy " + PROXY + ' used time ' + str(time.time() - x)
+        #     self.retry(exc=traceback.format_exc(exc), countdown=2)
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
@@ -751,6 +751,8 @@ def insert_crawled_html(args, table_name):
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='40/s')
 def craw_html(self, url, flag, table_name, **kwargs):
+    self.task_source = 'Google'
+    self.task_type = 'GoogleDriveApi'
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -767,6 +769,7 @@ def craw_html(self, url, flag, table_name, **kwargs):
         page.encoding = 'utf8'
         if len(page.text) == 0:
             update_proxy('Platform', PROXY, x, '23')
+            self.error_code = 23
             self.retry()
         else:
             print "Success with " + PROXY + ' CODE 0 takes ' + str(time.time() - x)
@@ -788,9 +791,11 @@ def craw_html(self, url, flag, table_name, **kwargs):
             if task_id != '':
                 update_task(task_id=task_id)
         # return data
+        self.error_code = 0
         return 'OK' + str(len(data))
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
+        self.error_code = 23
         print "Error", exc, 'takes', str(time.time() - x)
         print traceback.print_exc()
         self.retry(exc=traceback.format_exc(exc))
