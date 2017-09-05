@@ -8,6 +8,9 @@ from sqlalchemy import Column, String, Text, create_engine, TIMESTAMP, Float, In
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+from proj.my_lib.logger import get_logger
+logger = get_logger('imgmd5_primary_key')
+
 Base = declarative_base()
 
 engine = create_engine('mysql+pymysql://hourong:hourong@10.10.189.213:3306/update_img?charset=utf8',
@@ -81,6 +84,7 @@ def get_file_md5(f_name):
 def hotel_make_kw(args):
     relation = PicRelation()
     relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5 = args
+    logger.info(relation.source+'|'+ relation.source_id+'|'+relation.part+'|'+relation.file_md5)
     insert_db(relation)
 
 def poi_make_kw(args):
@@ -113,4 +117,18 @@ def insert_too_large(args):
 
 
 if __name__ == '__main__':
-    print get_file_md5('/search/image/hotelinfo_zls_lx20161226_img/fff91daa07bc091d791e08bcfa8a9a28.jpg')
+    # print get_file_md5('/search/image/hotelinfo_zls_lx20161226_img/fff91daa07bc091d791e08bcfa8a9a28.jpg')
+    aa = {'status': -1,
+          'update_date': datetime.datetime(2017, 9, 5, 16, 18, 30, 445896),
+          'hotel_id': '',
+          'file_md5': 'd41d8cd98f00b204e9800998ecf8427e',
+          'source': u'hotels',
+          'flag': 0,
+          'part': u'44',
+          'pic_md5': u'4fef069236f03ec10a97fa84deeeefa4.jpg',
+          'source_id': u'418161',
+          'pic_url': u'https://exp.cdn-hotels.com/hotels/6000000/5390000/5388400/5388301/5388301_2_y.jpg',
+          'size': '(334, 500)'}
+    args = ('hotels', '418161', 'https://exp.cdn-hotels.com/hotels/6000000/5390000/5388400/5388301/5388301_2_y.jpg',
+            '4fef069236f03ec10a97fa84deeeefa4.jpg', '44', '(334, 500)', 0, 'd41d8cd98f00b204e9800998ecf8427e', )
+    hotel_make_kw(args)
