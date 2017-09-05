@@ -286,12 +286,11 @@ def get_lost_rest_no_proxy(self, target_url):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='20/s')
-def get_images(self, source, source_id, target_url, part, desc_path, is_poi_task=True, **kwargs):
+def get_images(self, source, source_id, target_url, part, file_path, desc_path, is_poi_task=True, **kwargs):
     self.task_source = source.title()
     self.task_type = 'download_images'
     self.code = 0
 
-    file_path = '/data/nfs/image/meizhilv'
     with MySession() as session:
         page = session.get(target_url, timeout=(120, None))
         f_stream = StringIO(page.content)
