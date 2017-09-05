@@ -319,7 +319,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             self.code = 106
             raise Exception('Too Large')
 
-        file_md5 = get_stream_md5(f_stream)
+        file_md5 = get_file_md5(f_stream)
         res_flag = 1 if flag == 0 else 0
         size = str((h, w))
 
@@ -547,7 +547,7 @@ def get_images_info(self, path):
 import hashlib
 import redis
 import shutil
-from .my_lib.hotel_img_func import hotel_make_kw, poi_make_kw, get_file_md5, insert_db_old as hotel_images_info_insert_db
+from .my_lib.hotel_img_func import hotel_make_kw, poi_make_kw, get_file_md5, get_stream_md5, insert_db_old as hotel_images_info_insert_db
 from pymysql.err import IntegrityError
 
 redis_dict = redis.Redis(host='10.10.180.145', db=5)
