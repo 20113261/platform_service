@@ -6,7 +6,7 @@ import random
 import time
 import traceback
 import pymysql
-from cStringIO import StringIO
+from StringIO import StringIO
 
 import MySQLdb
 import db_localhost
