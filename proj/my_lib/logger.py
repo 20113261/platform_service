@@ -23,7 +23,7 @@ class NamedRotatingFileHandler(RotatingFileHandler):
 
 def get_logger(logger_name):
     """
-    初始化 短信服务的 logger 部分，无返回值，logger 的模式，可以随时get到
+    初始化 logger get 可以获取到，为单例模式
     """
     if not os.path.exists(log_path):
         os.makedirs(log_path)
