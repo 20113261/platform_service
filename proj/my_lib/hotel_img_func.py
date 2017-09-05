@@ -15,7 +15,7 @@ engine = create_engine('mysql+pymysql://hourong:hourong@10.10.189.213:3306/updat
 DBSession = sessionmaker(bind=engine)
 
 class PicRelation(Base):
-    __tablename__ = 'pic_relation'
+    __tablename__ = 'pic_relation_0905'
     source = Column(String(20), primary_key=True)
     source_id = Column(String(64), primary_key=True)
     pic_url = Column(Text())
