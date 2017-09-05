@@ -20,6 +20,7 @@ from common.common import get_proxy, update_proxy, save_image
 from lxml import html
 from pyquery import PyQuery
 from util.UserAgent import GetUserAgent
+from sqlalchemy import exc
 
 from proj.my_lib.PageSaver import save_task_and_page_content
 from .celery import app
@@ -285,47 +286,72 @@ def get_lost_rest_no_proxy(self, target_url):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='40/s')
-def get_images(self, source, target_url, **kwargs):
-    # PROXY = get_proxy(source="Platform")
-    # x = time.time()
-    # proxies = {
-    #     'http': 'socks5://' + PROXY,
-    #     'https': 'socks5://' + PROXY
-    # }
-    # headers = {
-    #     'User-agent': GetUserAgent()
-    # }
-    # try:
+def get_images(self, source, source_id, target_url, part, desc_path, is_poi_task=True, **kwargs):
+    self.task_source = source.title()
+    self.task_type = 'download_images'
+    self.code = 0
+
     file_path = '/data/nfs/image/meizhilv'
     with MySession() as session:
         page = session.get(target_url, timeout=(120, None))
-        f = StringIO(page.content)
-        flag, h, w = is_complete_scale_ok(f)
-        file_name = hashlib.md5(target_url).hexdigest()
+        f_stream = StringIO(page.content)
+        flag, h, w = is_complete_scale_ok(f_stream)
+
+        suffix = ''
+        try:
+            suffix = target_url.rsplit('.', 1)[1]
+        except IndexError as e:
+            suffix = page.headers['Content-Type'].split('/')[1]
+        file_name = hashlib.md5(target_url).hexdigest() + '.' + suffix
+
         if flag in [1, 2]:
+            self.code = 105
             raise Exception, "Image Error with Proxy " + session.p_r_o_x_y
         else:
-            # print "Success with " + PROXY + ' CODE 0 used time ' + str(time.time() - x)
-            # if 'task_id' in kwargs.keys():
-            #     update_task(kwargs['mongo_task_id'])
             file_path += '/' + source
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
-            temp_file = file_path + '/' + file_name + '.jpg'
+            temp_file = file_path + '/' + file_name
 
             with open(temp_file, 'wb') as f:
                 f.write(page.content)
-            # code = save_image(source, file_name, page.content)
 
-            # if code != 0:
-            #     raise Exception('保存文件失败')
-            # update_proxy('Platform', PROXY, x, '0')
-        return flag, h, w, file_name
-    # except Exception as exc:
-    #     logger.exception(exc.message)
-    #     update_proxy('Platform', PROXY, x, '22')
-    #     print "Image Error with Proxy " + PROXY + ' used time ' + str(time.time() - x)
-    #     self.retry(exc=traceback.format_exc(exc), countdown=2)
+        if f_stream.len > 10485760:
+            # self.code = 106
+            raise Exception('Too Large')
+
+        file_md5 = get_file_md5(f_stream)
+        res_flag = 1 if flag == 0 else 0
+        size = str((h, w))
+
+        data = (
+            source,  # source
+            source_id,  # source_id
+            target_url,  # pic_url
+            file_name,  # pic_md5
+            part,  # part
+            size,  # size
+            res_flag,  # flag
+            file_md5  # file_md5
+        )
+
+        try:
+            if is_poi_task:
+                poi_make_kw(data)
+            else:
+                hotel_make_kw(data)
+            if not os.path.exists(desc_path):
+                os.makedirs(desc_path)
+            with open(os.path.join(desc_path, file_name), 'wb') as f:
+                f.write(page.content)
+        except exc.SQLAlchemyError as err:
+            self.code = 34
+            raise Exception(traceback.format_exc(err))
+        except IOError as err:
+            self.code = 108
+            raise Exception(traceback.format_exc(err))
+        return flag, h, w
+
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
@@ -522,7 +548,7 @@ def get_images_info(self, path):
 import hashlib
 import redis
 import shutil
-from .my_lib.hotel_img_func import insert_db as hotel_images_info_insert_db, get_file_md5
+from .my_lib.hotel_img_func import hotel_make_kw, poi_make_kw, get_file_md5, insert_db_old as hotel_images_info_insert_db
 from pymysql.err import IntegrityError
 
 redis_dict = redis.Redis(host='10.10.180.145', db=5)

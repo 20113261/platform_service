@@ -3,6 +3,44 @@ import hashlib
 import pymysql
 import db_img
 
+from sqlalchemy import Column, String, Text, create_engine, TIMESTAMP, Float, Integer
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+Base = declarative_base()
+
+engine = create_engine('mysql+pymysql://hourong:hourong@10.10.189.213:3306/update_img?charset=utf8',
+                       encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
+DBSession = sessionmaker(bind=engine)
+
+class PicRelation(Base):
+    __tablename__ = 'pic_relation'
+    source = Column(String(20), primary_key=True)
+    source_id = Column(String(64), primary_key=True)
+    pic_url = Column(Text())
+    pic_md5 = Column(String(64))
+    part = Column(String(10))
+    hotel_id = Column(String(20), default='')
+    status = Column(String(10), default=-1)
+    update_time = Column(TIMESTAMP)
+    size = Column(String(40))
+    flag = Column(String(10))
+    file_md5 = Column(String(32))
+
+class PoiRelation(Base):
+    __tablename__ = 'poi_bucket_relation'
+    file_name = Column(String(100))
+    source = Column(String(30))
+    sid = Column(String(100), primary_key=True)
+    url = Column(Text())
+    pic_size = Column(String(60))
+    bucket_name = Column(String(128))
+    url_md5 = Column(String(1024))
+    pic_md5 = Column(String(64), primary_key=True)
+    use = Column(String(10))
+    part = Column(String(32))
+    date = Column(TIMESTAMP)
+
 '''
 | source      | varchar(20)  | NO   | PRI | NULL              |                             |
 | source_id   | varchar(256) | NO   | PRI |                   |                             |
@@ -33,10 +71,26 @@ def get_file_md5(f_name):
     return hash_md5.hexdigest()
 
 
-def insert_db(args):
+def hotel_make_kw(args):
+    relation = PicRelation()
+    relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5 = args
+    insert_db(relation)
+
+def poi_make_kw(args):
+    relation = PoiRelation()
+    relation.file_name, relation.source, relation.sid, relation.url, relation.pic_size, relation.bucket_name, relation.url_md5, relation.pic_md5, relation.use, relation.part = args
+    insert_db(relation)
+
+
+def insert_db(relation):
+    dbss = DBSession()
+    dbss.merge(relation)
+    dbss.commit()
+
+def insert_db_old(args):
     conn = pymysql.connect(**__sql_dict)
     with conn as cursor:
-        sql = 'insert into pic_relation (`source`,`source_id`,`pic_url`,`pic_md5`,`part`,`size`,`flag`, `file_md5`) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)'
+        sql = 'replace into pic_relation (`source`,`source_id`,`pic_url`,`pic_md5`,`part`,`size`,`flag`, `file_md5`) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)'
         res = cursor.execute(sql, args)
     conn.close()
     return res
