@@ -1,6 +1,4 @@
 # coding=utf-8
-import pymysql
-import json
 import redis
 import time
 import types
@@ -8,9 +6,8 @@ from celery.task import Task
 from logger import get_logger
 
 from proj.my_lib.Common.Utils import get_local_ip
-from proj.my_lib.task_module.task_func import update_task
-from proj.my_lib.task_module.mongo_task_func import update_task as mongo_update_task, \
-    insert_failed_task as mongo_insert_failed_task
+from proj.my_lib.task_module.mongo_task_func import update_task as mongo_update_task
+from proj.my_lib.task_module.routine_task_func import insert_failed_task as mongo_insert_failed_task
 
 logger = get_logger('BaseTask')
 
@@ -76,6 +73,16 @@ class BaseTask(Task):
             else:
                 mongo_update_task(kwargs['mongo_task_id'], 0)
 
+            # 成功后记录成功内容
+            celery_task_id = task_id
+            task_id = kwargs.get('mongo_task_id', '')
+            mongo_update_task(kwargs['mongo_task_id'], 0)
+            kwargs.pop('mongo_task_id', None)
+            kwargs['local_ip'] = get_local_ip()
+            kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
+            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, retval, task_source, task_type,
+                                     error_code)
+
     def on_retry(self, exc, task_id, args, kwargs, einfo):
         # 记录重试任务
         # if 'mongo_task_id' in kwargs:
@@ -123,7 +130,9 @@ class BaseTask(Task):
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
             einfo_i = str(einfo).find('Retry in')
             real_einfo = str(einfo)[einfo_i:] if einfo_i > -1 else str(einfo)
-            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, real_einfo)
+
+            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, real_einfo, task_source, task_type,
+                                     error_code)
 
 
 if __name__ == '__main__':
