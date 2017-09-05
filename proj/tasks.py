@@ -307,7 +307,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             self.error_code = 105
             raise Exception, "Image Error with Proxy " + session.p_r_o_x_y
         else:
-            file_path += '/' + source
+            # file_path += '/' + source
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
             temp_file = file_path + '/' + file_name
