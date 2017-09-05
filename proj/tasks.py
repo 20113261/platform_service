@@ -319,7 +319,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             self.code = 106
             raise Exception('Too Large')
 
-        file_md5 = get_file_md5(f_stream)
+        file_md5 = get_stream_md5(f_stream)
         res_flag = 1 if flag == 0 else 0
         size = str((h, w))
 

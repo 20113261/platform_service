@@ -63,6 +63,12 @@ __sql_dict = {
 }
 
 
+def get_stream_md5(stream):
+    hash_md5 = hashlib.md5()
+    for chunk in iter(lambda: stream.read(4096), b""):
+        hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
 def get_file_md5(f_name):
     hash_md5 = hashlib.md5()
     with open(f_name, "rb") as f:
