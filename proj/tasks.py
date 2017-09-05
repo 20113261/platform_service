@@ -47,6 +47,7 @@ from proj.my_lib.logger import get_logger
 
 logger = get_logger('ImgList')
 
+
 @app.task
 def add_task():
     for i in range(10):
@@ -201,7 +202,7 @@ def get_lost_rest(self, target_url, city_id, **kwargs):
 
         if not result['imgurl']:
             raise Exception('zhao bu dao tupian')
-        logger.info('-------3-----------     '+str(result))
+        logger.info('-------3-----------     ' + str(result))
         rest_insert_db(result, city_id)
         return result
 
@@ -223,7 +224,6 @@ def get_lost_attr(self, target_url, city_id, **kwargs):
                                        city_id='NULL', url=target_url)
 
         return result
-
 
 
 @app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='6/s')
@@ -317,7 +317,7 @@ def get_images(self, source, source_id, target_url, part, desc_path, is_poi_task
                 f.write(page.content)
 
         if f_stream.len > 10485760:
-            # self.code = 106
+            self.code = 106
             raise Exception('Too Large')
 
         file_md5 = get_file_md5(f_stream)
@@ -350,8 +350,8 @@ def get_images(self, source, source_id, target_url, part, desc_path, is_poi_task
         except IOError as err:
             self.code = 108
             raise Exception(traceback.format_exc(err))
-        return flag, h, w
 
+    return flag, h, w
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
@@ -777,6 +777,8 @@ def insert_crawled_html(args, table_name):
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='40/s')
 def craw_html(self, url, flag, table_name, **kwargs):
+    self.task_source = 'Google'
+    self.task_type = 'GoogleDriveApi'
     PROXY = get_proxy(source="Platform")
     x = time.time()
     proxies = {
@@ -793,6 +795,7 @@ def craw_html(self, url, flag, table_name, **kwargs):
         page.encoding = 'utf8'
         if len(page.text) == 0:
             update_proxy('Platform', PROXY, x, '23')
+            self.error_code = 23
             self.retry()
         else:
             print "Success with " + PROXY + ' CODE 0 takes ' + str(time.time() - x)
@@ -814,9 +817,11 @@ def craw_html(self, url, flag, table_name, **kwargs):
             if task_id != '':
                 update_task(task_id=task_id)
         # return data
+        self.error_code = 0
         return 'OK' + str(len(data))
     except Exception as exc:
         update_proxy('Platform', PROXY, x, '23')
+        self.error_code = 23
         print "Error", exc, 'takes', str(time.time() - x)
         print traceback.print_exc()
         self.retry(exc=traceback.format_exc(exc))
