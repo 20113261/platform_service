@@ -20,7 +20,7 @@ class PicRelation(Base):
     source_id = Column(String(64), primary_key=True)
     pic_url = Column(Text())
     pic_md5 = Column(String(64))
-    part = Column(String(10))
+    part = Column(String(10), primary_key=True)
     hotel_id = Column(String(20), default='')
     status = Column(String(10), default=-1)
     update_date = Column(TIMESTAMP, default=datetime.datetime.now)
