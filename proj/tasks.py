@@ -289,7 +289,7 @@ def get_lost_rest_no_proxy(self, target_url):
 def get_images(self, source, source_id, target_url, part, file_path, desc_path, is_poi_task=True, **kwargs):
     self.task_source = source.title()
     self.task_type = 'download_images'
-    self.code = 0
+    self.error_code = 0
 
     with MySession() as session:
         page = session.get(target_url, timeout=(120, None))
@@ -304,7 +304,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         file_name = hashlib.md5(target_url).hexdigest() + '.' + suffix
 
         if flag in [1, 2]:
-            self.code = 105
+            self.error_code = 105
             raise Exception, "Image Error with Proxy " + session.p_r_o_x_y
         else:
             file_path += '/' + source
@@ -316,7 +316,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
                 f.write(page.content)
 
         if f_stream.len > 10485760:
-            self.code = 106
+            self.error_code = 106
             raise Exception('Too Large')
 
         file_md5 = get_stream_md5(f_stream)
@@ -344,10 +344,10 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             with open(os.path.join(desc_path, file_name), 'wb') as f:
                 f.write(page.content)
         except exc.SQLAlchemyError as err:
-            self.code = 34
+            self.error_code = 34
             raise Exception(traceback.format_exc(err))
         except IOError as err:
-            self.code = 108
+            self.error_code = 108
             raise Exception(traceback.format_exc(err))
 
     return flag, h, w
