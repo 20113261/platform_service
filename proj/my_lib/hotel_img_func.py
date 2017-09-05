@@ -23,7 +23,7 @@ class PicRelation(Base):
     part = Column(String(10))
     hotel_id = Column(String(20), default='')
     status = Column(String(10), default=-1)
-    update_time = Column(TIMESTAMP, default=datetime.datetime.now)
+    update_date = Column(TIMESTAMP, default=datetime.datetime.now)
     size = Column(String(40))
     flag = Column(String(10))
     file_md5 = Column(String(32))
