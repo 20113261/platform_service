@@ -84,7 +84,7 @@ def get_file_md5(f_name):
 def hotel_make_kw(args):
     relation = PicRelation()
     relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5 = args
-    logger.info(relation.source+'|'+ relation.source_id+'|'+relation.part+'|'+relation.file_md5)
+    logger.info(relation.source+'|'+ relation.source_id+'|'+relation.part+'|'+relation.file_md5+'|'+relation.pic_md5)
     insert_db(relation)
 
 def poi_make_kw(args):
