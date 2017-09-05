@@ -2,6 +2,7 @@ import hashlib
 
 import pymysql
 import db_img
+import datetime
 
 from sqlalchemy import Column, String, Text, create_engine, TIMESTAMP, Float, Integer
 from sqlalchemy.ext.declarative import declarative_base
@@ -22,7 +23,7 @@ class PicRelation(Base):
     part = Column(String(10))
     hotel_id = Column(String(20), default='')
     status = Column(String(10), default=-1)
-    update_time = Column(TIMESTAMP)
+    update_time = Column(TIMESTAMP, default=datetime.datetime.now)
     size = Column(String(40))
     flag = Column(String(10))
     file_md5 = Column(String(32))
@@ -39,7 +40,7 @@ class PoiRelation(Base):
     pic_md5 = Column(String(64), primary_key=True)
     use = Column(String(10))
     part = Column(String(32))
-    date = Column(TIMESTAMP)
+    date = Column(TIMESTAMP, default=datetime.datetime.now)
 
 '''
 | source      | varchar(20)  | NO   | PRI | NULL              |                             |
