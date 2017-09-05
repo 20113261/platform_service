@@ -26,7 +26,7 @@ class PicRelation(Base):
     update_date = Column(TIMESTAMP, default=datetime.datetime.now)
     size = Column(String(40))
     flag = Column(String(10))
-    file_md5 = Column(String(32))
+    file_md5 = Column(String(32), primary_key=True)
 
 class PoiRelation(Base):
     __tablename__ = 'poi_bucket_relation'
