@@ -61,6 +61,9 @@ class HotelsHotel(HotelBase, Base):
 class ElongHotel(HotelBase, Base):
     __tablename__ = 'hotelinfo_routine_elong'
 
+class CtripCNHotel(HotelBase, Base):
+    __tablename__ = 'hotelinfo_routine_ctripcn'
+
 
 # 初始化数据库连接:
 engine = create_engine('mysql+mysqlconnector://mioji_admin:mioji1109@10.10.228.253:3306/hotel_adding?charset=utf8mb4',

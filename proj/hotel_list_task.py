@@ -68,7 +68,7 @@ def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
     self.error_code = 0
 
     result = hotel_list_database(source=source, city_id=city_id, check_in=check_in)
-    data = []
+    # data = []
     part = part.replace('list', 'detail')
     if source == 'ctrip':
         for line in result['hotel']:
