@@ -86,10 +86,10 @@ def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
                     'u_time': datetime.datetime.now()
                 })
         else:
-            for sid, hotel_url in result['hotel']:
+            for line in result['hotel']:
                 collections.save({
-                    'sid': sid,
-                    'hotel_url': hotel_url,
+                    'sid': line[3],
+                    'hotel_url': line[-1],
                     'parent_info': {
                         'source': source,
                         'city_id': city_id,
