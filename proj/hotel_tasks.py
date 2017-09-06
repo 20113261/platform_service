@@ -82,5 +82,5 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
                 save_task_and_page_content(task_name=part, content=content, task_id=kwargs['mongo_task_id'], source=source,
                                            source_id=other_info['source_id'],
                                            city_id=other_info['city_id'], url=url)
-                
-        return result
+
+        return result.__dict__
