@@ -8,6 +8,8 @@ import hotels_parser
 import hoteltravel_parser
 import hrs_parser
 import tripadvisor_parser
+import ctrip_cn_parser
+import hilton_parser
 from proj.my_lib.Common.KeyMatch import key_is_legal
 from proj.my_lib.logger import get_logger
 
@@ -33,6 +35,8 @@ def parse_hotel(content, url, other_info, source, part):
         'travelocity': expedia_parser.expedia_parser,
         'ebookers': expedia_parser.expedia_parser,
         'tripadvisor': tripadvisor_parser.tripadvisor_parser,
+        'ctrip_cn': ctrip_cn_parser.ctrip_cn_parser,
+        'hilton': hilton_parser.hilton_parser
     }
     if source not in function_dict.keys():
         raise TypeCheckError('Error Parser Source        with source %s   url %s ' % (source, url))
@@ -46,9 +50,10 @@ def parse_hotel(content, url, other_info, source, part):
         raise TypeCheckError('Error map_info NULL        with parser %ss    url %s' % (parser.func_name, url))
 
     if key_is_legal(result.hotel_name) or result.hotel_name_en:
-        logger.info(result.hotel_name + '  ----------  ' +result.hotel_name_en)
+        logger.info(result.hotel_name + '  ----------  ' + result.hotel_name_en)
     else:
-        raise TypeCheckError('Error hotel_name and hotel_name_en Both NULL        with parser %s    url %s' % (parser.func_name, url))
+        raise TypeCheckError(
+            'Error hotel_name and hotel_name_en Both NULL        with parser %s    url %s' % (parser.func_name, url))
 
     if result.source == 'booking':
         # if not key_is_legal(result.hotel_name):

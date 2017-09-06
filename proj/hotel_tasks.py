@@ -2,16 +2,14 @@
 import time
 import re
 import traceback
-
-import requests
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 
+from proj.my_lib.Common.Browser import MySession
 from proj.celery import app
 from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from proj.my_lib.task_module.task_func import update_task
 from proj.my_lib.BaseTask import BaseTask
-from proj.my_lib.FileSaver import save_file
 from proj.my_lib.PageSaver import save_task_and_page_content
 
 
@@ -40,6 +38,9 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
 
         # agoda end
 
+        # hilton start
+        # hilton end
+
         # venere start
         if source == 'venere':
             update_task(kwargs['task_id'])
@@ -51,9 +52,27 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             headers['Referer'] = 'http://www.booking.com'
 
         # booking end
-        page = requests.get(url, headers=headers, proxies=proxies, timeout=240)
-        page.encoding = 'utf8'
-        content = page.text
+
+        # init session
+        session = MySession()
+        if source != 'hilton':
+            page = session.get(url, timeout=240)
+            page.encoding = 'utf8'
+            content = page.text
+        else:
+            detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(
+                url.split('/')[-2])
+            map_info_url = url + 'maps-directions.html'
+            desc_url = url + 'about.html'
+
+            page = session.get(url)
+            page.encoding = 'utf8'
+            __content = page.text
+            __detail_content = session.get(detail_url).text
+            __map_info_content = session.get(map_info_url).text
+            __desc_content = session.get(desc_url).text
+
+            content = [__content, __detail_content, __map_info_content, __desc_content]
 
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
 
