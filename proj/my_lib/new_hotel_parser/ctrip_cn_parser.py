@@ -7,7 +7,7 @@
 """
 import requests
 from lxml import html
-from data_obj import Hotel
+from data_obj import CtripCNHotel, DBSession
 from mioji.common.parser_except import PARSE_ERROR
 import traceback
 import re
@@ -19,7 +19,7 @@ from urlparse import urljoin
 
 # from data_obj import Hotel
 def ctrip_cn_parser(content, url, other_info):
-    hotel = Hotel()
+    hotel = CtripCNHotel()
     try:
         root = html.fromstring(content.decode('utf-8'))
     except Exception as e:
@@ -115,7 +115,7 @@ def ctrip_cn_parser(content, url, other_info):
 
     try:
         desc = root.xpath('//span[@id="ctl00_MainContentPlaceHolder_hotelDetailInfo_lbDesc"]/text()')[0]
-        hotel.description = desc
+        hotel.description = str(desc)
         print "hotel.description:", hotel.description
     except:
         hotel.description = 'NULL'
@@ -182,7 +182,7 @@ def ctrip_cn_parser(content, url, other_info):
 
 
 if __name__ == "__main__":
-    url = "http://hotels.ctrip.com/hotel/5979309.html?isFull=F#ctm_ref=hod_sr_map_dl_txt_6"
+    url = "http://hotels.ctrip.com/hotel/5414428.html?isFull=F#ctm_ref=hod_sr_map_dl_txt_9"
     response = requests.get(url)
     response.encoding = 'utf-8'
     content = response.content
@@ -192,3 +192,11 @@ if __name__ == "__main__":
         'city_id': '20043'
     }
     result = ctrip_cn_parser(content, url, other_info)
+
+    try:
+        session = DBSession()
+        session.merge(result)
+        session.commit()
+        session.close()
+    except Exception as e:
+        print str(e)
