@@ -65,6 +65,8 @@ def hotel_list_database(source, city_id, check_in):
 def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
     self.task_source = source.title()
     self.task_type = 'HotelList'
+    self.error_code = 0
+
     result = hotel_list_database(source=source, city_id=city_id, check_in=check_in)
     data = []
     part = part.replace('list', 'detail')
