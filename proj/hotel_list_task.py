@@ -101,7 +101,7 @@ def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
                 'u_time': datetime.datetime.now()
             })
 
-    print insert_task(data=data)
+    # print insert_task(data=data)
 
 
 if __name__ == '__main__':

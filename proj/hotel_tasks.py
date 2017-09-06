@@ -17,17 +17,13 @@ from proj.my_lib.PageSaver import save_task_and_page_content
 def hotel_base_data(self, source, url, other_info, part, **kwargs):
     self.task_source = source.title()
     self.task_type = 'Hotel'
-    x = time.time()
-    PROXY = get_proxy(source="Platform")
-    proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
+    self.error_code = 0
+
     headers = {
         'User-agent': GetUserAgent()
     }
 
-    try:
+    with MySession() as session:
         # hotels
         if source == 'hotels':
             hotel_id = re.findall('hotel-id=(\d+)', url)[0]
@@ -42,8 +38,8 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         # hilton end
 
         # venere start
-        if source == 'venere':
-            update_task(kwargs['task_id'])
+        # if source == 'venere':
+        #     update_task(kwargs['task_id'])
 
         # venere end
 
@@ -53,8 +49,10 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
 
         # booking end
 
+        session.headers.update(headers)
+
         # init session
-        session = MySession()
+
         if source != 'hilton':
             page = session.get(url, timeout=240)
             page.encoding = 'utf8'
@@ -77,18 +75,12 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
 
         if not result:
-            update_proxy('Platform', PROXY, x, '23')
-            self.retry(exc=Exception('db error'))
+            raise Exception('db error')
         else:
-            if kwargs.get('task_id'):
+            if kwargs.get('mongo_task_id'):
                 # 保存抓取成功后的页面信息
-                save_task_and_page_content(task_name=part, content=content, task_id=kwargs['task_id'], source=source,
+                save_task_and_page_content(task_name=part, content=content, task_id=kwargs['mongo_task_id'], source=source,
                                            source_id=other_info['source_id'],
                                            city_id=other_info['city_id'], url=url)
-                update_task(kwargs['task_id'])
-            print "Success with " + PROXY + ' CODE 0'
-            update_proxy('Platform', PROXY, x, '0')
+                
         return result
-    except Exception as exc:
-        update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=traceback.format_exc(exc))
