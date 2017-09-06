@@ -46,6 +46,8 @@ def ctrip_cn_parser(content, url, other_info):
             temp_iii = hotel_name.find(')', temp_ii)
             if temp_iii>-1:
                 hotel.hotel_name = hotel_name[:temp_iii+1].encode('utf8')
+            else:
+                hotel.hotel_name = hotel_name[:temp_ii + 1].encode('utf8')
         else:
             hotel.hotel_name = ''
 
@@ -180,7 +182,7 @@ def ctrip_cn_parser(content, url, other_info):
 
 
 if __name__ == "__main__":
-    url = "http://hotels.ctrip.com/hotel/1867988.html?isFull=F#ctm_ref=hod_sr_map_dl_txt_9"
+    url = "http://hotels.ctrip.com/hotel/5979309.html?isFull=F#ctm_ref=hod_sr_map_dl_txt_6"
     response = requests.get(url)
     response.encoding = 'utf-8'
     content = response.content
