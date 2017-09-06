@@ -312,8 +312,9 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
                 os.makedirs(file_path)
             temp_file = file_path + '/' + file_name
 
-            with open(temp_file, 'wb') as f:
-                f.write(page.content)
+            if is_poi_task:
+                with open(temp_file, 'wb') as f:
+                    f.write(page.content)
 
         if f_stream.len > 10485760:
             self.error_code = 106
