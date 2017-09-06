@@ -35,18 +35,35 @@ def ctrip_cn_parser(content, url, other_info):
         logger.debug(current_log_tag() + '[获取JS中数据失败]')
 
     try:
-        hotel_name = root.xpath('//h2[@class="cn_n"]/text()')[0].encode('utf-8').strip()
-        hotel.hotel_name_en = re.search(r'\(([a-zA-z]+)\)', hotel_name).group(1)
+        hotel_name = root.xpath('//h2[@class="cn_n"]/text()')[0]
+
+        temp = re.findall(ur'([\u4e00-\u9fa5\s]*)', hotel_name)
+        zh_name_tmep = [t for t in temp if t and t != ' ']
+        if len(zh_name_tmep) == 1:
+            hotel.hotel_name = zh_name_tmep[0].encode('utf8')
+        elif len(zh_name_tmep) > 1:
+            temp_ii = hotel_name.find(zh_name_tmep[-1]) + len(zh_name_tmep[-1])
+            temp_iii = hotel_name.find(')', temp_ii)
+            if temp_iii>-1:
+                hotel.hotel_name = hotel_name[:temp_iii+1].encode('utf8')
+        else:
+            hotel.hotel_name = ''
+
+        if not zh_name_tmep:
+            hotel.hotel_name_en = hotel_name.encode('utf8').strip(')').strip('(').strip('）').strip('（').strip()
+        else:
+            name_en_temp = hotel_name[hotel_name.find(zh_name_tmep[-1]) + len(zh_name_tmep[-1])+1:]
+            hotel.hotel_name_en = name_en_temp.encode('utf8').strip(')').strip('(').strip('）').strip('（').strip()
     except Exception as e:
         print traceback.format_exc()
         logger.debug(current_log_tag() + '[解析英文名失败]')
 
-    try:
-        hotel_name = root.xpath('//h2[@class="cn_n"]/text()')[0].strip()
-        hotel.hotel_name = re.search(u'[\u4e00-\u9fa5]+', hotel_name).group()
-    except Exception as e:
-        print traceback.format_exc()
-        logger.debug(current_log_tag() + '【解析中文名失败】')
+    # try:
+    #     hotel_name = root.xpath('//h2[@class="cn_n"]/text()')[0].strip()
+    #     hotel.hotel_name = re.search(u'[\u4e00-\u9fa5]+', hotel_name).group()
+    # except Exception as e:
+    #     print traceback.format_exc()
+    #     logger.debug(current_log_tag() + '【解析中文名失败】')
 
     print "中文名：", hotel.hotel_name
     print "英文名：", hotel.hotel_name_en
@@ -159,15 +176,17 @@ def ctrip_cn_parser(content, url, other_info):
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
+    return hotel
+
 
 if __name__ == "__main__":
-    url = "http://hotels.ctrip.com/hotel/345811.html"
+    url = "http://hotels.ctrip.com/hotel/1867988.html?isFull=F#ctm_ref=hod_sr_map_dl_txt_9"
     response = requests.get(url)
     response.encoding = 'utf-8'
     content = response.content
 
     other_info = {
-        'source_id': '1039433',
-        'city_id': '10074'
+        'source_id': '1867988',
+        'city_id': '20043'
     }
     result = ctrip_cn_parser(content, url, other_info)
