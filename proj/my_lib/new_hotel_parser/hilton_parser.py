@@ -186,14 +186,10 @@ def hilton_parser(total_content, url, other_info):
     print 'hotel.check_out_time=>', hotel.check_out_time
 
     try:
-        # desc = encode_unicode(root.find_class('hotel-description')[0].find_class('visuallyhidden')[0].tail.strip())
-        desc = re.findall(r"<div class='intro fix'>(.*?)<div class='price'>", desc_content)[0]
-        ALL = re.findall(r'<p>(.*?)</p>', desc)
+        ALL = html_desc.xpath('//div[@class="intro fix"]/p')
         desc = ''
-        for de in ALL[1:]:
-            desc += de.encode('raw-unicode-escape')
-        desc = desc.replace('<br/>', '').replace('<br>', '')
-        # hotel.description = desc
+        for each in ALL:
+            desc+= each.text_content().encode('raw-unicode-escape')
     except Exception, e:
         print str(e)
 
