@@ -65,45 +65,41 @@ def hotel_list_database(source, city_id, check_in):
 def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
     self.task_source = source.title()
     self.task_type = 'HotelList'
-    try:
-        result = hotel_list_database(source=source, city_id=city_id, check_in=check_in)
-        data = []
-        part = part.replace('list', 'detail')
-        if source == 'ctrip':
-            for line in result['hotel']:
-                sid = line[3]
-                hotel_url = line[-1]
-                collections.save({
-                    'sid': sid,
-                    'hotel_url': hotel_url,
-                    'parent_info': {
-                        'source': source,
-                        'city_id': city_id,
-                        'check_in': check_in,
-                        'part': part,
-                        'task_id': kwargs['task_id']
-                    },
-                    'u_time': datetime.datetime.now()
-                })
-        else:
-            for line in result['hotel']:
-                collections.save({
-                    'sid': line[3],
-                    'hotel_url': line[-1],
-                    'parent_info': {
-                        'source': source,
-                        'city_id': city_id,
-                        'check_in': check_in,
-                        'part': part,
-                        'task_id': kwargs['task_id']
-                    },
-                    'u_time': datetime.datetime.now()
-                })
+    result = hotel_list_database(source=source, city_id=city_id, check_in=check_in)
+    data = []
+    part = part.replace('list', 'detail')
+    if source == 'ctrip':
+        for line in result['hotel']:
+            sid = line[3]
+            hotel_url = line[-1]
+            collections.save({
+                'sid': sid,
+                'hotel_url': hotel_url,
+                'parent_info': {
+                    'source': source,
+                    'city_id': city_id,
+                    'check_in': check_in,
+                    'part': part,
+                    'task_id': kwargs['mongo_task_id']
+                },
+                'u_time': datetime.datetime.now()
+            })
+    else:
+        for line in result['hotel']:
+            collections.save({
+                'sid': line[3],
+                'hotel_url': line[-1],
+                'parent_info': {
+                    'source': source,
+                    'city_id': city_id,
+                    'check_in': check_in,
+                    'part': part,
+                    'task_id': kwargs['mongo_task_id']
+                },
+                'u_time': datetime.datetime.now()
+            })
 
-        update_task(kwargs['task_id'])
-        print insert_task(data=data)
-    except Exception as exc:
-        self.retry(exc=traceback.format_exc(exc))
+    print insert_task(data=data)
 
 
 if __name__ == '__main__':
