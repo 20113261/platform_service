@@ -11,6 +11,10 @@ from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from proj.my_lib.task_module.task_func import update_task
 from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.PageSaver import save_task_and_page_content
+from my_lib.new_hotel_parser.data_obj import DBSession
+from proj.my_lib.logger import get_logger
+
+logger = get_logger("HotelDetail")
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='8/s')
@@ -73,6 +77,17 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             content = [__content, __detail_content, __map_info_content, __desc_content]
 
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
+
+        try:
+            session = DBSession()
+            session.merge(result)
+            session.commit()
+            session.close()
+        except Exception as e:
+            self.error_code = 33
+            logger.exception(e)
+            raise e
+
 
         if not result:
             raise Exception('db error')
