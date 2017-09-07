@@ -61,7 +61,7 @@ def hotel_list_database(source, city_id, check_in):
         task.content = check_in
     else:
         task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
-    logger.info(factory.__old_source_spider.keys())
+    logger.info(factory._SpiderFactory__old_source_spider.keys())
     spider = factory.get_spider_by_old_source(source + 'ListHotel')
     spider.task = task
     print spider.crawl(required=['hotel'])
