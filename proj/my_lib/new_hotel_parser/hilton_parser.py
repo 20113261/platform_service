@@ -6,7 +6,7 @@ import sys
 import re
 import requests
 from lxml import html as HTML
-from data_obj import Hotel
+from data_obj import HiltonHotel
 
 # ----from data_obj import ExpediaHotel  # DBSession
 
@@ -18,7 +18,7 @@ map_info = 'maps-directions.html'
 
 
 def hilton_parser(total_content, url, other_info):
-    hotel = Hotel()
+    hotel = HiltonHotel()
     # ----hotel = ExpediaHotel()
     content, detail_content, map_info_content, desc_content = total_content
     # ----------request -----
