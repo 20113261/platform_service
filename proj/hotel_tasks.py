@@ -71,7 +71,6 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             desc_url = url + 'about.html'
 
             page = session.get(url)
-            page.encoding = 'utf8'
             __content = page.text
             __detail_content = session.get(detail_url).text
             __map_info_content = session.get(map_info_url).text

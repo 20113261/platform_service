@@ -22,14 +22,14 @@ def hilton_parser(total_content, url, other_info):
     # ----hotel = ExpediaHotel()
     content, detail_content, map_info_content, desc_content = total_content
     # ----------request -----
-    html_detail = HTML.fromstring(detail_content.decode('utf-8'))
+    html_detail = HTML.fromstring(detail_content)
     # html_map = HTML.fromstring(map_info_content.decode('utf-8'))
-    html_desc = HTML.fromstring(desc_content.decode('utf-8'))
+    html_desc = HTML.fromstring(desc_content)
     # ------request--end-----
 
     # -----content----start-
     try:
-        html = HTML.fromstring(content.decode('utf-8'))
+        html = HTML.fromstring(content)
         html = HTML.make_links_absolute(html, base_url=url)
     except Exception, e:
         print '----fuck'
