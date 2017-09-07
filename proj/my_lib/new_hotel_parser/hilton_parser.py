@@ -6,7 +6,7 @@ import sys
 import re
 import requests
 from lxml import html as HTML
-from data_obj import HiltonHotel
+from data_obj import HiltonHotel, DBSession
 
 # ----from data_obj import ExpediaHotel  # DBSession
 
@@ -194,7 +194,7 @@ def hilton_parser(total_content, url, other_info):
     except Exception, e:
         print str(e)
 
-    hotel.description = str(desc)
+    hotel.description = desc
     print 'hotel.description=>', hotel.description
 
     hotel.hotel_url = url
@@ -231,7 +231,7 @@ def encode_unicode(str):
 
 if __name__ == '__main__':
     # url = 'http://www.hilton.com.cn/zh-CN/hotel/Beijing/hilton-beijing-wangfujing-BJSWFHI/'
-    url = 'http://www.hilton.com.cn/zh-cn/hotel/sharjah/hilton-sharjah-SHJHSHI/'
+    url = 'http://doubletree.hilton.com.cn/zh-cn/hotel/haikou/doubletree-resort-by-hilton-hainan-chengmai-HAKHCDI/'
     detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(url.split('/')[-2])
     map_info_url = url + 'maps-directions.html'
     desc_url = url + 'about.html'
@@ -249,10 +249,10 @@ if __name__ == '__main__':
         'city_id': '50795'
     }
     result = hilton_parser(total_content, url, other_info)
-    # try:
-    #     session = DBSession()
-    #     session.merge(result)
-    #     session.commit()
-    #     session.close()
-    # except Exception as e:
-    #     print str(e)
+    try:
+        session = DBSession()
+        session.merge(result)
+        session.commit()
+        session.close()
+    except Exception as e:
+        print str(e)
