@@ -173,6 +173,7 @@ def hilton_parser(total_content, url, other_info):
     hotel.service = service
     print 'hotel.service=>', hotel.service
 
+    check_in_time = ''
     try:
         ALL = html_detail.xpath('//tbody[@class="tbodyElementsShownByDefault"]')
         check_time = ALL[-1][-1].text_content().replace('\n', '').replace('\t', '').replace(' ', '')
