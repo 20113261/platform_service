@@ -35,7 +35,7 @@ def parse_hotel(content, url, other_info, source, part):
         'travelocity': expedia_parser.expedia_parser,
         'ebookers': expedia_parser.expedia_parser,
         'tripadvisor': tripadvisor_parser.tripadvisor_parser,
-        'ctrip_cn': ctrip_cn_parser.ctrip_cn_parser,
+        'ctripcn': ctrip_cn_parser.ctrip_cn_parser,
         'hilton': hilton_parser.hilton_parser
     }
     if source not in function_dict.keys():
