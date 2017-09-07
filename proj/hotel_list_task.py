@@ -92,7 +92,8 @@ def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
                 'u_time': datetime.datetime.now()
             })
     elif source == 'hilton':
-        for line in result['hotel']:
+        for dict_obj in result['hotel']:
+            line = dict_obj.values()
             collections.save({
                 'sid': line[2],
                 'hotel_url': line[0],
