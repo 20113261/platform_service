@@ -93,6 +93,20 @@ def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
                 },
                 'u_time': datetime.datetime.now()
             })
+    elif source == 'hilton':
+        for line in result['hotel']:
+            collections.save({
+                'sid': line[2],
+                'hotel_url': line[0],
+                'parent_info': {
+                    'source': source,
+                    'city_id': city_id,
+                    'check_in': check_in,
+                    'part': part,
+                    'task_id': kwargs['mongo_task_id']
+                },
+                'u_time': datetime.datetime.now()
+            })
     else:
         for line in result['hotel']:
             collections.save({
