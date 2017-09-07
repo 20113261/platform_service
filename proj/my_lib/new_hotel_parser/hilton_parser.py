@@ -23,7 +23,7 @@ def hilton_parser(total_content, url, other_info):
     content, detail_content, map_info_content, desc_content = total_content
     # ----------request -----
     html_detail = HTML.fromstring(detail_content.decode('utf-8'))
-    html_map = HTML.fromstring(map_info_content.decode('utf-8'))
+    # html_map = HTML.fromstring(map_info_content.decode('utf-8'))
     html_desc = HTML.fromstring(desc_content.decode('utf-8'))
     # ------request--end-----
 
@@ -174,6 +174,7 @@ def hilton_parser(total_content, url, other_info):
     print 'hotel.service=>', hotel.service
 
     check_in_time = ''
+    check_out_time = ''
     try:
         ALL = html_detail.xpath('//tbody[@class="tbodyElementsShownByDefault"]')
         check_time = ALL[-1][-1].text_content().replace('\n', '').replace('\t', '').replace(' ', '')
