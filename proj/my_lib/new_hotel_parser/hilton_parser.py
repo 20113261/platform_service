@@ -44,8 +44,8 @@ def hilton_parser(total_content, url, other_info):
         # 匹配英文名
         # eng_pattern = re.compile(r'([a-zA-Z].*[a-zA-Z]?)', re.S)
         name_all = re.findall(r'var HotelName = "(.*?)";', content)[0]
-        hotel.hotel_name_en = name_all.encode('utf8')
-        hotel.hotel_name = name_all.encode('utf8')
+        hotel.hotel_name_en = name_all
+        hotel.hotel_name = name_all
 
     except Exception, e:
         print str(e)
@@ -56,7 +56,7 @@ def hilton_parser(total_content, url, other_info):
     try:
         full_address = root.xpath('//span[@class="addr"]/text()')
         add_temp = full_address[0]
-        hotel.address = add_temp.encode('utf8')
+        hotel.address = str(add_temp)
         print 'hotel.address=>%s' % hotel.address
         # ----VON-NONE---hotel.postal_code = full_address[-1].strip().encode('utf-8')
         # hotel.address = address
@@ -167,7 +167,7 @@ def hilton_parser(total_content, url, other_info):
     except Exception as e:
         print e
 
-    hotel.service = service.encode('utf8')
+    hotel.service = service
     print 'hotel.service=>', hotel.service
 
     check_in_time = ''
