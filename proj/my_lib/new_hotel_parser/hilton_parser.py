@@ -44,8 +44,8 @@ def hilton_parser(total_content, url, other_info):
         # 匹配英文名
         # eng_pattern = re.compile(r'([a-zA-Z].*[a-zA-Z]?)', re.S)
         name_all = re.findall(r'var HotelName = "(.*?)";', content)[0]
-        hotel.hotel_name_en = name_all
-        hotel.hotel_name = name_all
+        hotel.hotel_name_en = name_all.encode('utf8')
+        hotel.hotel_name = name_all.encode('utf8')
 
     except Exception, e:
         print str(e)
@@ -56,7 +56,7 @@ def hilton_parser(total_content, url, other_info):
     try:
         full_address = root.xpath('//span[@class="addr"]/text()')
         add_temp = full_address[0]
-        hotel.address = add_temp
+        hotel.address = add_temp.encode('utf8')
         print 'hotel.address=>%s' % hotel.address
         # ----VON-NONE---hotel.postal_code = full_address[-1].strip().encode('utf-8')
         # hotel.address = address
@@ -141,7 +141,6 @@ def hilton_parser(total_content, url, other_info):
     try:
         service += '交通：'
         ALL = html_detail.xpath('//tbody[@id="tbodytransportation"]')[0]
-        info1 = ''
         for each in ALL:
             cc = process_text(each.text_content())
             service += cc
@@ -152,7 +151,6 @@ def hilton_parser(total_content, url, other_info):
     try:
         service += '设施：'
         ALL = html_detail.xpath('//tbody[@id="tbodyfacilities"]')
-        info1 = ''
         for each in ALL:
             cc = process_text1(each.text_content())
             service += cc
@@ -162,7 +160,6 @@ def hilton_parser(total_content, url, other_info):
     try:
         service += '服务与设施：'
         ALL = html_detail.xpath('//tbody[@id="tbodyservices"]')
-        info1 = ''
         for each in ALL:
             cc = process_text1(each.text_content())
             service += cc
@@ -170,7 +167,7 @@ def hilton_parser(total_content, url, other_info):
     except Exception as e:
         print e
 
-    hotel.service = service
+    hotel.service = service.encode('utf8')
     print 'hotel.service=>', hotel.service
 
     check_in_time = ''
@@ -197,7 +194,7 @@ def hilton_parser(total_content, url, other_info):
     except Exception, e:
         print str(e)
 
-    hotel.description = desc
+    hotel.description = str(desc)
     print 'hotel.description=>', hotel.description
 
     hotel.hotel_url = url
@@ -233,8 +230,8 @@ def encode_unicode(str):
 
 
 if __name__ == '__main__':
-    url = 'http://www.hilton.com.cn/zh-CN/hotel/Beijing/hilton-beijing-wangfujing-BJSWFHI/'
-    url = 'http://www.hilton.com.cn/zh-cn/hotel/san-diego/hilton-san-diego-resort-and-spa-SANHIHF/'
+    # url = 'http://www.hilton.com.cn/zh-CN/hotel/Beijing/hilton-beijing-wangfujing-BJSWFHI/'
+    url = 'http://www.hilton.com.cn/zh-cn/hotel/sharjah/hilton-sharjah-SHJHSHI/'
     detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(url.split('/')[-2])
     map_info_url = url + 'maps-directions.html'
     desc_url = url + 'about.html'
