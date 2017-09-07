@@ -28,7 +28,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         'User-agent': GetUserAgent()
     }
 
-    with MySession() as session:
+    with MySession(need_proxies=False) as session:
         # hotels
         if source == 'hotels':
             hotel_id = re.findall('hotel-id=(\d+)', url)[0]
