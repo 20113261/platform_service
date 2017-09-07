@@ -25,9 +25,6 @@ import mioji.common.pool
 mioji.common.pool.NEED_MONKEY_PATCH = False
 mioji.common.pool.pool.set_size(2024)
 
-
-from proj.my_lib.logger import get_logger
-logger = get_logger("hote_list_hilton")
 # pymongo client
 
 client = pymongo.MongoClient(host='10.10.231.105')
@@ -61,10 +58,11 @@ def hotel_list_database(source, city_id, check_in):
         task.content = check_in
     else:
         task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
-    logger.info(factory._SpiderFactory__old_source_spider.keys())
+
     spider = factory.get_spider_by_old_source(source + 'ListHotel')
     spider.task = task
     print spider.crawl(required=['hotel'])
+    logger.info(str(spider.result['hotel']) + '  --  ' + task.content)
     return spider.result
 
 
