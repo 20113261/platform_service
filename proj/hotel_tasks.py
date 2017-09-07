@@ -68,7 +68,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             # headers['Host'] = 'doubletree3.hilton.com'
             # session.headers.update(headers)
             hilton_index = url.find('index.html')
-            if hilton_index>-1:
+            if hilton_index > -1:
                 url = url[:hilton_index]
             split_args = url.split('/')
             detail_url = 'http://www3.hilton.com/zh_CN/hotels/{0}/{1}/popup/hotelDetails.html'.format(
@@ -77,13 +77,20 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             desc_url = url + 'about.html'
 
             page = session.get(url)
+            detail_page = session.get(detail_url)
+            map_info_page = session.get(map_info_url)
+            desc_page = session.get(desc_url)
+            page.encoding = 'utf8'
+            detail_page.encoding = 'utf8'
+            map_info_page.encoding = 'utf8'
+            desc_page.encoding = 'utf8'
             __content = page.text
             logger.info(detail_url)
-            __detail_content = session.get(detail_url).text
-            __map_info_content = session.get(map_info_url).text
-            __desc_content = session.get(desc_url).text
+            __detail_content = detail_page.text
+            __map_info_content = map_info_page.text
+            __desc_content = desc_page.text
 
-            content = [__content.encode('utf8'), __detail_content.encode('utf8'), __map_info_content.encode('utf8'), __desc_content.encode('utf8')]
+            content = [__content, __detail_content, __map_info_content, __desc_content]
 
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
 
@@ -97,7 +104,6 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             logger.exception(e)
             raise e
 
-
         if not result:
             raise Exception('db error')
         else:
@@ -108,7 +114,8 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             for content_ in contents:
                 if kwargs.get('mongo_task_id'):
                     # 保存抓取成功后的页面信息
-                    save_task_and_page_content(task_name=part, content=content_, task_id=kwargs['mongo_task_id'], source=source,
+                    save_task_and_page_content(task_name=part, content=content_, task_id=kwargs['mongo_task_id'],
+                                               source=source,
                                                source_id=other_info['source_id'],
                                                city_id=other_info['city_id'], url=url)
 
