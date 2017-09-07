@@ -54,7 +54,10 @@ hotel_rooms_c = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'ch
 
 def hotel_list_database(source, city_id, check_in):
     task = Task()
-    task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
+    if source=='hilton':
+        task.content = check_in
+    else:
+        task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
     spider = factory.get_spider_by_old_source(source + 'ListHotel')
     spider.task = task
     print spider.crawl(required=['hotel'])
