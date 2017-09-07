@@ -103,6 +103,7 @@ def hilton_parser(total_content, url, other_info):
 
     service = ''
 
+    is_wifi_free = ''
     try:
         WIFI = html_detail.xpath('//td[@id="compare_internet"]/text()')[0]
         if "无线上网" in WIFI:
