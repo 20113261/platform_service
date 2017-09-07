@@ -61,8 +61,10 @@ class HotelsHotel(HotelBase, Base):
 class ElongHotel(HotelBase, Base):
     __tablename__ = 'hotelinfo_routine_elong'
 
+
 class CtripCNHotel(HotelBase, Base):
     __tablename__ = 'hotelinfo_routine_ctripcn'
+
 
 class HiltonHotel(HotelBase, Base):
     __tablename__ = 'hotelinfo_routine_hilton'

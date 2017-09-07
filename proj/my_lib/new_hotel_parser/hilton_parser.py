@@ -6,9 +6,8 @@ import sys
 import re
 import requests
 from lxml import html as HTML
-from data_obj import HiltonHotel
+from data_obj import HiltonHotel, DBSession
 
-# ----from data_obj import ExpediaHotel  # DBSession
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -187,10 +186,7 @@ def hilton_parser(total_content, url, other_info):
     print 'hotel.check_out_time=>', hotel.check_out_time
 
     try:
-        ALL = html_desc.xpath('//div[@class="intro fix"]/p')
-        desc = ''
-        for each in ALL:
-            desc+= each.text_content().encode('raw-unicode-escape')
+        desc = ''.join(html_desc.xpath('//div[@class="intro fix"]/p/text()')).replace(u'\xa0', '')
     except Exception, e:
         print str(e)
 
@@ -230,18 +226,26 @@ def encode_unicode(str):
 
 
 if __name__ == '__main__':
+    from proj.my_lib.Common.Browser import MySession
+
+    session = MySession()
     # url = 'http://www.hilton.com.cn/zh-CN/hotel/Beijing/hilton-beijing-wangfujing-BJSWFHI/'
-    url = 'http://www.hilton.com.cn/zh-cn/hotel/sharjah/hilton-sharjah-SHJHSHI/'
+    # url = 'http://www.hilton.com.cn/zh-cn/hotel/sharjah/hilton-sharjah-SHJHSHI/'
+    url = 'http://www.hilton.com.cn/zh-cn/hotel/cairo/ramses-hilton-CAIRHTW/'
+    # url2 = 'http://www.hilton.com.cn/zh-cn/hotel/cairo/ramses-hilton-CAIRHTW/popup/hotelDetails.html'
+    # url3 = 'http://www3.hilton.com/zh_CN/hotels/china/ramses-hilton-CAIRHTW/popup/hotelDetails.html'
     detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(url.split('/')[-2])
     map_info_url = url + 'maps-directions.html'
     desc_url = url + 'about.html'
 
-    page = requests.get(url)
+    page = session.get(url)
     page.encoding = 'utf8'
     content = page.text
-    detail_content = requests.get(detail_url).text
-    map_info_content = requests.get(map_info_url).text
-    desc_content = requests.get(desc_url).text
+    detail_content = session.get(detail_url).text
+    map_info_content = session.get(map_info_url).text
+    desc_page = session.get(desc_url)
+    desc_page.encoding = 'utf8'
+    desc_content = desc_page.text
 
     total_content = [content, detail_content, map_info_content, desc_content]
     other_info = {
