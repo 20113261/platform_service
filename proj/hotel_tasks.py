@@ -72,7 +72,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
 
             page = session.get(url)
             __content = page.text
-            __detail_content = session.get(detail_url).text
+            __detail_content = session.get(detail_url, allow_redirects=False).text
             __map_info_content = session.get(map_info_url).text
             __desc_content = session.get(desc_url).text
 
