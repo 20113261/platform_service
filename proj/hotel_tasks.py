@@ -28,7 +28,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         'User-agent': GetUserAgent()
     }
 
-    with MySession(need_proxies=False) as session:
+    with MySession() as session:
         # hotels
         if source == 'hotels':
             hotel_id = re.findall('hotel-id=(\d+)', url)[0]
@@ -76,10 +76,13 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             map_info_url = url + 'maps-directions.html'
             desc_url = url + 'about.html'
 
+            session.headers.update({"HOST": "www.hilton.com"})
             page = session.get(url)
-            detail_page = session.get(detail_url)
             map_info_page = session.get(map_info_url)
             desc_page = session.get(desc_url)
+
+            session.headers.update({"HOST": "www3.hilton.com"})
+            detail_page = session.get(detail_url, )
             page.encoding = 'utf8'
             detail_page.encoding = 'utf8'
             map_info_page.encoding = 'utf8'
