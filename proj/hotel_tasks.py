@@ -94,10 +94,15 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         if not result:
             raise Exception('db error')
         else:
-            if kwargs.get('mongo_task_id'):
-                # 保存抓取成功后的页面信息
-                save_task_and_page_content(task_name=part, content=content, task_id=kwargs['mongo_task_id'], source=source,
-                                           source_id=other_info['source_id'],
-                                           city_id=other_info['city_id'], url=url)
+            if type(content) is list:
+                contents = content
+            else:
+                contents = [content]
+            for content_ in contents:
+                if kwargs.get('mongo_task_id'):
+                    # 保存抓取成功后的页面信息
+                    save_task_and_page_content(task_name=part, content=content_, task_id=kwargs['mongo_task_id'], source=source,
+                                               source_id=other_info['source_id'],
+                                               city_id=other_info['city_id'], url=url)
 
         return result.__dict__
