@@ -190,7 +190,7 @@ def hilton_parser(total_content, url, other_info):
     except Exception, e:
         print str(e)
 
-    hotel.description = str(desc)
+    hotel.description = desc
     print 'hotel.description=>', hotel.description
 
     hotel.hotel_url = url
@@ -253,10 +253,10 @@ if __name__ == '__main__':
         'city_id': '50795'
     }
     result = hilton_parser(total_content, url, other_info)
-    # try:
-    #     session = DBSession()
-    #     session.merge(result)
-    #     session.commit()
-    #     session.close()
-    # except Exception as e:
-    #     print str(e)
+    try:
+        session = DBSession()
+        session.merge(result)
+        session.commit()
+        session.close()
+    except Exception as e:
+        print str(e)
