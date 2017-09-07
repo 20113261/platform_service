@@ -64,6 +64,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         else:
             headers['Upgrade-Insecure-Requests'] = 1
             headers['Cache-Control'] = 'max-age=0'
+            headers['Host'] = 'doubletree3.hilton.com'
             session.headers.update(headers)
             hilton_index = url.find('index.html')
             if hilton_index>-1:
@@ -76,7 +77,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             page = session.get(url)
             __content = page.text
             logger.info(detail_url)
-            __detail_content = session.get(detail_url, allow_redirects=False).text
+            __detail_content = session.get(detail_url).text
             __map_info_content = session.get(map_info_url).text
             __desc_content = session.get(desc_url).text
 
