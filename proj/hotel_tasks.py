@@ -62,7 +62,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             page.encoding = 'utf8'
             content = page.text
         else:
-            hilton_index = url.find('/index.html')
+            hilton_index = url.find('index.html')
             if hilton_index>-1:
                 url = url[:hilton_index]
             detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(
