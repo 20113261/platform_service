@@ -62,6 +62,9 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             page.encoding = 'utf8'
             content = page.text
         else:
+            headers['Upgrade-Insecure-Requests'] = 1
+            headers['Cache-Control'] = 'max-age=0'
+            session.headers.update(headers)
             hilton_index = url.find('index.html')
             if hilton_index>-1:
                 url = url[:hilton_index]
