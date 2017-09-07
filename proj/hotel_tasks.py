@@ -83,7 +83,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             __map_info_content = session.get(map_info_url).text
             __desc_content = session.get(desc_url).text
 
-            content = [__content, __detail_content, __map_info_content, __desc_content]
+            content = [__content.encode('utf8'), __detail_content.encode('utf8'), __map_info_content.encode('utf8'), __desc_content.encode('utf8')]
 
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
 
