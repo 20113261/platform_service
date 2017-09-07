@@ -5,6 +5,7 @@ import traceback
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 
+from copy import deepcopy
 from proj.my_lib.Common.Browser import MySession
 from proj.celery import app
 from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
@@ -62,15 +63,16 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             page.encoding = 'utf8'
             content = page.text
         else:
-            headers['Upgrade-Insecure-Requests'] = '1'
-            headers['Cache-Control'] = 'max-age=0'
-            headers['Host'] = 'doubletree3.hilton.com'
-            session.headers.update(headers)
+            # headers['Upgrade-Insecure-Requests'] = '1'
+            # headers['Cache-Control'] = 'max-age=0'
+            # headers['Host'] = 'doubletree3.hilton.com'
+            # session.headers.update(headers)
             hilton_index = url.find('index.html')
             if hilton_index>-1:
                 url = url[:hilton_index]
-            detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(
-                url.split('/')[-2])
+            split_args = url.split('/')
+            detail_url = 'http://www3.hilton.com/zh_CN/hotels/{0}/{1}/popup/hotelDetails.html'.format(
+                split_args[-3], split_args[-2])
             map_info_url = url + 'maps-directions.html'
             desc_url = url + 'about.html'
 
