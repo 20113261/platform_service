@@ -89,8 +89,9 @@ def hilton_parser(total_content, url, other_info):
     try:
         map_info_data = re.findall(r'var hotelJsonInfo = (.*?);', map_info_content)[0]
         map_info_data = eval(map_info_data)
-        mmp = map_info_data['TxLocation'].split(',')
-        map_info = mmp[1] + ',' + mmp[0]
+        location = map_info_data.get('TxLocation', None) or map_info_data.get('Location', None)
+        mmp = location.split(',')
+        map_info = mmp[0] + ',' + mmp[1]
 
 
     except Exception as e:
@@ -230,6 +231,7 @@ def encode_unicode(str):
 
 if __name__ == '__main__':
     url = 'http://www.hilton.com.cn/zh-CN/hotel/Beijing/hilton-beijing-wangfujing-BJSWFHI/'
+    url = 'http://www.hilton.com.cn/zh-cn/hotel/san-diego/hilton-san-diego-resort-and-spa-SANHIHF/'
     detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(url.split('/')[-2])
     map_info_url = url + 'maps-directions.html'
     desc_url = url + 'about.html'

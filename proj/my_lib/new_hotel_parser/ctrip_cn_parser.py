@@ -77,7 +77,7 @@ def ctrip_cn_parser(content, url, other_info):
     except Exception as e:
         try:
             position_temp = root.xpath('//*[@id="hotelCoordinate"]/@value')[0].encode('utf-8').strip().split('|')
-            hotel.map_info = position_temp[1] + ',' + position_temp[0]
+            hotel.map_info = position_temp[0] + ',' + position_temp[1]
 
         except Exception, e:
             print traceback.format_exc()
