@@ -98,6 +98,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
 
         try:
+            logger.info(str(result))
             session = DBSession()
             session.merge(result)
             session.commit()
