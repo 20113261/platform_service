@@ -67,6 +67,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             # headers['Cache-Control'] = 'max-age=0'
             # headers['Host'] = 'doubletree3.hilton.com'
             # session.headers.update(headers)
+            session.auto_update_host = False
             hilton_index = url.find('index.html')
             if hilton_index > -1:
                 url = url[:hilton_index]
@@ -76,12 +77,10 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             map_info_url = url + 'maps-directions.html'
             desc_url = url + 'about.html'
 
-            session.headers.update({"HOST": "www.hilton.com"})
             page = session.get(url)
             map_info_page = session.get(map_info_url)
             desc_page = session.get(desc_url)
 
-            session.headers.update({"HOST": "www3.hilton.com"})
             detail_page = session.get(detail_url, )
             page.encoding = 'utf8'
             detail_page.encoding = 'utf8'
