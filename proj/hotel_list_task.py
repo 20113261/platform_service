@@ -75,7 +75,7 @@ def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
     result = hotel_list_database(source=source, city_id=city_id, check_in=check_in)
     # data = []
     part = part.replace('list', 'detail')
-    if source == 'ctrip':
+    if source in ('ctrip', 'ctripcn'):
         for line in result['hotel']:
             sid = line[3]
             hotel_url = line[-1]
@@ -107,10 +107,10 @@ def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
                 'u_time': datetime.datetime.now()
             })
     else:
-        for line in result['hotel']:
+        for sid, hotel_url in result['hotel']:
             collections.save({
-                'sid': line[3],
-                'hotel_url': line[-1],
+                'sid': sid,
+                'hotel_url': hotel_url,
                 'parent_info': {
                     'source': source,
                     'city_id': city_id,
@@ -120,8 +120,6 @@ def hotel_list_task(self, source, city_id, check_in, part, **kwargs):
                 },
                 'u_time': datetime.datetime.now()
             })
-
-    # print insert_task(data=data)
 
 
 if __name__ == '__main__':
