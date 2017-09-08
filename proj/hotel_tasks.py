@@ -18,7 +18,7 @@ from proj.my_lib.logger import get_logger
 logger = get_logger("HotelDetail")
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='10/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='1/s')
 def hotel_base_data(self, source, url, other_info, part, **kwargs):
     self.task_source = source.title()
     self.task_type = 'Hotel'
@@ -98,6 +98,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
 
         try:
+            logger.info(str(result))
             session = DBSession()
             session.merge(result)
             session.commit()

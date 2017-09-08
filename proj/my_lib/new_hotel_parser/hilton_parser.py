@@ -42,9 +42,9 @@ def hilton_parser(total_content, url, other_info):
     try:
         # 匹配英文名
         # eng_pattern = re.compile(r'([a-zA-Z].*[a-zA-Z]?)', re.S)
-        name_all = re.findall(r'var HotelName = "(.*?)";', content)[0]
-        hotel.hotel_name_en = name_all
-        hotel.hotel_name = name_all
+        name_all = re.findall(r'var HotelName = "(.*?)";', content.decode('utf8'))[0]
+        hotel.hotel_name_en = name_all.encode('utf8')
+        hotel.hotel_name = name_all.encode('utf8')
 
     except Exception, e:
         print str(e)
