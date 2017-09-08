@@ -50,7 +50,7 @@ db_config = dict(
     database='base_data'
 )
 conn = mysql.connector.connect(pool_name="hotel-list-value-pool",
-                               pool_size=10,
+                               pool_size=15,
                                **db_config)
 
 
@@ -81,22 +81,30 @@ def hotel_routine_list_task(self, source, city_id, check_in, **kwargs):
 
     self.error_code = str(code)
 
-    data_res = []
-    if source == 'ctrip':
-        for line in result['hotel']:
-            city_id
-            sid = line[3]
-            hotel_url = line[-1]
-            data_res.append((source, sid, city_id, hotel_url))
-    else:
-        for sid, hotel_url in result['hotel']:
-            data_res.append((source, sid, city_id, hotel_url))
+    try:
+        data_res = []
+        if source == 'ctrip':
+            for line in result['hotel']:
+                city_id
+                sid = line[3]
+                hotel_url = line[-1]
+                data_res.append((source, sid, city_id, hotel_url))
+        else:
+            for sid, hotel_url in result['hotel']:
+                data_res.append((source, sid, city_id, hotel_url))
+    except Exception as e:
+        self.error_code = 25
+        raise e
 
-    cursor = conn.cursor()
-    sql = "REPLACE INTO hotel_base_data_task (source, source_id, city_id, hotel_url) VALUES (%s,%s,%s,%s)"
-    cursor.executemany(sql, data_res)
-    cursor.close()
-    conn.commit()
+    try:
+        cursor = conn.cursor()
+        sql = "REPLACE INTO hotel_base_data_task (source, source_id, city_id, hotel_url) VALUES (%s,%s,%s,%s)"
+        cursor.executemany(sql, data_res)
+        cursor.close()
+        conn.commit()
+    except Exception as e:
+        self.error_code = 33
+        raise e
     return True
 
 
