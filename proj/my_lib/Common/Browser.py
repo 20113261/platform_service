@@ -8,16 +8,18 @@
 import requests
 import time
 import urlparse
+import httplib
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 
+httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
 
 class MySession(requests.Session):
-    def __init__(self, need_proxies=True):
+    def __init__(self, need_proxies=True, auto_update_host=True):
         self.start = time.time()
         super(MySession, self).__init__()
         headers = {
@@ -30,10 +32,12 @@ class MySession(requests.Session):
             self.change_proxies()
 
         self.verify = False
+        self.auto_update_host = auto_update_host
 
     def send(self, request, **kwargs):
-        if 'Host' not in request.headers:
-            request.headers['Host'] = urlparse.urlparse(request.url).netloc
+        if self.auto_update_host:
+            if 'Host' not in request.headers:
+                request.headers['Host'] = urlparse.urlparse(request.url).netloc
 
         return super(MySession, self).send(request, **kwargs)
 
