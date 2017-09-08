@@ -85,7 +85,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
             page.encoding = 'utf8'
             detail_page.encoding = 'utf8'
             map_info_page.encoding = 'utf8'
-            desc_page.encoding = 'utf8'
+            # desc_page.encoding = 'utf8'
             __content = page.text
             logger.info(detail_url)
             __detail_content = detail_page.text
