@@ -286,7 +286,8 @@ def get_lost_rest_no_proxy(self, target_url):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='10/s')
-def get_images(self, source, source_id, target_url, part, file_path, desc_path, is_poi_task=True, **kwargs):
+def get_images(self, source, source_id, target_url, part, file_path, desc_path, is_poi_task=True, need_insert_db=True,
+               special_file_name='', **kwargs):
     self.task_source = source.title()
     self.task_type = 'download_images'
     self.error_code = 0
@@ -296,7 +297,6 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         f_stream = StringIO(page.content)
         flag, h, w = is_complete_scale_ok(f_stream)
 
-        suffix = ''
         try:
             suffix = target_url.rsplit('.', 1)[1]
         except IndexError as e:
@@ -324,6 +324,10 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         res_flag = 1 if flag == 0 else 0
         size = str((h, w))
 
+        # 更新 file name
+        if special_file_name != '':
+            file_name = special_file_name
+            
         data = (
             source,  # source
             source_id,  # source_id
@@ -336,14 +340,17 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         )
 
         try:
-            if is_poi_task:
-                poi_make_kw(data)
-            else:
-                hotel_make_kw(data)
+            # 更换优先级顺序，先存文件后入库，发现 5% 的图片有裂图问题，可能由此导致
             if not os.path.exists(desc_path):
                 os.makedirs(desc_path)
             with open(os.path.join(desc_path, file_name), 'wb') as f:
                 f.write(page.content)
+
+            if need_insert_db:
+                if is_poi_task:
+                    poi_make_kw(data)
+                else:
+                    hotel_make_kw(data)
         except exc.SQLAlchemyError as err:
             self.error_code = 34
             raise Exception(err)
@@ -548,7 +555,8 @@ def get_images_info(self, path):
 import hashlib
 import redis
 import shutil
-from .my_lib.hotel_img_func import hotel_make_kw, poi_make_kw, get_file_md5, get_stream_md5, insert_db_old as hotel_images_info_insert_db
+from .my_lib.hotel_img_func import hotel_make_kw, poi_make_kw, get_file_md5, get_stream_md5, \
+    insert_db_old as hotel_images_info_insert_db
 from pymysql.err import IntegrityError
 
 redis_dict = redis.Redis(host='10.10.180.145', db=5)
