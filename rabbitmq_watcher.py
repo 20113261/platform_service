@@ -10,7 +10,7 @@ import sys
 sys.path.append('/root/data/lib')
 import json
 import requests
-import logging
+from proj.my_lib.logger import get_logger
 from apscheduler.schedulers.blocking import BlockingScheduler
 from requests.auth import HTTPBasicAuth
 from proj.celery import app
@@ -19,11 +19,11 @@ from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 
 schedule = BlockingScheduler()
 
-stream_handler = logging.StreamHandler()
-logger = logging.getLogger('rabbitmq_watcher')
-logger.addHandler(stream_handler)
-logger.setLevel(logging.DEBUG)
-
+# stream_handler = logging.StreamHandler()
+# logger = logging.getLogger('rabbitmq_watcher')
+# logger.addHandler(stream_handler)
+# logger.setLevel(logging.DEBUG)
+logger = get_logger("rabbitmq_watcher")
 '''
 用于管理分发任务的数目
 默认为 default 值
