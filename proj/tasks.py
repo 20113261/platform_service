@@ -290,7 +290,6 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
                special_file_name='', **kwargs):
     self.task_source = source.title()
     self.task_type = 'download_images'
-    self.error_code = 0
 
     with MySession() as session:
         page = session.get(target_url, timeout=(120, None))
@@ -351,6 +350,9 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
                     poi_make_kw(data)
                 else:
                     hotel_make_kw(data)
+
+            # 设置标识位
+            self.error_code = 0
         except exc.SQLAlchemyError as err:
             self.error_code = 34
             raise Exception(err)
