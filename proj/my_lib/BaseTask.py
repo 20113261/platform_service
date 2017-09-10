@@ -132,7 +132,7 @@ class BaseTask(Task):
             real_einfo = str(einfo)[einfo_i:] if einfo_i > -1 else str(einfo)
 
             mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, real_einfo, task_source, task_type,
-                                     error_code)
+                                     error_code, is_routine_task=False)
 
 
 if __name__ == '__main__':

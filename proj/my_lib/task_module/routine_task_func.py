@@ -10,7 +10,11 @@ import datetime
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['RoutineTask']
-failed_task_collections = client['MongoTask']['RoutineFailedTask']
+failed_routine_task_collections = client['MongoTask']['RoutineFailedTask']
+task_collections = client['MongoTask']['Task']
+
+
+# failed_task_collections = client['MongoTask']['RoutineFailedTask']
 
 
 def get_routine_task_total(queue, limit=30000):
@@ -58,18 +62,41 @@ def get_per_task(task_id):
     return collections.find_one({'task_token': task_id})
 
 
-def insert_failed_task(task_id, celery_task_id, args, kwargs, einfo, source, s_type, error_code):
+def insert_failed_task(task_id, celery_task_id, args, kwargs, einfo, source, s_type, error_code,
+                       is_routine_task=True):
     try:
-        failed_task_collections.save({
-            'task_id': task_id,
-            'source': source,
-            'type': s_type,
-            'error_code': error_code,
-            'celery_task_id': celery_task_id,
-            'args': args,
-            'kwargs': kwargs,
-            'einfo': einfo,
-        })
+        if is_routine_task:
+            failed_routine_task_collections.save({
+                'task_id': task_id,
+                'source': source,
+                'type': s_type,
+                'error_code': error_code,
+                'celery_task_id': celery_task_id,
+                'args': args,
+                'kwargs': kwargs,
+                'einfo': einfo,
+            })
+
+        if not is_routine_task:
+            task_collections.update(
+                {"task_token": task_id},
+                {
+                    "$push": {
+                        "result": {
+                            "$each": [
+                                {
+                                    "error_code": error_code,
+                                    "celery_task_id": celery_task_id,
+                                    "error_info": einfo,
+                                    "datetime": datetime.datetime.now()
+                                }
+                            ],
+                            "$sort": {"datetime": -1},
+                            "$slice": 6
+                        }
+                    }
+                }
+            )
     except Exception:
         pass
 
