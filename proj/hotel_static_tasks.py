@@ -23,7 +23,7 @@ from proj.my_lib.logger import get_logger
 
 logger = get_logger("HotelTripadvisor")
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='50/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='20/s')
 def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, city_id, hotel_url, **kwargs):
     self.task_source = source.title()
     self.task_type = 'HotelStaticDataParse'
