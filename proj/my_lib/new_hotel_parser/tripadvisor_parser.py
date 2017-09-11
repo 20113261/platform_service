@@ -34,9 +34,13 @@ def tripadvisor_parser(content, url, other_info):
     # if map_info_temp:
     #     hotel.map_info = map_info_temp[0]
 
-    map_info_temp = re.findall("taStore\.store\(\'typeahead.recentHistoryList\',([\s\S]+?)\);", content)[0].strip()
-    map_info_json = json.loads(map_info_temp)
-    hotel.map_info = ','.join(map_info_json[0]['coords'].split(',')[::-1])
+    # map_info_temp = re.findall("taStore\.store\(\'typeahead.recentHistoryList\',([\s\S]+?)\);", content)[0].strip()
+    # map_info_json = json.loads(map_info_temp)
+    # hotel.map_info = ','.join(map_info_json[0]['coords'].split(',')[::-1])
+    # print 'hotel.map_info', hotel.map_info
+
+    map_info_temp = re.findall("//dev.ditu.live.com/REST/v1/Imagery/Map/Road/(.*?)/", content)
+    hotel.map_info = ','.join(map_info_temp[0].split(',')[::-1])
     print 'hotel.map_info', hotel.map_info
 
     # star 需要强制处理成 int ，即 floor 。
@@ -112,7 +116,8 @@ if __name__ == '__main__':
     # url = 'https://www.tripadvisor.cn/Hotel_Review-g187147-d7182695-Reviews-Maison_Souquet-Paris_Ile_de_France.html'
     # url = 'https://www.tripadvisor.cn/Hotel_Review-g293974-d7053739-Reviews-Business_Life_Boutique_Hotel-Istanbul.html'
     # url = 'https://cn.tripadvisor.com/Hotel_Review-g187147-d6882422-Reviews-Hotel_du_Mont_Louis-Paris_Ile_de_France.html'
-    url = 'https://cn.tripadvisor.com/Hotel_Review-g190507-d1153153-Reviews-Innvik_Fjordhotel-Sogn_og_Fjordane_Western_Norway.html'
+    # url = 'https://cn.tripadvisor.com/Hotel_Review-g190507-d1153153-Reviews-Innvik_Fjordhotel-Sogn_og_Fjordane_Western_Norway.html'
+    url = 'https://www.tripadvisor.cn/Hotel_Review-g293974-d5602809-Reviews-Lavanta_Hotel-Istanbul.html#apg=cd45ff2c99a1408cb5ad681dacfcf1c7&ss=3936DCE92825AB4DE511A4760944EF17'
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.text
