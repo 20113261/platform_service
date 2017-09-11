@@ -24,26 +24,21 @@ from proj.my_lib.PageSaver import get_page_content
 def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, city_id, hotel_url, **kwargs):
     self.task_source = source.title()
     self.task_type = 'HotelStaticDataParse'
-    try:
-        # 获取保存的页面信息
-        other_info = {
-            'source_id': source_id,
-            'city_id': city_id
-        }
-        result = parse_hotel(
-            content=get_page_content(task_id=parent_task_id, task_name=task_name),
-            url=hotel_url,
-            other_info=other_info,
-            source=source,
-            part=task_name
-        )
+    # 获取保存的页面信息
+    other_info = {
+        'source_id': source_id,
+        'city_id': city_id
+    }
+    result = parse_hotel(
+        content=get_page_content(task_id=parent_task_id, task_name=task_name),
+        url=hotel_url,
+        other_info=other_info,
+        source=source,
+        part=task_name
+    )
 
-        if not result:
-            self.retry(exc=Exception('db error'))
-        else:
-            if kwargs.get('task_id'):
-                update_task(kwargs['task_id'])
-            print "Success CODE 0"
-        return result
-    except Exception as exc:
-        self.retry(exc=traceback.format_exc(exc))
+    if not result:
+        raise Exception('db error')
+
+    self.error_code = 0
+    return result
