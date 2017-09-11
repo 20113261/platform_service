@@ -10,7 +10,7 @@ import re
 import requests
 import pyquery
 import json
-from data_obj import Hotel
+from data_obj import TripadvisorHotel
 from proj.my_lib.decode_raw_site import decode_raw_site
 
 reload(sys)
@@ -18,7 +18,7 @@ sys.setdefaultencoding('utf-8')
 
 
 def tripadvisor_parser(content, url, other_info):
-    hotel = Hotel()
+    hotel = TripadvisorHotel()
     doc = pyquery.PyQuery(content)
 
     hotel.hotel_name = hotel.hotel_name_en = doc('#HEADING').text()
