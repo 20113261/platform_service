@@ -15,7 +15,6 @@ sys.setdefaultencoding('utf8')
 
 from proj.celery import app
 from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
-from proj.my_lib.task_module.task_func import update_task
 from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.PageSaver import get_page_content
 from my_lib.new_hotel_parser.data_obj import DBSession
