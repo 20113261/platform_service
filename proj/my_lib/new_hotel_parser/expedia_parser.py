@@ -5,6 +5,7 @@ import json
 import sys
 
 import re
+import urlparse
 import requests
 # from common.logger import logger
 from lxml import html as HTML
@@ -186,14 +187,10 @@ def expedia_parser(content, url, other_info):
         print str(e)
     print 'service=>%s' % hotel.service
     try:
-        # map_pattern = re.compile(r'var modelData =(.*?);')
-        # map_detail = map_pattern.findall(content)[0]
-        # map_json = json.loads(map_detail)
-        # map_temp = map_json['latLong'].encode('utf-8').split('|')
-        # map_info = map_temp[1] + ',' + map_temp[0]
-        # hotel.map_info = map_info
-        map_temp = re.findall(r'\"latlong\": \"(.*)\",', content)[0].encode('utf-8').split(',')
-        map_info = map_temp[-1] + ',' + map_temp[0]
+        map_part = root.xpath('// div[@class="map"]/a/figure/@data-src')
+        map_str = map_part[-1]
+        google_map_info = urlparse.parse_qs(map_str)['center'][-1]
+        map_info = ','.join(google_map_info.split(',')[::-1])
         hotel.map_info = map_info
     except Exception, e:
         map_info = 'NULL'
@@ -269,6 +266,8 @@ def encode_unicode(str):
 
 
 if __name__ == '__main__':
+    from proj.my_lib.new_hotel_parser.lang_convert import tradition2simple
+
     url = 'https://www.expedia.cn/h1000.Hotel-Information'
     # url = 'https://www.expedia.cn/cn/Red-Lodge-Hotels-Rock-Creek-Resort.h4738480.Hotel-Information?chkin=2017%2F03%2F10&chkout=2017%2F03%2F11&rm1=a2&regionId=0&hwrqCacheKey=1b1ae982-7ce1-495b-8e39-95fda9024720HWRQ1489143096310&vip=false&c=f14b28c2-998c-4ed9-be72-b832c4eb08ff&&exp_dp=1071.2&exp_ts=1489143098007&exp_curr=CNY&exp_pg=HSR'
     # url = 'https://www.expedia.cn/cn/Billings-Hotels-Yellowstone-River-Lodge.h13180651.Hotel-Information?chkin=2017%2F03%2F10&chkout=2017%2F03%2F11&rm1=a2&regionId=0&hwrqCacheKey=1b1ae982-7ce1-495b-8e39-95fda9024720HWRQ1489143192290&vip=false&c=4c8a0d41-19d1-4a60-8cef-757c92a29e97&'
@@ -277,7 +276,8 @@ if __name__ == '__main__':
     # url = 'https://www.expedia.com.hk/cn/h9999647.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Savannah-Hotels-Best-Western-Savannah-Historic-District.h454.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Chiang-Mai-Hotels-VCSuanpaak-Hotel-Serviced-Apartments.h6713388.Hotel-Information?chkin=2016%2F12%2F14&chkout=2016%2F12%2F15&rm1=a3&hwrqCacheKey=f03a3186-af50-40c4-881f-b5f8c58d19a7HWRQ1480420091939&c=4617cc10-b9c1-46dc-992b-5a6fe87f7f49&'
-    url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=a2203d7df9960a271e52eedf8c008f65'
+    # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=ef1d21e286502f87feaea39098c11b1c'
+    url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=0035837c89d997704b1312cd3cf6c50e'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'
@@ -287,6 +287,23 @@ if __name__ == '__main__':
     page.encoding = 'utf8'
     content = page.text
     result = expedia_parser(content, url, other_info)
+
+    print '#' * 100
+    keys = ['hotel_name', 'hotel_name_en', 'brand_name', 'address', 'service', 'description', 'accepted_cards']
+
+    for key in keys:
+        if not getattr(result, key):
+            setattr(result, key, 'NULL')
+        setattr(result, key, tradition2simple(getattr(result, key).decode()))
+    # result.hotel_name = tradition2simple(result.hotel_name.decode())
+    # result.hotel_name_en = tradition2simple(result.hotel_name_en.decode())
+    # result.brand_name = tradition2simple(result.brand_name.decode())
+    # result.address = tradition2simple(result.address.decode())
+    # result.service = tradition2simple(result.service.decode())
+    # result.description = tradition2simple(result.description.decode())
+    # result.accepted_cards = tradition2simple(result.accepted_cards.decode())
+    for k, v in result.__dict__.items():
+        print k, '=>', v
     print 'Hello World'
     # try:
     #     session = DBSession()
