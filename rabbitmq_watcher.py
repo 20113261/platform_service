@@ -58,6 +58,8 @@ def insert_task(queue, limit):
             queue=queue,
             routing_key=routing_key
         )
+    emergency_count = _count
+    logger.info("Insert queue: {0} Emergency task count: {1}".format(queue, _count))
 
     for task_token, worker, queue, routing_key, args in get_routine_task_total(queue=queue, limit=limit - _count):
         _count += 1
@@ -72,10 +74,11 @@ def insert_task(queue, limit):
             routing_key=routing_key
         )
 
-    logger.info("Insert queue: {0} task count: {1}".format(queue, _count))
+    logger.info("Insert queue: {0} Routine task count: {1}".format(queue, _count - emergency_count))
+    logger.info("Insert queue: {0} Total task count: {1}".format(queue, _count))
 
 
-@schedule.scheduled_job('cron', second='*/10')
+@schedule.scheduled_job('cron', second='*/60')
 def mongo_task_watcher():
     logger.info('Start Searching Queue Info')
     target_url = 'http://10.10.189.213:15672/api/queues/celery'
@@ -84,11 +87,12 @@ def mongo_task_watcher():
     j_data = json.loads(content)
 
     # celery message bool
-    for each in filter(lambda x: 'celery@' not in x['name'] and 'celeryev' not in x['name'], j_data):
+    for each in list(filter(lambda x: 'celery@' not in x['name'] and 'celeryev' not in x['name'], j_data)):
         queue_name = each['name']
         message_count = int(each['messages'])
         queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
         if message_count <= queue_min_task:
+            logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
             insert_task(queue_name, insert_task_count)
         else:
             logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
