@@ -20,6 +20,9 @@ from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.PageSaver import get_page_content
 from my_lib.new_hotel_parser.data_obj import DBSession
 
+from proj.my_lib.logger import get_logger
+
+logger = get_logger("HotelTripadvisor")
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='50/s')
 def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, city_id, hotel_url, **kwargs):
@@ -30,6 +33,7 @@ def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, c
         'source_id': source_id,
         'city_id': city_id
     }
+    logger.info('http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_tripadvisor_total_new&id='+parent_task_id)
     result = parse_hotel(
         content=get_page_content(task_id=parent_task_id, task_name=task_name),
         url=hotel_url,
