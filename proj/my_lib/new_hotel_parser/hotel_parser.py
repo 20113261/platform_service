@@ -12,6 +12,7 @@ import ctrip_cn_parser
 import hilton_parser
 from proj.my_lib.Common.KeyMatch import key_is_legal
 from proj.my_lib.logger import get_logger
+from .lang_convert import tradition2simple
 
 logger = get_logger("HotelDetail")
 
@@ -79,6 +80,14 @@ def parse_hotel(content, url, other_info, source, part):
     # result 中 grade 修复
     if result.grade == 'NULL':
         result.grade = -1
+
+    # 酒店全部字段繁体转简体
+    keys = ['hotel_name', 'hotel_name_en', 'brand_name', 'address', 'service', 'description', 'accepted_cards']
+
+    for key in keys:
+        if not getattr(result, key):
+            setattr(result, key, 'NULL')
+        setattr(result, key, tradition2simple(getattr(result, key).decode()))
 
     return result
 
