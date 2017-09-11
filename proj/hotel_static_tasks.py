@@ -18,6 +18,7 @@ from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from proj.my_lib.task_module.task_func import update_task
 from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.PageSaver import get_page_content
+from my_lib.new_hotel_parser.data_obj import DBSession
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='50/s')
@@ -39,6 +40,17 @@ def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, c
 
     if not result:
         raise Exception('db error')
+
+    try:
+        # logger.info(str(result))
+        session = DBSession()
+        session.merge(result)
+        session.commit()
+        session.close()
+    except Exception as e:
+        self.error_code = 33
+        logger.exception(e)
+        raise e
 
     self.error_code = 0
     return result
