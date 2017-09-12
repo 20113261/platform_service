@@ -105,6 +105,8 @@ def hotel_routine_list_task(self, source, city_id, check_in, **kwargs):
     except Exception as e:
         self.error_code = 33
         raise e
+    finally:
+        conn.close()
     return True
 
 
