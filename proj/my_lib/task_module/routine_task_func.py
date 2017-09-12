@@ -22,6 +22,9 @@ def get_routine_task_total(queue, limit=30000):
             {
                 'queue': queue,
                 'running': 0
+            },
+            {
+                'result': 0
             }
     ).sort([('priority', -1), ('finished', 1), ('utime', 1)]).limit(limit):
         task_token = line['task_token']
