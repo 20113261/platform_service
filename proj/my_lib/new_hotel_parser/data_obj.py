@@ -70,7 +70,7 @@ class HiltonHotel(HotelBase, Base):
     __tablename__ = 'hotelinfo_routine_hilton'
 
 class TripadvisorHotel(HotelBase, Base):
-    __tablename__ = 'hotelinfo_tripadvisor_0912'
+    __tablename__ = 'hotelinfo_tripadvisor_0912_2'
 
 
 # 初始化数据库连接:
