@@ -204,8 +204,9 @@ def process_text(ALL,service):
         for e in each.xpath('td'):
             s= str(e.text_content())                               
             s= s.replace('\n','').replace('\t','').replace('\r','').replace('  ','').replace('   ','')
-            info1 = info1+s+'::' 
-        service += info1[:-2]+'|'
+            info1 = info1+s+'::'
+
+    service += info1[:-2]+'|'
     return service
 '''
 def process_text(str):
