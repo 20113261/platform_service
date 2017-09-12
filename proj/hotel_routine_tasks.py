@@ -18,7 +18,7 @@ from proj.my_lib.logger import get_logger
 logger = get_logger("HotelDetail")
 
 
-@app.task(bind=True, base=BaseRoutineTask, max_retries=2, rate_limit='6/s')
+@app.task(bind=True, base=BaseRoutineTask, max_retries=2, rate_limit='1/s')
 def hotel_routine_base_data(self, source, url, other_info, **kwargs):
     self.task_source = source.title()
     self.task_type = 'Hotel'
