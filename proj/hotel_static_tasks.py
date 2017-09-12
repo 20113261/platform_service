@@ -26,6 +26,7 @@ logger = get_logger("HotelTripadvisor")
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='5/s')
 def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, city_id, hotel_url, **kwargs):
+    logger.info("parent task id: {0}, start task".format(parent_task_id))
     self.task_source = source.title()
     self.task_type = 'HotelStaticDataParse'
     # 获取保存的页面信息
@@ -35,13 +36,17 @@ def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, c
     }
     logger.info(
         'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_tripadvisor_total_new&id=' + parent_task_id)
+
+    content = get_page_content(task_id=parent_task_id, task_name=task_name)
+    logger.info("parent task id: {0}, end of get hotel content, start parse hotel".format(parent_task_id))
     result = parse_hotel(
-        content=get_page_content(task_id=parent_task_id, task_name=task_name),
+        content=,
         url=hotel_url,
         other_info=other_info,
         source=source,
         part=task_name
     )
+    logger.info("parent task id: {0}, end of parse hotel, start insert db".format(parent_task_id))
 
     if not result:
         raise Exception('db error')
@@ -56,6 +61,6 @@ def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, c
         self.error_code = 33
         logger.exception(e)
         raise e
-
+    logger.info("parent task id: {0}, end of insert db".format(parent_task_id))
     self.error_code = 0
     return result
