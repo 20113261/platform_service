@@ -160,13 +160,7 @@ def hilton_parser(total_content, url, other_info):
     try:
         service+='家庭：'
         ALL = html_detail.xpath('//tbody[@id="tbodyfamily"]/tr')
-        info1 = ''
-        for each in ALL:
-            for e in each.xpath('td'):
-                s= str(e.text_content())
-                s= s.replace('\n','').replace('\t','').replace('\r','').replace('  ','').replace('   ','')
-                info1 = info1+s+'::' 
-            service += info1[:-2]+'|'
+        service = process_text(ALL,service)
     except Exception as e:
         print e
 
