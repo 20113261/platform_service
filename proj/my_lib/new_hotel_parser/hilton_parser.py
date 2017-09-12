@@ -138,31 +138,29 @@ def hilton_parser(total_content, url, other_info):
 
     service = ''
     try:
-        service += '交通：'
-        ALL = html_detail.xpath('//tbody[@id="tbodytransportation"]')[0]
-        for each in ALL:
-            cc = process_text(each.text_content())
-            service += cc
-            service += '|'
+        service+='交通：'
+        ALL = html_detail.xpath('//tbody[@id="tbodytransportation"]/tr')
+        service = process_text(ALL,service)
     except Exception as e:
         print e
 
     try:
-        service += '设施：'
-        ALL = html_detail.xpath('//tbody[@id="tbodyfacilities"]')
-        for each in ALL:
-            cc = process_text1(each.text_content())
-            service += cc
+        service+='设施：'
+        ALL = html_detail.xpath('//tbody[@id="tbodyfacilities"]/tr')
+        service = process_text(ALL,service)
+    except Exception as e:
+        print e
+    try:
+        service+='服务与设施：'
+        ALL = html_detail.xpath('//tbody[@id="tbodyservices"]/tr')
+        service = process_text(ALL,service)
 
     except Exception as e:
         print e
     try:
-        service += '服务与设施：'
-        ALL = html_detail.xpath('//tbody[@id="tbodyservices"]')
-        for each in ALL:
-            cc = process_text1(each.text_content())
-            service += cc
-
+        service+='家庭：'
+        ALL = html_detail.xpath('//tbody[@id="tbodyfamily"]/tr')
+        service = process_text(ALL,service)
     except Exception as e:
         print e
 
@@ -200,7 +198,16 @@ def hilton_parser(total_content, url, other_info):
 
     return hotel
 
-
+def process_text(ALL,service):
+    info1 = ''                   
+    for each in ALL:
+        for e in each.xpath('td'):
+            s= str(e.text_content())                               
+            s= s.replace('\n','').replace('\t','').replace('\r','').replace('  ','').replace('   ','')
+            info1 = info1+s+'::' 
+        service += info1[:-2]+'|'
+    return service
+'''
 def process_text(str):
     # str = str.encode('raw-unicode-escape')
     lis = re.split('[ \n\t]', str)
@@ -209,7 +216,7 @@ def process_text(str):
     for l in liss[1:]:
         ss += l
     return ss
-
+'''
 
 def process_text1(str):
     lis = re.split('[ \n\t]', str)
