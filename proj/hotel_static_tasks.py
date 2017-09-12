@@ -40,7 +40,7 @@ def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, c
     content = get_page_content(task_id=parent_task_id, task_name=task_name)
     logger.info("parent task id: {0}, end of get hotel content, start parse hotel".format(parent_task_id))
     result = parse_hotel(
-        content=,
+        content=content,
         url=hotel_url,
         other_info=other_info,
         source=source,
