@@ -32,7 +32,7 @@ key 任务队列名称 val (队列中最少的任务数，单次插入任务数)
 TASK_CONF = {
     'default': (0, 0),
     'celery': (9000, 50000),
-    'file_downloader': (9000, 30000),
+    'file_downloader': (9000, 20000),
     'full_site_task': (9000, 50000),
     'hotel_list_task': (9000, 50000),
     'hotel_suggestion': (9000, 50000),
