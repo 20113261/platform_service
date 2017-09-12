@@ -70,14 +70,17 @@ class HiltonHotel(HotelBase, Base):
     __tablename__ = 'hotelinfo_routine_hilton'
 
 class TripadvisorHotel(HotelBase, Base):
-    __tablename__ = 'hotelinfo_tripadvisor'
+    __tablename__ = 'hotelinfo_tripadvisor_0912_2'
 
 
 # 初始化数据库连接:
 engine = create_engine('mysql+mysqlconnector://mioji_admin:mioji1109@10.10.228.253:3306/hotel_adding?charset=utf8mb4',
                        encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
+engine_temp = create_engine('mysql+mysqlconnector://mioji_admin:mioji1109@10.10.228.253:3306/hotel_adding?charset=utf8mb4',
+                       encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
 # 创建DBSession类型:
 DBSession = sessionmaker(bind=engine)
+DBSession_temp = sessionmaker(bind=engine_temp)
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)

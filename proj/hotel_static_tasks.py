@@ -17,14 +17,14 @@ from proj.celery import app
 from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.PageSaver import get_page_content
-from my_lib.new_hotel_parser.data_obj import DBSession
+from my_lib.new_hotel_parser.data_obj import DBSession_temp
 
 from proj.my_lib.logger import get_logger
 
 logger = get_logger("HotelTripadvisor")
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='15/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='5/s')
 def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, city_id, hotel_url, **kwargs):
     self.task_source = source.title()
     self.task_type = 'HotelStaticDataParse'
@@ -48,7 +48,7 @@ def hotel_static_base_data(self, parent_task_id, task_name, source, source_id, c
 
     try:
         # logger.info(str(result))
-        session = DBSession()
+        session = DBSession_temp()
         session.merge(result)
         session.commit()
         session.close()
