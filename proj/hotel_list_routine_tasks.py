@@ -100,13 +100,11 @@ def hotel_routine_list_task(self, source, city_id, check_in, **kwargs):
         cursor = conn.cursor()
         sql = "REPLACE INTO hotel_base_data_task (source, source_id, city_id, hotel_url) VALUES (%s,%s,%s,%s)"
         cursor.executemany(sql, data_res)
-        conn.commit()
         cursor.close()
+        conn.commit()
     except Exception as e:
         self.error_code = 33
         raise e
-    finally:
-        conn.close()
     return True
 
 
