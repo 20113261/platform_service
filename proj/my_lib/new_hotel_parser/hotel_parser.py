@@ -48,8 +48,8 @@ def parse_hotel(content, url, other_info, source, part):
     # key words check
     # logger.info('map_info  ++++++++    %s' % result.map_info)
     # if key_is_legal(result.map_info) and key_is_legal(result.address):
-    if not key_is_legal(result.map_info):
-        raise TypeCheckError('Error map_info NULL        with parser %ss    url %s' % (parser.func_name, url))
+    # if not key_is_legal(result.map_info):
+    #     raise TypeCheckError('Error map_info NULL        with parser %ss    url %s' % (parser.func_name, url))
 
     if key_is_legal(result.hotel_name) or result.hotel_name_en:
         logger.info(result.hotel_name + '  ----------  ' + result.hotel_name_en)
