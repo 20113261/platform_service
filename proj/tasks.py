@@ -599,11 +599,13 @@ def get_hotel_images_info(self, path, part, desc_path, **kwargs):
     )
     print 'Data', data
 
-    # try:
-    #     print hotel_images_info_insert_db(data)
-    #     shutil.copy(path, os.path.join(desc_path, pic_md5))
-    # except IntegrityError as err:
-    #     raise Exception(err)
+    try:
+        print hotel_images_info_insert_db(data)
+        # shutil.copy(path, os.path.join(desc_path, pic_md5))
+    except IntegrityError:
+        pass
+    except Exception as err:
+        raise Exception(err)
 
     # print update_task(kwargs['mongo_task_id'])
     print 'Succeed'
