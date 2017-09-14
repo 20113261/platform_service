@@ -101,7 +101,7 @@ def insert_db(relation):
 def insert_db_old(args):
     conn = pymysql.connect(**__sql_dict)
     with conn as cursor:
-        sql = 'replace into pic_relation (`source`,`source_id`,`pic_url`,`pic_md5`,`part`,`size`,`flag`, `file_md5`) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)'
+        sql = 'replace into pic_relation_0914 (`source`,`source_id`,`pic_url`,`pic_md5`,`part`,`size`,`flag`, `file_md5`) VALUES (%s,%s,%s,%s,%s,%s,%s, %s)'
         res = cursor.execute(sql, args)
     conn.close()
     return res

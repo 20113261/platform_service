@@ -326,7 +326,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         # 更新 file name
         if special_file_name != '':
             file_name = special_file_name
-            
+
         data = (
             source,  # source
             source_id,  # source_id
@@ -566,6 +566,9 @@ redis_dict = redis.Redis(host='10.10.180.145', db=5)
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='8/s')
 def get_hotel_images_info(self, path, part, desc_path, **kwargs):
+    self.task_source = "All"
+    self.task_type = "HotelImgFilter"
+
     # try:
     print 'Get File',
     if os.path.getsize(path) > 10485760:
@@ -595,11 +598,13 @@ def get_hotel_images_info(self, path, part, desc_path, **kwargs):
         file_md5  # file_md5
     )
     print 'Data', data
-    try:
-        print hotel_images_info_insert_db(data)
-        shutil.copy(path, os.path.join(desc_path, pic_md5))
-    except IntegrityError as err:
-        raise Exception(err)
+
+    # try:
+    #     print hotel_images_info_insert_db(data)
+    #     shutil.copy(path, os.path.join(desc_path, pic_md5))
+    # except IntegrityError as err:
+    #     raise Exception(err)
+
     # print update_task(kwargs['mongo_task_id'])
     print 'Succeed'
     return flag, h, w
