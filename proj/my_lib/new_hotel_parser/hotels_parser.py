@@ -35,7 +35,7 @@ def hotels_parser(content, url, other_info):
         hotel.hotel_name = args[0].strip().encode('utf-8')
         print 'hotel_name=>%s' % hotel.hotel_name
         try:
-            hotel.hotel_name_en = args[-1].split('-')[0].replace(')', '').replace('）', '').strip().encode('utf-8')
+            hotel.hotel_name_en = args[-1].rsplit('-', 1)[0].replace(')', '').replace('）', '').strip().encode('utf-8')
             # hotel.hotel_name_en = re.findall('\(([\s\S]+?)\)', name_temp)[0].strip().encode('utf-8')
         except Exception:
             pass
