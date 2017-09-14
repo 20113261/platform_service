@@ -564,7 +564,7 @@ from pymysql.err import IntegrityError
 redis_dict = redis.Redis(host='10.10.180.145', db=5)
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='8/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='24/s')
 def get_hotel_images_info(self, path, part, desc_path, **kwargs):
     self.task_source = "All"
     self.task_type = "HotelImgFilter"
