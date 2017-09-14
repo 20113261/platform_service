@@ -572,6 +572,7 @@ def get_hotel_images_info(self, path, part, desc_path, **kwargs):
     # try:
     print 'Get File',
     if os.path.getsize(path) > 10485760:
+        self.error_code = 106
         raise Exception('Too Large')
     file_md5 = get_file_md5(path)
     flag, h, w = is_complete_scale_ok(path)
@@ -580,11 +581,13 @@ def get_hotel_images_info(self, path, part, desc_path, **kwargs):
     res_flag = 1 if flag == 0 else 0
     raw = redis_dict.get(pic_md5.replace('.jpg', ''))
     if not raw:
+        self.error_code = 107
         raise Exception("Error Raw")
 
     source, sid, pic_url = raw.split('###')
     size = str((h, w))
     if size == '(-1, -1)':
+        self.error_code = 105
         raise Exception('Error Size')
 
     data = (
@@ -605,10 +608,12 @@ def get_hotel_images_info(self, path, part, desc_path, **kwargs):
     except IntegrityError:
         pass
     except Exception as err:
+        self.error_code = 33
         raise Exception(err)
 
     # print update_task(kwargs['mongo_task_id'])
     print 'Succeed'
+    self.error_code = 0
     return flag, h, w
     # except Exception as exc:
     #     print "Error Exception"
