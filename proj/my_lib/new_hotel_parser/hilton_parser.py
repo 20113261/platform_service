@@ -193,8 +193,8 @@ def hilton_parser(total_content, url, other_info):
 
     hotel.hotel_url = url
     hotel.source = 'hilton'
-    hotel.source_id = str(other_info['source_id'])
-    hotel.city_id = str(other_info['city_id'])
+    hotel.source_id = other_info['source_id']
+    hotel.city_id = other_info['city_id']
 
     return hotel
 
