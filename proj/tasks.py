@@ -294,6 +294,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
     with MySession() as session:
         page = session.get(target_url, timeout=(120, None))
         f_stream = StringIO(page.content)
+        file_md5 = get_stream_md5(f_stream)
         flag, h, w = is_complete_scale_ok(f_stream)
 
         try:
@@ -319,7 +320,6 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             self.error_code = 106
             raise Exception('Too Large')
 
-        file_md5 = get_stream_md5(f_stream)
         res_flag = 1 if flag == 0 else 0
         size = str((h, w))
 
