@@ -11,22 +11,16 @@ from proj.celery import app
 from proj.my_lib.my_qyer_parser.data_obj import DBSession
 from proj.my_lib.my_qyer_parser.my_parser import page_parser
 from proj.my_lib.BaseTask import BaseTask
+from proj.my_lib.Common.Browser import MySession
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')
 def qyer_poi_task(self, target_url, city_id, **kwargs):
-    x = time.time()
-    PROXY = get_proxy(source="Platform")
-    proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
-    headers = {
-        'User-agent': GetUserAgent()
-    }
+    self.task_source = 'Qyer'
+    self.task_type = 'Qyerinfo'
 
-    try:
-        page = requests.get(target_url, proxies=proxies, headers=headers, timeout=240)
+    with MySession() as session:
+        page = session.get(target_url, timeout=240)
         page.encoding = 'utf8'
         content = page.text
         save_task_and_page_content(task_name='qyer_poi', content=content, task_id=kwargs['mongo_task_id'], source='qyer',
@@ -35,17 +29,12 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
         result = page_parser(content=content, target_url=target_url)
         result.city_id = city_id
         if result.name == 'NULL' and result.map_info == 'NULL':
-            update_proxy('Platform', PROXY, x, '23')
-            self.retry()
+            raise Exception('name or map_info is NULL')
         else:
             session = DBSession()
             session.merge(result)
             session.commit()
             session.close()
-            print "Success with " + PROXY + ' CODE 0'
-            update_proxy('Platform', PROXY, x, '0')
+
+        self.error_code = 0
         return result
-    except Exception as exc:
-        # print traceback.format_exc(exc)
-        update_proxy('Platform', PROXY, x, '23')
-        self.retry(exc=traceback.format_exc(exc))

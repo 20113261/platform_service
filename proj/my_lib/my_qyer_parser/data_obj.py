@@ -9,7 +9,7 @@ Base = declarative_base()
 import pymysql
 
 class Qyer(Base):
-    __tablename__ = 'qyer'
+    __tablename__ = 'qyer_0918'
     id = Column(String(32), nullable=False, primary_key=True, default='NULL')
     source = Column(String(32), nullable=False, primary_key=True, default='NULL')
     name = Column(String(256), default='NULL')
