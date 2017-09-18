@@ -20,7 +20,6 @@ import mioji.common.logger
 import datetime
 import pymongo
 import mioji.common.pool
-from proj.my_lib.logger import get_logger as get_logger_temp
 
 mioji.common.spider.NEED_FLIP_LIMIT = False
 mioji.common.pool.pool.set_size(2024)
@@ -54,9 +53,6 @@ conn = mysql.connector.connect(pool_name="hotel-list-value-pool",
                                pool_size=15,
                                **db_config)
 
-
-temp_logger = get_logger_temp("hotel_list_routing")
-
 # def hotel_list_database(source, city_id):
 #     task = Task()
 #     task.content = str(city_id) + '&' + '2&{nights}&{check_in}'.format(**hotel_rooms)
@@ -69,12 +65,7 @@ def hotel_list_database(source, city_id, check_in):
     task = Task()
     task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
     task.source = source + 'ListHotel'
-    temp_logger.info('----------' + task.source + '---------')
     spider = factory.get_spider_by_old_source(task.source)
-    temp_logger.info(str(dir(factory)))
-    # temp_logger.info(str(factory.__file__))
-    temp_logger.info(str(factory._SpiderFactory__old_source_spider))
-    temp_logger.info(str(factory._SpiderFactory__spider_list))
     spider.task = task
     code = spider.crawl(required=['hotel'])
     return code, spider.result
