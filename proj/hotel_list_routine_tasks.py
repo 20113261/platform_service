@@ -74,6 +74,7 @@ def hotel_list_database(source, city_id, check_in):
     temp_logger.info(str(dir(factory)))
     # temp_logger.info(str(factory.__file__))
     temp_logger.info(str(factory._SpiderFactory__old_source_spider))
+    temp_logger.info(str(factory._SpiderFactory__spider_list))
     spider.task = task
     code = spider.crawl(required=['hotel'])
     return code, spider.result
