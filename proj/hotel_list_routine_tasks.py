@@ -67,9 +67,9 @@ temp_logger = get_logger_temp("hotel_list_routing")
 
 def hotel_list_database(source, city_id, check_in):
     task = Task()
-    temp_logger.info('----------'+source+'---------')
     task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
     task.source = source + 'ListHotel'
+    temp_logger.info('----------' + task.source + '---------')
     spider = factory.get_spider_by_old_source(task.source)
     temp_logger.info(str(dir(factory)))
     # temp_logger.info(str(factory.__file__))
