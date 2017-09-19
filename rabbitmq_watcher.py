@@ -46,10 +46,11 @@ TASK_CONF = {
 
 def insert_task(queue, limit):
     _count = 0
-    for task_token, worker, queue, routing_key, args in get_task_total(queue=queue, limit=limit):
+    for task_token, worker, queue, routing_key, args, used_times in get_task_total(queue=queue, limit=limit):
         _count += 1
         kwargs = {
-            'mongo_task_id': task_token
+            'mongo_task_id': task_token,
+            'retry_count': used_times
         }
         kwargs.update(args)
         app.send_task(
