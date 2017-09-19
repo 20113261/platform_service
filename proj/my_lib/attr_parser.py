@@ -19,7 +19,7 @@ img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
 pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 
 ss = MySession(need_proxies=True)
-
+#ss = MySession(need_proxies=False)
 
 def has_chinese(contents, encoding='utf-8'):
     zh_pattern = re.compile(u'[\u4e00-\u9fa5]+')
@@ -205,11 +205,11 @@ def parse(content, url):
     try:
         rank = ''
         # m@ rank_text = root.find_class('slim_ranking')[0].text_content().encode('utf-8').replace(',', '')
-        rank_text = re.split('\n+', root.find_class('rating_and_popularity')[0].text_content().strip())[1]
+        rank_text = root.find_class('rating_and_popularity')[0].text_content().strip()
 
         nums = re.compile(r'(\d+)', re.S).findall(rank_text)
         # rank = nums[0] + '/' + nums[1]
-        rank = nums[1]
+        rank = nums[-1]
     except Exception, e:
         rank = ''
     print 'rank: %s' % rank
@@ -231,6 +231,8 @@ def parse(content, url):
         reviews = -1
     print 'rating: %s' % rating
     print 'reviews: %s' % reviews
+
+
 
     # try:
     #     if reviews > 10:
@@ -291,6 +293,7 @@ def parse(content, url):
     except Exception, e:
         tagid = ''
     print 'tagid: %s' % tagid
+    tag = tagid
 
     try:
         recommended_time = ''
@@ -314,20 +317,27 @@ def parse(content, url):
     # 卓越奖
     prize = 0
     try:
-        test = root.find_class('taLnk text')
-        if len(test) > 0:
+        icon_prize = root.find_class('ui_icon certificate-of-excellence')
+        if icon_prize:
             prize = 1
+        else:
+            test = root.find_class('taLnk text')
+            if len(test) > 0:
+                prize = 1
     except:
         pass
 
     # 旅行家标志
     traveler_choice = 0
-    try:
+
+    img_tcAward = root.find_class('tcAward')
+    if img_tcAward:
+        traveler_choice = 1
+    else:
         test = root.find_class('tchAward')
         if len(test) > 0:
             traveler_choice = 1
-    except:
-        pass
+
 
     # 图片抓取
     try:
@@ -348,6 +358,16 @@ def parse(content, url):
 
     print "source_city_id: ", source_city_id
     print "url: ", url
+
+    # city_id = 'NULL'
+    # try:
+    #     loc = root.find_class('breadcrumb')
+    #     country = loc[0].text_content().strip()
+    #     state = loc[1].text_content().strip()
+    #     city = loc[3].text_content().strip()
+    # except:
+    #     pass
+
     #
     # encode_string = get_site_encode_string(content)
 
@@ -396,7 +416,7 @@ def insert_db(result, city_id):
 if __name__ == '__main__':
     # url = 'https://www.tripadvisor.cn/Attraction_Review-g143034-d108754-Reviews-Nahuku_Thurston_Lava_Tube-Hawaii_Volcanoes_National_Park_Island_of_Hawaii_Hawaii.html'
     # url = 'https://www.tripadvisor.cn/Attraction_Review-g298490-d8514477-Reviews-Triumphal_Arch-Blagoveshchensk_Amur_Oblast_Far_Eastern_District.html'
-    url = 'https://www.tripadvisor.com.hk/Attraction_Review-g60742-d6863129-Reviews-Oddfellows_Antique_Warehouse-Asheville_North_Carolina.html'
+    url = 'https://www.tripadvisor.cn/Attraction_Review-g60742-d105015-Reviews-Thomas_Wolfe_Memorial-Asheville_North_Carolina.html'
     content = ss.get(url).content
     a = '阿什顿发斯蒂芬'
     result = parse(content, url)

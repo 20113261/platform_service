@@ -204,11 +204,11 @@ def parse(content, url):
     try:
         rank = ''
         # m@ rank_text = root.find_class('slim_ranking')[0].text_content().encode('utf-8').replace(',', '')
-        rank_text = re.split('\n+', root.find_class('rating_and_popularity')[0].text_content().strip())[1]
+        rank_text = root.find_class('rating_and_popularity')[0].text_content().strip()
 
         nums = re.compile(r'(\d+)', re.S).findall(rank_text)
         # rank = nums[0] + '/' + nums[1]
-        rank = nums[1]
+        rank = nums[-1]
     except Exception, e:
         rank = ''
     print 'rank: %s' % rank
@@ -314,20 +314,30 @@ def parse(content, url):
     # 卓越奖
     prize = 0
     try:
-        test = root.find_class('taLnk text')
-        if len(test) > 0:
+        icon_prize = root.find_class('ui_icon certificate-of-excellence')
+        if icon_prize:
             prize = 1
+        else:
+            test = root.find_class('taLnk text')
+            if len(test) > 0:
+                prize = 1
     except:
-        pass
+        try:
+            test = root.find_class('taLnk text')
+            if len(test) > 0:
+                prize = 1
+        except:
+            pass
 
     # 旅行家标志
     traveler_choice = 0
-    try:
+    img_tcAward = root.find_class('tcAward')
+    if img_tcAward:
+        traveler_choice = 1
+    else:
         test = root.find_class('tchAward')
         if len(test) > 0:
             traveler_choice = 1
-    except:
-        pass
 
     # 图片抓取
     try:
