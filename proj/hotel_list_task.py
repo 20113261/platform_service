@@ -17,6 +17,7 @@ from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.task_module.task_func import update_task, insert_task, get_task_id
 from mioji.common.utils import simple_get_socks_proxy
 from mioji import spider_factory
+from proj.mysql_pool import service_platform_conn
 import mioji.common.spider
 import mioji.common.logger
 import datetime
@@ -44,12 +45,26 @@ hotel_rooms = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'chil
 hotel_rooms_c = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
 
 
-def hotel_list_database(source, city_id, check_in):
+def hotel_list_database(source, city_id, check_in, is_new_type=False, city_url=''):
     task = Task()
-    if source == 'hilton':
-        task.content = check_in
+    if not is_new_type:
+        if source == 'hilton':
+            task.content = check_in
+        else:
+            task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
+
+        task.ticket_info = {
+            "is_new_type": False
+        }
     else:
-        task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
+        task.ticket_info = {
+            "is_new_type": True,
+            "city_url": city_url,
+            "check_in": check_in,
+            "stay_nights": 1,
+            "occ": 2
+        }
+        task.content = ''
 
     spider = factory.get_spider_by_old_source(source + 'ListHotel')
     spider.task = task
@@ -59,12 +74,13 @@ def hotel_list_database(source, city_id, check_in):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
-def hotel_list_task(self, source, city_id, country_id, check_in, part, **kwargs):
+def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_type=False, city_url='', **kwargs):
     self.task_source = source.title()
     self.task_type = 'HotelList'
     self.error_code = 0
 
-    result = hotel_list_database(source=source, city_id=city_id, check_in=check_in)
+    result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, is_new_type=is_new_type,
+                                 city_url=city_url)
 
     res_data = []
     if source in ('ctrip', 'ctripcn'):
@@ -81,11 +97,11 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, **kwargs)
             res_data.append((source, sid, city_id, country_id, hotel_url))
 
     try:
-        cursor = conn.cursor()
+        cursor = service_platform_conn.cursor()
         sql = "REPLACE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)".format(
             kwargs['task_name'])
         cursor.executemany(sql, res_data)
-        conn.commit()
+        service_platform_conn.commit()
     except Exception as e:
         self.error_code = 33
         raise e
