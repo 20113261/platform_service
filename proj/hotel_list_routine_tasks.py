@@ -15,6 +15,7 @@ from proj.my_lib.BaseRoutineTask import BaseRoutineTask
 from proj.my_lib.task_module.task_func import update_task, insert_task, get_task_id
 from mioji import spider_factory
 from mioji.common.utils import simple_get_socks_proxy
+from proj.mysql_pool import base_data_conn
 import mioji.common.spider
 import mioji.common.logger
 import datetime
@@ -32,8 +33,7 @@ collections = client['HotelList']['ctrip']
 insert_db = None
 get_proxy = simple_get_socks_proxy
 debug = False
-spider_factory.config_spider(insert_db, get_proxy, debug)
-mioji.common.spider.NEED_FLIP_LIMIT = False
+spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 
 logger = get_task_logger(__name__)
 mioji.common.logger.logger = logger
@@ -42,16 +42,6 @@ hotel_default = {'check_in': '20170903', 'nights': 1, 'rooms': [{}]}
 hotel_rooms = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
 hotel_rooms_c = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
 
-# mysql connect pool
-db_config = dict(
-    user='mioji_admin',
-    password='mioji1109',
-    host='10.10.228.253',
-    database='base_data'
-)
-conn = mysql.connector.connect(pool_name="hotel-list-value-pool",
-                               pool_size=15,
-                               **db_config)
 
 # def hotel_list_database(source, city_id):
 #     task = Task()
@@ -96,10 +86,10 @@ def hotel_routine_list_task(self, source, city_id, check_in, **kwargs):
         raise e
 
     try:
-        cursor = conn.cursor()
+        cursor = base_data_conn.cursor()
         sql = "REPLACE INTO hotel_base_data_task (source, source_id, city_id, hotel_url) VALUES (%s,%s,%s,%s)"
         cursor.executemany(sql, data_res)
-        conn.commit()
+        base_data_conn.commit()
     except Exception as e:
         self.error_code = 33
         raise e

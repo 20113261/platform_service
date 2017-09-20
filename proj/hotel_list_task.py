@@ -25,9 +25,7 @@ import mysql.connector
 import mioji.common.pool
 import mioji.common
 
-mioji.common.pool.NEED_MONKEY_PATCH = False
 mioji.common.pool.pool.set_size(2024)
-mioji.common.spider.NEED_FLIP_LIMIT = False
 logger = get_task_logger(__name__)
 mioji.common.logger.logger = logger
 
@@ -39,21 +37,11 @@ mioji.common.logger.logger = logger
 insert_db = None
 get_proxy = simple_get_socks_proxy
 debug = False
-spider_factory.config_spider(insert_db, get_proxy, debug)
+spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 
 hotel_default = {'check_in': '20170903', 'nights': 1, 'rooms': [{}]}
 hotel_rooms = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
 hotel_rooms_c = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
-
-db_config = dict(
-    user='mioji_admin',
-    password='mioji1109',
-    host='10.10.228.253',
-    database='base_data'
-)
-conn = mysql.connector.connect(pool_name="hotel-list-value-pool",
-                               pool_size=15,
-                               **db_config)
 
 
 def hotel_list_database(source, city_id, check_in):
