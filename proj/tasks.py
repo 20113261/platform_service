@@ -305,22 +305,21 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
 
         if flag in [1, 2]:
             self.error_code = 105
-            raise Exception, "Image Error with Proxy " + session.p_r_o_x_y
+            raise Exception("Image Error with Proxy " + session.p_r_o_x_y)
         else:
-            # file_path += '/' + source
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
             temp_file = file_path + '/' + file_name
 
-            if is_poi_task:
-                with open(temp_file, 'wb') as f:
-                    f.write(page.content)
+            with open(temp_file, 'wb') as f:
+                f.write(page.content)
 
         if f_stream.len > 10485760:
+            # 大于 10MB 的图片信息不入库
             self.error_code = 106
             raise Exception('Too Large')
 
-        res_flag = 1 if flag == 0 else 0
+        use_flag = 1 if flag == 0 else 0
         size = str((h, w))
 
         # 更新 file name
@@ -334,16 +333,19 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             file_name,  # pic_md5
             part,  # part
             size,  # size
-            res_flag,  # flag
+            use_flag,  # poi use , hotel flag
             file_md5  # file_md5
         )
 
         try:
             # 更换优先级顺序，先存文件后入库，发现 5% 的图片有裂图问题，可能由此导致
-            if not os.path.exists(desc_path):
-                os.makedirs(desc_path)
-            with open(os.path.join(desc_path, file_name), 'wb') as f:
-                f.write(page.content)
+
+            # 保存文件提前
+            # if not os.path.exists(desc_path):
+            #     os.makedirs(desc_path)
+            # if not is_poi_task:
+            #     with open(os.path.join(desc_path, file_name), 'wb') as f:
+            #         f.write(page.content)
 
             if need_insert_db:
                 if is_poi_task:
@@ -359,6 +361,11 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         except IOError as err:
             self.error_code = 108
             raise Exception(err)
+
+    # 被过滤的图片返回错误码不为 0
+    if flag != 0:
+        self.error_code = 107
+        raise Exception("Img Has Been Filtered")
 
     return flag, h, w
 
