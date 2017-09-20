@@ -94,7 +94,7 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
 
             content = [__content, __detail_content, __map_info_content, __desc_content]
 
-        result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part)
+        result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part, retry_count=kwargs['retry_count'])
 
         try:
             logger.info(str(result))

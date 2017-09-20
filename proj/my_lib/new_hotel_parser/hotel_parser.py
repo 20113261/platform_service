@@ -13,6 +13,7 @@ import hilton_parser
 from proj.my_lib.Common.KeyMatch import key_is_legal
 from proj.my_lib.logger import get_logger
 from .lang_convert import tradition2simple
+from proj.my_lib.Common.Utils import google_get_map_info
 
 logger = get_logger("HotelDetail")
 
@@ -21,7 +22,7 @@ class TypeCheckError(TypeError):
     pass
 
 
-def parse_hotel(content, url, other_info, source, part):
+def parse_hotel(content, url, other_info, source, part, retry_count):
     function_dict = {
         'agoda': agoda_parser.agoda_parser,
         'booking': booking_parser.booking_parser,
@@ -49,7 +50,16 @@ def parse_hotel(content, url, other_info, source, part):
     # logger.info('map_info  ++++++++    %s' % result.map_info)
     # if key_is_legal(result.map_info) and key_is_legal(result.address):
     if not key_is_legal(result.map_info):
-        raise TypeCheckError('Error map_info NULL        with parser %ss    url %s' % (parser.func_name, url))
+        if retry_count>5:
+            if not key_is_legal(result.address):
+                raise TypeCheckError('Error map_info and address NULL        with parser %ss    url %s' % (parser.func_name, url))
+            google_map_info = google_get_map_info(result.address)
+            if not key_is_legal(google_map_info):
+                raise TypeCheckError(
+                    'Error google_map_info  NULL        with parser %ss    url %s' % (parser.func_name, url))
+            result.address = google_map_info
+        else:
+            raise TypeCheckError('Error map_info NULL        with parser %ss    url %s' % (parser.func_name, url))
 
     if key_is_legal(result.hotel_name) or result.hotel_name_en:
         logger.info(result.hotel_name + '  ----------  ' + result.hotel_name_en)

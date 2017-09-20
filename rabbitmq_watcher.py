@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2017/8/6 下午9:01
 # @Author  : Hou Rong
-# @Site    : 
+# @Site    :
 # @File    : rabbitmq_watcher.py
 # @Software: PyCharm
 import sys
@@ -16,8 +16,17 @@ from requests.auth import HTTPBasicAuth
 from proj.celery import app
 from proj.my_lib.task_module.mongo_task_func import get_task_total
 from proj.my_lib.task_module.routine_task_func import get_routine_task_total
+from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail
 
 schedule = BlockingScheduler()
+
+import datetime
+
+# schedule.add_job(monitoring_hotel_list2detail, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
+schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/300', id='monitoring_hotel_list')
+schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/450', id='monitoring_hotel_detail')
+schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/300', id='monitoring_poi_list')
+schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/450', id='monitoring_poi_detail')
 
 # stream_handler = logging.StreamHandler()
 # logger = logging.getLogger('rabbitmq_watcher')
@@ -116,3 +125,4 @@ def mongo_task_watcher():
 if __name__ == '__main__':
     schedule.start()
     # mongo_task_watcher()
+    # insert_task('hotel_task', 100)
