@@ -41,16 +41,38 @@ def get_error_code(obj):
     return get_object_attribute(obj, 'error_code')
 
 
+def get_tag(obj):
+    return get_object_attribute(obj, 'task_tag')
+
+
 class BaseTask(Task):
     default_retry_delay = 1
     max_retries = 3
 
     def on_success(self, retval, task_id, args, kwargs):
+        # 获取本批次任务，任务批次
+        task_tag = get_source(self)
+
+        # 获取当前任务重试次数
+        retry_count = kwargs.get('retry_count', "NULL")
+
         # 增加源以及抓取类型统计
         task_source = get_source(self)
         task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=15)
         error_code = get_error_code(self)
+
+        # todo 增加反馈日志
+        report_r = redis.Redis(host='10.10.180.145', db=9)
+        if task_tag != 'NULL' and retry_count != 'NULL' and error_code != 'NULL':
+            if int(error_code) == 0:
+                # 当任务返回 0 时，代表任务成功
+                report_key = ""
+            elif int(error_code) == 0:
+                pass
+            else:
+                pass
+
         if error_code == 'NULL':
             r.incr('|_||_|'.join(
                 map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, 103, 'success'])))
@@ -80,8 +102,10 @@ class BaseTask(Task):
             kwargs.pop('mongo_task_id', None)
             kwargs['local_ip'] = get_local_ip()
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
+
+            # 暂时将返回信息保存到旧库中
             mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, retval, task_source, task_type,
-                                     error_code)
+                                     error_code, is_routine_task=True)
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
         # 记录重试任务
@@ -124,15 +148,22 @@ class BaseTask(Task):
             # 记录失败任务
             celery_task_id = task_id
             task_id = kwargs.get('mongo_task_id', '')
-            mongo_update_task(kwargs['mongo_task_id'], 0)
+
+            # 当为 0 正常，106 图片大于 10MB，107 图片因尺寸原因被过滤导致的问题不进行重试，直接 finished 1
+            if int(error_code) in [0, 106, 107]:
+                mongo_update_task(kwargs['mongo_task_id'], 1)
+            else:
+                mongo_update_task(kwargs['mongo_task_id'], 0)
+
             kwargs.pop('mongo_task_id', None)
             kwargs['local_ip'] = get_local_ip()
             kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
             einfo_i = str(einfo).find('Retry in')
             real_einfo = str(einfo)[einfo_i:] if einfo_i > -1 else str(einfo)
 
+            # 暂时将返回错误信息保存到旧库中
             mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, real_einfo, task_source, task_type,
-                                     error_code, is_routine_task=False)
+                                     error_code, is_routine_task=True)
 
 
 if __name__ == '__main__':
