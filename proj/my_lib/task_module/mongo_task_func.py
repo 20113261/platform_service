@@ -13,7 +13,7 @@ collections = client['MongoTask']['Task']
 failed_task_collections = client['MongoTask']['FailedTask']
 
 
-def get_task_total(queue, used_times=5, limit=30000):
+def get_task_total(queue, used_times=6, limit=30000):
     for line in collections.find(
             {
                 'finished': 0,

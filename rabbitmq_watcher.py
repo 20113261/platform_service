@@ -43,14 +43,27 @@ TASK_CONF = {
     'poi_task_2': (9000, 50000)
 }
 
+MAX_RETRY_TIMES_CONF = {
+    'hotel_list_task': 10,
+}
+
+DEFAULT_MAX_RETRY_TIMES = 6
+
+
+def get_max_retry_times(queue_name):
+    return MAX_RETRY_TIMES_CONF.get(queue_name, DEFAULT_MAX_RETRY_TIMES)
+
 
 def insert_task(queue, limit):
     _count = 0
-    for task_token, worker, queue, routing_key, args, used_times in get_task_total(queue=queue, limit=limit):
+    max_retry_times = get_max_retry_times(queue_name=queue)
+    for task_token, worker, queue, routing_key, args, used_times in get_task_total(queue=queue, limit=limit,
+                                                                                   used_times=max_retry_times):
         _count += 1
         kwargs = {
             'mongo_task_id': task_token,
-            'retry_count': used_times
+            'retry_count': used_times,
+            'max_retry_times': max_retry_times
         }
         kwargs.update(args)
         app.send_task(
