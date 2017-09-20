@@ -10,7 +10,7 @@ import datetime
 import time
 import traceback
 from itertools import repeat
-
+import redis
 import pymysql
 
 from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task
@@ -21,6 +21,7 @@ engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306
                        encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+task_statistics = redis.Redis(host='10.10.180.145', db=9)
 HOTEL_SOURCE = ('agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
         'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton')
 POI_SOURCE = 'daodao'
@@ -30,6 +31,11 @@ QYER_SOURCE = 'qyer'
 
 def get_default_timestramp():
     return datetime.datetime(year=1970, month=2, day=4, hour=6, minute=8, second=10, microsecond=666666)
+
+def update_task_statistics(task_tag, source, typ1, success_count):
+    report_key = "{0}|_|{1}|_|{2}|_|All".format(task_tag, source, typ1)
+    task_statistics.incrby(report_key, success_count)
+
 
 def get_seek(task_name):
     sql = """select seek from task_seek where task_name = '%s'"""
@@ -81,10 +87,12 @@ def monitoring_hotel_list2detail():
             create_table(detail_table_name)
 
         try:
-            timestamp = send_hotel_detail_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
+            timestamp, success_count = send_hotel_detail_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
             print timestamp
             if timestamp is not None:
                 update_seek(table_name, timestamp)
+            if success_count != 0:
+                update_task_statistics(table_name, tab_args[2], 'List', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
@@ -100,10 +108,12 @@ def monitoring_hotel_detail2ImgOrComment():
 
         timestamp = get_seek(table_name)
         try:
-            timestamp = send_image_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
+            timestamp, success_count = send_image_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
                                         is_poi_task=False)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
+            if success_count != 0:
+                update_task_statistics(table_name, tab_args[2], 'Detail', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
@@ -127,9 +137,11 @@ def monitoring_poi_list2detail():
         if table_dict.get(detail_table_name, True):
             create_table(detail_table_name)
         try:
-            timestamp = send_poi_detail_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
+            timestamp, success_count = send_poi_detail_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
+            if success_count != 0:
+                update_task_statistics(table_name, tab_args[2], 'List', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
@@ -145,10 +157,12 @@ def monitoring_poi_detail2imgOrComment():
         timestamp = get_seek(table_name)
 
         try:
-            timestamp = send_image_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
+            timestamp, success_count = send_image_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
                                         is_poi_task=True)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
+            if success_count != 0:
+                update_task_statistics(table_name, tab_args[2], 'Detail', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
@@ -171,9 +185,11 @@ def monitoring_qyer_list2detail():
         if table_dict.get(detail_table_name, True):
             create_table(detail_table_name)
         try:
-            timestamp = send_qyer_detail_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
+            timestamp, success_count = send_qyer_detail_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
+            if success_count != 0:
+                update_task_statistics(table_name, tab_args[2], 'List', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 

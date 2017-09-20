@@ -6,6 +6,8 @@
 # @File    : hotel_list_routine_tasks.py
 # @Software: PyCharm
 
+import proj.my_lib.my_mongo_insert
+
 import pymongo
 import traceback
 import hashlib
@@ -14,6 +16,7 @@ import json
 import redis
 import hashlib
 import pymysql
+import mock
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['Task']
@@ -21,10 +24,16 @@ redis_sourceid = redis.Redis(host='10.10.114.35', db=8)
 redis_md5 = redis.Redis(host='10.10.114.35', db=9)
 conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', charset='utf8', db='ServicePlatform')
 
+def hourong_patch(data):
+    with mock.patch('pymongo.collection.Collection._insert', proj.my_lib.my_mongo_insert.Collection._insert):
+        result = collections.insert(data, continue_on_error=True)
+        return result['n']
+
 def send_hotel_detail_task(tasks, task_tag):
     data = []
     _count = 0
     utime = None
+    success_count = 0
     for source, source_id, city_id, hotel_url, utime in tasks:
         _count += 1
         task_info = {
@@ -53,7 +62,7 @@ def send_hotel_detail_task(tasks, task_tag):
         if _count % 10000 == 0:
             print(_count)
             try:
-                # collections.insert(data, continue_on_error=True)
+                success_count = hourong_patch(data)
                 data = []
             except Exception as exc:
                 print '==========================0======================='
@@ -63,14 +72,15 @@ def send_hotel_detail_task(tasks, task_tag):
 
     else:
         print(_count)
-        # collections.insert(data, continue_on_error=True)
+        success_count += hourong_patch(data)
 
-    return utime
+    return utime, success_count
 
 def send_poi_detail_task(tasks, task_tag):
     data = []
     _count = 0
     utime = None
+    success_count = 0
     typ1, typ2, source, tag = task_tag.split('_')
     for source_id, city_id, country_id, utime in tasks:
         _count += 1
@@ -98,7 +108,7 @@ def send_poi_detail_task(tasks, task_tag):
         if _count % 10000 == 0:
             print(_count)
             try:
-                # collections.insert(data, continue_on_error=True)
+                success_count = hourong_patch(data)
                 data = []
             except Exception as exc:
                 print '==========================0======================='
@@ -108,14 +118,15 @@ def send_poi_detail_task(tasks, task_tag):
 
     else:
         print(_count)
-        # collections.insert(data, continue_on_error=True)
+        success_count += hourong_patch(data)
 
-    return utime
+    return utime, success_count
 
 def send_qyer_detail_task(tasks, task_tag):
     data = []
     _count = 0
     utime = None
+    success_count = 0
     for source_id, city_id, utime in tasks:
         _count += 1
         task_info = {
@@ -140,7 +151,7 @@ def send_qyer_detail_task(tasks, task_tag):
         if _count % 10000 == 0:
             print(_count)
             try:
-                # collections.insert(data, continue_on_error=True)
+                success_count = hourong_patch(data)
                 data = []
             except Exception as exc:
                 print '==========================0======================='
@@ -150,9 +161,9 @@ def send_qyer_detail_task(tasks, task_tag):
 
     else:
         print(_count)
-        # collections.insert(data, continue_on_error=True)
+        success_count += hourong_patch(data)
 
-    return utime
+    return utime, success_count
 
 def send_image_task(tasks, task_tag, is_poi_task):
     _count = 0
@@ -160,6 +171,7 @@ def send_image_task(tasks, task_tag, is_poi_task):
     md5_data = []
     cursor = conn.cursor()
     update_time = None
+    success_count = 0
     for source, source_id, img_items, update_time in tasks:
         if redis_sourceid.get(source + str(source_id)):continue
 
@@ -199,12 +211,7 @@ def send_image_task(tasks, task_tag, is_poi_task):
             if _count % 10000 == 0:
                 print _count
                 try:
-                    # collections.insert(data, continue_on_error=True)
-                    # pass
-                    print url
-                    # collections.update({
-                    #     'task_token': hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
-                    # }, {'$set': task_info}, upsert=True)
+                    success_count = hourong_patch(data)
                 except Exception as exc:
                     print '==========================0======================='
                     print source, source_id, url
@@ -212,17 +219,23 @@ def send_image_task(tasks, task_tag, is_poi_task):
                     print '==========================1======================='
 
                 try:
-                    # TODO 表明字段名未确定
                     cursor.executemany('insert into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
+                    conn.commit()
                     md5_data = []
                 except Exception as e:
                     print traceback.format_exc(e)
 
     else:
         print(_count)
-        # collections.insert(data, continue_on_error=True)
+        success_count += hourong_patch(data)
+        cursor.executemany('insert into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
+        conn.commit()
+        cursor.close()
+        conn.close()
 
-    return update_time
+
+
+    return update_time, success_count
 
 def insert_test():
     # TODO 返回成功入库总数
