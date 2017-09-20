@@ -29,8 +29,8 @@ def send_hotel_detail_task(tasks, task_tag):
         _count += 1
         task_info = {
             'worker': 'proj.hotel_tasks.hotel_base_data',
-            'queue': 'poi_task_1',
-            'routing_key': 'poi_task_1',
+            'queue': 'hotel_task',
+            'routing_key': 'hotel_task',
             'task_name': task_tag,
             'args': {
                 'source': source,
@@ -71,16 +71,61 @@ def send_poi_detail_task(tasks, task_tag):
     data = []
     _count = 0
     utime = None
-    for source_id, city_id, utime in tasks:
+    typ1, typ2, source, tag = task_tag.split('_')
+    for source_id, city_id, country_id, utime in tasks:
         _count += 1
         task_info = {
-            'worker': 'proj.hotel_tasks.hotel_base_data',
+            'worker': 'proj.poi_list_task.get_lost_poi',
             'queue': 'poi_task_1',
             'routing_key': 'poi_task_1',
             'task_name': task_tag,
             'args': {
                 'source_id': source_id,
-                'city_id': city_id
+                'city_id': city_id,
+                'poi_type': typ2,
+                'country_id': country_id
+            },
+            'priority': 3,
+            'finished': 0,
+            'used_times': 0,
+            'running': 0,
+            'utime': datetime.datetime.now()
+        }
+        task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
+
+        data.append(task_info)
+
+        if _count % 10000 == 0:
+            print(_count)
+            try:
+                # collections.insert(data, continue_on_error=True)
+                data = []
+            except Exception as exc:
+                print '==========================0======================='
+                print source_id, city_id
+                print traceback.format_exc(exc)
+                print '==========================1======================='
+
+    else:
+        print(_count)
+        # collections.insert(data, continue_on_error=True)
+
+    return utime
+
+def send_qyer_detail_task(tasks, task_tag):
+    data = []
+    _count = 0
+    utime = None
+    for source_id, city_id, utime in tasks:
+        _count += 1
+        task_info = {
+            'worker': 'proj.qyer_poi_tasks.qyer_poi_task',
+            'queue': 'poi_task_2',
+            'routing_key': 'poi_task_2',
+            'task_name': task_tag,
+            'args': {
+                'source_id': source_id,
+                'city_id': city_id,
             },
             'priority': 3,
             'finished': 0,

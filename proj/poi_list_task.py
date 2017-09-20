@@ -48,6 +48,7 @@ def hotel_list_database(source, url, required):
     return code, spider.result.get(required, {})
 
 def insert(sql, datas):
+    # TODO 连接池处理未指定
     cursor = conn.cursor()
     cursor.executemany(sql, datas)
     conn.commit()

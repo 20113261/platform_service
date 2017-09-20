@@ -13,7 +13,7 @@ from itertools import repeat
 
 import pymysql
 
-from send_task import send_hotel_detail_task, send_poi_detail_task, send_image_task
+from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -23,7 +23,8 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 HOTEL_SOURCE = ('agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
         'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton')
-POI_SOURCE = ('daodao', 'qyer')
+POI_SOURCE = 'daodao'
+QYER_SOURCE = 'qyer'
 # TODO  所有表的update_time字段加索引
 # TODO  所有表的update_time字段改为timestramp(6)类型
 
@@ -117,7 +118,7 @@ def monitoring_poi_list2detail():
         tab_args = table_name.split('_')
         if tab_args[0] != 'list': continue
         if tab_args[1] not in ('rest', 'attr', 'shop'): continue
-        if tab_args[2] not in POI_SOURCE: continue
+        if tab_args[2] != POI_SOURCE: continue
 
 
         timestamp = get_seek(table_name)
@@ -139,7 +140,7 @@ def monitoring_poi_detail2imgOrComment():
         tab_args = table_name.split('_')
         if tab_args[0] != 'detail': continue
         if tab_args[1] not in ('rest', 'attr', 'shop'): continue
-        if tab_args[2] not in POI_SOURCE: continue
+        if tab_args[2] != POI_SOURCE: continue
 
         timestamp = get_seek(table_name)
 
@@ -151,7 +152,30 @@ def monitoring_poi_detail2imgOrComment():
         except Exception as e:
             print traceback.format_exc(e)
 
+def monitoring_qyer_list2detail():
+    # TODO poi详情任务改为一个task
+    sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
 
+    table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+
+    for table_name in table_dict.keys():
+
+        tab_args = table_name.split('_')
+        if tab_args[0] != 'list': continue
+        if tab_args[1] != 'total': continue
+        if tab_args[2] != QYER_SOURCE: continue
+
+        timestamp = get_seek(table_name)
+
+        detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+        if table_dict.get(detail_table_name, True):
+            create_table(detail_table_name)
+        try:
+            timestamp = send_qyer_detail_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
+            if timestamp is not None:
+                update_seek(table_name, timestamp)
+        except Exception as e:
+            print traceback.format_exc(e)
 
 def test_timstramp():
     sql_sel = """select source_id from routine_hotel_list"""
