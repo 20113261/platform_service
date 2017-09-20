@@ -37,7 +37,7 @@ def get_task_total(queue, used_times=6, limit=30000):
             },
             '$inc': {'used_times': 1}
         })
-        yield task_token, worker, queue, routing_key, line['args'], line['used_times']
+        yield task_token, worker, queue, routing_key, line['args'], line['used_times'], line['task_name']
 
 
 def update_task(task_id, finish_code):

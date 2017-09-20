@@ -57,13 +57,14 @@ def get_max_retry_times(queue_name):
 def insert_task(queue, limit):
     _count = 0
     max_retry_times = get_max_retry_times(queue_name=queue)
-    for task_token, worker, queue, routing_key, args, used_times in get_task_total(queue=queue, limit=limit,
-                                                                                   used_times=max_retry_times):
+    for task_token, worker, queue, routing_key, args, used_times, task_name in get_task_total(queue=queue, limit=limit,
+                                                                                              used_times=max_retry_times):
         _count += 1
         kwargs = {
             'mongo_task_id': task_token,
             'retry_count': used_times,
-            'max_retry_times': max_retry_times
+            'max_retry_times': max_retry_times,
+            'task_name': task_name
         }
         kwargs.update(args)
         app.send_task(
