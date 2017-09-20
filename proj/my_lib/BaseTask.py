@@ -13,6 +13,13 @@ logger = get_logger('BaseTask')
 
 FAILED_TASK_BLACK_LIST = {'proj.full_website_spider_task.full_site_spider'}
 
+KnownTaskType = {
+    "HotelList": "List",
+    "Hotel": "Detail",
+    "DownloadImages": "Img",
+    "Default": "Unknown"
+}
+
 
 def get_str_type_object_attribute(obj, attr_name):
     if hasattr(obj, attr_name):
@@ -41,8 +48,16 @@ def get_error_code(obj):
     return get_object_attribute(obj, 'error_code')
 
 
-def get_tag(obj):
-    return get_object_attribute(obj, 'task_tag')
+def get_tag(kwargs):
+    task_name = kwargs.get('task_name', '').split('')
+    if len(task_name) != 4:
+        return "NULL"
+    else:
+        return task_name[-1]
+
+
+def get_report_type(task_type):
+    return KnownTaskType.get(task_type, KnownTaskType["Default"])
 
 
 class BaseTask(Task):
@@ -51,10 +66,11 @@ class BaseTask(Task):
 
     def on_success(self, retval, task_id, args, kwargs):
         # 获取本批次任务，任务批次
-        task_tag = get_source(self)
+        task_tag = get_tag(kwargs)
 
         # 获取当前任务重试次数
         retry_count = kwargs.get('retry_count', "NULL")
+        max_retry_times = kwargs.get('max_retry_times', "NULL")
 
         # 增加源以及抓取类型统计
         task_source = get_source(self)
@@ -62,32 +78,38 @@ class BaseTask(Task):
         r = redis.Redis(host='10.10.180.145', db=15)
         error_code = get_error_code(self)
 
-        # todo 增加反馈日志
-        report_r = redis.Redis(host='10.10.180.145', db=9)
-        if task_tag != 'NULL' and retry_count != 'NULL' and error_code != 'NULL':
-            if int(error_code) == 0:
-                # 当任务返回 0 时，代表任务成功
-                report_key = ""
-            elif int(error_code) == 0:
-                pass
-            else:
-                pass
+        # 无错误码返回错误为 103
+        if error_code == "NULL":
+            error_code = 103
 
-        if error_code == 'NULL':
-            r.incr('|_||_|'.join(
-                map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, 103, 'success'])))
-            logger.debug('|_||_|'.join(
-                map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, 103, 'success'])))
-            finished = False
-        else:
+        # 流程统计入库
+        report_r = redis.Redis(host='10.10.180.145', db=9)
+        if task_tag != 'NULL' and retry_count != 'NULL' and error_code != 'NULL' and max_retry_times != "NULL":
+            report_type = get_report_type(task_type)
+
             if int(error_code) == 0:
-                finished = True
+                # 当任务返回 0 时，代表任务成功，有一次成功即为成功
+                report_key = "{0}|_|{1}|_|{2}|_|Done".format(task_tag, task_source, report_type)
+                report_r.incr(report_key)
+            elif int(error_code) in [102, 106, 107]:
+                if int(max_retry_times) == int(retry_count):
+                    # 当最后一次重试时，记录被过滤
+                    report_key = "{0}|_|{1}|_|{2}|_|Filter".format(task_tag, task_source, report_type)
+                    report_r.incr(report_key)
             else:
-                finished = False
-            r.incr('|_||_|'.join(
-                map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'success'])))
-            logger.debug('|_||_|'.join(
-                map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'success'])))
+                if int(max_retry_times) == int(retry_count):
+                    # 当最后一次重试时，记录失败
+                    report_key = "{0}|_|{1}|_|{2}|_|Failed".format(task_tag, task_source, report_type)
+                    report_r.incr(report_key)
+
+        if int(error_code) == 0:
+            finished = True
+        else:
+            finished = False
+        r.incr('|_||_|'.join(
+            map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'success'])))
+        logger.debug('|_||_|'.join(
+            map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'success'])))
 
         if 'mongo_task_id' in kwargs:
             if finished:
@@ -121,25 +143,50 @@ class BaseTask(Task):
         pass
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
+        # 获取本批次任务，任务批次
+        task_tag = get_tag(kwargs)
+
         task_source = get_source(self)
         task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=15)
         error_code = get_error_code(self)
+
+        # 获取当前任务重试次数
+        retry_count = kwargs.get('retry_count', "NULL")
+        max_retry_times = kwargs.get('max_retry_times', "NULL")
+
         # 防止抛异常且返回错误码 0 的情况
         if error_code in (0, '0'):
             error_code = 27
 
+        # 无错误码返回错误为 103
+        if error_code == "NULL":
+            error_code = 103
+
+        report_r = redis.Redis(host='10.10.180.145', db=9)
+        if task_tag != 'NULL' and retry_count != 'NULL' and error_code != 'NULL' and max_retry_times != "NULL":
+            report_type = get_report_type(task_type)
+
+            if int(error_code) == 0:
+                # 当任务返回 0 时，代表任务成功，有一次成功即为成功
+                report_key = "{0}|_|{1}|_|{2}|_|Done".format(task_tag, task_source, report_type)
+                report_r.incr(report_key)
+            elif int(error_code) in [102, 106, 107]:
+                if int(max_retry_times) == int(retry_count):
+                    # 当最后一次重试时，记录被过滤
+                    report_key = "{0}|_|{1}|_|{2}|_|Filter".format(task_tag, task_source, report_type)
+                    report_r.incr(report_key)
+            else:
+                if int(max_retry_times) == int(retry_count):
+                    # 当最后一次重试时，记录失败
+                    report_key = "{0}|_|{1}|_|{2}|_|Failed".format(task_tag, task_source, report_type)
+                    report_r.incr(report_key)
+
         # 更新任务统计
-        if error_code == 'NULL':
-            r.incr('|_||_|'.join(
-                map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, 103, 'failure'])))
-            logger.debug('|_||_|'.join(
-                map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, 103, 'failure'])))
-        else:
-            r.incr('|_||_|'.join(
-                map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'failure'])))
-            logger.debug('|_||_|'.join(
-                map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'failure'])))
+        r.incr('|_||_|'.join(
+            map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'failure'])))
+        logger.debug('|_||_|'.join(
+            map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'failure'])))
 
         if 'mongo_task_id' in kwargs:
             # 更新任务状态
