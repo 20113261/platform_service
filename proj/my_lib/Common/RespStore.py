@@ -10,8 +10,8 @@ import zlib
 import time
 import json
 import pickle
+import proj.my_lib.Common.Utils
 from os import path
-from proj.my_lib.Common.Utils import get_md5
 from proj.my_lib.logger import get_logger
 
 logger = get_logger('RespStore')
@@ -31,7 +31,7 @@ def delete_cache(md5):
     if not has_cache(md5):
         return None
     os.remove(path.join(cache_dir, md5))
-    logger.info('delete cache md5: {}'.format(md5))
+    logger.info('delete cache md5: {0}'.format(md5))
 
 
 def put_by_md5(md5, resp):
@@ -39,11 +39,11 @@ def put_by_md5(md5, resp):
         os.makedirs(cache_dir)
 
     fo = open(path.join(cache_dir, md5), "wb")
-    res = pickle.dumps((resp, time.time()))
+    res = pickle.dumps(resp)
     length1 = len(res)
     res = zlib.compress(res)
     length2 = len(res)
-    logger.info("[cache zipped][len1: {}][len2: {}][ration: {}]".format(length1, length2, length2 / float(length1)))
+    logger.info("[cache zipped][len1: {0}][len2: {1}][ration: {2}]".format(length1, length2, length2 / float(length1)))
     fo.write(res)
     fo.close()
     return md5
@@ -58,22 +58,25 @@ def get_by_md5(md5, expire_time=3600):
     res = fo.read()
     length1 = len(res)
     fo.close()
+    file_info = os.stat(cache_dir + '/' + md5)
     res = zlib.decompress(res)
     length2 = len(res)
-    resp, save_time = pickle.loads(res)
-    logger.info("[cache unzipped][len1: {}][len2: {}][ration: {}]".format(length1, length2, length1 / float(length2)))
-    if time.time() - save_time < expire_time:
-        logger.info('[ get cache ][md5: {}][expire: {}][ save_time: {}]'.format(md5, expire_time, save_time))
+    resp = pickle.loads(res)
+    logger.info(
+        "[cache unzipped][len1: {0}][len2: {1}][ration: {2}]".format(length1, length2, length1 / float(length2)))
+    if time.time() - file_info.st_mtime < expire_time:
+        logger.info(
+            '[ get cache ][md5: {0}][expire: {1}][ save_time: {2}]'.format(md5, expire_time, file_info.st_mtime))
         return resp
     else:
         delete_cache(md5)
-        logger.info('[ delete expired response cache {} ]'.format(md5))
+        logger.info('[ delete expired response cache {0} ]'.format(md5))
         return None
 
 
 def file_path(req):
-    md5_name = get_md5(json.dumps(req, sort_keys=True))
-    logger.info('md5', md5_name, 'req', req)
+    md5_name = proj.my_lib.Common.Utils.get_md5(json.dumps(req, sort_keys=True))
+    logger.info('[md5: {0}][req: {1}]'.format(md5_name, req))
     return path.join(cache_dir, md5_name), md5_name
 
 
