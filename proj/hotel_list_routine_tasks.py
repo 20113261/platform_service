@@ -15,7 +15,7 @@ from proj.my_lib.BaseRoutineTask import BaseRoutineTask
 from proj.my_lib.task_module.task_func import update_task, insert_task, get_task_id
 from mioji import spider_factory
 from mioji.common.utils import simple_get_socks_proxy
-from proj.mysql_pool import base_data_conn
+from proj.mysql_pool import base_data_pool
 import mioji.common.spider
 import mioji.common.logger
 import datetime
@@ -86,10 +86,13 @@ def hotel_routine_list_task(self, source, city_id, check_in, **kwargs):
         raise e
 
     try:
+        base_data_conn = base_data_pool.get_connection()
         cursor = base_data_conn.cursor()
         sql = "REPLACE INTO hotel_base_data_task (source, source_id, city_id, hotel_url) VALUES (%s,%s,%s,%s)"
         cursor.executemany(sql, data_res)
         base_data_conn.commit()
+        cursor.close()
+        base_data_conn.close()
     except Exception as e:
         self.error_code = 33
         raise e
@@ -98,4 +101,4 @@ def hotel_routine_list_task(self, source, city_id, check_in, **kwargs):
 
 
 if __name__ == '__main__':
-    print hotel_list_database('booking', '51211', '20170801')
+    print(hotel_list_database('booking', '51211', '20170801'))

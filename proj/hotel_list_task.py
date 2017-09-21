@@ -19,7 +19,7 @@ from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.task_module.task_func import update_task, insert_task, get_task_id
 from mioji.common.utils import simple_get_socks_proxy
 from mioji import spider_factory
-from proj.mysql_pool import service_platform_conn
+from proj.mysql_pool import service_platform_pool
 import mioji.common.spider
 import mioji.common.logger
 import datetime
@@ -28,11 +28,12 @@ import mysql.connector
 import mioji.common.pool
 import mioji.common.pages_store
 import mioji.common
+from proj.list_config import cache_config, list_cache_path
 
 mioji.common.pool.pool.set_size(2024)
 logger = get_task_logger(__name__)
 mioji.common.logger.logger = logger
-mioji.common.pages_store.cache_dir = '/data/nfs/page_saver/cache'
+mioji.common.pages_store.cache_dir = list_cache_path
 
 # pymongo client
 
@@ -72,7 +73,7 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, city_url='
 
     spider = factory.get_spider_by_old_source(source + 'ListHotel')
     spider.task = task
-    print(spider.crawl(required=['hotel'], cache_config={'enable': True, 'lifetime_sec': 86400}))
+    print(spider.crawl(required=['hotel'], cache_config=cache_config))
     logger.info(str(spider.result['hotel']) + '  --  ' + task.content)
     return spider.result
 
@@ -101,11 +102,14 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
             res_data.append((source, sid, city_id, country_id, hotel_url))
 
     try:
+        service_platform_conn = service_platform_pool.get_connection()
         cursor = service_platform_conn.cursor()
         sql = "REPLACE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)".format(
             kwargs['task_name'])
         cursor.executemany(sql, res_data)
         service_platform_conn.commit()
+        cursor.close()
+        service_platform_conn.close()
     except Exception as e:
         self.error_code = 33
         raise e
