@@ -90,7 +90,7 @@ def hilton_parser(total_content, url, other_info):
         map_info_data = eval(map_info_data)
         location = map_info_data.get('TxLocation', None) or map_info_data.get('Location', None)
         mmp = location.replace(' ', '').split(',')
-        map_info = mmp[0].strip() + ',' + mmp[1].strip()
+        map_info = mmp[1].strip() + ',' + mmp[0].strip()
 
 
     except Exception as e:
