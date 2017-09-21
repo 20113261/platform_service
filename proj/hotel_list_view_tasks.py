@@ -27,6 +27,7 @@ from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 
+
 class HotelViewList(Base):
     __tablename__ = 'poi_attr_new'
     source = Column(String(64), primary_key=True)
@@ -38,6 +39,7 @@ class HotelViewList(Base):
 
 
 from proj.my_lib.logger import get_logger
+
 logger = get_logger("viewDaodao")
 
 mioji.common.spider.NEED_FLIP_LIMIT = False
@@ -66,12 +68,13 @@ db_config = dict(
 URL = 'https://www.tripadvisor.com.hk'
 
 engine_mb4 = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/base_data?charset=utf8mb4',
-                       encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
+                           encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
 DBSession_mb4 = sessionmaker(bind=engine_mb4)
+
 
 def hotel_list_database(source, url):
     task = Task()
-    task.content = URL+url
+    task.content = URL + url
     task.source = source.lower().capitalize() + 'ListInfo'
     spider = factory.get_spider('daodao', task.source)
     # spider = factory.get_spider_by_old_source(task.source)
@@ -92,7 +95,7 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
 
         if int(code) != 0:
             logger.info("=======================0=========================\n")
-            logger.info(str(code)+'   |   '+str(result))
+            logger.info(str(code) + '   |   ' + str(result))
             logger.info("\n=======================1=========================")
             raise Exception
 
@@ -113,11 +116,10 @@ def hotel_view_list_task(self, source, url, city_id, **kwargs):
                     logger.info("======================= sql 异常=========================")
                     logger.exception(traceback.format_exc(e))
 
-
         return True
     except Exception as e:
         logger.exception('==================  异常  0==================')
-        logger.exception(source+' | '+str(city_id)+' | '+url)
+        logger.exception(source + ' | ' + str(city_id) + ' | ' + url)
         logger.exception(traceback.format_exc(e))
         logger.exception('==================  异常  1==================')
         raise Exception(e)
