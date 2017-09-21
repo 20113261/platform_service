@@ -16,6 +16,7 @@ import mioji.common.pool
 from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.logger import get_logger
+from proj.mysql_pool import service_platform_conn
 
 import datetime
 
@@ -37,6 +38,7 @@ mioji.common.logger.logger = logger
 
 URL = 'https://www.tripadvisor.com.hk'
 SQL = """insert into {table_name} (source, source_id, city_id, country_id, hotel_url, utime) values(%s, %s, %s, %s, %s, %s, %s)"""
+type_dict = {'attr': 'shop', 'rest': 'restaurant'}
 
 def hotel_list_database(source, url, required):
     task = Task()
@@ -49,20 +51,19 @@ def hotel_list_database(source, url, required):
 
 def insert(sql, datas):
     # TODO 连接池处理未指定
-    cursor = conn.cursor()
+    cursor = service_platform_conn.cursor()
     cursor.executemany(sql, datas)
-    conn.commit()
+    service_platform_conn.commit()
     cursor.close()
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
 def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
     self.task_source = source.title()
     self.task_type = 'DaodaoListInfo'
-    type_dict = {'attr': 'shop', 'rest': 'restaurant'}
     sql = SQL.format(table_name=kwargs.get('task_name'))
     code, result = hotel_list_database(source, url, type_dict[poi_type])
 
-    assert int(code) == 0, 'code %s' % code
+    assert code == 0, 'code %s' % code
 
     datas = []
     count = 0
@@ -76,6 +77,6 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
         insert(sql, datas)
 
 
-    self.error_code = str(code)
+    self.error_code = code
 
     return True
