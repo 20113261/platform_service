@@ -14,16 +14,24 @@ from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.PageSaver import save_task_and_page_content
 from my_lib.new_hotel_parser.data_obj import DBSession
 from proj.my_lib.logger import get_logger
+from sqlalchemy.sql import text
 
 logger = get_logger("HotelDetail")
+SQL = """replace into {table_name} (hotel_name, hotel_name_en, source, source_id, brand_name, map_info, address, city, \
+country, city_id, postal_code, star, grade, review_num, has_wifi, is_wifi_free, has_parking, is_parking_free, service, \
+img_items, description, accepted_cards, check_in_time, check_out_time, hotel_url, update_time, \
+continent) values (:hotel_name, :hotel_name_en, :source, :source_id, :brand_name, :map_info, :address, :city, \
+:country, :city_id, :postal_code, :star, :grade, :review_num, :has_wifi, :is_wifi_free, :has_parking, \
+:is_parking_free, :service, :img_items, :description, :accepted_cards, :check_in_time, :check_out_time, :hotel_url, \
+:update_time, :continent)"""
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='1/s')
-def hotel_base_data(self, source, url, other_info, part, **kwargs):
+def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
     self.task_source = source.title()
     self.task_type = 'Hotel'
     self.error_code = 0
-
+    sql = SQL.format(table_name = kwargs['task_name'])
     headers = {
         'User-agent': GetUserAgent()
     }
@@ -97,9 +105,10 @@ def hotel_base_data(self, source, url, other_info, part, **kwargs):
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part, retry_count=kwargs['retry_count'])
 
         try:
+            result.country_id = country_id
             logger.info(str(result))
             session = DBSession()
-            session.merge(result)
+            session.execute(text(SQL.format(table_name=kwargs['table_name'])), [result])
             session.commit()
             session.close()
         except Exception as e:

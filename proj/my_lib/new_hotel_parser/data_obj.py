@@ -34,7 +34,7 @@ class HotelBase(object):
     check_in_time = Column(String(128), default='NULL')
     check_out_time = Column(String(128), default='NULL')
     hotel_url = Column(String(1024), default='NULL')
-    update_time = Column(TIMESTAMP, default=datetime.datetime.now, onupdate=datetime.datetime.now, index=True)
+    update_time = Column(TIMESTAMP(6), default=datetime.datetime.now, onupdate=datetime.datetime.now, index=True)
     continent = Column(String(96), default='NULL')
 
 
@@ -71,7 +71,7 @@ class HiltonHotel(HotelBase, Base):
 
 
 class TripadvisorHotel(HotelBase, Base):
-    __tablename__ = 'hotelinfo_tripadvisor_2'
+    __tablename__ = 'hotelinfo_tripadvisor'
 
 
 # 初始化数据库连接:
@@ -80,7 +80,20 @@ engine = create_engine('mysql+mysqlconnector://mioji_admin:mioji1109@10.10.228.2
 # 创建DBSession类型:
 DBSession = sessionmaker(bind=engine)
 
+def text_2_sql(txt):
+    sql = 'replace into {table_name} '
+    params = ''
+    values = ''
+    for text in txt.split(','):
+        text = text.strip()
+        params += text + ', '
+        values += ':' + text + ', '
+    return sql + '(' + params[:-2] + ') values (' + values[:-2] + ')'
+
 if __name__ == '__main__':
+    txt = 'source, source_id, city_id, hotel_url, check_in, part, utime'
+    # txt = 'hotel_name, hotel_name_en, source, source_id, brand_name, map_info, address, city, country, city_id, postal_code, star, grade, review_num, has_wifi, is_wifi_free, has_parking, is_parking_free, service, img_items, description, accepted_cards, check_in_time, check_out_time, hotel_url, update_time, continent'
+    print text_2_sql(txt)
     # Base.metadata.create_all(engine)
     pass
     # session = DBSession()
