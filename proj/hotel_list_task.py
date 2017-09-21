@@ -1,6 +1,8 @@
 # !/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from __future__ import print_function
+
 '''
 Created on 2017年2月8日
 
@@ -24,11 +26,13 @@ import datetime
 import pymongo
 import mysql.connector
 import mioji.common.pool
+import mioji.common.pages_store
 import mioji.common
 
 mioji.common.pool.pool.set_size(2024)
 logger = get_task_logger(__name__)
 mioji.common.logger.logger = logger
+mioji.common.pages_store.cache_dir = '/data/nfs/page_saver/cache'
 
 # pymongo client
 
@@ -68,7 +72,7 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, city_url='
 
     spider = factory.get_spider_by_old_source(source + 'ListHotel')
     spider.task = task
-    print spider.crawl(required=['hotel'])
+    print(spider.crawl(required=['hotel'], cache_config={'enable': True, 'lifetime_sec': 86400}))
     logger.info(str(spider.result['hotel']) + '  --  ' + task.content)
     return spider.result
 
@@ -108,4 +112,4 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
 
 
 if __name__ == '__main__':
-    print hotel_list_database('booking', '51211', '20170801')
+    print(hotel_list_database('booking', '51211', '20170801'))
