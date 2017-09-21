@@ -9,7 +9,6 @@ from __future__ import absolute_import
 # import os
 # os.environ["CONFIG_FILE"] = '/root/data/lib/slave_develop_new/workspace/spider/SpiderClient/conf/conf_lwn.ini'
 # from celery.utils.log import get_task_logger
-# import mysql.connector
 from mioji.spider_factory import factory
 from mioji.common.task_info import Task
 from proj.celery import app

@@ -7,7 +7,6 @@
 # @Software: PyCharm
 from __future__ import absolute_import
 from celery.utils.log import get_task_logger
-import mysql.connector
 from mioji.spider_factory import factory
 from mioji.common.task_info import Task
 from proj.celery import app

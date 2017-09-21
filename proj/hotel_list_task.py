@@ -24,7 +24,6 @@ import mioji.common.spider
 import mioji.common.logger
 import datetime
 import pymongo
-import mysql.connector
 import mioji.common.pool
 import mioji.common.pages_store
 import mioji.common
