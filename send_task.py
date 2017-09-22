@@ -30,7 +30,7 @@ def hourong_patch(data):
         return result['n']
 
 def get_country_id(tasks):
-    cursor_c = conn_c()
+    cursor_c = conn_c.cursor()
     tasks_tmep = {args[2]: args for args in tasks}
     sql = """SELECT id, country_id FROM base_data.city where id in (%s)""" % ', '.join(tasks_tmep.keys())
     cursor_c.execute(sql)
@@ -39,6 +39,8 @@ def get_country_id(tasks):
     for id, country_id in countrys:
         tasks_tmep[id].append(country_id)
 
+    cursor_c.close()
+    conn_c.close()
     return tasks_tmep
 
 
