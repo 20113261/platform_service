@@ -205,7 +205,7 @@ def monitoring_qyer_list2detail():
         if table_dict.get(detail_table_name, True):
             create_table(detail_table_name)
         try:
-            timestamp, success_count = send_qyer_detail_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
+            timestamp, success_count = send_qyer_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
