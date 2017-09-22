@@ -31,7 +31,12 @@ def hourong_patch(data):
 
 def get_country_id(tasks):
     cursor_c = conn_c.cursor()
-    tasks_tmep = {args[2]: args for args in tasks}
+    tasks_tmep = {args[2]: list(args) for args in tasks}
+    print '================0'*3
+    print tasks_tmep
+    print ', '.join(tasks_tmep.keys())
+    print '================1' * 3
+    if not tasks_tmep:return []
     sql = """SELECT id, country_id FROM base_data.city where id in (%s)""" % ', '.join(tasks_tmep.keys())
     cursor_c.execute(sql)
     countrys = cursor_c.fetchall()
@@ -41,7 +46,7 @@ def get_country_id(tasks):
 
     cursor_c.close()
     conn_c.close()
-    return tasks_tmep
+    return tasks_tmep.values()
 
 
 def send_hotel_detail_task(tasks, task_tag):

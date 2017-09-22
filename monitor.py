@@ -44,12 +44,16 @@ def update_task_statistics(task_tag, source, typ1, success_count):
 def execute_sql(sql, commit=False):
     conn = service_platform_pool.connection()
     cursor = conn.cursor()
+    print sql
     cursor.execute(sql)
     if commit:
         conn.commit()
         cursor.close()
         return
+    # result = []
+    # return cursor.fetchall()
     result = cursor.fetchall()
+    print cursor.rowcount, '==============================********'
     cursor.close()
     conn.close()
     return result
@@ -107,8 +111,8 @@ def monitoring_hotel_list2detail():
             create_table(detail_table_name)
 
         try:
-            timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
-            print timestamp
+            timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
+            print timestamp, success_count, '++++++_-----++++++'
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
@@ -157,7 +161,7 @@ def monitoring_poi_list2detail():
         if table_dict.get(detail_table_name, True):
             create_table(detail_table_name)
         try:
-            timestamp, success_count = send_poi_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
+            timestamp, success_count = send_poi_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
