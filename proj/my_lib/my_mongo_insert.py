@@ -7,7 +7,6 @@
 # @Software: PyCharm
 # Copyright 2009-2012 10gen, Inc.
 # Copyright 2009-2015 MongoDB, Inc.
-
 import collections
 import datetime
 import warnings
@@ -30,7 +29,7 @@ from pymongo.cursor import Cursor
 from pymongo.errors import ConfigurationError, InvalidName, OperationFailure
 from pymongo.helpers import _check_write_command_response
 from pymongo.helpers import _UNICODE_REPLACE_CODEC_OPTIONS
-from pymongo.operations import _WriteOp, IndexModel
+from pymongo.operations import IndexModel
 from pymongo.read_concern import DEFAULT_READ_CONCERN
 from pymongo.read_preferences import ReadPreference
 from pymongo.results import (BulkWriteResult,
@@ -333,7 +332,7 @@ class Collection(common.BaseObject):
                           read_concern or self.read_concern)
 
     def initialize_unordered_bulk_op(self, bypass_document_validation=False):
-        """Initialize an unordered batch of write operations.
+        """**DEPRECATED** - Initialize an unordered batch of write operations.
 
         Operations will be performed on the server in arbitrary order,
         possibly in parallel. All operations will be attempted.
@@ -350,15 +349,21 @@ class Collection(common.BaseObject):
         .. note:: `bypass_document_validation` requires server version
           **>= 3.2**
 
+        .. versionchanged:: 3.5
+           Deprecated. Use :meth:`~pymongo.collection.Collection.bulk_write`
+           instead.
+
         .. versionchanged:: 3.2
-          Added bypass_document_validation support
+           Added bypass_document_validation support
 
         .. versionadded:: 2.7
         """
+        warnings.warn("initialize_unordered_bulk_op is deprecated",
+                      DeprecationWarning, stacklevel=2)
         return BulkOperationBuilder(self, False, bypass_document_validation)
 
     def initialize_ordered_bulk_op(self, bypass_document_validation=False):
-        """Initialize an ordered batch of write operations.
+        """**DEPRECATED** - Initialize an ordered batch of write operations.
 
         Operations will be performed on the server serially, in the
         order provided. If an error occurs all remaining operations
@@ -376,11 +381,17 @@ class Collection(common.BaseObject):
         .. note:: `bypass_document_validation` requires server version
           **>= 3.2**
 
+        .. versionchanged:: 3.5
+           Deprecated. Use :meth:`~pymongo.collection.Collection.bulk_write`
+           instead.
+
         .. versionchanged:: 3.2
-          Added bypass_document_validation support
+           Added bypass_document_validation support
 
         .. versionadded:: 2.7
         """
+        warnings.warn("initialize_ordered_bulk_op is deprecated",
+                      DeprecationWarning, stacklevel=2)
         return BulkOperationBuilder(self, True, bypass_document_validation)
 
     def bulk_write(self, requests, ordered=True,
@@ -450,9 +461,10 @@ class Collection(common.BaseObject):
 
         blk = _Bulk(self, ordered, bypass_document_validation)
         for request in requests:
-            if not isinstance(request, _WriteOp):
+            try:
+                request._add_to_bulk(blk)
+            except AttributeError:
                 raise TypeError("%r is not a valid request" % (request,))
-            request._add_to_bulk(blk)
 
         bulk_api_result = blk.execute(self.write_concern.document)
         if bulk_api_result is not None:
@@ -1092,19 +1104,13 @@ class Collection(common.BaseObject):
           - `**kwargs` (optional): any additional keyword arguments
             are the same as the arguments to :meth:`find`.
 
-          - `max_time_ms` (optional): a value for max_time_ms may be
-            specified as part of `**kwargs`, e.g.
-
-              >>> find_one(max_time_ms=100)
+              >>> collection.find_one(max_time_ms=100)
         """
         if (filter is not None and not
         isinstance(filter, collections.Mapping)):
             filter = {"_id": filter}
 
-        max_time_ms = kwargs.pop("max_time_ms", None)
-        cursor = self.find(filter,
-                           *args, **kwargs).max_time_ms(max_time_ms)
-
+        cursor = self.find(filter, *args, **kwargs)
         for result in cursor.limit(-1):
             return result
         return None
@@ -1180,11 +1186,6 @@ class Collection(common.BaseObject):
             error.
           - `oplog_replay` (optional): If True, set the oplogReplay query
             flag.
-          - `modifiers` (optional): A dict specifying the MongoDB `query
-            modifiers`_ that should be used for this query. For example::
-
-              >>> db.test.find(modifiers={"$maxTimeMS": 500})
-
           - `batch_size` (optional): Limits the number of documents returned in
             a single batch.
           - `manipulate` (optional): **DEPRECATED** - If True (the default),
@@ -1192,6 +1193,40 @@ class Collection(common.BaseObject):
           - `collation` (optional): An instance of
             :class:`~pymongo.collation.Collation`. This option is only supported
             on MongoDB 3.4 and above.
+          - `return_key` (optional): If True, return only the index keys in
+            each document.
+          - `show_record_id` (optional): If True, adds a field ``$recordId`` in
+            each document with the storage engine's internal record identifier.
+          - `snapshot` (optional): If True, prevents the cursor from returning
+            a document more than once because of an intervening write
+            operation.
+          - `hint` (optional): An index, in the same format as passed to
+            :meth:`~pymongo.collection.Collection.create_index` (e.g.
+            ``[('field', ASCENDING)]``). Pass this as an alternative to calling
+            :meth:`~pymongo.cursor.Cursor.hint` on the cursor to tell Mongo the
+            proper index to use for the query.
+          - `max_time_ms` (optional): Specifies a time limit for a query
+            operation. If the specified time is exceeded, the operation will be
+            aborted and :exc:`~pymongo.errors.ExecutionTimeout` is raised. Pass
+            this as an alternative to calling
+            :meth:`~pymongo.cursor.Cursor.max_time_ms` on the cursor.
+          - `max_scan` (optional): The maximum number of documents to scan.
+            Pass this as an alternative to calling
+            :meth:`~pymongo.cursor.Cursor.max_scan` on the cursor.
+          - `min` (optional): A list of field, limit pairs specifying the
+            inclusive lower bound for all keys of a specific index in order.
+            Pass this as an alternative to calling
+            :meth:`~pymongo.cursor.Cursor.min` on the cursor.
+          - `max` (optional): A list of field, limit pairs specifying the
+            exclusive upper bound for all keys of a specific index in order.
+            Pass this as an alternative to calling
+            :meth:`~pymongo.cursor.Cursor.max` on the cursor.
+          - `comment` (optional): A string or document. Pass this as an
+            alternative to calling :meth:`~pymongo.cursor.Cursor.comment` on the
+            cursor.
+          - `modifiers` (optional): **DEPRECATED** - A dict specifying
+            additional MongoDB query modifiers. Use the keyword arguments listed
+            above instead.
 
         .. note:: There are a number of caveats to using
           :attr:`~pymongo.cursor.CursorType.EXHAUST` as cursor_type:
@@ -1208,6 +1243,11 @@ class Collection(common.BaseObject):
             completely iterated the underlying :class:`~socket.socket`
             connection will be closed and discarded without being returned to
             the connection pool.
+
+        .. versionchanged:: 3.5
+           Added the options `return_key`, `show_record_id`, `snapshot`,
+           `hint`, `max_time_ms`, `max_scan`, `min`, `max`, and `comment`.
+           Deprecated the option `modifiers`.
 
         .. versionchanged:: 3.4
            Support the `collation` option.
@@ -1237,10 +1277,9 @@ class Collection(common.BaseObject):
            The `tag_sets` and `secondary_acceptable_latency_ms` parameters.
 
         .. _PYTHON-500: https://jira.mongodb.org/browse/PYTHON-500
-        .. _query modifiers:
-          http://docs.mongodb.org/manual/reference/operator/query-modifier/
 
         .. mongodoc:: find
+
         """
         return Cursor(self, *args, **kwargs)
 
@@ -1367,13 +1406,13 @@ class Collection(common.BaseObject):
           ...                      ("world", ASCENDING)], name="hello_world")
           >>> index2 = IndexModel([("goodbye", DESCENDING)])
           >>> db.test.create_indexes([index1, index2])
-          ["hello_world"]
+          ["hello_world", "goodbye_-1"]
 
         :Parameters:
           - `indexes`: A list of :class:`~pymongo.operations.IndexModel`
             instances.
 
-        .. note:: `create_indexes` uses the ``createIndexes`` command
+        .. note:: `create_indexes` uses the `createIndexes`_ command
            introduced in MongoDB **2.6** and cannot be used with earlier
            versions.
 
@@ -1385,6 +1424,8 @@ class Collection(common.BaseObject):
            Apply this collection's write concern automatically to this operation
            when connected to MongoDB >= 3.4.
         .. versionadded:: 3.0
+
+        .. _createIndexes: https://docs.mongodb.com/manual/reference/command/createIndexes/
         """
         if not isinstance(indexes, list):
             raise TypeError("indexes must be a list")
@@ -1645,20 +1686,19 @@ class Collection(common.BaseObject):
            are built in the foreground) and will be slow for large
            collections.
 
-        .. note:: The :attr:`~pymongo.collection.Collection.write_concern` of
-           this collection is automatically applied to this operation when using
-           MongoDB >= 3.4.
-
         .. versionchanged:: 3.4
            Apply this collection's write concern automatically to this operation
            when connected to MongoDB >= 3.4.
 
+        .. versionchanged:: 3.5
+           We no longer apply this collection's write concern to this operation.
+           MongoDB 3.4 silently ignored the write concern. MongoDB 3.6+ returns
+           an error if we include the write concern.
         """
         cmd = SON([("reIndex", self.__name)])
         with self._socket_for_writes() as sock_info:
             return self._command(
                 sock_info, cmd, read_preference=ReadPreference.PRIMARY,
-                write_concern=self.write_concern,
                 parse_write_concern_error=True)
 
     def list_indexes(self):
@@ -1680,9 +1720,16 @@ class Collection(common.BaseObject):
         with self._socket_for_primary_reads() as (sock_info, slave_ok):
             cmd = SON([("listIndexes", self.__name), ("cursor", {})])
             if sock_info.max_wire_version > 2:
-                cursor = self._command(sock_info, cmd, slave_ok,
-                                       ReadPreference.PRIMARY,
-                                       codec_options)["cursor"]
+                try:
+                    cursor = self._command(sock_info, cmd, slave_ok,
+                                           ReadPreference.PRIMARY,
+                                           codec_options)["cursor"]
+                except OperationFailure as exc:
+                    # Ignore NamespaceNotFound errors to match the behavior
+                    # of reading from *.system.indexes.
+                    if exc.code != 26:
+                        raise
+                    cursor = {'id': 0, 'firstBatch': []}
                 return CommandCursor(coll, cursor, sock_info.address)
             else:
                 namespace = _UJOIN % (self.__database.name, "system.indexes")
@@ -1716,7 +1763,7 @@ class Collection(common.BaseObject):
         ``"name"`` keys, which are cleaned. Example output might look
         like this:
 
-        >>> db.test.ensure_index("x", unique=True)
+        >>> db.test.create_index("x", unique=True)
         u'x_1'
         >>> db.test.index_information()
         {u'_id_': {u'key': [(u'_id', 1)]},
@@ -1893,41 +1940,25 @@ class Collection(common.BaseObject):
             return CommandCursor(
                 self, cursor, sock_info.address).batch_size(batch_size or 0)
 
-    # key and condition ought to be optional, but deprecation
-    # would be painful as argument order would have to change.
     def group(self, key, condition, initial, reduce, finalize=None, **kwargs):
         """Perform a query similar to an SQL *group by* operation.
 
-        Returns an array of grouped items.
+        **DEPRECATED** - The group command was deprecated in MongoDB 3.4. The
+        :meth:`~group` method is deprecated and will be removed in PyMongo 4.0.
+        Use :meth:`~aggregate` with the `$group` stage or :meth:`~map_reduce`
+        instead.
 
-        The `key` parameter can be:
-
-          - ``None`` to use the entire document as a key.
-          - A :class:`list` of keys (each a :class:`basestring`
-            (:class:`str` in python 3)) to group by.
-          - A :class:`basestring` (:class:`str` in python 3), or
-            :class:`~bson.code.Code` instance containing a JavaScript
-            function to be applied to each document, returning the key
-            to group by.
-
-        The :meth:`group` method obeys the :attr:`read_preference` of this
-        :class:`Collection`.
-
-        :Parameters:
-          - `key`: fields to group by (see above description)
-          - `condition`: specification of rows to be
-            considered (as a :meth:`find` query specification)
-          - `initial`: initial value of the aggregation counter object
-          - `reduce`: aggregation function as a JavaScript string
-          - `finalize`: function to be called on each object in output list.
-          - `**kwargs` (optional): additional arguments to the group command
-            may be passed as keyword arguments to this helper method
-
+        .. versionchanged:: 3.5
+           Deprecated the group method.
         .. versionchanged:: 3.4
            Added the `collation` option.
         .. versionchanged:: 2.2
            Removed deprecated argument: command
         """
+        warnings.warn("The group method is deprecated and will be removed in "
+                      "PyMongo 4.0. Use the aggregate method with the $group "
+                      "stage or the map_reduce method instead.",
+                      DeprecationWarning, stacklevel=2)
         group = {}
         if isinstance(key, string_type):
             group["$keyf"] = Code(key)
