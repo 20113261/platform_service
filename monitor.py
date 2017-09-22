@@ -116,7 +116,7 @@ def monitoring_hotel_list2detail():
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
-                update_task_statistics(tab_args[-1], tab_args[2], 'List', success_count)
+                update_task_statistics(tab_args[-1], tab_args[2], 'Detail', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
@@ -137,7 +137,7 @@ def monitoring_hotel_detail2ImgOrComment():
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
-                update_task_statistics(tab_args[-1], tab_args[2], 'Detail', success_count)
+                update_task_statistics(tab_args[-1], tab_args[2], 'Images', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
@@ -165,7 +165,7 @@ def monitoring_poi_list2detail():
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
-                update_task_statistics(tab_args[-1], tab_args[2], 'List', success_count)
+                update_task_statistics(tab_args[-1], tab_args[2], 'Detail', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
@@ -186,7 +186,7 @@ def monitoring_poi_detail2imgOrComment():
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
-                update_task_statistics(tab_args[-1], tab_args[2], 'Detail', success_count)
+                update_task_statistics(tab_args[-1], tab_args[2], 'Images', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
@@ -213,7 +213,7 @@ def monitoring_qyer_list2detail():
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
-                update_task_statistics(tab_args[-1], tab_args[2], 'List', success_count)
+                update_task_statistics(tab_args[-1], tab_args[2], 'Detail', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 

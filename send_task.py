@@ -21,8 +21,6 @@ client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['Task']
 redis_sourceid = redis.Redis(host='10.10.114.35', db=8)
 redis_md5 = redis.Redis(host='10.10.114.35', db=9)
-conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', charset='utf8', db='ServicePlatform')
-conn_c = pymysql.connect(host='10.10.69.170', user='reader', password='miaoji1109', charset='utf8', db='base_data')
 
 def hourong_patch(data):
     with mock.patch('pymongo.collection.Collection._insert', proj.my_lib.my_mongo_insert.Collection._insert):
@@ -30,6 +28,7 @@ def hourong_patch(data):
         return result['n']
 
 def get_country_id(tasks):
+    conn_c = pymysql.connect(host='10.10.69.170', user='reader', password='miaoji1109', charset='utf8', db='base_data')
     cursor_c = conn_c.cursor()
     tasks_tmep = {args[2]: list(args) for args in tasks}
     print '================0'*3
@@ -54,7 +53,7 @@ def send_hotel_detail_task(tasks, task_tag):
     _count = 0
     utime = None
     success_count = 0
-    for source, source_id, city_id, hotel_url, utime, country_id in get_country_id(tasks):
+    for source, source_id, city_id, hotel_url, utime in tasks:
         _count += 1
         task_info = {
             'worker': 'proj.hotel_tasks.hotel_base_data',
@@ -68,7 +67,7 @@ def send_hotel_detail_task(tasks, task_tag):
                     'source_id': source_id,
                     'city_id': city_id
                 },
-                'country_id': country_id,
+                'country_id': 'NULL',
                 'part': task_tag
             },
             'priority': 3,
@@ -105,7 +104,7 @@ def send_poi_detail_task(tasks, task_tag):
     utime = None
     success_count = 0
     typ1, typ2, source, tag = task_tag.split('_')
-    for source, source_id, city_id, hotel_url, utime, country_id in get_country_id(tasks):
+    for source, source_id, city_id, hotel_url, utime in tasks:
         _count += 1
         task_info = {
             'worker': 'proj.poi_list_task.get_lost_poi',
@@ -116,7 +115,7 @@ def send_poi_detail_task(tasks, task_tag):
                 'target_url': hotel_url,
                 'city_id': city_id,
                 'poi_type': typ2,
-                'country_id': country_id
+                'country_id': 'NULL'
             },
             'priority': 3,
             'finished': 0,
@@ -194,6 +193,8 @@ def send_image_task(tasks, task_tag, is_poi_task):
     _count = 0
     data = []
     md5_data = []
+    conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', charset='utf8',
+                           db='ServicePlatform')
     cursor = conn.cursor()
     update_time = None
     success_count = 0
