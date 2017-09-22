@@ -101,7 +101,7 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
             res_data.append((source, sid, city_id, country_id, hotel_url))
 
     try:
-        service_platform_conn = service_platform_pool.get_connection()
+        service_platform_conn = service_platform_pool.connection()
         cursor = service_platform_conn.cursor()
         sql = "REPLACE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)".format(
             kwargs['task_name'])

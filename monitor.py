@@ -42,7 +42,7 @@ def update_task_statistics(task_tag, source, typ1, success_count):
     task_statistics.incrby(report_key, success_count)
 
 def execute_sql(sql, commit=False):
-    conn = service_platform_pool.get_connection()
+    conn = service_platform_pool.connection()
     cursor = conn.cursor()
     cursor.execute(sql)
     if commit:
@@ -56,7 +56,7 @@ def execute_sql(sql, commit=False):
 
 def get_seek(task_name):
     sql = """select seek from task_seek where task_name = '%s'"""
-    conn = service_platform_pool.get_connection()
+    conn = service_platform_pool.connection()
     cursor = conn.cursor()
     cursor.execute(sql % task_name)
     timestramp = cursor.fetchone()
@@ -79,7 +79,7 @@ def get_all_tables():
     return execute_sql(sql)
 
 def create_table(table_name):
-    conn = service_platform_pool.get_connection()
+    conn = service_platform_pool.connection()
     cursor = conn.cursor()
     with open('./detail.sql') as f:
         sql = f.read()

@@ -59,7 +59,7 @@ def qyer_list_task(self, source, city_id, country_id, check_in, city_url='', **k
                 datas.append(('qyer', url.split('/')[-1], city_id, country_id, url))
 
     try:
-        service_platform_conn = service_platform_pool.get_connection()
+        service_platform_conn = service_platform_pool.connection()
         cursor = service_platform_conn.cursor()
         cursor.executemany(sql, datas)
         service_platform_conn.commit()

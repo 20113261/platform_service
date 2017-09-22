@@ -55,7 +55,7 @@ def hotel_list_database(source, url, required):
 
 def insert(sql, datas):
     # TODO 连接池处理未指定
-    service_platform_conn = service_platform_pool.get_connection()
+    service_platform_conn = service_platform_pool.connection()
     cursor = service_platform_conn.cursor()
     cursor.executemany(sql, datas)
     service_platform_conn.commit()

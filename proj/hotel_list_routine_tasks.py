@@ -85,7 +85,7 @@ def hotel_routine_list_task(self, source, city_id, check_in, **kwargs):
         raise e
 
     try:
-        base_data_conn = base_data_pool.get_connection()
+        base_data_conn = base_data_pool.connection()
         cursor = base_data_conn.cursor()
         sql = "REPLACE INTO hotel_base_data_task (source, source_id, city_id, hotel_url) VALUES (%s,%s,%s,%s)"
         cursor.executemany(sql, data_res)
