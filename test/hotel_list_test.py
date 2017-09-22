@@ -7,7 +7,7 @@
 # @Software: PyCharm
 from proj.celery import app
 
-# from proj.hotel_list_task import hotel_list_task
+from proj.hotel_list_task import hotel_list_task
 
 if __name__ == '__main__':
     # hotel_list_task('booking', '10001', '501', '20171102', 'test', task_name="list_hotel_booking_test")
