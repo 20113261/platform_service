@@ -109,7 +109,7 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
             result.country_id = country_id
             result.update_time = datetime.datetime.now()
             for k,v in result.__dict__.items():
-                logger.info(k + ' :       '+v)
+                logger.info(k + ' :       '+str(v))
 
             session = DBSession()
             session.execute(text(SQL.format(table_name=kwargs['task_name'])), [result.__dict__])
