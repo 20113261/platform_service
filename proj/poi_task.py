@@ -5,6 +5,7 @@
 # @Site    :
 # @File    : hotel_list_routine_tasks.py
 # @Software: PyCharm
+from proj.celery import app
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.PageSaver import save_task_and_page_content
@@ -39,6 +40,6 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
         if not result['imgurl']:
             raise Exception('zhao bu dao tupian')
         result.country_id = country_id
-        rest_insert_db(result, city_id)
+        # rest_insert_db(result, city_id)
         self.error_code = 0
         return result

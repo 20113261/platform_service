@@ -50,7 +50,7 @@ def qyer_list_task(self, source, city_id, country_id, check_in, city_url='', **k
     self.task_type = 'QyerList'
     self.error_code = 0
 
-    result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, icity_url=city_url)
+    result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, city_url=city_url)
     sql = SQL.format(kwargs['task_name'])
     datas = []
     for item in result:

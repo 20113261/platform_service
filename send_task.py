@@ -22,25 +22,37 @@ collections = client['MongoTask']['Task']
 redis_sourceid = redis.Redis(host='10.10.114.35', db=8)
 redis_md5 = redis.Redis(host='10.10.114.35', db=9)
 conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', charset='utf8', db='ServicePlatform')
+conn_c = pymysql.connect(host='10.10.69.170', user='reader', password='miaoji1109', charset='utf8', db='base_data')
 
 def hourong_patch(data):
     with mock.patch('pymongo.collection.Collection._insert', proj.my_lib.my_mongo_insert.Collection._insert):
         result = collections.insert(data, continue_on_error=True)
         return result['n']
-    # result = collections.insert(data, continue_on_error=True, manipulate=True)
-    # return len(result)
+
+def get_country_id(tasks):
+    cursor_c = conn_c()
+    tasks_tmep = {args[2]: args for args in tasks}
+    sql = """SELECT id, country_id FROM base_data.city where id in (%s)""" % ', '.join(tasks_tmep.keys())
+    cursor_c.execute(sql)
+    countrys = cursor_c.fetchall()
+    # print countrys
+    for id, country_id in countrys:
+        tasks_tmep[id].append(country_id)
+
+    return tasks_tmep
+
 
 def send_hotel_detail_task(tasks, task_tag):
     data = []
     _count = 0
     utime = None
     success_count = 0
-    for source, source_id, city_id, hotel_url, utime in tasks:
+    for source, source_id, city_id, hotel_url, utime, country_id in get_country_id(tasks):
         _count += 1
         task_info = {
             'worker': 'proj.hotel_tasks.hotel_base_data',
-            'queue': 'hotel_task',
-            'routing_key': 'hotel_task',
+            'queue': 'hotel_detail',
+            'routing_key': 'hotel_detail',
             'task_name': task_tag,
             'args': {
                 'source': source,
@@ -49,6 +61,8 @@ def send_hotel_detail_task(tasks, task_tag):
                     'source_id': source_id,
                     'city_id': city_id
                 },
+                'country_id': country_id,
+                'part': task_tag
             },
             'priority': 3,
             'finished': 0,
@@ -84,15 +98,15 @@ def send_poi_detail_task(tasks, task_tag):
     utime = None
     success_count = 0
     typ1, typ2, source, tag = task_tag.split('_')
-    for source_id, city_id, country_id, utime in tasks:
+    for source, source_id, city_id, hotel_url, utime, country_id in get_country_id(tasks):
         _count += 1
         task_info = {
             'worker': 'proj.poi_list_task.get_lost_poi',
-            'queue': 'poi_task_1',
-            'routing_key': 'poi_task_1',
+            'queue': 'poi_detail',
+            'routing_key': 'poi_detail',
             'task_name': task_tag,
             'args': {
-                'source_id': source_id,
+                'target_url': hotel_url,
                 'city_id': city_id,
                 'poi_type': typ2,
                 'country_id': country_id
@@ -130,15 +144,15 @@ def send_qyer_detail_task(tasks, task_tag):
     _count = 0
     utime = None
     success_count = 0
-    for source_id, city_id, utime in tasks:
+    for source, source_id, city_id, hotel_url, utime, country_id in get_country_id(tasks):
         _count += 1
         task_info = {
             'worker': 'proj.qyer_poi_tasks.qyer_poi_task',
-            'queue': 'poi_task_2',
-            'routing_key': 'poi_task_2',
+            'queue': 'poi_detail',
+            'routing_key': 'poi_detail',
             'task_name': task_tag,
             'args': {
-                'source_id': source_id,
+                'target_url': hotel_url,
                 'city_id': city_id,
             },
             'priority': 3,
