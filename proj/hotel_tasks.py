@@ -110,10 +110,12 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
             result.update_time = datetime.datetime.now()
             for k,v in result.__dict__.items():
                 logger.info(k + ' :       '+str(v))
+                if v is None:
+                    result.__dict__[k] = 'NULL'
 
             session = DBSession()
-            # session.execute(text(SQL.format(table_name=kwargs['task_name'])), [result.__dict__])
-            session.add(result)
+            session.execute(text(SQL.format(table_name=kwargs['task_name'])), [result.__dict__])
+            # session.add(result)
             session.commit()
             session.close()
         except Exception as e:
