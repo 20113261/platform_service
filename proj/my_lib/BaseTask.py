@@ -67,19 +67,23 @@ def check_error_code(error_code, retry_count, task_tag, task_source, report_type
         if retry_count != 0:
             failed_key = "{0}|_|{1}|_|{2}|_|Failed".format(task_tag, task_source, report_type)
             report_r.decr(failed_key)
+            logger.debug("Decrease: {0}".format(failed_key))
 
         report_key = "{0}|_|{1}|_|{2}|_|Done".format(task_tag, task_source, report_type)
         report_r.incr(report_key)
+        logger.debug("Increase: {0}".format(report_key))
     else:
         # 标准错误统计
         if int(retry_count) == 0:
             report_key = "{0}|_|{1}|_|{2}|_|Failed".format(task_tag, task_source, report_type)
             report_r.incr(report_key)
+            logger.debug("Increase: {0}".format(report_key))
 
         # 分错误码错误统计
         error_code_task_report_key = "{0}|_|{1}|_|{2}|_|Failed|_|{3}".format(task_tag, task_source, report_type,
                                                                              error_code)
         report_r.incr(error_code_task_report_key)
+        logger.debug("Increase: {0}".format(error_code_task_report_key))
 
 
 class BaseTask(Task):
