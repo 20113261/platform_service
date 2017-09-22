@@ -2,6 +2,7 @@
 import time
 import re
 import traceback
+import datetime
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 
@@ -106,6 +107,7 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
 
         try:
             result.country_id = country_id
+            result.update_time = datetime.datetime.now()
             logger.info(str(result))
             session = DBSession()
             session.execute(text(SQL.format(table_name=kwargs['task_name'])), [result.__dict__])
