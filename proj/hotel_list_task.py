@@ -72,19 +72,19 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, city_url='
 
     spider = factory.get_spider_by_old_source(source + 'ListHotel')
     spider.task = task
-    print(spider.crawl(required=['hotel'], cache_config=cache_config))
+    error_code = spider.crawl(required=['hotel'], cache_config=cache_config)
     logger.info(str(spider.result['hotel']) + '  --  ' + task.content)
-    return spider.result
+    return error_code, spider.result
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_type=False, city_url='', **kwargs):
     self.task_source = source.title()
     self.task_type = 'HotelList'
-    self.error_code = 0
 
-    result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, is_new_type=is_new_type,
-                                 city_url=city_url)
+    error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, is_new_type=is_new_type,
+                                             city_url=city_url)
+    self.error_code = error_code
 
     res_data = []
     if source in ('ctrip', 'ctripcn'):
