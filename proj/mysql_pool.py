@@ -9,10 +9,10 @@ import pymysql
 from DBUtils.PooledDB import PooledDB
 
 
-def init_pool(host, user, password, db, max_connections=20):
+def init_pool(host, user, password, database, max_connections=20):
     mysql_db_pool = PooledDB(creator=pymysql, mincached=1, maxcached=2, maxconnections=max_connections,
                              host=host, port=3306, user=user, passwd=password,
-                             db=db, charset='utf8', use_unicode=False, blocking=True)
+                             db=database, charset='utf8', use_unicode=False, blocking=True)
     return mysql_db_pool
 
 
