@@ -12,16 +12,21 @@ import traceback
 from itertools import repeat
 import redis
 import pymysql
+import pymongo
 
 from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/ServicePlatform?charset=utf8',
-                       encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
+# engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/ServicePlatform?charset=utf8',
+#                        encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
+# DBSession = sessionmaker(bind=engine)
+# session = DBSession()
+from proj.mysql_pool import service_platform_pool
+
 task_statistics = redis.Redis(host='10.10.180.145', db=9)
+client = pymongo.MongoClient(host='10.10.231.105')
+collections = client['MongoTask']['Task']
 HOTEL_SOURCE = ('agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
         'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton')
 POI_SOURCE = 'daodao'
@@ -36,11 +41,27 @@ def update_task_statistics(task_tag, source, typ1, success_count):
     report_key = "{0}|_|{1}|_|{2}|_|All".format(task_tag, source, typ1)
     task_statistics.incrby(report_key, success_count)
 
+def execute_sql(sql, commit=False):
+    conn = service_platform_pool.get_connection()
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    if commit:
+        conn.commit()
+        cursor.close()
+        return
+    result = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return result
 
 def get_seek(task_name):
     sql = """select seek from task_seek where task_name = '%s'"""
-    result = session.execute(sql % task_name)
-    timestramp = result.fetchone()
+    conn = service_platform_pool.get_connection()
+    cursor = conn.cursor()
+    cursor.execute(sql % task_name)
+    timestramp = cursor.fetchone()
+    cursor.close()
+    conn.close()
     print type(timestramp), timestramp
     if not timestramp or len(timestramp)==0:
         return get_default_timestramp()
@@ -49,20 +70,18 @@ def get_seek(task_name):
 
 def update_seek(task_name, seek):
     sql = """replace into task_seek (task_name, seek) values('%s','%s');"""
-    print sql % (seek, task_name)
-    session.execute(sql % (seek, task_name))
-    session.commit()
+    print sql % (task_name, seek)
+    execute_sql(sql % (task_name, seek), commit=True)
 
 def get_all_tables():
     # TODO  建一个针对information_schema的DBSession
     sql = """select table_name from information_schema.tables where table_schema = 'ServicePlatform';"""
-    return session.execute(sql)
+    return execute_sql(sql)
 
 def create_table(table_name):
-    conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', charset='utf8',
-                           db='ServicePlatform')
+    conn = service_platform_pool.get_connection()
     cursor = conn.cursor()
-    with open('../../detail.sql') as f:
+    with open('./detail.sql') as f:
         sql = f.read()
         cursor.execute(sql % table_name)
         cursor.close()
@@ -71,6 +90,7 @@ def create_table(table_name):
 def monitoring_hotel_list2detail():
     # TODO  hotel_list_task任务需要修改为入mysql，  hotel_suggestions_city需要添加时间戳字段
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
+
     table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
     for table_name in table_dict.keys():
@@ -87,7 +107,7 @@ def monitoring_hotel_list2detail():
             create_table(detail_table_name)
 
         try:
-            timestamp, success_count = send_hotel_detail_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
+            timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
             print timestamp
             if timestamp is not None:
                 update_seek(table_name, timestamp)
@@ -108,7 +128,7 @@ def monitoring_hotel_detail2ImgOrComment():
 
         timestamp = get_seek(table_name)
         try:
-            timestamp, success_count = send_image_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
+            timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
                                         is_poi_task=False)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
@@ -137,7 +157,7 @@ def monitoring_poi_list2detail():
         if table_dict.get(detail_table_name, True):
             create_table(detail_table_name)
         try:
-            timestamp, success_count = send_poi_detail_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
+            timestamp, success_count = send_poi_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
@@ -157,7 +177,7 @@ def monitoring_poi_detail2imgOrComment():
         timestamp = get_seek(table_name)
 
         try:
-            timestamp, success_count = send_image_task(session.execute(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
+            timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
                                         is_poi_task=True)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
@@ -193,19 +213,23 @@ def monitoring_qyer_list2detail():
         except Exception as e:
             print traceback.format_exc(e)
 
-def test_timstramp():
-    sql_sel = """select source_id from routine_hotel_list"""
-    sql_upd = """update routine_hotel_list set utime = '%s' where source_id = '%s'"""
-    ids = session.execute(sql_sel)
-    for id in ids.fetchall():
-        time.sleep(0.2)
-        session.execute(sql_upd % (datetime.datetime.now(), id[0]))
-    session.commit()
+def monitoring_zombies_task():
+    collections.update({
+        'running': 1,
+        'utime': {'$lt': datetime.datetime.now()-datetime.timedelta(hours=1)}
+    }, {
+        '$set': {
+            'finished': 0,
+            'used_times': 0,
+            'running': 0
+        }
+    }, multi=True)
 
 if __name__ == '__main__':
     # get_default_timestramp()
     # get_seek('hotel_list2detail')
     # update_seek('hotel_list2detail', datetime.datetime.now())
     # test_timstramp()
-    # monitoring_hotel_list2detail()
-    monitoring_hotel_detail2ImgOrComment()
+    monitoring_hotel_list2detail()
+    # monitoring_hotel_detail2ImgOrComment()
+    # monitoring_zombies_task()
