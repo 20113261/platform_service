@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import os
 from celery import Celery, platforms
 from celery.app.log import TaskFormatter, get_current_task
 from celery.signals import setup_logging
@@ -37,22 +38,11 @@ app = Celery('proj', include=['proj.tasks',
 app.config_from_object('proj.config')
 app.conf.update(
     CELERY_QUEUES=(
-        Queue('hotel_suggestion', exchange=Exchange('hotel_suggestion', type='direct'), routing_key='hotel_suggestion'),
-        Queue('full_site_task', exchange=Exchange('full_site_task', type='direct'), routing_key='full_site_task'),
-        Queue('hotel_task', exchange=Exchange('hotel_task', type='direct'), routing_key='hotel_task'),
-        Queue('hotel_list_task', exchange=Exchange('hotel_list_task', type='direct'), routing_key='hotel_list_task'),
-        Queue('tripadvisor_list_tasks', exchange=Exchange('tripadvisor_list_tasks', type='direct'),
-              routing_key='tripadvisor_list_tasks'),
-        Queue('file_downloader', exchange=Exchange('file_downloader', type='direct'),
-              routing_key='file_downloader'),
-        Queue('tripadvisor_website', exchange=Exchange('tripadvisor_website', type='direct'),
-              routing_key='tripadvisor_website'),
-        Queue('poi_task_1', exchange=Exchange('poi_task_1', type='direct'),
-              routing_key='poi_task_1'),
-        Queue('poi_task_2', exchange=Exchange('poi_task_2', type='direct'),
-              routing_key='poi_task_2'),
-        Queue('poi_list', exchange=Exchange('poi_list', type='direct'),
-              routing_key='poi_list'),
+        Queue('file_downloader', exchange=Exchange('file_downloader', type='direct'), routing_key='file_downloader'),
+        Queue('hotel_detail', exchange=Exchange('hotel_detail', type='direct'), routing_key='hotel_detail'),
+        Queue('hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='hotel_list'),
+        Queue('poi_detail', exchange=Exchange('poi_detail', type='direct'), routing_key='poi_detail'),
+        Queue('poi_list', exchange=Exchange('poi_list', type='direct'), routing_key='poi_list'),
     ),
 
 )
@@ -96,10 +86,11 @@ class StdoutFormatter(logging.Formatter):
 
 
 def initialize_logger(loglevel=logging.INFO, **kwargs):
+    log_name = os.environ.get('CELERY_LOG_NAME', 'celery')
     handler = RotatingFileHandler(
-        '/search/log/celery.log',
+        '/search/log/{0}.log'.format(log_name),
         maxBytes=100 * 1024 * 1024,
-        backupCount=10
+        backupCount=3
     )
     # fmt = "%(asctime)-15s %(threadName)s %(filename)s:%(lineno)d %(levelname)s %(message)s"
     # formatter = logging.Formatter(fmt)

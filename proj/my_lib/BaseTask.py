@@ -49,7 +49,7 @@ def get_error_code(obj):
 
 
 def get_tag(kwargs):
-    task_name = kwargs.get('task_name', '').split('')
+    task_name = kwargs.get('task_name', '').split('_')
     if len(task_name) != 4:
         return "NULL"
     else:
@@ -76,6 +76,10 @@ def check_error_code(error_code, retry_count, task_tag, task_source, report_type
         # 标准错误统计
         if int(retry_count) == 0:
             report_key = "{0}|_|{1}|_|{2}|_|Failed".format(task_tag, task_source, report_type)
+            report_r.incr(report_key)
+            logger.debug("Increase: {0}".format(report_key))
+        elif int(retry_count) == int(max_retry_times):
+            report_key = "{0}|_|{1}|_|{2}|_|FinalFailed ".format(task_tag, task_source, report_type)
             report_r.incr(report_key)
             logger.debug("Increase: {0}".format(report_key))
 
