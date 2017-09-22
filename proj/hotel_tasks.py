@@ -108,7 +108,7 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
             result.country_id = country_id
             logger.info(str(result))
             session = DBSession()
-            session.execute(text(SQL.format(table_name=kwargs['task_name'])), [result])
+            session.execute(text(SQL.format(table_name=kwargs['task_name'])), [result.__dict__])
             session.commit()
             session.close()
         except Exception as e:
