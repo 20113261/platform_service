@@ -33,7 +33,10 @@ app = Celery('proj', include=['proj.tasks',
                               'proj.hotel_list_routine_tasks',
                               'proj.hotel_list_rest_tasks',
                               'proj.hotel_list_view_tasks',
-                              'proj.hotel_routine_tasks'
+                              'proj.hotel_routine_tasks',
+                              'proj.poi_task',
+                              'proj.poi_list_task',
+                              'proj.qyer_list_task',
                               ])
 app.config_from_object('proj.config')
 app.conf.update(

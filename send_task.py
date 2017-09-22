@@ -6,8 +6,6 @@
 # @File    : hotel_list_routine_tasks.py
 # @Software: PyCharm
 
-import proj.my_lib.my_mongo_insert
-
 import pymongo
 import traceback
 import hashlib
@@ -17,6 +15,7 @@ import redis
 import hashlib
 import pymysql
 import mock
+import proj.my_lib.my_mongo_insert
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['Task']
@@ -28,6 +27,8 @@ def hourong_patch(data):
     with mock.patch('pymongo.collection.Collection._insert', proj.my_lib.my_mongo_insert.Collection._insert):
         result = collections.insert(data, continue_on_error=True)
         return result['n']
+    # result = collections.insert(data, continue_on_error=True, manipulate=True)
+    # return len(result)
 
 def send_hotel_detail_task(tasks, task_tag):
     data = []
@@ -72,7 +73,8 @@ def send_hotel_detail_task(tasks, task_tag):
 
     else:
         print(_count)
-        success_count += hourong_patch(data)
+        if len(data)>0:
+            success_count += hourong_patch(data)
 
     return utime, success_count
 
@@ -118,7 +120,8 @@ def send_poi_detail_task(tasks, task_tag):
 
     else:
         print(_count)
-        success_count += hourong_patch(data)
+        if len(data)>0:
+            success_count += hourong_patch(data)
 
     return utime, success_count
 
@@ -161,7 +164,8 @@ def send_qyer_detail_task(tasks, task_tag):
 
     else:
         print(_count)
-        success_count += hourong_patch(data)
+        if len(data)>0:
+            success_count += hourong_patch(data)
 
     return utime, success_count
 
@@ -227,11 +231,13 @@ def send_image_task(tasks, task_tag, is_poi_task):
 
     else:
         print(_count)
-        success_count += hourong_patch(data)
-        cursor.executemany('insert into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
-        conn.commit()
-        cursor.close()
-        conn.close()
+        if len(data)>0:
+            success_count += hourong_patch(data)
+        if len(md5_data)>0:
+            cursor.executemany('insert into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
+            conn.commit()
+            cursor.close()
+            conn.close()
 
 
 
