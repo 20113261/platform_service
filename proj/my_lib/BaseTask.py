@@ -60,6 +60,32 @@ def get_report_type(task_type):
     return KnownTaskType.get(task_type, KnownTaskType["Default"])
 
 
+def check_error_code(error_code, retry_count, task_tag, task_source, report_type, max_retry_times):
+    report_r = redis.Redis(host='10.10.180.145', db=9)
+    if int(error_code) == 0:
+        # 当任务返回 0 时，代表任务成功
+        if retry_count != 0:
+            failed_key = "{0}|_|{1}|_|{2}|_|Failed".format(task_tag, task_source, report_type)
+            report_r.decr(failed_key)
+            logger.debug("Decrease: {0}".format(failed_key))
+
+        report_key = "{0}|_|{1}|_|{2}|_|Done".format(task_tag, task_source, report_type)
+        report_r.incr(report_key)
+        logger.debug("Increase: {0}".format(report_key))
+    else:
+        # 标准错误统计
+        if int(retry_count) == 0:
+            report_key = "{0}|_|{1}|_|{2}|_|Failed".format(task_tag, task_source, report_type)
+            report_r.incr(report_key)
+            logger.debug("Increase: {0}".format(report_key))
+
+        # 分错误码错误统计
+        error_code_task_report_key = "{0}|_|{1}|_|{2}|_|Failed|_|{3}".format(task_tag, task_source, report_type,
+                                                                             error_code)
+        report_r.incr(error_code_task_report_key)
+        logger.debug("Increase: {0}".format(error_code_task_report_key))
+
+
 class BaseTask(Task):
     default_retry_delay = 1
     max_retries = 3
@@ -83,24 +109,10 @@ class BaseTask(Task):
             error_code = 103
 
         # 流程统计入库
-        report_r = redis.Redis(host='10.10.180.145', db=9)
         if task_tag != 'NULL' and retry_count != 'NULL' and error_code != 'NULL' and max_retry_times != "NULL":
             report_type = get_report_type(task_type)
-
-            if int(error_code) == 0:
-                # 当任务返回 0 时，代表任务成功，有一次成功即为成功
-                report_key = "{0}|_|{1}|_|{2}|_|Done".format(task_tag, task_source, report_type)
-                report_r.incr(report_key)
-            elif int(error_code) in [102, 106, 107]:
-                if int(max_retry_times) == int(retry_count):
-                    # 当最后一次重试时，记录被过滤
-                    report_key = "{0}|_|{1}|_|{2}|_|Filter".format(task_tag, task_source, report_type)
-                    report_r.incr(report_key)
-            else:
-                if int(max_retry_times) == int(retry_count):
-                    # 当最后一次重试时，记录失败
-                    report_key = "{0}|_|{1}|_|{2}|_|Failed".format(task_tag, task_source, report_type)
-                    report_r.incr(report_key)
+            # 入库任务进度以及分失败任务统计
+            check_error_code(error_code, retry_count, task_tag, task_source, report_type, max_retry_times)
 
         if int(error_code) == 0:
             finished = True
@@ -163,24 +175,10 @@ class BaseTask(Task):
         if error_code == "NULL":
             error_code = 103
 
-        report_r = redis.Redis(host='10.10.180.145', db=9)
         if task_tag != 'NULL' and retry_count != 'NULL' and error_code != 'NULL' and max_retry_times != "NULL":
             report_type = get_report_type(task_type)
-
-            if int(error_code) == 0:
-                # 当任务返回 0 时，代表任务成功，有一次成功即为成功
-                report_key = "{0}|_|{1}|_|{2}|_|Done".format(task_tag, task_source, report_type)
-                report_r.incr(report_key)
-            elif int(error_code) in [102, 106, 107]:
-                if int(max_retry_times) == int(retry_count):
-                    # 当最后一次重试时，记录被过滤
-                    report_key = "{0}|_|{1}|_|{2}|_|Filter".format(task_tag, task_source, report_type)
-                    report_r.incr(report_key)
-            else:
-                if int(max_retry_times) == int(retry_count):
-                    # 当最后一次重试时，记录失败
-                    report_key = "{0}|_|{1}|_|{2}|_|Failed".format(task_tag, task_source, report_type)
-                    report_r.incr(report_key)
+            # 入库任务进度以及分失败任务统计
+            check_error_code(error_code, retry_count, task_tag, task_source, report_type, max_retry_times)
 
         # 更新任务统计
         r.incr('|_||_|'.join(
