@@ -63,10 +63,10 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, city_url='
     else:
         task.ticket_info = {
             "is_new_type": True,
-            "city_url": city_url,
-            "check_in": check_in,
-            "stay_nights": 1,
-            "occ": 2
+            "city_url": str(city_url),
+            "check_in": str(check_in),
+            "stay_nights": '1',
+            "occ": '2'
         }
         task.content = ''
 

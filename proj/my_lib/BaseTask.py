@@ -49,7 +49,7 @@ def get_error_code(obj):
 
 
 def get_tag(kwargs):
-    task_name = kwargs.get('task_name', '').split('')
+    task_name = kwargs.get('task_name', '').split('_')
     if len(task_name) != 4:
         return "NULL"
     else:
