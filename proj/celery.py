@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import os
 from celery import Celery, platforms
 from celery.app.log import TaskFormatter, get_current_task
 from celery.signals import setup_logging
@@ -85,10 +86,11 @@ class StdoutFormatter(logging.Formatter):
 
 
 def initialize_logger(loglevel=logging.INFO, **kwargs):
+    log_name = os.environ.get('CELERY_LOG_NAME', 'celery')
     handler = RotatingFileHandler(
-        '/search/log/celery.log',
+        '/search/log/{0}.log'.format(log_name),
         maxBytes=100 * 1024 * 1024,
-        backupCount=10
+        backupCount=3
     )
     # fmt = "%(asctime)-15s %(threadName)s %(filename)s:%(lineno)d %(levelname)s %(message)s"
     # formatter = logging.Formatter(fmt)
