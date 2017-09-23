@@ -365,7 +365,6 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             raise Exception(err)
 
     # 被过滤的图片返回错误码不为 0
-    logger.debug(flag)
     if flag != 0:
         self.error_code = 1071
         raise Exception("Img Has Been Filtered")
