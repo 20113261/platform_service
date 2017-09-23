@@ -294,6 +294,12 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
     with MySession() as session:
         page = session.get(target_url, timeout=(120, None))
         f_stream = StringIO(page.content)
+
+        if f_stream.len > 10485760:
+            # 大于 10MB 的图片信息不入库
+            self.error_code = 106
+            raise Exception('Too Large')
+
         file_md5 = get_stream_md5(f_stream)
         flag, h, w = is_complete_scale_ok(f_stream)
 
@@ -313,11 +319,6 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
 
             with open(temp_file, 'wb') as f:
                 f.write(page.content)
-
-        if f_stream.len > 10485760:
-            # 大于 10MB 的图片信息不入库
-            self.error_code = 106
-            raise Exception('Too Large')
 
         use_flag = 1 if flag == 0 else 0
         size = str((h, w))
@@ -356,7 +357,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             # 设置标识位
             self.error_code = 0
         except exc.SQLAlchemyError as err:
-            self.error_code = 34
+            self.error_code = 33
             raise Exception(err)
         except IOError as err:
             self.error_code = 108

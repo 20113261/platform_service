@@ -199,12 +199,13 @@ def send_image_task(tasks, task_tag, is_poi_task):
     update_time = None
     success_count = 0
     for source, source_id, city_id, img_items, update_time in tasks:
-        if redis_sourceid.get(source + str(source_id)):continue
+        if not is_poi_task and int(redis_sourceid.get(source + str(source_id)) or 0)<11:continue
 
         for url in img_items.split('|'):
             md5 = hashlib.md5(source+str(source_id)+url).hexdigest()
             if redis_md5.get(md5):continue
             redis_md5.set(md5, 1)
+            redis_sourceid.incr(source + str(source_id))
             md5_data.append((md5, datetime.datetime.now()))
             _count += 1
             suffix = task_tag.split('_', 1)[1]
