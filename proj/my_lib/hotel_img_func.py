@@ -7,6 +7,7 @@ import datetime
 from sqlalchemy import Column, String, Text, create_engine, TIMESTAMP, Float, Integer
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import text
 
 # from proj.my_lib.logger import get_logger
 # logger = get_logger('imgmd5_primary_key')
@@ -16,6 +17,8 @@ Base = declarative_base()
 engine = create_engine('mysql+pymysql://hourong:hourong@10.10.189.213:3306/update_img?charset=utf8',
                        encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
 DBSession = sessionmaker(bind=engine)
+SQL_HOTEL = 'replace into {table_name} (source, source_id, pic_url, pic_md5, part, hotel_id, status, update_date, size, flag, file_md5) values (:source, :source_id, :pic_url, :pic_md5, :part, :hotel_id, :status, :update_date, :size, :flag, :file_md5)'
+SQL_POI = 'replace into {table_name} (file_name, source, sid, url, pic_size, bucket_name, url_md5, pic_md5, use, part, date) values (:file_name, :source, :sid, :url, :pic_size, :bucket_name, :url_md5, :pic_md5, :use, :part, :date)'
 
 class PicRelation(Base):
     __tablename__ = 'pic_relation_0905'
@@ -84,18 +87,25 @@ def get_file_md5(f_name):
 def hotel_make_kw(args):
     relation = PicRelation()
     relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5 = args
+    relation.hotel_id = ''
+    relation.status = -1
+    relation.update_date = datetime.datetime.now()
+    sql = SQL_HOTEL.format(table_name=relation.__tablename__)
+
     # logger.info(relation.source+'|'+ relation.source_id+'|'+relation.part+'|'+relation.file_md5+'|'+relation.pic_md5)
-    insert_db(relation)
+    insert_db(sql, relation)
 
 def poi_make_kw(args):
     relation = PoiRelation()
     relation.file_name, relation.source, relation.sid, relation.url, relation.pic_size, relation.bucket_name, relation.url_md5, relation.pic_md5, relation.use, relation.part = args
-    insert_db(relation)
+    relation.date = datetime.datetime.now()
+    sql = SQL_POI.format(table_name=relation.__tablename__)
+    insert_db(sql, relation)
 
 
-def insert_db(relation):
+def insert_db(sql, relation):
     dbss = DBSession()
-    dbss.merge(relation)
+    dbss.execute(text(sql), [relation.__dict__])
     dbss.commit()
 
 def insert_db_old(args):
