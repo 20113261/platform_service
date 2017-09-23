@@ -122,7 +122,7 @@ def monitoring_hotel_list2detail():
 
 def monitoring_hotel_detail2ImgOrComment():
     #  TODO 修改get_images task  hotel保留之后的，poi保留之前的
-    sql = """select source, source_id, city_id, hotel_url, update_time from %s where update_time > '%s' order by update_time"""
+    sql = """select source, source_id, city_id, img_items, update_time from %s where update_time > '%s' order by update_time"""
     for (table_name,) in get_all_tables():
 
         tab_args = table_name.split('_')
@@ -170,7 +170,7 @@ def monitoring_poi_list2detail():
             print traceback.format_exc(e)
 
 def monitoring_poi_detail2imgOrComment():
-    sql = """select source, source_id, city_id, hotel_url, update_time from %s where update_time > '%s' order by update_time"""
+    sql = """select source, source_id, city_id, img_items, update_time from %s where update_time > '%s' order by update_time"""
     for (table_name,) in get_all_tables():
 
         tab_args = table_name.split('_')

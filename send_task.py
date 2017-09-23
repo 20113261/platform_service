@@ -198,23 +198,23 @@ def send_image_task(tasks, task_tag, is_poi_task):
     cursor = conn.cursor()
     update_time = None
     success_count = 0
-    for source, source_id, img_items, update_time in tasks:
+    for source, source_id, city_id, img_items, update_time in tasks:
         if redis_sourceid.get(source + str(source_id)):continue
 
         for url in img_items.split('|'):
             md5 = hashlib.md5(source+str(source_id)+url).hexdigest()
             if redis_md5.get(md5):continue
-            redis_md5.set(md5)
+            redis_md5.set(md5, 1)
             md5_data.append((md5, datetime.datetime.now()))
             _count += 1
             suffix = task_tag.split('_', 1)[1]
-            file_path = ''.join(['/data/nfs/image', 'img_', suffix])
-            desc_path = ''.join(['/data/nfs/image', 'img_', suffix, '_filter'])
+            file_path = ''.join(['/data/nfs/image/', 'img_', suffix])
+            desc_path = ''.join(['/data/nfs/image/', 'img_', suffix, '_filter'])
             task_info = {
                 'worker': 'proj.tasks.get_images',
                 'queue': 'file_downloader',
                 'routing_key': 'file_downloader',
-                'task_name': task_tag,
+                'task_name': 'images_'+suffix,
                 'args': {
                     'source': source,
                     'source_id': source_id,
@@ -237,7 +237,7 @@ def send_image_task(tasks, task_tag, is_poi_task):
             if _count % 10000 == 0:
                 print _count
                 try:
-                    success_count = hourong_patch(data)
+                    success_count += hourong_patch(data)
                 except Exception as exc:
                     print '==========================0======================='
                     print source, source_id, url

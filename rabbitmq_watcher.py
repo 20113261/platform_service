@@ -41,16 +41,11 @@ key 任务队列名称 val (队列中最少的任务数，单次插入任务数)
 '''
 TASK_CONF = {
     'default': (0, 0),
-    'celery': (9000, 50000),
     'file_downloader': (9000, 50000),
-    'full_site_task': (9000, 50000),
-    'hotel_list_task': (9000, 50000),
-    'hotel_suggestion': (9000, 50000),
-    'hotel_task': (9000, 50000),
-    'tripadvisor_list_tasks': (9000, 50000),
-    'tripadvisor_website': (9000, 50000),
-    'poi_task_1': (9000, 50000),
-    'poi_task_2': (9000, 50000)
+    'hotel_detail': (9000, 50000),
+    'hotel_list': (9000, 50000),
+    'poi_detail': (9000, 50000),
+    'poi_list': (9000, 50000)
 }
 
 MAX_RETRY_TIMES_CONF = {
