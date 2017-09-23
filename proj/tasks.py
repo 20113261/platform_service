@@ -288,6 +288,7 @@ def get_lost_rest_no_proxy(self, target_url):
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='10/s')
 def get_images(self, source, source_id, target_url, part, file_path, desc_path, is_poi_task=True, need_insert_db=True,
                special_file_name='', **kwargs):
+    self.error_code = 103
     self.task_source = source.title()
     self.task_type = 'DownloadImages'
 
@@ -364,8 +365,9 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             raise Exception(err)
 
     # 被过滤的图片返回错误码不为 0
+    logger.debug(flag)
     if flag != 0:
-        self.error_code = 107
+        self.error_code = 1071
         raise Exception("Img Has Been Filtered")
 
     return flag, h, w

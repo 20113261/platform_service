@@ -65,7 +65,7 @@ def send_hotel_detail_task(tasks, task_tag):
                 'url': hotel_url,
                 'other_info': {
                     'source_id': source_id,
-                    'city_id': city_id
+                    'city_id': 'NULL'
                 },
                 'country_id': 'NULL',
                 'part': task_tag
@@ -199,7 +199,7 @@ def send_image_task(tasks, task_tag, is_poi_task):
     update_time = None
     success_count = 0
     for source, source_id, city_id, img_items, update_time in tasks:
-        if not is_poi_task and int(redis_sourceid.get(source + str(source_id)) or 0)<11:continue
+        if not is_poi_task and int(redis_sourceid.get(source + '|_|' +str(source_id)) or 0)>10:continue
 
         for url in img_items.split('|'):
             md5 = hashlib.md5(source+str(source_id)+url).hexdigest()
