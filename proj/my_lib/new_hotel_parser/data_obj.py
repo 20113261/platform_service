@@ -75,7 +75,7 @@ class TripadvisorHotel(HotelBase, Base):
 
 
 # 初始化数据库连接:
-engine = create_engine('mysql+mysqlconnector://mioji_admin:mioji1109@10.10.228.253:3306/hotel_adding?charset=utf8mb4',
+engine = create_engine('mysql+mysqlconnector://mioji_admin:mioji1109@10.10.228.253:3306/ServicePlatform?charset=utf8mb4',
                        encoding="utf-8", pool_size=20, pool_recycle=7200, echo=False)
 # 创建DBSession类型:
 DBSession = sessionmaker(bind=engine)
@@ -84,7 +84,7 @@ def text_2_sql(txt):
     sql = 'replace into {table_name} '
     params = ''
     values = ''
-    for text in txt.split(','):
+    for text in txt:
         text = text.strip()
         params += text + ', '
         values += ':' + text + ', '

@@ -16,6 +16,7 @@ from proj.my_lib.PageSaver import save_task_and_page_content
 from my_lib.new_hotel_parser.data_obj import DBSession
 from proj.my_lib.logger import get_logger
 from sqlalchemy.sql import text
+from my_lib.new_hotel_parser.data_obj import text_2_sql
 
 logger = get_logger("HotelDetail")
 SQL = """replace into {table_name} (hotel_name, hotel_name_en, source, source_id, brand_name, map_info, address, city, \
@@ -107,14 +108,14 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
 
         try:
             result.country_id = country_id
+
             result.update_time = datetime.datetime.now()
-            for k,v in result.__dict__.items():
-                logger.info(k + ' :       '+str(v))
-                if v is None:
-                    result.__dict__[k] = 'NULL'
+            sql_key = result.__dict__.keys()
+            sql_key.remove('_sa_instance_state')
+            aa = text_2_sql(sql_key).format(table_name=kwargs['task_name'])
 
             session = DBSession()
-            session.execute(text(SQL.format(table_name=kwargs['task_name'])), [result.__dict__])
+            session.execute(text(text_2_sql(sql_key).format(table_name=kwargs['task_name'])), [result.__dict__])
             # session.add(result)
             session.commit()
             session.close()
