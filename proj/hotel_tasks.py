@@ -32,8 +32,8 @@ continent) values (:hotel_name, :hotel_name_en, :source, :source_id, :brand_name
 def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
     self.task_source = source.title()
     self.task_type = 'Hotel'
-    self.error_code = 0
-    sql = SQL.format(table_name = kwargs['task_name'])
+    self.error_code = 103
+    sql = SQL.format(table_name=kwargs['task_name'])
     headers = {
         'User-agent': GetUserAgent()
     }
@@ -104,7 +104,8 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
 
             content = [__content, __detail_content, __map_info_content, __desc_content]
 
-        result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part, retry_count=kwargs['retry_count'])
+        result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part,
+                             retry_count=kwargs['retry_count'])
 
         try:
             result.country_id = country_id
@@ -136,5 +137,5 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
         #                                        source=source,
         #                                        source_id=other_info['source_id'],
         #                                        city_id=other_info['city_id'], url=url)
-
+        self.error_code = 0
         return result.__dict__

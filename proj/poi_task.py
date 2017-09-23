@@ -19,16 +19,18 @@ parser_type = {
     'shop': shop_parser
 }
 
+
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/s')
 def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
     # TODO 入库处理未指定
     self.task_source = 'Daodao'
     self.task_type = 'DaodaoDetail'
-    with MySession() as session:
+    self.error_code = 103
+    with MySession(need_cache=True) as session:
         page = session.get(target_url, timeout=15)
         page.encoding = 'utf8'
         result = parser_type[poi_type](page.content, target_url, city_id=city_id)
-        save_task_and_page_content(task_name='daodao_poi_'+poi_type, content=page.content,
+        save_task_and_page_content(task_name='daodao_poi_' + poi_type, content=page.content,
                                    task_id=kwargs['mongo_task_id'],
                                    source='daodao',
                                    source_id='NULL',

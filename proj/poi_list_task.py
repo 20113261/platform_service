@@ -19,7 +19,7 @@ from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.logger import get_logger
 from proj.mysql_pool import service_platform_pool
-from proj.list_config import cache_config,list_cache_path
+from proj.list_config import cache_config, list_cache_path
 
 import datetime
 
@@ -67,6 +67,7 @@ def insert(sql, datas):
 def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
     self.task_source = source.title()
     self.task_type = 'DaodaoListInfo'
+    self.error_code = 103
     sql = SQL.format(table_name=kwargs.get('task_name'))
     code, result = hotel_list_database(source, url, type_dict[poi_type])
 
@@ -86,4 +87,4 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
 
     self.error_code = code
 
-    return True
+    return datas
