@@ -81,6 +81,7 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, city_url='
 def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_type=False, city_url='', **kwargs):
     self.task_source = source.title()
     self.task_type = 'HotelList'
+    self.error_code = 103
 
     error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, is_new_type=is_new_type,
                                              city_url=city_url)
@@ -112,6 +113,8 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
     except Exception as e:
         self.error_code = 33
         raise e
+
+    return res_data
 
 
 if __name__ == '__main__':
