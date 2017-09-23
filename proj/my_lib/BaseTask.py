@@ -79,7 +79,7 @@ def check_error_code(error_code, retry_count, task_tag, task_source, report_type
             report_r.incr(report_key)
             logger.debug("Increase: {0}".format(report_key))
         elif int(retry_count) == int(max_retry_times):
-            report_key = "{0}|_|{1}|_|{2}|_|FinalFailed ".format(task_tag, task_source, report_type)
+            report_key = "{0}|_|{1}|_|{2}|_|FinalFailed".format(task_tag, task_source, report_type)
             report_r.incr(report_key)
             logger.debug("Increase: {0}".format(report_key))
 

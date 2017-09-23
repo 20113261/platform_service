@@ -112,11 +112,9 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
             result.update_time = datetime.datetime.now()
             sql_key = result.__dict__.keys()
             sql_key.remove('_sa_instance_state')
-            aa = text_2_sql(sql_key).format(table_name=kwargs['task_name'])
 
             session = DBSession()
             session.execute(text(text_2_sql(sql_key).format(table_name=kwargs['task_name'])), [result.__dict__])
-            # session.add(result)
             session.commit()
             session.close()
         except Exception as e:
