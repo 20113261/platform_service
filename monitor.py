@@ -33,6 +33,12 @@ POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 # TODO  所有表的update_time字段加索引
 # TODO  所有表的update_time字段改为timestramp(6)类型
+SQL_FILE = {
+    'hotel': './sql/hotel_detail.sql',
+    'rest': './sql/daodao_detail.sql',
+    'attr': './sql/daodao_detail.sql',
+    'shop': './sql/daodao_detail.sql',
+}
 
 def get_default_timestramp():
     return datetime.datetime(year=1970, month=2, day=4, hour=6, minute=8, second=10, microsecond=666666)
@@ -85,7 +91,7 @@ def get_all_tables():
 def create_table(table_name):
     conn = service_platform_pool.connection()
     cursor = conn.cursor()
-    with open('./detail.sql') as f:
+    with open(SQL_FILE[table_name.split('_')[1]]) as f:
         sql = f.read()
         cursor.execute(sql % table_name)
         cursor.close()
