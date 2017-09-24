@@ -39,7 +39,7 @@ mioji.common.spider.NEED_FLIP_LIMIT = False
 mioji.common.logger.logger = logger
 
 URL = 'https://www.tripadvisor.cn'
-SQL = """insert into {table_name} (source, source_id, city_id, country_id, hotel_url, utime) values(%s, %s, %s, %s, %s, %s, %s)"""
+SQL = """insert into {table_name} (source, source_id, city_id, country_id, hotel_url, utime) values(%s, %s, %s, %s, %s, %s)"""
 type_dict = {'attr': 'shop', 'rest': 'restaurant'}
 
 
