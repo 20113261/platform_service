@@ -176,7 +176,7 @@ def monitoring_poi_list2detail():
             print traceback.format_exc(e)
 
 def monitoring_poi_detail2imgOrComment():
-    sql = """select source, id, city_id, img_items, utime from %s where update_time > '%s' order by update_time"""
+    sql = """select source, id, city_id, imgurl, utime from %s where utime > '%s' order by utime"""
     for (table_name,) in get_all_tables():
 
         tab_args = table_name.split('_')

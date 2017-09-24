@@ -97,7 +97,7 @@ def hotel_make_kw(args):
 
 def poi_make_kw(args):
     relation = PoiRelation()
-    relation.source, relation.sid, relation.url, relation.file_name, relation.part, relation.size, relation.use, relation.pic_md5, relation.bucket_name = args
+    relation.source, relation.sid, relation.url, relation.file_name, relation.part, relation.pic_size, relation.use, relation.pic_md5, relation.bucket_name = args
     relation.date = datetime.datetime.now()
     relation.url_md5 = relation.file_name.split('.')[0]
     sql = SQL_POI.format(table_name=relation.__tablename__)
