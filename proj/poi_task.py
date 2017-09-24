@@ -12,6 +12,11 @@ from proj.my_lib.PageSaver import save_task_and_page_content
 from proj.my_lib.rest_parser import parse as rest_parser
 from proj.my_lib.shop_parser import parse as shop_parser
 from proj.my_lib.attr_parser import parse as attr_parser
+from proj.my_lib.db_localhost import DBSession
+from proj.my_lib.new_hotel_parser.data_obj import text_2_sql
+
+from sqlalchemy.sql import text
+import datetime
 
 parser_type = {
     'attr': attr_parser,
@@ -43,5 +48,14 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
             raise Exception('zhao bu dao tupian')
         result.country_id = country_id
         # rest_insert_db(result, city_id)
+        result.update_time = datetime.datetime.now()
+        sql_key = result.__dict__.keys()
+        sql_key.remove('_sa_instance_state')
+
+        session = DBSession()
+        session.execute(text(text_2_sql(sql_key).format(table_name=kwargs['task_name'])), [result.__dict__])
+        session.commit()
+        session.close()
+
         self.error_code = 0
         return result

@@ -60,7 +60,7 @@ def image_paser(detail_id):
 #     return result
 
 
-def parse(content, url):
+def parse(content, url, city_id):
     result = []
     try:
         content = content.decode('utf8')

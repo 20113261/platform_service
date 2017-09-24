@@ -107,7 +107,7 @@ def send_poi_detail_task(tasks, task_tag):
     for source, source_id, city_id, hotel_url, utime in tasks:
         _count += 1
         task_info = {
-            'worker': 'proj.poi_list_task.get_lost_poi',
+            'worker': 'proj.poi_task.get_lost_poi',
             'queue': 'poi_detail',
             'routing_key': 'poi_detail',
             'task_name': task_tag,
@@ -130,7 +130,7 @@ def send_poi_detail_task(tasks, task_tag):
         if _count % 10000 == 0:
             print(_count)
             try:
-                success_count = hourong_patch(data)
+                success_count += hourong_patch(data)
                 data = []
             except Exception as exc:
                 print '==========================0======================='
@@ -174,7 +174,7 @@ def send_qyer_detail_task(tasks, task_tag):
         if _count % 10000 == 0:
             print(_count)
             try:
-                success_count = hourong_patch(data)
+                success_count += hourong_patch(data)
                 data = []
             except Exception as exc:
                 print '==========================0======================='
