@@ -80,7 +80,7 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
             count += 1
             datas.append(
                 (source, int(view['source_id']), int(city_id), country_id, view['view_url'], datetime.datetime.now()))
-            if datas % 1000 == 0:
+            if len(datas) % 1000 == 0:
                 insert(sql, datas)
     else:
         insert(sql, datas)
