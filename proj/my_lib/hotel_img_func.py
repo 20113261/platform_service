@@ -35,7 +35,7 @@ class PicRelation(Base):
     file_md5 = Column(String(32), primary_key=True)
 
 class PoiRelation(Base):
-    __tablename__ = 'poi_bucket_relation'
+    __tablename__ = 'poi_bucket_relation_0925'
     file_name = Column(String(100))
     source = Column(String(30))
     sid = Column(String(100), primary_key=True)
@@ -86,7 +86,7 @@ def get_file_md5(f_name):
 
 def hotel_make_kw(args):
     relation = PicRelation()
-    relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5 = args
+    relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5, _temp = args
     relation.hotel_id = ''
     relation.status = -1
     relation.update_date = datetime.datetime.now()
@@ -97,8 +97,9 @@ def hotel_make_kw(args):
 
 def poi_make_kw(args):
     relation = PoiRelation()
-    relation.file_name, relation.source, relation.sid, relation.url, relation.pic_size, relation.bucket_name, relation.url_md5, relation.pic_md5, relation.use, relation.part = args
+    relation.source, relation.sid, relation.url, relation.file_name, relation.part, relation.size, relation.use, relation.pic_md5, relation.bucket_name = args
     relation.date = datetime.datetime.now()
+    relation.url_md5 = relation.file_name.split('.')[0]
     sql = SQL_POI.format(table_name=relation.__tablename__)
     insert_db(sql, relation)
 

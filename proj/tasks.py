@@ -328,6 +328,8 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         if special_file_name != '':
             file_name = special_file_name
 
+        bucket_name = file_path.split('_')[1]+'_bucket' if is_poi_task else ''
+
         data = (
             source,  # source
             source_id,  # source_id
@@ -336,7 +338,8 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             part,  # part
             size,  # size
             use_flag,  # poi use , hotel flag
-            file_md5  # file_md5
+            file_md5,  # file_md5
+            bucket_name, # poi rest attr shop
         )
 
         try:

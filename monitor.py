@@ -160,14 +160,14 @@ def monitoring_poi_list2detail():
         if tab_args[1] not in ('rest', 'attr', 'shop'): continue
         if tab_args[2] != POI_SOURCE: continue
 
-
         timestamp = get_seek(table_name)
 
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
         if table_dict.get(detail_table_name, True):
             create_table(detail_table_name)
         try:
-            timestamp, success_count = send_poi_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
+            timestamp, success_count = send_poi_detail_task(
+                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, is_poi_task=True)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
@@ -176,7 +176,7 @@ def monitoring_poi_list2detail():
             print traceback.format_exc(e)
 
 def monitoring_poi_detail2imgOrComment():
-    sql = """select source, source_id, city_id, img_items, update_time from %s where update_time > '%s' order by update_time"""
+    sql = """select source, id, city_id, img_items, utime from %s where update_time > '%s' order by update_time"""
     for (table_name,) in get_all_tables():
 
         tab_args = table_name.split('_')
