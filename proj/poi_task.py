@@ -31,6 +31,7 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
     self.task_source = 'Daodao'
     self.task_type = 'DaodaoDetail'
     self.error_code = 103
+    target_url = target_url.replace('.com.hk', '.cn')
     with MySession(need_cache=True) as session:
         page = session.get(target_url, timeout=15)
         page.encoding = 'utf8'
