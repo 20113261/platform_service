@@ -46,9 +46,8 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
 
         if not result['imgurl']:
             raise Exception('zhao bu dao tupian')
-        result['country_id'] = country_id
         # rest_insert_db(result, city_id)
-        result['update_time'] = datetime.datetime.now()
+        result['utime'] = datetime.datetime.now()
         sql_key = result.keys()
 
         session = DBSession()
