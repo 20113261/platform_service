@@ -16,7 +16,8 @@ from requests.auth import HTTPBasicAuth
 from proj.celery import app
 from proj.my_lib.task_module.mongo_task_func import get_task_total
 from proj.my_lib.task_module.routine_task_func import get_routine_task_total
-from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail
+from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, \
+    monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail
 
 schedule = BlockingScheduler()
 
