@@ -77,8 +77,11 @@ if __name__ == '__main__':
     # for each in get_task_total('test'):
     #     print each
 
-    count = 0
-    for each in get_task_total('file_downloader', limit=50000):
-        count += 1
-
-    print count
+    # count = 0
+    # for each in get_task_total('file_downloader', limit=50000):
+    #     count += 1
+    #
+    # print count
+    for each in get_task_total('poi_detail', used_times=6, limit=30000):
+        print(each)
+    # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
