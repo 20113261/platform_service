@@ -32,8 +32,11 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
     with MySession(need_cache=True) as session:
         # hotels
         if source == 'hotels':
-            hotel_id = re.findall('hotel-id=(\d+)', url)[0]
-            url = 'http://zh.hotels.com/hotel/details.html?hotel-id=' + hotel_id
+            url = 'https://zh.hotels.com/ho{0}/'.format(other_info['source_id'])
+            # hotel_id = re.findall('hotel-id=(\d+)', url)
+            # if hotel_id:
+            #     url = 'https://zh.hotels.com/ho{0}/'.format(hotel_id[0])
+            # else:
 
         # agoda 特殊情况 start
         # 转移 agoda 位置，防止 queue 挂掉
