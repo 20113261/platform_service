@@ -441,7 +441,7 @@ def parse(content, url, city_id):
         'opentime': open_time,  #
         'grade': rating,
         'ranking': rank,
-        'tagid': tagid,
+        # 'tagid': tagid,
         'cuisines': cuisines,
         'dining_options': dining_options,
         'menu': menu,
