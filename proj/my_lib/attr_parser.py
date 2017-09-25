@@ -1,8 +1,11 @@
 # coding:utf-8
 from __future__ import absolute_import
 
-import re
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
+import re
 from proj.my_lib import db_localhost
 from lxml import html
 from pyquery import PyQuery
@@ -82,7 +85,6 @@ def parse(content, url, city_id):
 
     # 名字 name,name_en
     try:
-
         name_en = root.find_class('altHead')[0].text_content().encode('utf-8').strip()
     except:
         name_en = ''
@@ -287,9 +289,8 @@ def parse(content, url, city_id):
     # tagid
     tagid = ''
     try:
-        tagid = root.find_class('header_detail attraction_details')[0].xpath('div')[0].text_content().strip().encode(
-            'utf-8').split('\n')[-1].replace(
-            ',', '|')
+        tagid = root.find_class('header_detail attraction_details')[0]\
+            .xpath('div')[0].text_content().strip().encode('utf-8').split('\n')[-1].replace(',', '|')
     except Exception, e:
         tagid = ''
     print 'tagid: %s' % tagid
@@ -311,7 +312,10 @@ def parse(content, url, city_id):
     try:
         desc = root.xpath('//*[@id="OVERLAY_CONTENTS"]')[0].text_content().encode('utf-8').strip()
     except:
-        desc = ''
+        try:
+            desc = root.xpath('//*[@class="description"]/*[@class="text"]')[0].text_content().encode('utf-8').strip()
+        except:
+            desc = ''
     print 'desc: %s' % desc
 
     # 卓越奖
@@ -417,7 +421,11 @@ if __name__ == '__main__':
     # url = 'https://www.tripadvisor.cn/Attraction_Review-g143034-d108754-Reviews-Nahuku_Thurston_Lava_Tube-Hawaii_Volcanoes_National_Park_Island_of_Hawaii_Hawaii.html'
     # url = 'https://www.tripadvisor.cn/Attraction_Review-g298490-d8514477-Reviews-Triumphal_Arch-Blagoveshchensk_Amur_Oblast_Far_Eastern_District.html'
     url = 'https://www.tripadvisor.cn/Attraction_Review-g60742-d105015-Reviews-Thomas_Wolfe_Memorial-Asheville_North_Carolina.html'
+    url = 'https://www.tripadvisor.cn/Attraction_Review-g187147-d188151-Reviews-Eiffel_Tower-Paris_Ile_de_France.html'
+    url = 'https://www.tripadvisor.cn/Attraction_Review-g1024140-d10000541-Reviews-Castaway_Yoga-Ko_Lipe_Satun_Province.html'
     content = ss.get(url).content
     a = '阿什顿发斯蒂芬'
-    result = parse(content, url)
-    insert_db(result, 10086)
+    result = parse(content, url, a)
+    import json
+    print json.dumps(result, ensure_ascii=False)
+    # insert_db(result, 10086)

@@ -1,7 +1,11 @@
 # coding=utf8
 import json
-import re
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
+import re
+import traceback
 import db_localhost
 from lxml import html
 from pyquery import PyQuery
@@ -217,17 +221,14 @@ def parse(content, url, city_id):
 
     # 评分rating
     try:
+        rating = -1
+        reviews = -1
         if len(root.find_class('rs rating')) != 0:
             grade_temp = root.find_class('rs rating')[0]
             rating = float(grade_temp.xpath('div/span/@content')[0])
             reviews = int(grade_temp.xpath('a/span')[0].text)
-        else:
-            rating = -1
-            reviews = -1
     except Exception, e:
-        # traceback.print_exc(e)
-        rating = -1
-        reviews = -1
+        pass
     print 'rating: %s' % rating
     print 'reviews: %s' % reviews
 
@@ -236,24 +237,32 @@ def parse(content, url, city_id):
     # 价格 price
     try:
         cuisines = ''
-        table_section = root.find_class('table_section')[0]
+        table_section = root.xpath('//*[@class="table_section"]/*[@class="row"]')
+
         open_time = ''
         price = ''
         for ele in table_section[1:]:
-            if ele.xpath('div')[0].text.find('菜系')>-1:
-                cuisines = ele.xpath('div/a')[0].text
-            if ele.xpath('div')[0].text.find('参考价位')>-1:
-                price = ele.xpath('div/span')[0].text.replace('\n', ' ')
-            if ele.xpath('div')[0].text.find('营业时间')>-1:
-                opentime_detail = ele.xpath('.//div')[1]
-                for ele_d in opentime_detail.xpath('div'):
-                    open_week = ele_d.xpath('span')[0].text + '  '
-                    time_ = ''
-                    for ele_t in ele_d.xpath('span//div'):
-                        time_ += ele_t.text + ' | '
-                    open_time += open_week + time_[:-3] + '\n'
+            try:
+                tab_title = ele.xpath('div[@class="title"]')[0].text
+                tab_content = ele.xpath('div[@class="content"]')[0].text_content().replace('\n', ' ').strip()
+                if tab_title.find('菜系')>-1:
+                    cuisines = tab_content
+                if tab_title.find('参考价位')>-1:
+                    price = tab_content
+                if tab_title.find('营业时间')>-1:
+                    opentime_detail = ele.xpath('.//div')[1]
+                    for ele_d in opentime_detail.xpath('div'):
+                        open_week = ele_d.xpath('span')[0].text + '  '
+                        time_ = ''
+                        for ele_t in ele_d.xpath('span//div'):
+                            time_ += ele_t.text + ' | '
+                        open_time += open_week + time_[:-3] + '\n'
+            except:
+                print traceback.format_exc()
+                pass
         open_time = open_time[:-1]
     except Exception, e:
+        print traceback.format_exc()
         cuisines = ''
         open_time = ''
         price = ''
@@ -262,6 +271,13 @@ def parse(content, url, city_id):
     print 'cuisines: %s' % cuisines
     print 'open_time: %s' % open_time
     print 'price: ', price
+
+    tagid = ''
+    try:
+        tagid = root.find_class('header_detail attraction_details')[0] \
+            .xpath('div')[0].text_content().strip().encode('utf-8').split('\n')[-1].replace(',', '|')
+    except Exception, e:
+        tagid = ''
 
     # 评级 rating_by_category
     try:
@@ -353,11 +369,13 @@ def parse(content, url, city_id):
     # 简介抓取
     desc = ''
     try:
-        desc = intro_parse(re.search(pattern_d, url).groups()[0])
-    except Exception, e:
-        desc = ''
-
-    print 'desc: ', desc
+        desc = root.xpath('//*[@id="OVERLAY_CONTENTS"]')[0].text_content().encode('utf-8').strip()
+    except:
+        try:
+            desc = root.xpath('//*[@class="description"]/*[@class="text"]')[0].text_content().encode('utf-8').strip()
+        except:
+            desc = ''
+    print 'desc: %s' % desc
 
     # 第一条评论的review id 用于没有介绍时使用
     try:
@@ -423,6 +441,7 @@ def parse(content, url, city_id):
         'opentime': open_time,  #
         'grade': rating,
         'ranking': rank,
+        'tagid': tagid,
         'cuisines': cuisines,
         'dining_options': dining_options,
         'menu': menu,
@@ -463,6 +482,9 @@ if __name__ == '__main__':
 
     # url = 'https://www.tripadvisor.cn/Restaurant_Review-g187147-d9806534-Reviews-ASPIC-Paris_Ile_de_France.html'
     url = 'http://www.tripadvisor.cn/Restaurant_Review-g298490-d10001137-Reviews-Mimino-Blagoveshchensk_Amur_Oblast_Far_Eastern_District.html'
+    url = 'https://www.tripadvisor.cn/Restaurant_Review-g187147-d9806534-Reviews-ASPIC-Paris_Ile_de_France.html'
     page = requests.get(url)
     result = parse(page.content, url, 'NULL')
+    print json.dumps(result, ensure_ascii=False)
     # insert_db(result, 'NULL')
+
