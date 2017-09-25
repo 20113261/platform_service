@@ -16,7 +16,7 @@ FAILED_TASK_BLACK_LIST = {'proj.full_website_spider_task.full_site_spider'}
 KnownTaskType = {
     "HotelList": "List",
     "Hotel": "Detail",
-    "DownloadImages": "Img",
+    "DownloadImages": "Images",
     "Default": "Unknown"
 }
 
