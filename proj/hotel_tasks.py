@@ -129,4 +129,4 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
         #                                        source_id=other_info['source_id'],
         #                                        city_id=other_info['city_id'], url=url)
         self.error_code = 0
-        return result.__dict__
+        return self.error_code

@@ -14,9 +14,12 @@ from proj.my_lib.shop_parser import parse as shop_parser
 from proj.my_lib.attr_parser import parse as attr_parser
 from proj.my_lib.db_localhost import DBSession
 from proj.my_lib.new_hotel_parser.data_obj import text_2_sql
+from proj.my_lib.logger import get_logger
 
 from sqlalchemy.sql import text
 import datetime
+
+logger = get_logger("POIDetail")
 
 parser_type = {
     'attr': attr_parser,
