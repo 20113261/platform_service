@@ -39,9 +39,10 @@ def hotel_list_database(source, city_id, check_in, city_url):
     task.content = city_url
     spider = factory.get_spider_by_old_source('qyerList')
     spider.task = task
-    print(spider.crawl(required=['list'], cache_config=cache_config))
+    error_code = spider.crawl(required=['list'], cache_config=cache_config)
+    print(error_code)
     logger.info(str(spider.result['list']) + '  --  ' + task.content)
-    return spider.result['list']
+    return error_code, spider.result['list']
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
@@ -50,7 +51,8 @@ def qyer_list_task(self, source, city_id, country_id, check_in, city_url='', **k
     self.task_type = 'QyerList'
     self.error_code = 0
 
-    result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, city_url=city_url)
+    error_code = result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, city_url=city_url)
+
     sql = SQL.format(kwargs['task_name'])
     datas = []
     for item in result:
@@ -68,6 +70,9 @@ def qyer_list_task(self, source, city_id, country_id, check_in, city_url='', **k
     except Exception as e:
         self.error_code = 33
         raise e
+
+    self.error_code = error_code
+    return result, error_code
 
 
 if __name__ == '__main__':
