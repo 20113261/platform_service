@@ -293,7 +293,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
     self.task_type = 'DownloadImages'
 
     with MySession() as session:
-        page = session.get(target_url, timeout=(120, None))
+        page = session.get(target_url, timeout=(1200, None))
         f_stream = StringIO(page.content)
 
         if f_stream.len > 10485760:
