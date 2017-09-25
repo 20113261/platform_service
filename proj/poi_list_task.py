@@ -91,4 +91,4 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
     self.error_code = code
 
     logger.info('code: %s' % self.error_code)
-    return data
+    return self.error_code

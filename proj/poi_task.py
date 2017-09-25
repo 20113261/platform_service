@@ -59,4 +59,4 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
             raise e
 
         self.error_code = 0
-        return result
+        return self.error_code
