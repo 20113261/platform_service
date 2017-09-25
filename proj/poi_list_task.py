@@ -41,13 +41,15 @@ mioji.common.logger.logger = logger
 URL = 'https://www.tripadvisor.cn'
 SQL = """replace into {table_name} (source, source_id, city_id, country_id, hotel_url, utime) values(%s, %s, %s, %s, %s, %s)"""
 type_dict = {'attr': 'shop', 'rest': 'restaurant'}
+spider_name = {'attr': 'View', 'rest': 'Rest'}
 
 
-def hotel_list_database(source, url, required):
+def hotel_list_database(source, url, required, old_spider_name):
     task = Task()
     task.content = URL + url
     task.source = source.lower().capitalize() + 'ListInfo'
-    spider = factory.get_spider('daodao', task.source)
+    # spider = factory.get_spider('daodao', task.source)
+    spider = factory.get_spider('daodao'+old_spider_name)
     spider.task = task
     code = spider.crawl(required=[required], cache_config=cache_config)
     return code, spider.result.get(required, {})
@@ -69,7 +71,7 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
     self.task_type = 'DaodaoListInfo'
     self.error_code = 103
     sql = SQL.format(table_name=kwargs.get('task_name'))
-    code, result = hotel_list_database(source, url, type_dict[poi_type])
+    code, result = hotel_list_database(source, url, type_dict[poi_type], spider_name[poi_type])
 
     self.error_code = code
 

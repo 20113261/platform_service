@@ -38,6 +38,7 @@ SQL_FILE = {
     'rest': './sql/daodao_detail.sql',
     'attr': './sql/daodao_detail.sql',
     'shop': './sql/daodao_detail.sql',
+    'list': './sql/list.sql',
 }
 
 def get_default_timestramp():
@@ -91,7 +92,13 @@ def get_all_tables():
 def create_table(table_name):
     conn = service_platform_pool.connection()
     cursor = conn.cursor()
-    with open(SQL_FILE[table_name.split('_')[1]]) as f:
+    tab_args = table_name.split('_')
+    if tab_args[0]=='detail':
+        sql_file = SQL_FILE[tab_args[1]]
+    elif tab_args[0]=='list':
+        sql_file = SQL_FILE['list']
+
+    with open(sql_file) as f:
         sql = f.read()
         cursor.execute(sql % table_name)
         cursor.close()
@@ -113,7 +120,7 @@ def monitoring_hotel_list2detail():
 
         timestamp = get_seek(table_name)
 
-        update_task_statistics(tab_args[-1], tab_args[2], 'List', collections.find({"task_name":table_name}).count())
+        # update_task_statistics(tab_args[-1], tab_args[2], 'List', collections.find({"task_name":table_name}).count())
 
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
         if table_dict.get(detail_table_name, True):
@@ -167,7 +174,7 @@ def monitoring_poi_list2detail():
 
         timestamp = get_seek(table_name)
 
-        update_task_statistics(tab_args[-1], tab_args[2], 'List', collections.find({"task_name": table_name}).count())
+        # update_task_statistics(tab_args[-1], tab_args[2], 'List', collections.find({"task_name": table_name}).count())
 
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
         if table_dict.get(detail_table_name, True):
