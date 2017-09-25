@@ -116,7 +116,7 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
         self.error_code = 33
         raise e
 
-    return res_data
+    return res_data, self.error_code
 
 
 if __name__ == '__main__':
