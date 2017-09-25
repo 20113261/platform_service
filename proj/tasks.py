@@ -291,6 +291,9 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
     self.error_code = 103
     self.task_source = source.title()
     self.task_type = 'DownloadImages'
+    flag = None
+    h = None
+    w = None
 
     with MySession() as session:
         page = session.get(target_url, timeout=(1200, None))
@@ -328,7 +331,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         if special_file_name != '':
             file_name = special_file_name
 
-        bucket_name = file_path.split('_')[1]+'_bucket' if is_poi_task else ''
+        bucket_name = file_path.split('_')[1] + '_bucket' if is_poi_task else ''
 
         data = (
             source,  # source
@@ -339,7 +342,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             size,  # size
             use_flag,  # poi use , hotel flag
             file_md5,  # file_md5
-            bucket_name, # poi rest attr shop
+            bucket_name,  # poi rest attr shop
         )
 
         try:
@@ -368,8 +371,8 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             raise Exception(err)
 
     # 被过滤的图片返回错误码不为 0
-    if flag != 0:
-        self.error_code = 1071
+    if flag in [3, 4, 5]:
+        self.error_code = 107
         raise Exception("Img Has Been Filtered")
 
     return flag, h, w, self.error_code, kwargs['task_name']
