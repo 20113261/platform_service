@@ -109,6 +109,7 @@ def monitoring_hotel_list2detail():
         if tab_args[0] != 'list': continue
         if tab_args[1] != 'hotel': continue
         if tab_args[2] not in HOTEL_SOURCE: continue
+        if tab_args[3] == 'test':continue
 
         timestamp = get_seek(table_name)
 
@@ -137,6 +138,7 @@ def monitoring_hotel_detail2ImgOrComment():
         if tab_args[0] != 'detail': continue
         if tab_args[1] != 'hotel': continue
         if tab_args[2] not in HOTEL_SOURCE: continue
+        if tab_args[3] == 'test': continue
 
         timestamp = get_seek(table_name)
         try:
@@ -161,6 +163,7 @@ def monitoring_poi_list2detail():
         if tab_args[0] != 'list': continue
         if tab_args[1] not in ('rest', 'attr', 'shop'): continue
         if tab_args[2] != POI_SOURCE: continue
+        if tab_args[3] == 'test': continue
 
         timestamp = get_seek(table_name)
 
@@ -171,7 +174,7 @@ def monitoring_poi_list2detail():
             create_table(detail_table_name)
         try:
             timestamp, success_count = send_poi_detail_task(
-                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, is_poi_task=True)
+                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
@@ -187,6 +190,7 @@ def monitoring_poi_detail2imgOrComment():
         if tab_args[0] != 'detail': continue
         if tab_args[1] not in ('rest', 'attr', 'shop'): continue
         if tab_args[2] != POI_SOURCE: continue
+        if tab_args[3] == 'test': continue
 
         timestamp = get_seek(table_name)
 
@@ -212,6 +216,7 @@ def monitoring_qyer_list2detail():
         if tab_args[0] != 'list': continue
         if tab_args[1] != 'total': continue
         if tab_args[2] != QYER_SOURCE: continue
+        if tab_args[3] == 'test': continue
 
         timestamp = get_seek(table_name)
 

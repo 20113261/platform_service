@@ -200,7 +200,7 @@ def send_image_task(tasks, task_tag, is_poi_task):
     success_count = 0
     for source, source_id, city_id, img_items, update_time in tasks:
         if not is_poi_task and int(redis_sourceid.get(source + '|_|' +str(source_id)) or 0)>10:continue
-
+        if img_items is None:continue
         for url in img_items.split('|'):
             md5 = hashlib.md5(source+str(source_id)+url).hexdigest()
             if redis_md5.get(md5):continue
