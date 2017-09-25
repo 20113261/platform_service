@@ -35,9 +35,9 @@ QYER_SOURCE = 'qyer'
 # TODO  所有表的update_time字段改为timestramp(6)类型
 SQL_FILE = {
     'hotel': './sql/hotel_detail.sql',
-    'rest': './sql/daodao_detail.sql',
-    'attr': './sql/daodao_detail.sql',
-    'shop': './sql/daodao_detail.sql',
+    'rest': './sql/daodao_rest_detail.sql',
+    'attr': './sql/daodao_attr_detail.sql',
+    'shop': './sql/daodao_attr_detail.sql',
     'list': './sql/list.sql',
 }
 
