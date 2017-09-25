@@ -36,11 +36,16 @@ def expedia_parser(content, url, other_info):
     try:
         # 匹配英文名
         # eng_pattern = re.compile(r'([a-zA-Z].*[a-zA-Z]?)', re.S)
+        name = root.find_class('page-header')[0].find_class('section-header-main')[0].text.strip()
         name_all = root.find_class('page-header')[0].find_class('section-header-main')[0].text_content().strip()
-        hotel_name_en = name_all
-        hotel_name = name_all
 
-        # 爬虫中彻底去除酒店名称处理逻辑
+        if name != name_all and name in name_all:
+            hotel_name = name
+            hotel_name_en = name_all.replace(name, '')
+        else:
+            hotel_name = name
+            hotel_name_en = name
+
         # 处理酒店名称
         # if len(re.findall(u'([\u4e00-\u9fff]+)', unicode(hotel_name))) > 0:
         #     if hotel_name.endswith(hotel_name_en):
@@ -277,7 +282,9 @@ if __name__ == '__main__':
     # url = 'https://www.expedia.com.hk/cn/Savannah-Hotels-Best-Western-Savannah-Historic-District.h454.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Chiang-Mai-Hotels-VCSuanpaak-Hotel-Serviced-Apartments.h6713388.Hotel-Information?chkin=2016%2F12%2F14&chkout=2016%2F12%2F15&rm1=a3&hwrqCacheKey=f03a3186-af50-40c4-881f-b5f8c58d19a7HWRQ1480420091939&c=4617cc10-b9c1-46dc-992b-5a6fe87f7f49&'
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=ef1d21e286502f87feaea39098c11b1c'
-    url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=0035837c89d997704b1312cd3cf6c50e'
+    # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=0035837c89d997704b1312cd3cf6c50e'
+    # url = 'https://www.expedia.com.hk/cn/h10000.Hotel-Information'
+    url = 'https://www.expedia.com.hk/cn/Wagga-Wagga-Hotels-International-Hotel-Wagga-Wagga.h8966967.Hotel-Information?chkin=2017%2F9%2F25&chkout=2017%2F9%2F26&rm1=a2&regionId=181592&hwrqCacheKey=cf20f4e6-25d7-4183-99d0-954735abcb77HWRQ1506309449240&vip=false&c=297cd267-27af-484b-9117-f3f38e35362c&&exp_dp=729.14&exp_ts=1506309449666&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'
