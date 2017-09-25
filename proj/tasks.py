@@ -372,7 +372,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         self.error_code = 1071
         raise Exception("Img Has Been Filtered")
 
-    return flag, h, w, self.error_code
+    return flag, h, w, self.error_code, kwargs['task_name']
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
