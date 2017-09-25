@@ -19,22 +19,29 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
     self.task_source = 'Qyer'
     self.task_type = 'Qyerinfo'
 
-    with MySession() as session:
+    with MySession(need_cache=True) as session:
         page = session.get(target_url, timeout=240)
         page.encoding = 'utf8'
         content = page.text
-        save_task_and_page_content(task_name='qyer_poi', content=content, task_id=kwargs['mongo_task_id'], source='qyer',
-                                   source_id='NULL',
-                                   city_id='NULL', url=target_url)
         result = page_parser(content=content, target_url=target_url)
         result.city_id = city_id
-        if result.name == 'NULL' and result.map_info == 'NULL':
-            raise Exception('name or map_info is NULL')
+        if result.name == 'NULL' and result.name_en == 'NULL':
+            self.error_code = 102
+            raise Exception("name and name_en all NULL")
+        elif result.map_info == 'NULL':
+            self.error_code = 102
+            raise Exception('map_info is NULL')
         else:
-            session = DBSession()
-            session.merge(result)
-            session.commit()
-            session.close()
+
+            try:
+                session = DBSession()
+                # todo modify mysql insert
+                session.merge(result)
+                session.commit()
+                session.close()
+            except Exception as e:
+                self.error_code = 33
+                raise e
 
         self.error_code = 0
         return result

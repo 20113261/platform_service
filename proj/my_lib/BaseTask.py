@@ -17,6 +17,10 @@ KnownTaskType = {
     "HotelList": "List",
     "Hotel": "Detail",
     "DownloadImages": "Images",
+    "DaodaoListInfo": "List",
+    "DaodaoDetail": "Detail",
+    "QyerList": "List",
+    "Qyerinfo": "Detail",
     "Default": "Unknown"
 }
 
