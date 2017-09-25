@@ -19,21 +19,12 @@ from sqlalchemy.sql import text
 from my_lib.new_hotel_parser.data_obj import text_2_sql
 
 logger = get_logger("HotelDetail")
-SQL = """replace into {table_name} (hotel_name, hotel_name_en, source, source_id, brand_name, map_info, address, city, \
-country, city_id, postal_code, star, grade, review_num, has_wifi, is_wifi_free, has_parking, is_parking_free, service, \
-img_items, description, accepted_cards, check_in_time, check_out_time, hotel_url, update_time, \
-continent) values (:hotel_name, :hotel_name_en, :source, :source_id, :brand_name, :map_info, :address, :city, \
-:country, :city_id, :postal_code, :star, :grade, :review_num, :has_wifi, :is_wifi_free, :has_parking, \
-:is_parking_free, :service, :img_items, :description, :accepted_cards, :check_in_time, :check_out_time, :hotel_url, \
-:update_time, :continent)"""
-
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='1/s')
 def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
     self.task_source = source.title()
     self.task_type = 'Hotel'
     self.error_code = 103
-    sql = SQL.format(table_name=kwargs['task_name'])
     headers = {
         'User-agent': GetUserAgent()
     }

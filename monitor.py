@@ -112,6 +112,8 @@ def monitoring_hotel_list2detail():
 
         timestamp = get_seek(table_name)
 
+        update_task_statistics(tab_args[-1], tab_args[2], 'List', collections.find({"task_name":table_name}).count())
+
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
         if table_dict.get(detail_table_name, True):
             create_table(detail_table_name)
@@ -161,6 +163,8 @@ def monitoring_poi_list2detail():
         if tab_args[2] != POI_SOURCE: continue
 
         timestamp = get_seek(table_name)
+
+        update_task_statistics(tab_args[-1], tab_args[2], 'List', collections.find({"task_name": table_name}).count())
 
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
         if table_dict.get(detail_table_name, True):
