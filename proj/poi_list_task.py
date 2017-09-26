@@ -44,15 +44,18 @@ type_dict = {'attr': 'view', 'rest': 'restaurant'}
 spider_name = {'attr': 'View', 'rest': 'Rest'}
 
 
-def hotel_list_database(source, url, required, old_spider_name):
+def hotel_list_database(source, url, required, old_spider_name, need_cache=True):
     task = Task()
     task.content = URL + url
     logger.info('%s  %s' % (task.content, required))
     task.source = source.lower().capitalize() + 'ListInfo'
     # spider = factory.get_spider('daodao', task.source)
-    spider = factory.get_spider_by_old_source('daodao'+old_spider_name)
+    spider = factory.get_spider_by_old_source('daodao' + old_spider_name)
     spider.task = task
-    code = spider.crawl(required=[required], cache_config=cache_config)
+    if need_cache:
+        code = spider.crawl(required=[required], cache_config=cache_config)
+    else:
+        code = spider.crawl(required=[required])
     return code, spider.result.get(required, {})
 
 
@@ -72,7 +75,10 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
     self.task_type = 'DaodaoListInfo'
     self.error_code = 103
     sql = SQL.format(table_name=kwargs.get('task_name'))
-    code, result = hotel_list_database(source, url, type_dict[poi_type], spider_name[poi_type])
+
+    retry_count = kwargs.get('retry_count', 0)
+    code, result = hotel_list_database(source, url, type_dict[poi_type], spider_name[poi_type],
+                                       need_cache=retry_count == 0)
 
     self.error_code = code
 

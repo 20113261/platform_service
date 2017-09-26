@@ -49,7 +49,7 @@ hotel_rooms = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'chil
 hotel_rooms_c = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
 
 
-def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_type='1', suggest=''):
+def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_type='1', suggest='', need_cache=True):
     task = Task()
     if not is_new_type:
         if source == 'hilton':
@@ -73,7 +73,10 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_ty
 
     spider = factory.get_spider_by_old_source(source + 'ListHotel')
     spider.task = task
-    error_code = spider.crawl(required=['hotel'], cache_config=cache_config)
+    if need_cache:
+        error_code = spider.crawl(required=['hotel'], cache_config=cache_config)
+    else:
+        error_code = spider.crawl(required=['hotel'])
     logger.info(str(spider.result['hotel']) + '  --  ' + task.content)
     return error_code, spider.result
 
@@ -85,8 +88,9 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
     self.task_type = 'HotelList'
     self.error_code = 103
 
+    retry_count = kwargs.get('retry_count', 0)
     error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, is_new_type=is_new_type,
-                                             suggest_type=suggest_type, suggest=suggest)
+                                             suggest_type=suggest_type, suggest=suggest, need_cache=retry_count == 0)
     self.error_code = error_code
 
     res_data = []

@@ -10,15 +10,28 @@ from proj.celery import app
 from proj.hotel_list_task import hotel_list_task
 
 if __name__ == '__main__':
-    hotel_list_task('booking', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
-    hotel_list_task('agoda', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
-    hotel_list_task('ctrip', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
-    hotel_list_task('expedia', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
-    hotel_list_task('hotels', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
-    hotel_list_task('elong', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
+    # hotel_list_task('booking', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
+    # hotel_list_task('agoda', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
+    # hotel_list_task('ctrip', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
+    # hotel_list_task('expedia', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
+    # hotel_list_task('hotels', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
+    # hotel_list_task('elong', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
 
+    # source, city_id, country_id, check_in, part, is_new_type=False, suggest_type='1', suggest='',
 
+    # hotel_list_task('expedia', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
 
+    hotel_list_task(
+        source='expedia',
+        city_id='51211',
+        country_id='501',
+        check_in='20171102',
+        part='test',
+        is_new_type=True,
+        suggest_type=1,
+        suggest='https://www.expedia.com.hk/Hotel-Search?destination=%E7%93%A6%E5%8A%A0%E7%93%A6%E5%8A%A0%2C+%E6%96%B0%E5%8D%97%E5%A8%81%E7%88%BE%E6%96%AF%2C+%E6%BE%B3%E6%B4%B2&startDate=&endDate=&rooms=1&_xpid=11905%7C1&adults=2',
+        task_name="list_hotel_test_test"
+    )
 
     # print(app.send_task(
     #     'proj.hotel_list_task.hotel_list_task',

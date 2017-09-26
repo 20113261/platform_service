@@ -34,12 +34,15 @@ spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "REPLACE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
 
-def hotel_list_database(source, city_id, check_in, city_url):
+def hotel_list_database(source, city_id, check_in, city_url, need_cache=True):
     task = Task()
     task.content = city_url
     spider = factory.get_spider_by_old_source('qyerList')
     spider.task = task
-    error_code = spider.crawl(required=['list'], cache_config=cache_config)
+    if need_cache:
+        error_code = spider.crawl(required=['list'], cache_config=cache_config)
+    else:
+        error_code = spider.crawl(required=['list'])
     print(error_code)
     logger.info(str(spider.result['list']) + '  --  ' + task.content)
     return error_code, spider.result['list']
@@ -51,7 +54,9 @@ def qyer_list_task(self, source, city_id, country_id, check_in, city_url='', **k
     self.task_type = 'QyerList'
     self.error_code = 0
 
-    error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, city_url=city_url)
+    retry_count = kwargs.get('retry_count', 0)
+    error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, city_url=city_url,
+                                             need_cache=retry_count == 0)
 
     sql = SQL.format(kwargs['task_name'])
     datas = []
@@ -81,3 +86,11 @@ def qyer_list_task(self, source, city_id, country_id, check_in, city_url='', **k
 
 if __name__ == '__main__':
     print qyer_list_task('booking', '51211', '20170801')
+
+    {
+        'source': '',
+        'city_id': '',
+        'country_id': '',
+        'check_in': '',
+        'city_url': '',
+    }
