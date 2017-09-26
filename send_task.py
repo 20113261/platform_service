@@ -115,7 +115,8 @@ def send_poi_detail_task(tasks, task_tag):
                 'target_url': hotel_url,
                 'city_id': city_id,
                 'poi_type': typ2,
-                'country_id': 'NULL'
+                'country_id': 'NULL',
+                'part': task_tag
             },
             'priority': 3,
             'finished': 0,
@@ -150,7 +151,7 @@ def send_qyer_detail_task(tasks, task_tag):
     _count = 0
     utime = None
     success_count = 0
-    for source, source_id, city_id, hotel_url, utime, country_id in get_country_id(tasks):
+    for source, source_id, city_id, hotel_url, utime in tasks:
         _count += 1
         task_info = {
             'worker': 'proj.qyer_poi_tasks.qyer_poi_task',
@@ -160,6 +161,7 @@ def send_qyer_detail_task(tasks, task_tag):
             'args': {
                 'target_url': hotel_url,
                 'city_id': city_id,
+                'part': task_tag
             },
             'priority': 3,
             'finished': 0,
@@ -223,7 +225,8 @@ def send_image_task(tasks, task_tag, is_poi_task):
                     'part': task_tag.split('_')[-1],
                     'file_path': file_path,
                     'desc_path': desc_path,
-                    'is_poi_task': is_poi_task
+                    'is_poi_task': is_poi_task,
+                    'new_part': task_tag
                 },
                 'priority': 3,
                 'finished': 0,

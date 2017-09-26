@@ -51,4 +51,4 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
                 raise e
 
         self.error_code = 0
-        return result
+        return self.error_code

@@ -38,6 +38,7 @@ SQL_FILE = {
     'rest': './sql/daodao_rest_detail.sql',
     'attr': './sql/daodao_attr_detail.sql',
     'shop': './sql/daodao_attr_detail.sql',
+    'total': './sql/qyer_detail.sql',
     'list': './sql/list.sql',
 }
 
@@ -174,6 +175,7 @@ def monitoring_poi_list2detail():
 
         timestamp = get_seek(table_name)
 
+        aa = collections.find({"task_name": table_name}).count()
         update_list_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name": table_name}).count())
 
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
@@ -230,13 +232,14 @@ def monitoring_qyer_list2detail():
         if table_dict.get(detail_table_name, True):
             create_table(detail_table_name)
         try:
-            timestamp, success_count = send_qyer_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name)
+            timestamp, success_count = send_qyer_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
         except Exception as e:
             print traceback.format_exc(e)
+            raise e
 
 def monitoring_zombies_task():
     collections.update({
