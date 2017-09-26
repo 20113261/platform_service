@@ -40,15 +40,24 @@ def get_task_total(queue, used_times=6, limit=30000):
         yield task_token, worker, queue, routing_key, line['args'], line['used_times'], line['task_name']
 
 
-def update_task(task_id, finish_code):
-    return collections.update({
-        'task_token': task_id
-    }, {
-        '$set': {
-            "finished": finish_code,
-            'running': 0
-        }
-    })
+def update_task(task_id, finish_code=0):
+    if int(finish_code) == 1:
+        return collections.update({
+            'task_token': task_id
+        }, {
+            '$set': {
+                "finished": 1,
+                'running': 0
+            }
+        })
+    else:
+        return collections.update({
+            'task_token': task_id
+        }, {
+            '$set': {
+                'running': 0
+            }
+        })
 
 
 def get_per_task(task_id):
@@ -84,4 +93,4 @@ if __name__ == '__main__':
     # print count
     for each in get_task_total('poi_detail', used_times=6, limit=30000):
         print(each)
-    # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
+        # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
