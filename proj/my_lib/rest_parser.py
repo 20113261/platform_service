@@ -4,7 +4,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-import re
+import re, json
 import traceback
 import db_localhost
 from lxml import html
@@ -104,6 +104,35 @@ def parse(content, url, city_id):
     source_id = re.compile(r'd(\d+)').findall(url)[0]
     # source_id = rest_id
 
+    map_info = ''
+    try:
+        map_pat = re.compile(r"taStore.store\('typeahead.recentHistoryList', (.*?)\);", re.S)
+        poi_data = json.loads(map_pat.findall(content)[0])
+
+        def find_mapinfo(node):
+            try:
+                if source_id == str(node.get('value', 'NULL')):
+                    tmp_map = node.get('coords', None)
+                    if tmp_map:
+                        tmp_map = ','.join(tmp_map.split(',')[::-1])
+                    return tmp_map
+            except:
+                pass
+            # 没有的话找子节点
+            child_list = node.get('urls', [])
+            if child_list:
+                for poi_info in child_list:
+                    tmp_map = find_mapinfo(poi_info)
+                    if tmp_map:
+                        return tmp_map
+
+        for poi_list in poi_data:
+            map_info = find_mapinfo(poi_list)
+            if map_info:
+                break
+    except:
+        map_info = ''
+
     source = 'daodao'
 
     # 名字 name,name_en
@@ -146,50 +175,6 @@ def parse(content, url, city_id):
 
     print 'name: %s' % name
     print 'name_en: %s' % name_en
-
-    # 经纬度map_info
-    try:
-        map_info = ''
-        if not map_info:
-            # m@add meta 节点查找
-            try:
-                location_content = root.xpath('//meta[@name="location"]/@content')[0].strip()
-                map_info = re.search('coord[=\s]+([\.\d\,\-]+)', location_content).group(1)
-            except:
-                map_info = ''
-
-        if not map_info:
-            try:
-                lng = root.xpath('//div[@class="mapContainer"]/@data-lng')[0]
-                lat = root.xpath('//div[@class="mapContainer"]/@data-lat')[0]
-                map_info = str(lng) + ',' + str(lat)
-            except:
-                map_info = ''
-
-        if not map_info:
-            try:
-                map_temp = re.compile(r'staticmap\?location=(.*?)&zoom').findall(content)[0]
-                map_info = map_temp
-            except:
-                try:
-                    map_temp = re.compile(r'&center=(.*?)&maptype').findall(content)[0]
-                    map_infos = map_temp.split(',')
-                    map_info = map_infos[1] + ',' + map_infos[0]
-                except:
-                    try:
-                        map_temp = re.compile(r'desktop&center=(.*?)&zoom', re.S).findall(content)[0]
-                        map_infos = map_temp.split(',')
-                        map_info = map_infos[1] + ',' + map_infos[0]
-                    except:
-                        map_temp = ''
-        if not map_info:
-            map_info = ''
-    except Exception as e:
-        map_info = ''
-        print 'map_info error', url
-        print str(e)
-        return "Error"
-    print 'map: %s' % map_info
 
     # 地址address
     try:
