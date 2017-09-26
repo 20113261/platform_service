@@ -45,13 +45,12 @@ SQL_FILE = {
 def get_default_timestramp():
     return datetime.datetime(year=1970, month=2, day=4, hour=6, minute=8, second=10, microsecond=666666)
 
-def update_task_statistics(task_tag, typ2, source, typ1, success_count):
+def update_task_statistics(task_tag, typ2, source, typ1, success_count, sum_or_set=True):
     report_key = "{0}|_|{1}|_|{2}|_|{3}|_|All".format(task_tag, typ2.title(), source.title(), typ1)
-    task_statistics.incrby(report_key, success_count)
-
-def update_list_task_statistics(task_tag, typ2, source, typ1, success_count):
-    report_key = "{0}|_|{1}|_|{2}|_|{3}|_|All".format(task_tag, typ2.title(), source.title(), typ1)
-    task_statistics.set(report_key, success_count)
+    if sum_or_set:
+        task_statistics.incrby(report_key, success_count)
+    else:
+        task_statistics.set(report_key, success_count)
 
 def execute_sql(sql, commit=False):
     conn = service_platform_pool.connection()
@@ -123,7 +122,7 @@ def monitoring_hotel_list2detail():
 
         timestamp = get_seek(table_name)
 
-        update_list_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name":table_name}).count())
+        update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name":table_name}).count(), sum_or_set=False)
 
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
         if table_dict.get(detail_table_name, True):
@@ -175,7 +174,7 @@ def monitoring_poi_list2detail():
 
         timestamp = get_seek(table_name)
 
-        update_list_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name": table_name}).count())
+        update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
         if table_dict.get(detail_table_name, True):
@@ -227,8 +226,8 @@ def monitoring_qyer_list2detail():
 
         timestamp = get_seek(table_name)
 
-        update_list_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-                                    collections.find({"task_name": table_name}).count())
+        update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+                                    collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
         if table_dict.get(detail_table_name, True):
