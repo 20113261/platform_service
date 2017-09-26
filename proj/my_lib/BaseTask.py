@@ -78,6 +78,7 @@ def check_error_code(error_code, retry_count, task_tag, task_source, report_type
     report_r = redis.Redis(host='10.10.180.145', db=9)
     if int(error_code) == 0:
         # 当任务返回 0 时，代表任务成功
+        # 此时如果 Failed 已加 1 ，则减回去
         if retry_count != 0:
             failed_key = "{0}|_|{1}|_|{2}|_|{3}|_|Failed".format(task_tag, crawl_type, task_source, report_type)
             report_r.decr(failed_key)
@@ -90,6 +91,12 @@ def check_error_code(error_code, retry_count, task_tag, task_source, report_type
         report_key = "{0}|_|{1}|_|{2}|_|{3}|_|FinalFailed".format(task_tag, crawl_type, task_source, report_type)
         report_r.incr(report_key)
         logger.debug("Increase: {0}".format(report_key))
+
+        # 此时如果 Failed 已加 1 ，则减回去
+        if retry_count != 0:
+            failed_key = "{0}|_|{1}|_|{2}|_|{3}|_|Failed".format(task_tag, crawl_type, task_source, report_type)
+            report_r.decr(failed_key)
+            logger.debug("Decrease: {0}".format(failed_key))
     else:
         # 标准错误统计
         if int(retry_count) == 0:
@@ -100,6 +107,11 @@ def check_error_code(error_code, retry_count, task_tag, task_source, report_type
             report_key = "{0}|_|{1}|_|{2}|_|{3}|_|FinalFailed".format(task_tag, crawl_type, task_source, report_type)
             report_r.incr(report_key)
             logger.debug("Increase: {0}".format(report_key))
+
+            # 此时也应当减回去失败的内容
+            failed_key = "{0}|_|{1}|_|{2}|_|{3}|_|Failed".format(task_tag, crawl_type, task_source, report_type)
+            report_r.decr(failed_key)
+            logger.debug("Decrease: {0}".format(failed_key))
 
         # 分错误码错误统计
         error_code_task_report_key = "{0}|_|{1}|_|{2}|_|{3}|_|Failed|_|{4}".format(task_tag, crawl_type, task_source,
