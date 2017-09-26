@@ -45,7 +45,7 @@ def get_default_timestramp():
     return datetime.datetime(year=1970, month=2, day=4, hour=6, minute=8, second=10, microsecond=666666)
 
 def update_task_statistics(task_tag, source, typ1, success_count):
-    report_key = "{0}|_|{1}|_|{2}|_|All".format(task_tag, source, typ1)
+    report_key = "{0}|_|{1}|_|{2}|_|All".format(task_tag, source.title(), typ1)
     task_statistics.incrby(report_key, success_count)
 
 def execute_sql(sql, commit=False):
