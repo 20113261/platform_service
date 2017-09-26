@@ -318,25 +318,26 @@ def parse(content, url, city_id):
     # 卓越奖
     prize = 0
     try:
-        prize_ele = root.find_class('award award-coe ui_column is-6')
-        if prize_ele:
-            if prize_ele[0].xpath('div/span')[0].text.find('卓越奖')>-1:
+        icon_prize = root.find_class('ui_icon certificate-of-excellence')
+        if icon_prize:
+            prize = 1
+        else:
+            test = root.find_class('taLnk text')
+            if len(test) > 0:
                 prize = 1
-    except Exception, e:
-        prize = 0
-
-    print "Prize: ", prize
-
-    # 旅行家标志
-    traveler_choice = 0
-    try:
-        test = root.find_class('ui_icon travelers-choice-badge')
-        if len(test) > 0:
-            traveler_choice = 1
     except:
         pass
 
-    print "Traveler choice: ", traveler_choice
+    # 旅行家标志
+    traveler_choice = 0
+
+    img_tcAward = root.find_class('tcAward')
+    if img_tcAward:
+        traveler_choice = 1
+    else:
+        test = root.find_class('tchAward')
+        if len(test) > 0:
+            traveler_choice = 1
 
     # 图片抓取
     image_urls = ''
