@@ -44,9 +44,13 @@ SQL_FILE = {
 def get_default_timestramp():
     return datetime.datetime(year=1970, month=2, day=4, hour=6, minute=8, second=10, microsecond=666666)
 
-def update_task_statistics(task_tag, source, typ1, success_count):
-    report_key = "{0}|_|{1}|_|{2}|_|All".format(task_tag, source.title(), typ1)
+def update_task_statistics(task_tag, typ2, source, typ1, success_count):
+    report_key = "{0}|_|{1}|_|{2}|_|{3}|_|All".format(task_tag, typ2, source.title(), typ1)
     task_statistics.incrby(report_key, success_count)
+
+def update_list_task_statistics(task_tag, typ2, source, typ1, success_count):
+    report_key = "{0}|_|{1}|_|{2}|_|{3}|_|All".format(task_tag, typ2, source.title(), typ1)
+    task_statistics.set(report_key, success_count)
 
 def execute_sql(sql, commit=False):
     conn = service_platform_pool.connection()
@@ -85,7 +89,6 @@ def update_seek(task_name, seek):
     execute_sql(sql % (task_name, seek), commit=True)
 
 def get_all_tables():
-    # TODO  建一个针对information_schema的DBSession
     sql = """select table_name from information_schema.tables where table_schema = 'ServicePlatform';"""
     return execute_sql(sql)
 
@@ -105,7 +108,6 @@ def create_table(table_name):
         conn.close()
 
 def monitoring_hotel_list2detail():
-    # TODO  hotel_list_task任务需要修改为入mysql，  hotel_suggestions_city需要添加时间戳字段
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
 
     table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
@@ -120,7 +122,7 @@ def monitoring_hotel_list2detail():
 
         timestamp = get_seek(table_name)
 
-        # update_task_statistics(tab_args[-1], tab_args[2], 'List', collections.find({"task_name":table_name}).count())
+        update_list_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name":table_name}).count())
 
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
         if table_dict.get(detail_table_name, True):
@@ -132,12 +134,11 @@ def monitoring_hotel_list2detail():
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
-                update_task_statistics(tab_args[-1], tab_args[2], 'Detail', success_count)
+                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
 def monitoring_hotel_detail2ImgOrComment():
-    #  TODO 修改get_images task  hotel保留之后的，poi保留之前的
     sql = """select source, source_id, city_id, img_items, update_time from %s where update_time > '%s' order by update_time"""
     for (table_name,) in get_all_tables():
 
@@ -154,12 +155,11 @@ def monitoring_hotel_detail2ImgOrComment():
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
-                update_task_statistics(tab_args[-1], tab_args[2], 'Images', success_count)
+                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
 def monitoring_poi_list2detail():
-    # TODO poi详情任务改为一个task
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
 
     table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
@@ -174,7 +174,7 @@ def monitoring_poi_list2detail():
 
         timestamp = get_seek(table_name)
 
-        # update_task_statistics(tab_args[-1], tab_args[2], 'List', collections.find({"task_name": table_name}).count())
+        update_list_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name": table_name}).count())
 
         detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
         if table_dict.get(detail_table_name, True):
@@ -185,7 +185,7 @@ def monitoring_poi_list2detail():
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
-                update_task_statistics(tab_args[-1], tab_args[2], 'Detail', success_count)
+                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
@@ -207,12 +207,11 @@ def monitoring_poi_detail2imgOrComment():
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
-                update_task_statistics(tab_args[-1], tab_args[2], 'Images', success_count)
+                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
 def monitoring_qyer_list2detail():
-    # TODO poi详情任务改为一个task
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
 
     table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
@@ -235,7 +234,7 @@ def monitoring_qyer_list2detail():
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
-                update_task_statistics(tab_args[-1], tab_args[2], 'Detail', success_count)
+                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
         except Exception as e:
             print traceback.format_exc(e)
 
