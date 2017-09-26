@@ -47,6 +47,7 @@ spider_name = {'attr': 'View', 'rest': 'Rest'}
 def hotel_list_database(source, url, required, old_spider_name):
     task = Task()
     task.content = URL + url
+    logger.info('%s  %s' % (task.content, required))
     task.source = source.lower().capitalize() + 'ListInfo'
     # spider = factory.get_spider('daodao', task.source)
     spider = factory.get_spider_by_old_source('daodao'+old_spider_name)
