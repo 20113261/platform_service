@@ -76,7 +76,7 @@ def get_report_key(_task_name):
 def check_error_code(error_code, retry_count, task_tag, task_source, report_type, crawl_type, max_retry_times,
                      is_special=False):
     report_r = redis.Redis(host='10.10.180.145', db=9)
-    if int(error_code) == 0 and is_special:
+    if int(error_code) == 0 or is_special:
         # 当任务返回 0 时，代表任务成功
         if retry_count != 0:
             failed_key = "{0}|_|{1}|_|{2}|_|{3}|_|Failed".format(task_tag, crawl_type, task_source, report_type)
