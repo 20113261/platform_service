@@ -51,14 +51,18 @@ def qyer_list_task(self, source, city_id, country_id, check_in, city_url='', **k
     self.task_type = 'QyerList'
     self.error_code = 0
 
-    error_code = result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, city_url=city_url)
+    error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, city_url=city_url)
 
     sql = SQL.format(kwargs['task_name'])
     datas = []
     for item in result:
         for typ, urls in item.items():
-            for url in urls:
-                datas.append(('qyer', url.split('/')[-1], city_id, country_id, url))
+            for sid, url in urls:
+                datas.append(('qyer', sid, city_id, country_id, url))
+                # if url.endswith('/'):
+                #     datas.append(('qyer', sid, city_id, country_id, url))
+                # else:
+                #     datas.append(('qyer', sid, city_id, country_id, url))
 
     try:
         service_platform_conn = service_platform_pool.connection()
