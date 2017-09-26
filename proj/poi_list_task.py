@@ -40,7 +40,7 @@ mioji.common.logger.logger = logger
 
 URL = 'https://www.tripadvisor.cn'
 SQL = """replace into {table_name} (source, source_id, city_id, country_id, hotel_url, utime) values(%s, %s, %s, %s, %s, %s)"""
-type_dict = {'attr': 'shop', 'rest': 'restaurant'}
+type_dict = {'attr': 'view', 'rest': 'restaurant'}
 spider_name = {'attr': 'View', 'rest': 'Rest'}
 
 
