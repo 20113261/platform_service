@@ -9,9 +9,10 @@ import hashlib
 import socket
 import traceback
 import proj.my_lib.Common.Browser
+import types
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
-from urllib import urlencode
+from urllib import quote
 import json
 from proj.my_lib.Common.KeyMatch import key_is_legal
 
@@ -60,21 +61,23 @@ class Coordinate:
 
 def google_get_map_info(address):
     with proj.my_lib.Common.Browser.MySession(need_cache=True) as session:
-        results = json.loads(
-            session.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + urlencode(address))).get(
+        page = session.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + quote(address))
+        results = json.loads(page.text).get(
             'results', [])
         if len(results) == 0:
             return None
         map_info = results[0].get('geometry', {}).get('location', {})
-        longitude = map_info.get('lng', None)
-        latitude = map_info.get('lat', None)
-        if not key_is_legal(longitude):
-            return None
-        if not key_is_legal(latitude):
+
+        try:
+            longitude = float(map_info.get('lng', None))
+            latitude = float(map_info.get('lat', None))
+        except Exception as e:
+            print(e)
             return None
         return Coordinate(longitude, latitude)
 
 
 if __name__ == '__main__':
-    print(get_md5('abc'))
-    print get_local_ip()
+    # print(get_md5('abc'))
+    # print get_local_ip()
+    print(google_get_map_info('Plaza Soledad, 11, 06001 Badajoz, Spain'))
