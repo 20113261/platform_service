@@ -500,7 +500,8 @@ if __name__ == '__main__':
     # content = requests.get(
     #     'https://www.booking.com/hotel/us/racpanos-modern-stays-jersey-city.zh-cn.html').text
     # url = 'http://www.booking.com/hotel/de/convita.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=92b989ea6f07f4de2b13417b5ee27147;checkin=2017-06-03;checkout=2017-06-04;ucfs=1;aer=1;group_adults=3;group_children=0;req_adults=3;req_children=0;room1=A%2CA%2CA;highlighted_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;all_sr_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;hpos=6;dest_type=city;dest_id=-1876189;srfid=c597a73a7c35b00d3a02a668f2b753cada34ce8aX21;from=searchresults;highlight_room=;spdest=ci/-1876189;spdist=9.1;shp=1#hotelTmpl'
-    url = 'http://www.booking.com/hotel/es/tagara-apartment.zh-cn.html'
+    # url = 'http://www.booking.com/hotel/es/tagara-apartment.zh-cn.html'
+    url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
     content = requests.get(url).text
 
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
