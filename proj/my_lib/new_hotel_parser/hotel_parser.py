@@ -1,25 +1,22 @@
 # coding=utf-8
 import agoda_parser
 import booking_parser
+import ctrip_cn_parser
 import ctrip_parser
 import elong_parser
 import expedia_parser
+import hilton_parser
 import hotels_parser
 import hoteltravel_parser
 import hrs_parser
 import tripadvisor_parser
-import ctrip_cn_parser
-import hilton_parser
 from proj.my_lib.Common.KeyMatch import key_is_legal
+from proj.my_lib.Common.Utils import google_get_map_info
+from proj.my_lib.StandError import TypeCheckError
 from proj.my_lib.logger import get_logger
 from .lang_convert import tradition2simple
-from proj.my_lib.Common.Utils import google_get_map_info
 
 logger = get_logger("HotelDetail")
-
-
-class TypeCheckError(TypeError):
-    pass
 
 
 def parse_hotel(content, url, other_info, source, part, retry_count):
@@ -62,7 +59,7 @@ def parse_hotel(content, url, other_info, source, part, retry_count):
         else:
             raise TypeCheckError('Error map_info NULL        with parser %ss    url %s' % (parser.func_name, url))
 
-    if key_is_legal(result.hotel_name) or result.hotel_name_en:
+    if key_is_legal(result.hotel_name) or key_is_legal(result.hotel_name_en):
         logger.info(result.hotel_name + '  ----------  ' + result.hotel_name_en)
     else:
         raise TypeCheckError(

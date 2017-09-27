@@ -9,7 +9,8 @@
 import re
 from my_lib.new_hotel_parser.data_obj import DBSession
 from proj.celery import app
-from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel, TypeCheckError
+from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
+from proj.my_lib.StandError import TypeCheckError
 from proj.my_lib.BaseRoutineTask import BaseRoutineTask
 from proj.my_lib.PageSaver import save_task_and_page_content
 from proj.my_lib.Common.Browser import MySession
