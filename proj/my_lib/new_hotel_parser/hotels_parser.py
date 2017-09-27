@@ -61,11 +61,15 @@ def hotels_parser(content, url, other_info):
         except Exception as e:
             print (str(e))
     # -- fengyufei
-    if len(re.findall('[\x80-\xff]+', str(hotel.hotel_name_en))) >0:
+    if len(re.findall('[\x80-\xff]+', str(hotel.hotel_name_en))) > 0:
         print '------va---'
         name_temp = root.xpath('//div[@class="widget-query-group widget-query-destination"]/input/@value')[0]
-        #re.findall('[a-zA-Z ]+',name_temp)
-        hotel.hotel_name_en = re.findall('\((.*?)\)',name_temp)[0]
+        # re.findall('[a-zA-Z ]+',name_temp)
+        hotel.hotel_name_en = re.findall('\((.*?)\)', name_temp)[0]
+
+        # 城市清除
+        if '-' in hotel.hotel_name:
+            hotel.hotel_name = hotel.hotel_name.split('-')[0].strip()
 
     try:
         hotel.address = root.find_class('postal-addr')[0].text_content() \
@@ -207,7 +211,7 @@ def hotels_parser(content, url, other_info):
         else:
             hotel.has_wifi = 'No'
             hotel.is_wifi_free = 'NO'
-    except Exceptioni as e:
+    except Exception as e:
         print(str(e))
         hotel.has_wifi = 'NULL'
 
@@ -274,9 +278,9 @@ if __name__ == '__main__':
         'source_id': '119538',
         'city_id': '10001'
     }
-    #url = 'http://zh.hotels.com/hotel/details.html?q-check-out=2018-01-04&q-check-in=2018-01-03&WOE=4&WOD=3&q-room-0-children=0&pa=157&tab=description&hotel-id=666153&q-room-0-adults=2&YGF=14&MGT=1&ZSX=0&SYE=3'
+    # url = 'http://zh.hotels.com/hotel/details.html?q-check-out=2018-01-04&q-check-in=2018-01-03&WOE=4&WOD=3&q-room-0-children=0&pa=157&tab=description&hotel-id=666153&q-room-0-adults=2&YGF=14&MGT=1&ZSX=0&SYE=3'
     url = 'https://zh.hotels.com/ho223637/'
-    #url = 'https://zh.hotels.com/ho536186/'
+    # url = 'https://zh.hotels.com/ho536186/'
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.text
