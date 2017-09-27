@@ -19,20 +19,20 @@ def test_elong_parser(page):
                         )
 
 
-class TestBooking(unittest.TestCase):
+class TestElong(unittest.TestCase):
     def test_name(self):
-        name_cases = ['342781aef5b8304572841c549e321d3e']
-        name_result = [('Torre Mar Galapagos', 'Torre Mar Galapagos')]
-        for case, res in zip(name_cases, name_result):
+        cases = ['342781aef5b8304572841c549e321d3e']
+        results = [('NULL', 'Torre Mar Galapagos')]
+        for case, res in zip(cases, results):
             page = download_file(case)
             j_data = json.loads(page)
             result = test_elong_parser(j_data['data'])
             self.assertTupleEqual((result.hotel_name, result.hotel_name_en), res)
 
     def test_address(self):
-        name_cases = ['342781aef5b8304572841c549e321d3e']
-        name_result = ['San Cristobal y General Rodriguez Lara']
-        for case, res in zip(name_cases, name_result):
+        cases = ['342781aef5b8304572841c549e321d3e']
+        results = ['San Cristobal y General Rodriguez Lara']
+        for case, res in zip(cases, results):
             page = download_file(case)
             j_data = json.loads(page)
             result = test_elong_parser(j_data['data'])

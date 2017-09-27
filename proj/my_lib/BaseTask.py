@@ -143,6 +143,8 @@ class BaseTask(Task):
         if error_code == "NULL":
             error_code = 103
 
+        error_code = int(error_code)
+
         # 流程统计入库
         _key_list = get_report_key(kwargs.get('task_name', ''))
         if _key_list:
@@ -223,6 +225,8 @@ class BaseTask(Task):
         # 无错误码返回错误为 103
         if error_code == "NULL":
             error_code = 103
+
+        error_code = int(error_code)
 
         # 更新任务统计
         r.incr('|_||_|'.join(
