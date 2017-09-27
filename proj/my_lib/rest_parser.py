@@ -1,6 +1,7 @@
 # coding=utf8
 import json
 import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -72,6 +73,7 @@ def has_chinese(contents, encoding='utf-8'):
     else:
         return False
 
+
 @try3times(try_again_times=10)
 def image_paser(detail_id):
     page = ss.get(img_get_url + detail_id)
@@ -82,14 +84,16 @@ def image_paser(detail_id):
     img_list = '|'.join(images_list)
     assert img_list != '' or img_list != None, 'NO IMAGES'
 
-    logger.info('----0---------      '+img_list)
+    logger.info('----0---------      ' + img_list)
     return img_list
+
 
 @try3times(try_again_times=10)
 def intro_parse(detail_id):
     page = ss.get(introduction_url % detail_id)
     root = PyQuery(page.text)
     return root('.description .section_content').text()
+
 
 def parse(content, url, city_id):
     print 'url: %s' % url
@@ -195,7 +199,8 @@ def parse(content, url, city_id):
     # 排名rank
     try:
         rank = ''
-        rank_text = root.find_class('header_popularity popIndexValidation')[0].text_content().encode('utf-8').replace(',', '')
+        rank_text = root.find_class('header_popularity popIndexValidation')[0].text_content().encode('utf-8').replace(
+            ',', '')
         nums = re.compile(r'(\d+)', re.S).findall(rank_text)
         # orank = nums[0] + '/' + nums[1]
         rank = nums[1]
@@ -230,11 +235,11 @@ def parse(content, url, city_id):
             try:
                 tab_title = ele.xpath('div[@class="title"]')[0].text
                 tab_content = ele.xpath('div[@class="content"]')[0].text_content().replace('\n', ' ').strip()
-                if tab_title.find('菜系')>-1:
+                if tab_title.find('菜系') > -1:
                     cuisines = tab_content
-                if tab_title.find('参考价位')>-1:
+                if tab_title.find('参考价位') > -1:
                     price = tab_content
-                if tab_title.find('营业时间')>-1:
+                if tab_title.find('营业时间') > -1:
                     opentime_detail = ele.xpath('.//div')[1]
                     for ele_d in opentime_detail.xpath('div'):
                         open_week = ele_d.xpath('span')[0].text + '  '
@@ -415,8 +420,8 @@ def parse(content, url, city_id):
     except Exception, e:
         print(e)
 
-    if not image_urls:
-        raise Exception('NO IMAGES')
+    # if not image_urls:
+    #     raise Exception('NO IMAGES')
     result = {
         'source': source,
         'name': name,  #
@@ -473,4 +478,3 @@ if __name__ == '__main__':
     result = parse(page.content, url, 'NULL')
     print json.dumps(result, ensure_ascii=False)
     # insert_db(result, 'NULL')
-

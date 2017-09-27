@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -22,7 +23,9 @@ img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
 pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 
 ss = MySession(need_proxies=True)
-#ss = MySession(need_proxies=False)
+
+
+# ss = MySession(need_proxies=False)
 
 def has_chinese(contents, encoding='utf-8'):
     zh_pattern = re.compile(u'[\u4e00-\u9fa5]+')
@@ -34,6 +37,7 @@ def has_chinese(contents, encoding='utf-8'):
     else:
         return False
 
+
 @try3times(try_again_times=10)
 def image_paser(detail_id):
     page = ss.get(img_get_url + detail_id)
@@ -42,7 +46,7 @@ def image_paser(detail_id):
     for div in root('.photos.inHeroList div').items():
         images_list.append(div.attr['data-bigurl'])
     img_list = '|'.join(images_list)
-    assert img_list!='', 'NO IMAGES'
+    assert img_list != '', 'NO IMAGES'
 
     return img_list
 
@@ -220,8 +224,6 @@ def parse(content, url, city_id):
     print 'rating: %s' % rating
     print 'reviews: %s' % reviews
 
-
-
     # try:
     #     if reviews > 10:
     #         urls = []
@@ -275,7 +277,7 @@ def parse(content, url, city_id):
     # tagid
     tagid = ''
     try:
-        tagid = root.find_class('header_detail attraction_details')[0]\
+        tagid = root.find_class('header_detail attraction_details')[0] \
             .xpath('div')[0].text_content().strip().encode('utf-8').split('\n')[-1].replace(',', '|')
     except Exception, e:
         tagid = ''
@@ -328,7 +330,6 @@ def parse(content, url, city_id):
         if len(test) > 0:
             traveler_choice = 1
 
-
     # 图片抓取
     try:
         detail_id = source_id
@@ -336,8 +337,8 @@ def parse(content, url, city_id):
     except:
         image_urls = ''
 
-    if image_urls=='':
-        raise Exception('NO IMAGES')
+    # if image_urls == '':
+    #     raise Exception('NO IMAGES')
 
     # 第一条评论的review id 用于没有介绍时使用
     try:
@@ -409,6 +410,7 @@ if __name__ == '__main__':
     url = 'https://www.tripadvisor.cn/Attraction_Review-g60742-d105015-Reviews-Thomas_Wolfe_Memorial-Asheville_North_Carolina.html'
     url = 'https://www.tripadvisor.cn/Attraction_Review-g187147-d188151-Reviews-Eiffel_Tower-Paris_Ile_de_France.html'
     url = 'https://www.tripadvisor.cn/Attraction_Review-g1024140-d10000541-Reviews-Castaway_Yoga-Ko_Lipe_Satun_Province.html'
+    url = 'https://www.tripadvisor.cn//Attraction_Review-g297524-d314609-Reviews-Darwin_Bay-Genovesa_Galapagos_Islands.html,https://www.tripadvisor.cn//Attraction_Review-g297524-d314610-Reviews-Darwin_Trail-Genovesa_Galapagos_Islands.html'
     content = ss.get(url).content
     a = '阿什顿发斯蒂芬'
     result = parse(content, url, a)

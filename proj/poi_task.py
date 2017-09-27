@@ -15,6 +15,9 @@ from proj.my_lib.attr_parser import parse as attr_parser
 from proj.my_lib.db_localhost import DBSession
 from proj.my_lib.new_hotel_parser.data_obj import text_2_sql
 from proj.my_lib.logger import get_logger
+from proj.my_lib.StandError import TypeCheckError
+from proj.my_lib.Common.KeyMatch import key_is_legal
+from proj.my_lib.Common.Utils import google_get_map_info
 
 from sqlalchemy.sql import text
 import datetime
@@ -38,7 +41,9 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
     with MySession(need_cache=True) as session:
         page = session.get(target_url, timeout=15)
         page.encoding = 'utf8'
-        result = parser_type[poi_type](page.content, target_url, city_id=city_id)
+
+        parser = parser_type[poi_type]
+        result = parser(page.content, target_url, city_id=city_id)
 
         if result == 'Error':
             self.error_code = 27
@@ -47,6 +52,35 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
         result['city_id'] = city_id
         result['utime'] = datetime.datetime.now()
         sql_key = result.keys()
+
+        retry_count = kwargs['retry_count']
+
+        name = result['name']
+        name_en = result['name_en']
+        map_info = result['map_info']
+        address = result['address']
+
+        if not key_is_legal(map_info):
+            if retry_count > 5:
+                if not key_is_legal(address):
+                    raise TypeCheckError(
+                        'Error map_info and address NULL        with parser %ss    url %s' % (
+                            parser.func_name, target_url))
+                google_map_info = google_get_map_info(address)
+                if not key_is_legal(google_map_info):
+                    raise TypeCheckError(
+                        'Error google_map_info  NULL        with parser %ss    url %s' % (parser.func_name, target_url))
+                result['address'] = google_map_info
+            else:
+                raise TypeCheckError(
+                    'Error map_info NULL        with parser %ss    url %s' % (parser.func_name, target_url))
+
+        if key_is_legal(name) or key_is_legal(name_en):
+            logger.info(name + '  ----------  ' + name_en)
+        else:
+            raise TypeCheckError(
+                'Error name and name_en Both NULL        with parser %s    url %s' % (
+                    parser.func_name, target_url))
 
         try:
             session = DBSession()
