@@ -244,8 +244,9 @@ def booking_parser(content, url, other_info):
     # print hotel.review_num
     # 解析酒店简介
     try:
+        aaa = root.xpath('//div[@class="hp_desc_main_content  "]/text()')
         hotel.description = root.get_element_by_id('summary') \
-            .text_content().encode('utf-8').strip().replace('"', '""').replace('\n', '')
+            .text_content().encode('utf-8').strip().replace('"', '""').replace('\n', '').replace('抱歉，该住宿简介暂无您所选择的语言版本，目前正在更新中。', '')
         infos = root.xpath(
             '//div[@class="hotel_description_wrapper_exp hp-description"]/p[@class="geo_information"]/text()'
         )
@@ -522,9 +523,10 @@ if __name__ == '__main__':
     # url = 'http://www.booking.com/hotel/es/tagara-apartment.zh-cn.html'
     # url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
     url = 'http://www.booking.com/hotel/ec/casa-eden.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=93039ab22f393571a7edfed2400e7a0d;ucfs=1;srpvid=fd75469762030499;srepoch=1506333743;room1=A%2CA;hpos=10;hapos=130;dest_type=region;dest_id=722;srfid=1dc4de7f7618b923f33a72e5cd5d959ad27f62e5X130;from=searchresults;highlight_room=#hotelTmpl'
-    url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
-    content = requests.get(url).text
+    # url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
+    from proj.my_lib.Common.Browser import MySession
 
+    content = requests.get(url).text
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
     result = booking_parser(content, url, other_info)
 
