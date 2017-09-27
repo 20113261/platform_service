@@ -77,7 +77,7 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_ty
         error_code = spider.crawl(required=['hotel'], cache_config=cache_config)
     else:
         error_code = spider.crawl(required=['hotel'])
-    logger.info(str(spider.result['hotel']) + '  --  ' + task.content)
+    logger.info(str(task.ticket_info) + '  --  ' + task.content)
     return error_code, spider.result
 
 

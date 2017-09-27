@@ -65,7 +65,7 @@ def send_hotel_list_task(task_name, datas):
 
     else:
         print(_count)
-        # success_count += hourong_patch(data)
+        success_count += hourong_patch(data)
 
     return success_count
 
@@ -112,7 +112,7 @@ def send_daodao_list_task(task_name, datas):
 
     else:
         print(_count)
-        # success_count += hourong_patch(data)
+        success_count += hourong_patch(data)
     return success_count
 
 def send_qyer_list_task(task_name, datas):
@@ -159,7 +159,7 @@ def send_qyer_list_task(task_name, datas):
 
     else:
         print(_count)
-        # success_count += hourong_patch(data)
+        success_count += hourong_patch(data)
     return success_count
 
 task2func = {
