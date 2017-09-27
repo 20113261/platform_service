@@ -60,8 +60,7 @@ def elong_parser(content, url, other_info):
     # print hotel.hotel_name
     print('hotel.hotel_name_en=>%s' % hotel.hotel_name_en)
     # print hotel.hotel_name_en
-
-    print 'brand=>%s' % hotel.brand_name
+    print('brand=>%s' % hotel.brand_name)
     # print hotel.brand_name
 
     # 解析酒店地址
