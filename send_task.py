@@ -113,7 +113,7 @@ def send_poi_detail_task(tasks, task_tag):
             'task_name': task_tag,
             'args': {
                 'target_url': hotel_url,
-                'city_id': city_id,
+                'city_id': 'NULL',
                 'poi_type': typ2,
                 'country_id': 'NULL',
                 'part': task_tag
@@ -160,7 +160,7 @@ def send_qyer_detail_task(tasks, task_tag):
             'task_name': task_tag,
             'args': {
                 'target_url': hotel_url,
-                'city_id': city_id,
+                'city_id': 'NULL',
                 'part': task_tag
             },
             'priority': 3,
