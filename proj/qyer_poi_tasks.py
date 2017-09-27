@@ -42,7 +42,7 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
         address = result.address
 
         if not key_is_legal(map_info):
-            if retry_count > 5:
+            if retry_count > 3:
                 if not key_is_legal(address):
                     raise TypeCheckError(
                         'Error map_info and address NULL        with parser %ss    url %s' % (
@@ -52,7 +52,7 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
                     raise TypeCheckError(
                         'Error google_map_info  NULL        with parser %ss    url %s' % (
                             page_parser.func_name, target_url))
-                result['address'] = google_map_info
+                result.map_info = google_map_info
             else:
                 raise TypeCheckError(
                     'Error map_info NULL        with parser %ss    url %s' % (page_parser.func_name, target_url))

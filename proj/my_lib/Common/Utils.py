@@ -74,7 +74,7 @@ def google_get_map_info(address):
         except Exception as e:
             print(e)
             return None
-        return Coordinate(longitude, latitude)
+        return str(Coordinate(longitude, latitude))
 
 
 if __name__ == '__main__':

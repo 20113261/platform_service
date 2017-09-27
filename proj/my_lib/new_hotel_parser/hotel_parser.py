@@ -47,7 +47,7 @@ def parse_hotel(content, url, other_info, source, part, retry_count):
     # logger.info('map_info  ++++++++    %s' % result.map_info)
     # if key_is_legal(result.map_info) and key_is_legal(result.address):
     if not key_is_legal(result.map_info):
-        if retry_count > 5:
+        if retry_count > 3:
             if not key_is_legal(result.address):
                 raise TypeCheckError(
                     'Error map_info and address NULL        with parser %ss    url %s' % (parser.func_name, url))
@@ -55,7 +55,7 @@ def parse_hotel(content, url, other_info, source, part, retry_count):
             if not key_is_legal(google_map_info):
                 raise TypeCheckError(
                     'Error google_map_info  NULL        with parser %ss    url %s' % (parser.func_name, url))
-            result.address = google_map_info
+            result.map_info = google_map_info
         else:
             raise TypeCheckError('Error map_info NULL        with parser %ss    url %s' % (parser.func_name, url))
 
