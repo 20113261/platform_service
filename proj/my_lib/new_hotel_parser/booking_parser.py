@@ -36,42 +36,61 @@ def booking_parser(content, url, other_info):
         print str(e)
 
     # 解析酒店中英文名，如果没有中文名则置为英文名，如果都解析失败则退出
+    # try:
+    #     name_temp = root.xpath('//*[@class="hp__hotel-name"]')[
+    #         0].text_content().strip('\t').strip('\n')
+    #
+    #     temp = re.findall(ur'([\u4e00-\u9fa5])*', name_temp)
+    #     zh_name_tmep = [t for t in temp if t and t!=' ']
+    #     if len(zh_name_tmep)>0:
+    #         hotel.hotel_name = zh_name_tmep[0].encode('utf8')
+    #     else:
+    #         hotel.hotel_name = ''
+    #
+    #     if not zh_name_tmep:
+    #         hotel.hotel_name_en = name_temp.strip(')').strip('(').strip('）').strip('（').strip().encode('utf8')
+    #     else:
+    #         name_en_temp = name_temp[:name_temp.find(zh_name_tmep[0][0])] + name_temp[
+    #                                                                         name_temp.find(zh_name_tmep[0][-1])+1:]
+    #         hotel.hotel_name_en = name_en_temp.strip(')').strip('(').strip('）').strip('（').strip().encode('utf8')
+    # except Exception as e:
+    #     print e
     try:
         name_temp = root.xpath('//*[@class="hp__hotel-name"]')[
             0].text_content().strip('\t').strip('\n')
-
-        temp = re.findall(ur'([\u4e00-\u9fa5\s]*)', name_temp)
-        zh_name_tmep = [t for t in temp if t and t!=' ']
-        if len(zh_name_tmep)>0:
-            hotel.hotel_name = zh_name_tmep[0].encode('utf8')
-        else:
-            hotel.hotel_name = ''
-
-        if not zh_name_tmep:
-            hotel.hotel_name_en = name_temp.strip(')').strip('(').strip('）').strip('（').strip().encode('utf8')
-        else:
-            name_en_temp = name_temp[:name_temp.find(zh_name_tmep[0][0])] + name_temp[
-                                                                            name_temp.find(zh_name_tmep[0][-1])+1:]
-            hotel.hotel_name_en = name_en_temp.strip(')').strip('(').strip('）').strip('（').strip().encode('utf8')
+        temp_name = name_temp.split('（')
+        if len(temp_name)==1:
+            temp_name = name_temp.split('(')
+        if len(temp_name)==2:
+            hotel.hotel_name_en, hotel.hotel_name = temp_name[0].encode('utf8'), temp_name[1].strip(')').strip('）').encode('utf8')
+        elif len(temp_name)==1:
+            temp = re.findall(r'\w+', temp_name[0])
+            if len(temp)==0:
+                hotel.hotel_name = temp_name[0].encode('utf8')
+                hotel.hotel_name_en = 'NULL'
+            else:
+                hotel.hotel_name = 'NULL'
+                hotel.hotel_name_en = temp_name[0].encode('utf8')
     except Exception as e:
         print e
-        # try:
-        #     name_temp = root.xpath('//*[@class="sr-hotel__name"]/text()')[
-        #         0].strip().encode('utf-8')
-        #
-        #     hotel.hotel_name_en = name_temp.split('（')[0].replace('"',
-        #                                                           '""').strip()
-        #     print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
-        #     # print hotel.hotel_name_en
-        # except:
-        #     try:
-        #         name_temp = root.xpath('//div[@id="b_mainContent"]/h1/text()')[
-        #             0].strip().encode('utf-8')
-        #         hotel.hotel_name = name_temp
-        #     except Exception as e:
-        #         print '----------', str(e)
-        #         # return hotel_tuple
-        #         # print 'vvvvvvvvvvvvvvvvv'
+
+    #     try:
+    #         name_temp = root.xpath('//*[@class="sr-hotel__name"]/text()')[
+    #             0].strip().encode('utf-8')
+    #
+    #         hotel.hotel_name_en = re.split('（')[0].replace('"',
+    #                                                               '""').strip()
+    #         print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
+    #         # print hotel.hotel_name_en
+    #     except:
+    #         try:
+    #             name_temp = root.xpath('//div[@id="b_mainContent"]/h1/text()')[
+    #                 0].strip().encode('utf-8')
+    #             hotel.hotel_name = name_temp
+    #         except Exception as e:
+    #             print '----------', str(e)
+    #             # return hotel_tuple
+    #             # print 'vvvvvvvvvvvvvvvvv'
     print 'hotel.hotel_name=>%s' % hotel.hotel_name
     print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
     # print hotel.hotel_name
@@ -473,7 +492,7 @@ if __name__ == '__main__':
     # url = 'https://www.booking.com/hotel/vn/monte-carlo.zh-cn.html'
     # url = 'http://www.booking.com/hotel/hk/m.zh-cn.html'
     # url = 'http://www.booking.com/hotel/hk/bridal-tea-house-hunghom.zh-cn.html'
-    url = 'https://www.booking.com/hotel/de/langerfelder-hof.zh-cn.html'
+    # url = 'https://www.booking.com/hotel/de/langerfelder-hof.zh-cn.html'
     other_info = {'source_id': '1016533', 'city_id': '10067'}
     # headers = {
     #     'User-Agent':
@@ -501,6 +520,8 @@ if __name__ == '__main__':
     #     'https://www.booking.com/hotel/us/racpanos-modern-stays-jersey-city.zh-cn.html').text
     # url = 'http://www.booking.com/hotel/de/convita.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=92b989ea6f07f4de2b13417b5ee27147;checkin=2017-06-03;checkout=2017-06-04;ucfs=1;aer=1;group_adults=3;group_children=0;req_adults=3;req_children=0;room1=A%2CA%2CA;highlighted_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;all_sr_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;hpos=6;dest_type=city;dest_id=-1876189;srfid=c597a73a7c35b00d3a02a668f2b753cada34ce8aX21;from=searchresults;highlight_room=;spdest=ci/-1876189;spdist=9.1;shp=1#hotelTmpl'
     # url = 'http://www.booking.com/hotel/es/tagara-apartment.zh-cn.html'
+    # url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
+    url = 'http://www.booking.com/hotel/ec/casa-eden.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=93039ab22f393571a7edfed2400e7a0d;ucfs=1;srpvid=fd75469762030499;srepoch=1506333743;room1=A%2CA;hpos=10;hapos=130;dest_type=region;dest_id=722;srfid=1dc4de7f7618b923f33a72e5cd5d959ad27f62e5X130;from=searchresults;highlight_room=#hotelTmpl'
     url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
     content = requests.get(url).text
 
