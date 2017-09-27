@@ -76,6 +76,9 @@ def hotels_parser(content, url, other_info):
         if '-' in hotel.hotel_name:
             hotel.hotel_name = hotel.hotel_name.split('-')[0].strip()
 
+        if hotel.hotel_name == hotel.hotel_name_en:
+            hotel.hotel_name = 'NULL'
+
     try:
         hotel.address = root.find_class('postal-addr')[0].text_content() \
             .encode('utf-8').strip().replace('\n', '').replace('  ', '')
@@ -181,6 +184,13 @@ def hotels_parser(content, url, other_info):
         print (str(e))
         hotel.description = 'NULL'
 
+    if hotel.description == 'NULL':
+        try:
+            hotel.description = root.xpath('// div[@class="tagline"]')[0].text_content().strip()
+        except Exception as e:
+            print(str(e))
+            hotel.description = 'NULL'
+
     print ('description=>%s' % hotel.description)
     # print hotel.description
 
@@ -284,9 +294,14 @@ if __name__ == '__main__':
         'city_id': '10001'
     }
     # url = 'http://zh.hotels.com/hotel/details.html?q-check-out=2018-01-04&q-check-in=2018-01-03&WOE=4&WOD=3&q-room-0-children=0&pa=157&tab=description&hotel-id=666153&q-room-0-adults=2&YGF=14&MGT=1&ZSX=0&SYE=3'
-    url = 'https://zh.hotels.com/ho223637/'
+    # url = 'https://zh.hotels.com/ho223637/'
     # url = 'https://zh.hotels.com/ho536186/'
-    page = requests.get(url)
+    from proj.my_lib.Common.Browser import MySession
+
+    url = 'https://zh.hotels.com/ho619519840/'
+    with MySession(need_cache=True) as session:
+        # page = requests.get(url)
+        page = session.get(url=url)
     page.encoding = 'utf8'
     content = page.text
     result = hotels_parser(content, url, other_info)

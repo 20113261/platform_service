@@ -37,17 +37,28 @@ def elong_parser(content, url, other_info):
         j = temp_name.find(')')
         hotel.hotel_name = temp_name[:k]
         hotel.hotel_name_en = temp_name[k + 1:j]
-    except Exception, e:
+    except Exception as e:
         try:
             hotel.hotel_name = root.find_class('hrela_name-cn')[0].xpath('./text()')[0].strip()
             hotel.hotel_name_en = root.find_class('hrela_name-en')[0].xpath('./text()')[0].strip()
         except Exception as e:
-            print str(e)
+            print(str(e))
             # return hotel_tuple
 
-    print 'hotel.hotel_name=>%s' % hotel.hotel_name
+    # 中英文名相同时只保留一个
+    if hotel.hotel_name == hotel.hotel_name_en:
+        if isinstance(hotel.hotel_name, str):
+            hotel_name = hotel.hotel_name
+        else:
+            hotel_name = hotel.hotel_name.decode('utf8')
+        if any(map(lambda x: u'\u4e00' <= x <= u'\u9fa5', hotel_name)):
+            hotel.hotel_name_en = 'NULL'
+        else:
+            hotel.hotel_name = 'NULL'
+
+    print('hotel.hotel_name=>%s' % hotel.hotel_name)
     # print hotel.hotel_name
-    print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
+    print('hotel.hotel_name_en=>%s' % hotel.hotel_name_en)
     # print hotel.hotel_name_en
 
     print 'brand=>%s' % hotel.brand_name
