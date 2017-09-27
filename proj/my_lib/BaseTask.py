@@ -123,7 +123,7 @@ def check_error_code(error_code, retry_count, task_tag, task_source, report_type
 
 class BaseTask(Task):
     default_retry_delay = 1
-    max_retries = 3
+    max_retries = 1
 
     def on_success(self, retval, task_id, args, kwargs):
         # 获取本批次任务，任务批次
@@ -209,6 +209,8 @@ class BaseTask(Task):
         task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=15)
         error_code = get_error_code(self)
+        if error_code != 'NULL':
+            error_code = get_error_code(exc)
 
         # 获取当前任务重试次数
         retry_count = kwargs.get('retry_count', "NULL")

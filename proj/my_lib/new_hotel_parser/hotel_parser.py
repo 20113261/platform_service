@@ -12,7 +12,7 @@ import hrs_parser
 import tripadvisor_parser
 from proj.my_lib.Common.KeyMatch import key_is_legal
 from proj.my_lib.Common.Utils import google_get_map_info
-from proj.my_lib.StandError import TypeCheckError
+from proj.my_lib.ServiceStandardError import TypeCheckError
 from proj.my_lib.logger import get_logger
 from .lang_convert import tradition2simple
 
