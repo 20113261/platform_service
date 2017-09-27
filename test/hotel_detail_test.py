@@ -35,9 +35,10 @@ if __name__ == '__main__':
     #                 max_retry_times=10)
 
     hotel_base_data(source='hotels',
-                    url='http://zh.hotels.com/ho463739/?pa=1&q-check-out=2017-12-06&tab=description&q-room-0-adults=2&YGF=14&q-check-in=2017-12-05&MGT=1&WOE=3&WOD=2&ZSX=0&SYE=3&q-room-0-children=0',
+                    url='https://zh.hotels.com/ho635577984/',
                     part='detail_hotel_hotels_20170925d', other_info={
-            'source_id': '463739', 'city_id': 'NULL'
+            'source_id': '635577984',
+            'city_id': 'NULL'
         },
                     country_id='NULL',
                     task_name='detail_hotel_hotels_20170925d',

@@ -71,6 +71,11 @@ def hotels_parser(content, url, other_info):
         if '-' in hotel.hotel_name:
             hotel.hotel_name = hotel.hotel_name.split('-')[0].strip()
 
+    # 城市清除
+    if hotel.hotel_name_en in hotel.hotel_name:
+        if '-' in hotel.hotel_name:
+            hotel.hotel_name = hotel.hotel_name.split('-')[0].strip()
+
     try:
         hotel.address = root.find_class('postal-addr')[0].text_content() \
             .encode('utf-8').strip().replace('\n', '').replace('  ', '')
