@@ -63,7 +63,7 @@ def hotels_parser(content, url, other_info):
     # -- fengyufei
     if len(re.findall('[\x80-\xff]+', str(hotel.hotel_name_en))) >0:
         print '------va---'
-        name_temp = root.xpath('//div[@class="widget-query-group widget-query-destination"]/input/@value')[0].encode('raw-unicode-escape')
+        name_temp = root.xpath('//div[@class="widget-query-group widget-query-destination"]/input/@value')[0]
         #re.findall('[a-zA-Z ]+',name_temp)
         hotel.hotel_name_en = re.findall('\((.*?)\)',name_temp)[0]
 
