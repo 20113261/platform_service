@@ -80,4 +80,5 @@ def google_get_map_info(address):
 if __name__ == '__main__':
     # print(get_md5('abc'))
     # print get_local_ip()
-    print(google_get_map_info('Plaza Soledad, 11, 06001 Badajoz, Spain'))
+    # print(google_get_map_info('Plaza Soledad, 11, 06001 Badajoz, Spain'))
+    print(google_get_map_info('3355 Las Vegas Blvd S'))

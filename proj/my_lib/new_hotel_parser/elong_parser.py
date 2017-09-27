@@ -59,10 +59,17 @@ def elong_parser(content, url, other_info):
         temp = root.xpath('//span[@class="mr5 left"]/text()')
         hotel.address = temp[0].encode('utf-8').strip().split('：')[1]  # special chinese colon
     except Exception as e:
-        print e
+        print(e)
         hotel.address = 'NULL'
 
-    print 'hotel.address=>%s' % hotel.address
+    if hotel.address == 'NULL':
+        try:
+            hotel.address = root.xpath('// span[@class="icon-address"]/text()')[0].replace('地址：', '').strip()
+        except Exception as e:
+            print(e)
+            hotel.address = 'NULL'
+
+    print('hotel.address=>%s' % hotel.address)
     # print hotel.address
 
     try:
@@ -283,6 +290,8 @@ if __name__ == '__main__':
     url = 'http://ihotel.elong.com/443150/'
     url = 'http://ihotel.elong.com/589177/'
     url = 'http://ihotel.elong.com/31131/'
+    url = 'http://ihotel.elong.com/308868/'
+
     other_info = {u'source_id': u'670847', u'city_id': u'20236'}
 
     page = requests.get(url)
