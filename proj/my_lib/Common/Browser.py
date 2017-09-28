@@ -10,6 +10,9 @@ import time
 import urlparse
 import httplib
 import json
+import redis
+import time
+import datetime
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
@@ -21,6 +24,8 @@ logger = get_logger('Browser')
 httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
+ip_saver_pool = redis.ConnectionPool(host='10.10.213.148', port=6379, db=0, max_connections=1)
+
 
 class MySession(requests.Session):
     def __init__(self, need_proxies=True, auto_update_host=True, need_cache=False):
@@ -30,17 +35,16 @@ class MySession(requests.Session):
             'User-agent': GetUserAgent()
         }
         self.headers = headers
-
-        self.p_r_o_x_y = None
-        if need_proxies:
-            self.change_proxies()
-
         self.verify = False
         self.auto_update_host = auto_update_host
         self.md5 = []
         self.md5_resp = {}
         self.need_cache = need_cache
         self.cache_expire_time = 2592000  # 60 * 60 * 24 * 30
+
+        self.p_r_o_x_y = None
+        if need_proxies:
+            self.change_proxies()
 
     def send(self, request, **kwargs):
         if self.auto_update_host:
@@ -84,6 +88,18 @@ class MySession(requests.Session):
     def cache_check(self, req, resp):
         return True
 
+    def get_real_ip(self, targets):
+        host, key = targets
+        try:
+            start = time.time()
+            ip_page = self.get(host, proxies=self.proxies, timeout=10)
+            out_ip = json.loads(ip_page.text)[key]
+            logger.debug("[获取公网 ip 地址][ip: {0}][耗时: {1}]".format(out_ip, time.time() - start))
+        except Exception as e:
+            logger.exception("[获取公网 ip 地址失败]", exc_info=e)
+            return None
+        return out_ip
+
     def change_proxies(self):
         self.p_r_o_x_y = get_proxy(source="Platform")
         proxies = {
@@ -91,6 +107,29 @@ class MySession(requests.Session):
             'https': 'socks5://' + self.p_r_o_x_y
         }
         self.proxies = proxies
+
+        # 缓存属性
+        need_cache = self.need_cache
+
+        # ip report get real ip address
+        self.need_cache = False
+
+        out_ip = None
+        for targets in [('http://httpbin.org/ip', 'origin'), ('https://api.ipify.org?format=json', 'ip')]:
+            out_ip = self.get_real_ip(targets)
+            if out_ip:
+                break
+
+        if out_ip:
+            try:
+                r = redis.Redis(connection_pool=ip_saver_pool)
+                r.incr(datetime.datetime.now().strftime("ip_%Y_%m_%d_{0}".format(out_ip)))
+            except Exception as e:
+                logger.exception("[ip 地址入 redis 失败]", exc_info=e)
+                return False
+
+        self.need_cache = need_cache
+        return True
 
     def update_proxy(self, error_code):
         update_proxy('Platform', self.p_r_o_x_y or 'NULL', time.time() - self.start, error_code)

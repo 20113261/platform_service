@@ -52,3 +52,29 @@ if __name__ == '__main__':
     #     queue='hotel_list_task',
     #     routing_key='hotel_list_task'
     # ))
+
+    # hotel_list_task(
+    #     source='ctrip',
+    #     city_id='TEST',
+    #     country_id='TEST',
+    #     check_in='20171125',
+    #     part='test',
+    #     is_new_type=True,
+    #     suggest_type=1,
+    #     suggest='http://hotels.ctrip.com/international/brianon22797',
+    #     task_name="list_hotel_test_test",
+    # )
+
+    hotel_list_task(
+        source='ctrip',
+        city_id='TEST',
+        country_id='TEST',
+        check_in='20171006',
+        part='test',
+        is_new_type=True,
+        suggest_type=1,
+        suggest='http://hotels.ctrip.com/international/brianon22797',
+        task_name="list_hotel_test_test",
+        retry_count=2,
+        max_retry_times=6
+    )
