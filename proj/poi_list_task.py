@@ -69,7 +69,7 @@ def insert(sql, data):
     service_platform_conn.close()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
     self.task_source = source.title()
     self.task_type = 'DaodaoListInfo'

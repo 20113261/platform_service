@@ -22,7 +22,7 @@ from proj.my_lib.Common.Utils import google_get_map_info
 logger = get_logger("QyerPoiDetail")
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='6/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/s')
 def qyer_poi_task(self, target_url, city_id, **kwargs):
     self.task_source = 'Qyer'
     self.task_type = 'Qyerinfo'
