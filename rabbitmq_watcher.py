@@ -44,7 +44,7 @@ TASK_CONF = {
     'default': (0, 0),
     'file_downloader': (9000, 50000),
     'hotel_detail': (9000, 50000),
-    'hotel_list': (9000, 50000),
+    'hotel_list': (9000, 30000),
     'poi_detail': (9000, 50000),
     'poi_list': (9000, 50000)
 }
