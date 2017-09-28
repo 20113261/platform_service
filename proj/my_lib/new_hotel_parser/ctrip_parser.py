@@ -109,8 +109,8 @@ def ctrip_parser(page, url, other_info):
     print 'review_nums =>', hotel.review_num
 
     try:
-        desc = root.xpath('//div[@id="detail_content"]/span/div/div/text()')[0]
-        hotel.description = desc.encode('utf-8').strip().rstrip()
+        desc = root.xpath('//div[@id="detail_content"]/span/div/div')[0]
+        hotel.description = desc.text_content().encode('utf-8').strip().rstrip().replace(' ','').replace('\n','。')
     except Exception, e:
         hotel.description = 'NULL'
         print str(e)
@@ -187,12 +187,15 @@ def ctrip_parser(page, url, other_info):
         if items:
             item_str = ''
             for each in items:
-                item_name = each.xpath('./th/text()')[0].encode('utf-8').strip()
-                item = each.xpath('./td/ul/li')
-                temp = ''
-                for each1 in item:
-                    temp += each1.xpath('./text()')[0].encode('utf-8').strip() + '|'
-                item_str += item_name + '::' + temp
+                try:
+                    item_name = each.xpath('./th/text()')[0].encode('utf-8').strip()
+                    item = each.xpath('./td/ul/li')
+                    temp = ''
+                    for each1 in item:
+                        temp += each1.xpath('./text()')[0].encode('utf-8').strip() + '|'
+                    item_str += item_name + '::' + temp
+                except:
+                    pass
             hotel.service = item_str[:-1]
     except Exception, e:
         print str(e)
@@ -218,6 +221,22 @@ def ctrip_parser(page, url, other_info):
     print 'hotel.has_parking =>', hotel.has_parking
 
     print 'hotel.is_parking_free =>', hotel.is_parking_free
+    
+    #----feng
+    pay_method = ''
+    method = root.xpath('//*[@id="room_select_box"]/div[2]/ul/li')
+
+    for pay in method:
+        try:
+            content = pay.xpath('@data-value')[0]
+            if content.count('付'):
+                pay_method += content +'|'
+        except :
+            pass
+    hotel.pay_method = pay_method
+
+    print 'pay method-->>',hotel.pay_method
+
 
     hotel.hotel_url = url
     hotel.source = 'ctrip'
@@ -229,7 +248,9 @@ def ctrip_parser(page, url, other_info):
 
 if __name__ == '__main__':
     # url = 'http://hotels.ctrip.com/international/992466.html'
-    url = 'http://hotels.ctrip.com/international/3723551.html?IsReposted=3723551'
+    #url = 'http://hotels.ctrip.com/international/3723551.html?IsReposted=3723551'
+    url = 'http://hotels.ctrip.com/international/1479993.html'
+    #url = 'http://hotels.ctrip.com/international/10146828.html'
     other_info = {
         'source_id': '1039433',
         'city_id': '10074'
