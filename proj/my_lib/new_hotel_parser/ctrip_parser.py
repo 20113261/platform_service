@@ -187,12 +187,15 @@ def ctrip_parser(page, url, other_info):
         if items:
             item_str = ''
             for each in items:
-                item_name = each.xpath('./th/text()')[0].encode('utf-8').strip()
-                item = each.xpath('./td/ul/li')
-                temp = ''
-                for each1 in item:
-                    temp += each1.xpath('./text()')[0].encode('utf-8').strip() + '|'
-                item_str += item_name + '::' + temp
+                try:
+                    item_name = each.xpath('./th/text()')[0].encode('utf-8').strip()
+                    item = each.xpath('./td/ul/li')
+                    temp = ''
+                    for each1 in item:
+                        temp += each1.xpath('./text()')[0].encode('utf-8').strip() + '|'
+                    item_str += item_name + '::' + temp
+                except:
+                    pass
             hotel.service = item_str[:-1]
     except Exception, e:
         print str(e)
