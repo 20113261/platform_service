@@ -224,10 +224,13 @@ def booking_parser(content, url, other_info):
     # print hotel.grade
     # 解析酒店评论数
     try:
-        re_start = root.find_class('trackit score_from_number_of_reviews')[0].xpath('strong/text()') \
-            [0].encode('utf-8').strip()
-        hotel.review_num = re_start
-    except:
+        score = re.findall('(\d+)', root.xpath('//a[@class="hp_nav_reviews_link toggle_review track_review_link_zh"]/span/text()')[1])[0]
+        # re_start = root.find_class('trackit score_from_number_of_reviews')[0].xpath('strong/text()') \
+        #     [0].encode('utf-8').strip()
+        # hotel.review_num = re_start
+        hotel.review_num = score.encode('utf8')
+    except Exception as e:
+        print e
         try:
             re_start = root.xpath('//div[@class="location_score_tooltip"]/p[1]/small/strong/text()')[0]
             hotel.review_num = int(re_start)
@@ -244,7 +247,6 @@ def booking_parser(content, url, other_info):
     # print hotel.review_num
     # 解析酒店简介
     try:
-        aaa = root.xpath('//div[@class="hp_desc_main_content  "]/text()')
         hotel.description = root.get_element_by_id('summary') \
             .text_content().encode('utf-8').strip().replace('"', '""').replace('\n', '').replace('抱歉，该住宿简介暂无您所选择的语言版本，目前正在更新中。', '')
         infos = root.xpath(
@@ -525,7 +527,7 @@ if __name__ == '__main__':
     url = 'http://www.booking.com/hotel/ec/casa-eden.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=93039ab22f393571a7edfed2400e7a0d;ucfs=1;srpvid=fd75469762030499;srepoch=1506333743;room1=A%2CA;hpos=10;hapos=130;dest_type=region;dest_id=722;srfid=1dc4de7f7618b923f33a72e5cd5d959ad27f62e5X130;from=searchresults;highlight_room=#hotelTmpl'
     # url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
     from proj.my_lib.Common.Browser import MySession
-
+    # url = 'https://www.booking.com/hotel/fj/nanuya-island-resort.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=4a276ca86d3797ed736f2d6001496e2f;dest_id=4853;dest_type=region;dist=0;group_adults=3;group_children=0;hapos=1;hpos=1;room1=A%2CA;sb_price_type=total;srepoch=1506333732;srfid=452f34ec0e2eeb2f13d876a3d651ba87b1a3b91fX1;srpvid=2a1b469190400118;type=total;ucfs=1&#hotelTmpl'
     content = requests.get(url).text
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
     result = booking_parser(content, url, other_info)
