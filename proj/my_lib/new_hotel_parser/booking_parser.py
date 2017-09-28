@@ -335,7 +335,9 @@ def booking_parser(content, url, other_info):
             except:
                 continue
         service_ele_list = root.xpath(
-            '//div [@class="facilitiesChecklistSection"]')
+            '//div[@class="facilitiesChecklistSection"]')
+        service_ele_list.extend(root.xpath(
+            '//div[@class="facilitiesChecklistSection\n"]'))
         hotel.service = ''
         for each_service_ele in service_ele_list:
             try:
@@ -363,38 +365,6 @@ def booking_parser(content, url, other_info):
                     elif '免费' in service_temp:
                         hotel.is_wifi_free = 'Yes'
                 hotel.service += service_temp
-                # .strip().encode('utf-8').replace('\n', '')
-                # if service_items[0]:
-                #     service_item = each_service_ele.xpath('ul/li/p/span')[0] \
-                #         .text_content().strip().encode('utf-8').replace('\n', '')
-
-                #     if '停车场' in service_item_name:
-                #         if '无' not in service_item or '不提供' not in service_items:
-                #             hotel.has_parking = 'Yes'
-                #         else:
-                #             hotel.has_parking = 'No'
-
-                #         if '免费' in service_item:
-                #             hotel.has_parking = 'Yes'
-                #             hotel.is_parking_free = 'Yes'
-
-                #         if '收费' in service_item:
-                #             hotel.has_parking = 'Yes'
-                #             hotel.is_parking_free = 'No'
-                #     if 'WiFi' in service_item_name:
-                #         if 'WiFi' in service_item:
-                #             hotel.has_wifi = 'Yes'
-                #         else:
-                #             hotel.has_wifi = 'No'
-                #         if '免费' in service_item:
-                #             hotel.is_wifi_free = 'Yes'
-                #         else:
-                #             hotel.is_wifi_free = 'No'
-                # else:
-                #     p = ''
-                #     for each in service_items:
-                #         p += each + ','
-                #     service_item = p[:-1].replace('\n', '')
             except:
                 '''There is a pit, I step on, the next person to continue'''
                 continue
@@ -524,7 +494,7 @@ if __name__ == '__main__':
     # url = 'http://www.booking.com/hotel/de/convita.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=92b989ea6f07f4de2b13417b5ee27147;checkin=2017-06-03;checkout=2017-06-04;ucfs=1;aer=1;group_adults=3;group_children=0;req_adults=3;req_children=0;room1=A%2CA%2CA;highlighted_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;all_sr_blocks=6808902_89933034_0_1_0%2C6808901_89933034_0_1_0;hpos=6;dest_type=city;dest_id=-1876189;srfid=c597a73a7c35b00d3a02a668f2b753cada34ce8aX21;from=searchresults;highlight_room=;spdest=ci/-1876189;spdist=9.1;shp=1#hotelTmpl'
     # url = 'http://www.booking.com/hotel/es/tagara-apartment.zh-cn.html'
     # url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
-    url = 'http://www.booking.com/hotel/ec/casa-eden.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=93039ab22f393571a7edfed2400e7a0d;ucfs=1;srpvid=fd75469762030499;srepoch=1506333743;room1=A%2CA;hpos=10;hapos=130;dest_type=region;dest_id=722;srfid=1dc4de7f7618b923f33a72e5cd5d959ad27f62e5X130;from=searchresults;highlight_room=#hotelTmpl'
+    url = 'https://www.booking.com/hotel/ec/iguana-crossing-boutique.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=4a276ca86d3797ed736f2d6001496e2f;dest_id=722;dest_type=region;dist=0;hapos=9;hpos=9;room1=A%2CA;sb_price_type=total;srepoch=1506333740;srfid=1dc4de7f7618b923f33a72e5cd5d959ad27f62e5X9;srpvid=f06a4695a2200507;type=total;ucfs=1&#hotelTmpl'
     # url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
     from proj.my_lib.Common.Browser import MySession
     # url = 'https://www.booking.com/hotel/fj/nanuya-island-resort.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=4a276ca86d3797ed736f2d6001496e2f;dest_id=4853;dest_type=region;dist=0;group_adults=3;group_children=0;hapos=1;hpos=1;room1=A%2CA;sb_price_type=total;srepoch=1506333732;srfid=452f34ec0e2eeb2f13d876a3d651ba87b1a3b91fX1;srpvid=2a1b469190400118;type=total;ucfs=1&#hotelTmpl'
