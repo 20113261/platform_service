@@ -332,9 +332,9 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             # save file stream
             r2 = True
             s_f_stream = StringIO(page.content)
-            r1 = upload_ks_file_stream(bucket_name, file_name, s_f_stream)
+            r1 = upload_ks_file_stream(bucket_name, file_name, s_f_stream, page.headers['Content-Type'])
             if bucket_name == 'mioji-attr':
-                r2 = upload_ks_file_stream('mioji-shop', file_name, s_f_stream)
+                r2 = upload_ks_file_stream('mioji-shop', file_name, s_f_stream, page.headers['Content-Type'])
 
             if not (r1 and r2):
                 self.error_code = 108

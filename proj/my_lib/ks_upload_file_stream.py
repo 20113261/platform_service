@@ -17,13 +17,14 @@ sk = 'o4D5wjs6r02dxLDLyLbTTUenTvpmKgrBItra6qgb'
 connection = Connection(ak, sk, host='kss.ksyun.com')
 
 
-def upload_ks_file_stream(bucket_name, upload_key, file_obj):
+def upload_ks_file_stream(bucket_name, upload_key, file_obj, content_type='image/jpeg'):
     bucket = connection.get_bucket(bucket_name)
     key = bucket.new_key(upload_key)
 
     status = -1
     retry_times = 3
     headers = {
+        'Content-Type': content_type,
         'x-application-context': 'application'
     }
     while status != 200 and retry_times:
@@ -44,7 +45,8 @@ def upload_ks_file_stream(bucket_name, upload_key, file_obj):
 
 if __name__ == '__main__':
     f = open('/tmp/c0b9378743defc0c81ff308b112542a0.jpg', 'rb')
-    import StringIO
+    # import StringIO
 
-    s = StringIO.StringIO(f.read())
-    upload_ks_file_stream('mioji-attr', 'hello_world', s)
+    # 'Content-Type': 'application/octet-stream'
+    # s = StringIO.StringIO(f.read())
+    upload_ks_file_stream('mioji-attr', 'hello_world', f)
