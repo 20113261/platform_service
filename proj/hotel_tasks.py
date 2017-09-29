@@ -20,7 +20,8 @@ from my_lib.new_hotel_parser.data_obj import text_2_sql
 
 logger = get_logger("HotelDetail")
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='3/s')
+
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='6/s')
 def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
     self.task_source = source.title()
     self.task_type = 'Hotel'
@@ -61,7 +62,7 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
         session.headers.update(headers)
 
         # init session
-
+        start = time.time()
         if source != 'hilton':
             page = session.get(url, timeout=240)
             page.encoding = 'utf8'
@@ -97,10 +98,14 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
             __desc_content = desc_page.text
 
             content = [__content, __detail_content, __map_info_content, __desc_content]
+        logger.debug("[crawl_data][Takes: {}]".format(time.time() - start))
 
+        start = time.time()
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part,
                              retry_count=kwargs['retry_count'])
+        logger.debug("[parse_hotel][func: {}][Takes: {}]".format(parse_hotel.func_name, time.time() - start))
 
+        start = time.time()
         try:
             result.country_id = country_id
 
@@ -116,6 +121,8 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
             self.error_code = 33
             logger.exception(e)
             raise e
+
+        logger.debug("[Insert DB][Takes: {}]".format(time.time() - start))
 
         # if not result:
         #     raise Exception('db error')
