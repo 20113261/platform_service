@@ -1,6 +1,7 @@
 # coding=utf8
 import json
 import sys
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -72,6 +73,7 @@ def has_chinese(contents, encoding='utf-8'):
     else:
         return False
 
+
 @try3times(try_again_times=10)
 def image_paser(detail_id):
     page = ss.get(img_get_url + detail_id)
@@ -82,14 +84,16 @@ def image_paser(detail_id):
     img_list = '|'.join(images_list)
     assert img_list != '' or img_list != None, 'NO IMAGES'
 
-    logger.info('----0---------      '+img_list)
+    logger.info('----0---------      ' + img_list)
     return img_list
+
 
 @try3times(try_again_times=10)
 def intro_parse(detail_id):
     page = ss.get(introduction_url % detail_id)
     root = PyQuery(page.text)
     return root('.description .section_content').text()
+
 
 def parse(content, url, city_id):
     print 'url: %s' % url
@@ -195,10 +199,11 @@ def parse(content, url, city_id):
     # 排名rank
     try:
         rank = ''
-        rank_text = root.find_class('header_popularity popIndexValidation')[0].text_content().encode('utf-8').replace(',', '')
+        rank_text = root.find_class('header_popularity popIndexValidation')[-1].text_content().encode('utf-8').replace(
+            ',', '')
         nums = re.compile(r'(\d+)', re.S).findall(rank_text)
         # orank = nums[0] + '/' + nums[1]
-        rank = nums[1]
+        rank = nums[-1]
     except Exception, e:
         # traceback.print_exc(e)
         rank = '2000000'
@@ -211,7 +216,7 @@ def parse(content, url, city_id):
         if len(root.find_class('rs rating')) != 0:
             grade_temp = root.find_class('rs rating')[0]
             rating = float(grade_temp.xpath('div/span/@content')[0])
-            reviews = int(grade_temp.xpath('a/span')[0].text)
+            reviews = int(re.search('\d+', grade_temp.text_content().replace(',', '')).group())
     except Exception, e:
         pass
     print 'rating: %s' % rating
@@ -228,13 +233,13 @@ def parse(content, url, city_id):
         price = ''
         for ele in table_section[1:]:
             try:
-                tab_title = ele.xpath('div[@class="title"]')[0].text
-                tab_content = ele.xpath('div[@class="content"]')[0].text_content().replace('\n', ' ').strip()
-                if tab_title.find('菜系')>-1:
+                tab_title = ele.xpath('div[contains(@class, "title")]')[0].text
+                tab_content = ele.xpath('div[contains(@class, "content")]')[0].text_content().replace('\n', ' ').strip()
+                if tab_title.find('菜系') > -1:
                     cuisines = tab_content
-                if tab_title.find('参考价位')>-1:
+                if tab_title.find('参考价位') > -1:
                     price = tab_content
-                if tab_title.find('营业时间')>-1:
+                if tab_title.find('营业时间') > -1:
                     opentime_detail = ele.xpath('.//div')[1]
                     for ele_d in opentime_detail.xpath('div'):
                         open_week = ele_d.xpath('span')[0].text + '  '
@@ -469,8 +474,8 @@ if __name__ == '__main__':
     # url = 'https://www.tripadvisor.cn/Restaurant_Review-g187147-d9806534-Reviews-ASPIC-Paris_Ile_de_France.html'
     url = 'http://www.tripadvisor.cn/Restaurant_Review-g298490-d10001137-Reviews-Mimino-Blagoveshchensk_Amur_Oblast_Far_Eastern_District.html'
     url = 'https://www.tripadvisor.cn/Restaurant_Review-g187147-d9806534-Reviews-ASPIC-Paris_Ile_de_France.html'
+    url = 'https://www.tripadvisor.cn/Restaurant_Review-g297930-d2704861-Reviews-The_Coffee_Club_Jungceylon-Patong_Kathu_Phuket.html'
     page = requests.get(url)
     result = parse(page.content, url, 'NULL')
     print json.dumps(result, ensure_ascii=False)
     # insert_db(result, 'NULL')
-

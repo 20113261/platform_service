@@ -59,13 +59,14 @@ def booking_parser(content, url, other_info):
         name_temp = root.xpath('//*[@class="hp__hotel-name"]')[
             0].text_content().strip('\t').strip('\n')
         temp_name = name_temp.split('（')
-        if len(temp_name)==1:
+        if len(temp_name) == 1:
             temp_name = name_temp.split('(')
-        if len(temp_name)==2:
-            hotel.hotel_name_en, hotel.hotel_name = temp_name[0].encode('utf8'), temp_name[1].strip(')').strip('）').encode('utf8')
-        elif len(temp_name)==1:
+        if len(temp_name) == 2:
+            hotel.hotel_name_en, hotel.hotel_name = temp_name[0].encode('utf8'), temp_name[1].strip(')').strip(
+                '）').encode('utf8')
+        elif len(temp_name) == 1:
             temp = re.findall(r'\w+', temp_name[0])
-            if len(temp)==0:
+            if len(temp) == 0:
                 hotel.hotel_name = temp_name[0].encode('utf8')
                 hotel.hotel_name_en = 'NULL'
             else:
@@ -74,7 +75,7 @@ def booking_parser(content, url, other_info):
     except Exception as e:
         print e
 
-    #     try:
+    # try:
     #         name_temp = root.xpath('//*[@class="sr-hotel__name"]/text()')[
     #             0].strip().encode('utf-8')
     #
@@ -213,18 +214,14 @@ def booking_parser(content, url, other_info):
             grade_temp = root.xpath(
                 '//div[@id="review_block_top"]/text()')[1].strip().encode('utf-8')
             hotel.grade = grade_temp
-        except:
-            try:
-                if not grade_temp:
-                    grade_temp = root.xpath('//span[@class="review-score-badge"]/text()')[0].strip().encode('utf-8')
-                    hotel.grade = grade_temp
-            except Exception as e:
-                hotel.grade = 'NULL'
+        except Exception as e:
+            hotel.grade = 'NULL'
     print 'grade=>%s' % hotel.grade
     # print hotel.grade
     # 解析酒店评论数
     try:
-        score = re.findall('(\d+)', root.xpath('//a[@class="hp_nav_reviews_link toggle_review track_review_link_zh"]/span/text()')[1])[0]
+        score = re.findall('(\d+)', root.xpath(
+            '//a[@class="hp_nav_reviews_link toggle_review track_review_link_zh"]/span/text()')[1])[0]
         # re_start = root.find_class('trackit score_from_number_of_reviews')[0].xpath('strong/text()') \
         #     [0].encode('utf-8').strip()
         # hotel.review_num = re_start
@@ -248,7 +245,8 @@ def booking_parser(content, url, other_info):
     # 解析酒店简介
     try:
         hotel.description = root.get_element_by_id('summary') \
-            .text_content().encode('utf-8').strip().replace('"', '""').replace('\n', '').replace('抱歉，该住宿简介暂无您所选择的语言版本，目前正在更新中。', '')
+            .text_content().encode('utf-8').strip().replace('"', '""').replace('\n', '').replace(
+            '抱歉，该住宿简介暂无您所选择的语言版本，目前正在更新中。', '')
         infos = root.xpath(
             '//div[@class="hotel_description_wrapper_exp hp-description"]/p[@class="geo_information"]/text()'
         )
@@ -497,6 +495,7 @@ if __name__ == '__main__':
     url = 'https://www.booking.com/hotel/ec/iguana-crossing-boutique.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=4a276ca86d3797ed736f2d6001496e2f;dest_id=722;dest_type=region;dist=0;hapos=9;hpos=9;room1=A%2CA;sb_price_type=total;srepoch=1506333740;srfid=1dc4de7f7618b923f33a72e5cd5d959ad27f62e5X9;srpvid=f06a4695a2200507;type=total;ucfs=1&#hotelTmpl'
     # url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
     from proj.my_lib.Common.Browser import MySession
+
     # url = 'https://www.booking.com/hotel/fj/nanuya-island-resort.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=4a276ca86d3797ed736f2d6001496e2f;dest_id=4853;dest_type=region;dist=0;group_adults=3;group_children=0;hapos=1;hpos=1;room1=A%2CA;sb_price_type=total;srepoch=1506333732;srfid=452f34ec0e2eeb2f13d876a3d651ba87b1a3b91fX1;srpvid=2a1b469190400118;type=total;ucfs=1&#hotelTmpl'
     content = requests.get(url).text
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
