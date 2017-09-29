@@ -23,10 +23,13 @@ def upload_ks_file_stream(bucket_name, upload_key, file_obj):
 
     status = -1
     retry_times = 3
+    headers = {
+        'x-application-context': 'application'
+    }
     while status != 200 and retry_times:
         retry_times -= 1
         try:
-            res = key.set_contents_from_file(file_obj, policy='public-read-write')
+            res = key.set_contents_from_file(file_obj, policy='public-read-write', headers=headers)
             status = res.status
         except Exception as exc:
             logger.exception(msg="[upload file error]", exc_info=exc)
@@ -41,4 +44,7 @@ def upload_ks_file_stream(bucket_name, upload_key, file_obj):
 
 if __name__ == '__main__':
     f = open('/tmp/c0b9378743defc0c81ff308b112542a0.jpg', 'rb')
-    upload_ks_file_stream('mioji-attr', 'hello_world', f)
+    import StringIO
+
+    s = StringIO.StringIO(f.read())
+    upload_ks_file_stream('mioji-attr', 'hello_world', s)
