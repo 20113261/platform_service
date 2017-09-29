@@ -109,8 +109,9 @@ def ctrip_parser(page, url, other_info):
     print 'review_nums =>', hotel.review_num
 
     try:
-        desc = root.xpath('//div[@id="detail_content"]/span/div/div')[0]
-        hotel.description = desc.text_content().encode('utf-8').strip().rstrip().replace(' ','').replace('\n','。')
+        desc = ''.join(root.xpath('//div[@id="detail_content"]/span/div/div/text()'))
+        hotel.description = desc.encode(
+            'utf-8').strip().rstrip().replace(' ', '').replace('\n', '。').replace('。。', '。')
     except Exception, e:
         hotel.description = 'NULL'
         print str(e)
@@ -169,18 +170,32 @@ def ctrip_parser(page, url, other_info):
     print 'check_in =>', hotel.check_in_time
     print 'check_out =>', hotel.check_out_time
 
+    # try:
+    #     card_pat = re.compile(r'<div class="card_cont_img">(.*?)</div></<div></td></tr>')
+    #     search_card = card_pat.findall(page)[0]
+    #     card_pat1 = re.compile(r'<img alt=(.*?) title=')
+    #     card = card_pat1.findall(search_card)
+    #     temp_name = ''
+    #     for each in card:
+    #         temp_name += each.encode('utf-8').strip()[1:-1] + '|'
+    #     hotel.accepted_cards = temp_name[:-1]
+    # except Exception, e:
+    #     print str(e)
+    # print 'hotel.accept_cards =>', hotel.accepted_cards
+
+    # accept cards
+    accepted_cards = []
     try:
-        card_pat = re.compile(r'<div class="card_cont_img">(.*?)</div></<div></td></tr>')
-        search_card = card_pat.findall(page)[0]
-        card_pat1 = re.compile(r'<img alt=(.*?) title=')
-        card = card_pat1.findall(search_card)
-        temp_name = ''
-        for each in card:
-            temp_name += each.encode('utf-8').strip()[1:-1] + '|'
-        hotel.accepted_cards = temp_name[:-1]
-    except Exception, e:
-        print str(e)
-    print 'hotel.accept_cards =>', hotel.accepted_cards
+        for card in root.xpath('// *[@class="detail_extracontent layoutfix"]/*[@class="card_cont_img"]/img/@alt'):
+            # re.findall('([\s\S]+?)',cards)
+            res = re.findall('\(([\s\S]+?)\)', card)
+            if res:
+                accepted_cards.append(res[0].lower())
+    except Exception as exc:
+        print(exc)
+
+    hotel.accepted_cards = '|'.join(accepted_cards)
+    print('hotel.accept_cards =>', hotel.accepted_cards)
 
     try:
         items = root.xpath('//*[@id="detail_content"]/div[2]/table/tbody/tr')
@@ -221,22 +236,22 @@ def ctrip_parser(page, url, other_info):
     print 'hotel.has_parking =>', hotel.has_parking
 
     print 'hotel.is_parking_free =>', hotel.is_parking_free
-    
-    #----feng
-    pay_method = ''
-    method = root.xpath('//*[@id="room_select_box"]/div[2]/ul/li')
 
-    for pay in method:
-        try:
-            content = pay.xpath('@data-value')[0]
-            if content.count('付'):
-                pay_method += content +'|'
-        except :
-            pass
-    hotel.pay_method = pay_method
-
-    print 'pay method-->>',hotel.pay_method
-
+    # # ----feng
+    # pay_method = ''
+    # method = root.xpath('//*[@id="room_select_box"]/div[2]/ul/li')
+    #
+    # l_method = []
+    # for pay in method:
+    #     try:
+    #         content = pay.xpath('@data-value')[0]
+    #         if content.count('付'):
+    #             l_method.append(content)
+    #     except:
+    #         pass
+    # hotel.pay_method = '|'.join(l_method)
+    #
+    # print 'pay method-->>', hotel.pay_method
 
     hotel.hotel_url = url
     hotel.source = 'ctrip'
@@ -248,9 +263,9 @@ def ctrip_parser(page, url, other_info):
 
 if __name__ == '__main__':
     # url = 'http://hotels.ctrip.com/international/992466.html'
-    #url = 'http://hotels.ctrip.com/international/3723551.html?IsReposted=3723551'
+    # url = 'http://hotels.ctrip.com/international/3723551.html?IsReposted=3723551'
     url = 'http://hotels.ctrip.com/international/1479993.html'
-    #url = 'http://hotels.ctrip.com/international/10146828.html'
+    # url = 'http://hotels.ctrip.com/international/10146828.html'
     other_info = {
         'source_id': '1039433',
         'city_id': '10074'
