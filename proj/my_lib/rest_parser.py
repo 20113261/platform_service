@@ -211,7 +211,7 @@ def parse(content, url, city_id):
         if len(root.find_class('rs rating')) != 0:
             grade_temp = root.find_class('rs rating')[0]
             rating = float(grade_temp.xpath('div/span/@content')[0])
-            reviews = int(grade_temp.xpath('a/span')[0].text)
+            reviews = int(re.search('\d+', grade_temp.text_content().replace(',', '')).group())
     except Exception, e:
         pass
     print 'rating: %s' % rating
@@ -228,8 +228,8 @@ def parse(content, url, city_id):
         price = ''
         for ele in table_section[1:]:
             try:
-                tab_title = ele.xpath('div[@class="title"]')[0].text
-                tab_content = ele.xpath('div[@class="content"]')[0].text_content().replace('\n', ' ').strip()
+                tab_title = ele.xpath('div[contains(@class, "title")]')[0].text
+                tab_content = ele.xpath('div[contains(@class, "content")]')[0].text_content().replace('\n', ' ').strip()
                 if tab_title.find('菜系')>-1:
                     cuisines = tab_content
                 if tab_title.find('参考价位')>-1:
