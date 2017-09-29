@@ -43,7 +43,7 @@ class TestAgoda(unittest.TestCase):
         for case, res in zip(cases, results):
             page = download_file(case)
             j_data = json.loads(page)
-            result = test_agoda_parser(j_data['data'])
+            result = test_agoda_pagit(j_data['data'])
             self.assertEqual(result.service, res)
 
             # def test_desc(self):
