@@ -21,6 +21,8 @@ from proj.my_lib.logger import get_logger
 from proj.mysql_pool import service_platform_pool
 from proj.list_config import cache_config, list_cache_path
 
+
+from urlparse import urljoin
 import datetime
 
 logger = get_logger("poiDaodao")
@@ -46,7 +48,7 @@ spider_name = {'attr': 'View', 'rest': 'Rest'}
 
 def hotel_list_database(source, url, required, old_spider_name, need_cache=True):
     task = Task()
-    task.content = URL + url
+    task.content = urljoin(URL, url)
     logger.info('%s  %s' % (task.content, required))
     task.source = source.lower().capitalize() + 'ListInfo'
     # spider = factory.get_spider('daodao', task.source)
