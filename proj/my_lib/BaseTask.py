@@ -211,7 +211,7 @@ class BaseTask(Task):
         task_type = get_type(self)
         r = redis.Redis(host='10.10.180.145', db=15)
         error_code = get_error_code(self)
-        if error_code != 'NULL':
+        if error_code == 'NULL':
             error_code = get_error_code(exc)
 
         # 获取当前任务重试次数
