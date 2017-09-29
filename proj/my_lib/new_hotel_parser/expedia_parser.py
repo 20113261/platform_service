@@ -33,6 +33,9 @@ def expedia_parser(content, url, other_info):
 
     name_en = 'NULL'
 
+    hotel.brand_name = 'NULL'
+    hotel.hotel_name = 'NULL'
+    hotel.hotel_name_en = 'NULL'
     try:
         # 匹配英文名
         # eng_pattern = re.compile(r'([a-zA-Z].*[a-zA-Z]?)', re.S)
@@ -61,7 +64,6 @@ def expedia_parser(content, url, other_info):
 
         hotel.hotel_name = hotel_name
         hotel.hotel_name_en = hotel_name_en
-        hotel.brand_name = 'NULL'
     except Exception, e:
         print str(e)
     print 'hotel_brand_name=>%s' % hotel.brand_name
@@ -69,20 +71,24 @@ def expedia_parser(content, url, other_info):
     print 'hotel_name_en=>%s' % hotel.hotel_name_en
     try:
         address = ''
-        full_address = root.xpath('//div[@class="full-address"]//span/text()')
-        add_temp = full_address[:-1]
-        address = ','.join(add_temp)
-        hotel.postal_code = full_address[-1].strip().encode('utf-8')
-        hotel.address = address
-        # address_list = root.find_class('page-header')[0].find_class('address')[0]  # .xpath('span')[0]
-        # address += encode_unicode(address_list.find_class('street-address')[0].text_content().strip())
-        # address += ','
-        # address += encode_unicode(address_list.find_class('city')[0].text_content().strip())
-        # address += ','
-        # address += encode_unicode(address_list.find_class('province')[0].text_content().strip())
+        # full_address = root.xpath('//div[@class="full-address"]//span/text()')
+        # add_temp = full_address[:-1]
+        # address = ','.join(add_temp)
+        # hotel.postal_code = full_address[-1].strip().encode('utf-8')
+        # hotel.address = address
+        address_list = root.find_class('page-header')[0].find_class('address')[0]  # .xpath('span')[0]
+        a = address_list.find_class('street-address')
+        if len(a)>0:
+            address += encode_unicode(a[0].text_content().strip())
+        aa = address_list.find_class('city')
+        if len(aa) > 0:
+            address += ',' + encode_unicode(aa[0].text_content().strip())
+        aaa = address_list.find_class('province')
+        if len(aaa)>0:
+            address += ',' + encode_unicode(aaa[0].text_content().strip())
         # address += ','
         # address += encode_unicode(address_list.find_class('country')[0].text_content().strip())
-        # hotel.address = address
+        hotel.address = address
         # postal_code = encode_unicode(address_list.find_class('postal-code')[0].text_content().strip())
         # hotel.postal_code = postal_code
     except Exception, e:
@@ -98,7 +104,7 @@ def expedia_parser(content, url, other_info):
 
     print 'grade=>%s' % hotel.grade
     try:
-        star = root.find_class('star-rating-wrapper')[0].text_content().split('/')[0].strip()
+        star = root.xpath('//span[contains(@class, "stars-grey value-title")]')[0].attrib['title']
         hotel.star = str(int(star))
     except:
         hotel.star = -1
@@ -220,16 +226,19 @@ def expedia_parser(content, url, other_info):
         print str(e)
     print 'img_items=>%s' % hotel.img_items
     try:
-        desc = encode_unicode(root.find_class('hotel-description')[0].find_class('visuallyhidden')[0].tail.strip())
+        # desc = encode_unicode(root.find_class('hotel-description')[0].find_class('visuallyhidden')[0].tail.strip())
+        h3s = root.xpath('//div[@class="hotel-description"]/h3//text()')
+        ps = root.xpath('//div[@class="hotel-description"]/p//text()')
+        desc = '|_|'.join([title + '::' + value for title, value in zip(h3s, ps)])
         hotel.description = desc
     except Exception, e:
         print str(e)
     print 'description=>%s' % hotel.description
     try:
-        card_list = root.find_class('payment-logos')[0]
+        card_list = root.xpath('//div[@class="payment-logos"]/figure/@data-alt')
         accepted_card = ''
         for each in card_list:
-            accepted_card += encode_unicode(each.get('alt'))
+            accepted_card += encode_unicode(each)
             accepted_card += '|'
         accepted_cards = accepted_card.rstrip('|')
         hotel.accepted_cards = accepted_cards
@@ -284,7 +293,9 @@ if __name__ == '__main__':
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=ef1d21e286502f87feaea39098c11b1c'
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=0035837c89d997704b1312cd3cf6c50e'
     # url = 'https://www.expedia.com.hk/cn/h10000.Hotel-Information'
-    url = 'https://www.expedia.com.hk/cn/Wagga-Wagga-Hotels-International-Hotel-Wagga-Wagga.h8966967.Hotel-Information?chkin=2017%2F9%2F25&chkout=2017%2F9%2F26&rm1=a2&regionId=181592&hwrqCacheKey=cf20f4e6-25d7-4183-99d0-954735abcb77HWRQ1506309449240&vip=false&c=297cd267-27af-484b-9117-f3f38e35362c&&exp_dp=729.14&exp_ts=1506309449666&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
+    # url = 'https://www.expedia.com.hk/cn/Wagga-Wagga-Hotels-International-Hotel-Wagga-Wagga.h8966967.Hotel-Information?chkin=2017%2F9%2F25&chkout=2017%2F9%2F26&rm1=a2&regionId=181592&hwrqCacheKey=cf20f4e6-25d7-4183-99d0-954735abcb77HWRQ1506309449240&vip=false&c=297cd267-27af-484b-9117-f3f38e35362c&&exp_dp=729.14&exp_ts=1506309449666&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
+    url = 'https://www.expedia.com.hk/Hotels-Sahara-Motel.h13279481.Hotel-Information'
+    url = 'https://www.expedia.com.hk/cn/Mauritius-Island-Hotels-Ocean-Villas.h1466602.Hotel-Information?chkin=2017%2F11%2F25&chkout=2017%2F11%2F26&rm1=a2&regionId=6051080&sort=recommended&hwrqCacheKey=58665cc7-0e73-4f2d-89da-6cf5f79637efHWRQ1506387257474&vip=false&c=251228bc-5980-49ea-ac6d-87d847977318&'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'
