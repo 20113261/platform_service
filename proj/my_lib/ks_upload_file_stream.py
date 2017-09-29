@@ -6,6 +6,7 @@
 # @File    : ks_upload_file_stream.py
 # @Software: PyCharm
 from __future__ import print_function
+import time
 from proj.my_lib.logger import get_logger
 from ks3.connection import Connection
 
@@ -18,6 +19,7 @@ connection = Connection(ak, sk, host='kss.ksyun.com')
 
 
 def upload_ks_file_stream(bucket_name, upload_key, file_obj, content_type='image/jpeg'):
+    start = time.time()
     bucket = connection.get_bucket(bucket_name)
     key = bucket.new_key(upload_key)
 
@@ -36,10 +38,12 @@ def upload_ks_file_stream(bucket_name, upload_key, file_obj, content_type='image
             logger.exception(msg="[upload file error]", exc_info=exc)
             status = -1
     if status == 200:
-        logger.debug("[Succeed][upload file][bucket: {0}][key: {1}]".format(bucket_name, upload_key))
+        logger.debug("[Succeed][upload file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, upload_key,
+                                                                                        time.time() - start))
         return True
     else:
-        logger.debug("[Failed][upload file][bucket: {0}][key: {1}]".format(bucket_name, upload_key))
+        logger.debug("[Failed][upload file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, upload_key,
+                                                                                       time.time() - start))
         return False
 
 
