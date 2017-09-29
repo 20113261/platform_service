@@ -61,10 +61,9 @@ def execute_sql(sql, commit=False):
         conn.commit()
         cursor.close()
         return
-    # result = []
-    # return cursor.fetchall()
+
     result = cursor.fetchall()
-    print cursor.rowcount, '==============================********'
+    print 'row_count  :  %s ' % cursor.rowcount
     cursor.close()
     conn.close()
     return result
@@ -77,7 +76,7 @@ def get_seek(task_name):
     timestramp = cursor.fetchone()
     cursor.close()
     conn.close()
-    print type(timestramp), timestramp
+    print 'timestramp  :  %s ' % timestramp
     if not timestramp or len(timestramp)==0:
         return get_default_timestramp()
 
@@ -110,137 +109,146 @@ def create_table(table_name):
 def monitoring_hotel_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
 
-    table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+    try:
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
-    for table_name in table_dict.keys():
+        for table_name in table_dict.keys():
 
-        tab_args = table_name.split('_')
-        if tab_args[0] != 'list': continue
-        if tab_args[1] != 'hotel': continue
-        if tab_args[2] not in HOTEL_SOURCE: continue
-        if tab_args[3] == 'test':continue
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'list': continue
+            if tab_args[1] != 'hotel': continue
+            if tab_args[2] not in HOTEL_SOURCE: continue
+            if tab_args[3] == 'test':continue
 
-        timestamp = get_seek(table_name)
+            timestamp = get_seek(table_name)
 
-        update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name":table_name}).count(), sum_or_set=False)
+            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name":table_name}).count(), sum_or_set=False)
 
-        detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
-        if table_dict.get(detail_table_name, True):
-            create_table(detail_table_name)
+            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+            if table_dict.get(detail_table_name, True):
+                create_table(detail_table_name)
 
-        try:
             timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
-            print timestamp, success_count, '++++++_-----++++++'
+            print 'timestamp  :  %s, success_count  :  %s' % (timestamp, success_count)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
-        except Exception as e:
-            print traceback.format_exc(e)
+    except Exception as e:
+        print traceback.format_exc(e)
+        raise e
 
 def monitoring_hotel_detail2ImgOrComment():
     sql = """select source, source_id, city_id, img_items, update_time from %s where update_time > '%s' order by update_time"""
-    for (table_name,) in get_all_tables():
+    try:
+        for (table_name,) in get_all_tables():
 
-        tab_args = table_name.split('_')
-        if tab_args[0] != 'detail': continue
-        if tab_args[1] != 'hotel': continue
-        if tab_args[2] not in HOTEL_SOURCE: continue
-        if tab_args[3] == 'test': continue
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'detail': continue
+            if tab_args[1] != 'hotel': continue
+            if tab_args[2] not in HOTEL_SOURCE: continue
+            if tab_args[3] == 'test': continue
 
-        timestamp = get_seek(table_name)
-        try:
+            timestamp = get_seek(table_name)
+
             timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
                                         is_poi_task=False)
+            print 'timestamp  :  %s, success_count  :  %s' % (timestamp, success_count)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
-        except Exception as e:
-            print traceback.format_exc(e)
+    except Exception as e:
+        print traceback.format_exc(e)
+        raise e
 
 def monitoring_poi_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
+    try:
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
-    table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+        for table_name in table_dict.keys():
 
-    for table_name in table_dict.keys():
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'list': continue
+            if tab_args[1] not in ('rest', 'attr', 'shop'): continue
+            if tab_args[2] != POI_SOURCE: continue
+            if tab_args[3] == 'test': continue
 
-        tab_args = table_name.split('_')
-        if tab_args[0] != 'list': continue
-        if tab_args[1] not in ('rest', 'attr', 'shop'): continue
-        if tab_args[2] != POI_SOURCE: continue
-        if tab_args[3] == 'test': continue
+            timestamp = get_seek(table_name)
 
-        timestamp = get_seek(table_name)
+            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
-        update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name": table_name}).count(), sum_or_set=False)
+            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+            if table_dict.get(detail_table_name, True):
+                create_table(detail_table_name)
 
-        detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
-        if table_dict.get(detail_table_name, True):
-            create_table(detail_table_name)
-        try:
             timestamp, success_count = send_poi_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
+            print 'timestamp  :  %s, success_count  :  %s' % (timestamp, success_count)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
-        except Exception as e:
-            print traceback.format_exc(e)
+    except Exception as e:
+        print traceback.format_exc(e)
+        raise e
 
 def monitoring_poi_detail2imgOrComment():
     sql = """select source, id, city_id, imgurl, utime from %s where utime > '%s' order by utime"""
-    for (table_name,) in get_all_tables():
+    try:
+        for (table_name,) in get_all_tables():
 
-        tab_args = table_name.split('_')
-        if tab_args[0] != 'detail': continue
-        if tab_args[1] not in ('rest', 'attr', 'shop'): continue
-        if tab_args[2] != POI_SOURCE: continue
-        if tab_args[3] == 'test': continue
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'detail': continue
+            if tab_args[1] not in ('rest', 'attr', 'shop'): continue
+            if tab_args[2] != POI_SOURCE: continue
+            if tab_args[3] == 'test': continue
 
-        timestamp = get_seek(table_name)
+            timestamp = get_seek(table_name)
 
-        try:
             timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
                                         is_poi_task=True)
+            print 'timestamp  :  %s, success_count  :  %s' % (timestamp, success_count)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
-        except Exception as e:
-            print traceback.format_exc(e)
+    except Exception as e:
+        print traceback.format_exc(e)
+        raise e
 
 def monitoring_qyer_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
+    try:
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
-    table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+        for table_name in table_dict.keys():
 
-    for table_name in table_dict.keys():
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'list': continue
+            if tab_args[1] != 'total': continue
+            if tab_args[2] != QYER_SOURCE: continue
+            if tab_args[3] == 'test': continue
 
-        tab_args = table_name.split('_')
-        if tab_args[0] != 'list': continue
-        if tab_args[1] != 'total': continue
-        if tab_args[2] != QYER_SOURCE: continue
-        if tab_args[3] == 'test': continue
+            timestamp = get_seek(table_name)
 
-        timestamp = get_seek(table_name)
+            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+                                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
-        update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-                                    collections.find({"task_name": table_name}).count(), sum_or_set=False)
+            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+            if table_dict.get(detail_table_name, True):
+                create_table(detail_table_name)
 
-        detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
-        if table_dict.get(detail_table_name, True):
-            create_table(detail_table_name)
-        try:
             timestamp, success_count = send_qyer_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
+            print 'timestamp  :  %s, success_count  :  %s' % (timestamp, success_count)
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
-        except Exception as e:
-            print traceback.format_exc(e)
-            raise e
+    except Exception as e:
+        print traceback.format_exc(e)
+        raise e
 
 def monitoring_zombies_task():
     collections.update({
