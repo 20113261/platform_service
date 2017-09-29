@@ -159,9 +159,9 @@ def elong_parser(content, url, other_info):
             encode('utf-8').strip()
         print temp_time
         hotel.check_in_time = temp_time.split('，')[0]
-        k = temp_time.find('离店时间：')
+        k = temp_time.find('退房时间：')
         if k != -1:
-            hotel.check_out_time = temp_time[k + 16:]
+            hotel.check_out_time = temp_time[k + 15:]
     except:
         hotel.check_out_time = 'NULL'
     print 'check_in=>%s' % hotel.check_in_time
