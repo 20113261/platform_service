@@ -4,7 +4,7 @@ cd $CURR_PATH
 export PYTHONPATH='/data/lib'
 export PATH="$PATH:/usr/local/bin"
 export CONFIG_FILE="/data/lib/slave.spider.ini"
-export CELERY_LOG_NAME="mix"
+export CELERY_LOG_NAME="mix_2"
 #/usr/local/bin/celery worker -A proj --autoscal=5000,100 -P gevent -l info --logfile=/search/log/celery.log
 #/usr/local/bin/celery worker -A proj --autoscal=5000,100 -P gevent -l info
 #/usr/local/bin/celery worker -A proj --autoscal=80,5 -c 40 -l info
