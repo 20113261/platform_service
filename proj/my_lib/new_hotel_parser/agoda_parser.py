@@ -190,9 +190,9 @@ def agoda_parser(content, url, other_info):
         for checkInOut in json_data['UsefulInfoGroups']:
             if '入住/退房' in checkInOut['Name']:
                 for item in checkInOut['Items']:
-                    if '入住办理' in item['Title']:
+                    if '入住办理起始' in item['Title']:
                         hotel.check_in_time = item['Description']
-                    elif '退房办理' in item['Title']:
+                    elif '退房办理起始' in item['Title']:
                         hotel.check_out_time = item['Description']
                 break
     except:
