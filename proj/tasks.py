@@ -340,8 +340,8 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
                 self.error_code = 108
                 raise Exception("Upload File Error")
 
-            with open(temp_file, 'wb') as f:
-                f.write(page.content)
+            # with open(temp_file, 'wb') as f:
+            #     f.write(page.content)
 
         use_flag = 1 if flag == 0 else 0
         size = str((h, w))

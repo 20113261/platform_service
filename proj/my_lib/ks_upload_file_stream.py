@@ -27,7 +27,7 @@ def upload_ks_file_stream(bucket_name, upload_key, file_obj, content_type='image
         'Content-Type': content_type,
         'x-application-context': 'application'
     }
-    while status != 200 and retry_times:
+    while status != 200 and retry_times >= 0:
         retry_times -= 1
         try:
             res = key.set_contents_from_file(file_obj, policy='public-read-write', headers=headers)
