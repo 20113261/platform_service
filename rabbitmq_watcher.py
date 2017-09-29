@@ -42,11 +42,11 @@ key 任务队列名称 val (队列中最少的任务数，单次插入任务数)
 '''
 TASK_CONF = {
     'default': (0, 0),
-    'file_downloader': (18000, 50000),
-    'hotel_detail': (18000, 50000),
-    'hotel_list': (18000, 50000),
-    'poi_detail': (18000, 50000),
-    'poi_list': (18000, 50000)
+    'file_downloader': (9000, 50000),
+    'hotel_detail': (9000, 50000),
+    'hotel_list': (9000, 50000),
+    'poi_detail': (9000, 50000),
+    'poi_list': (9000, 50000)
 }
 
 MAX_RETRY_TIMES_CONF = {
