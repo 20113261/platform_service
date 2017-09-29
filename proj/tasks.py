@@ -39,6 +39,7 @@ from .my_lib.BaseTask import BaseTask
 from .my_lib.task_module.task_func import get_task_id, update_task, insert_task
 from .my_lib.get_rate_limit import get_rate_limit
 from .my_lib.Common.Browser import MySession
+from proj.my_lib.ks_upload_file_stream import upload_ks_file_stream
 
 platforms.C_FORCE_ROOT = True
 
@@ -295,6 +296,13 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
     h = None
     w = None
 
+    if not is_poi_task:
+        bucket_name = 'mioji-hotel'
+    elif 'attr' in desc_path:
+        bucket_name = 'mioji-attr'
+    else:
+        bucket_name = 'mioji-rest'
+
     with MySession() as session:
         page = session.get(target_url, timeout=(1200, None))
         f_stream = StringIO(page.content)
@@ -320,6 +328,17 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             if not os.path.exists(file_path):
                 os.makedirs(file_path)
             temp_file = file_path + '/' + file_name
+
+            # save file stream
+            r2 = True
+            s_f_stream = StringIO(page.content)
+            r1 = upload_ks_file_stream(bucket_name, file_name, s_f_stream)
+            if bucket_name == 'mioji-attr':
+                r2 = upload_ks_file_stream('mioji-shop', file_name, s_f_stream)
+
+            if not (r1 and r2):
+                self.error_code = 108
+                raise Exception("Upload File Error")
 
             with open(temp_file, 'wb') as f:
                 f.write(page.content)
