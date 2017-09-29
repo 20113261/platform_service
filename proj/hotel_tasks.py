@@ -62,7 +62,7 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
         session.headers.update(headers)
 
         # init session
-
+        start = time.time()
         if source != 'hilton':
             page = session.get(url, timeout=240)
             page.encoding = 'utf8'
@@ -98,6 +98,7 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
             __desc_content = desc_page.text
 
             content = [__content, __detail_content, __map_info_content, __desc_content]
+        logger.debug("[crawl_data][Takes: {}]".format(time.time() - start))
 
         start = time.time()
         result = parse_hotel(content=content, url=url, other_info=other_info, source=source, part=part,
