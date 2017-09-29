@@ -75,6 +75,7 @@ def insert_task(queue, limit):
         kwargs.update(args)
         app.send_task(
             worker,
+            task_id=task_token,
             kwargs=kwargs,
             queue=queue,
             routing_key=routing_key
@@ -90,6 +91,7 @@ def insert_task(queue, limit):
         kwargs.update(args)
         app.send_task(
             worker,
+            task_id=task_token,
             kwargs=kwargs,
             queue=queue,
             routing_key=routing_key
