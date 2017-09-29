@@ -15,7 +15,9 @@ import pymysql
 import pymongo
 
 from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task
+from proj.my_lib.logger import get_logger
 
+logger = get_logger('monitor')
 # from sqlalchemy import create_engine
 # from sqlalchemy.orm import sessionmaker
 # engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/ServicePlatform?charset=utf8',
@@ -55,7 +57,7 @@ def update_task_statistics(task_tag, typ2, source, typ1, success_count, sum_or_s
 def execute_sql(sql, commit=False):
     conn = service_platform_pool.connection()
     cursor = conn.cursor()
-    print sql
+    logger.info(sql)
     cursor.execute(sql)
     if commit:
         conn.commit()
@@ -63,7 +65,7 @@ def execute_sql(sql, commit=False):
         return
 
     result = cursor.fetchall()
-    print 'row_count  :  %s ' % cursor.rowcount
+    logger.info('row_count  :  %s ' % cursor.rowcount)
     cursor.close()
     conn.close()
     return result
@@ -76,7 +78,7 @@ def get_seek(task_name):
     timestramp = cursor.fetchone()
     cursor.close()
     conn.close()
-    print 'timestramp  :  %s ' % timestramp
+    logger.info('timestramp  :  %s ' % timestramp)
     if not timestramp or len(timestramp)==0:
         return get_default_timestramp()
 
@@ -84,7 +86,6 @@ def get_seek(task_name):
 
 def update_seek(task_name, seek):
     sql = """replace into task_seek (task_name, seek) values('%s','%s');"""
-    print sql % (task_name, seek)
     execute_sql(sql % (task_name, seek), commit=True)
 
 def get_all_tables():
@@ -129,14 +130,13 @@ def monitoring_hotel_list2detail():
                 create_table(detail_table_name)
 
             timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
-            print 'timestamp  :  %s, success_count  :  %s' % (timestamp, success_count)
+            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
-        print traceback.format_exc(e)
-        raise e
+        logger.error(traceback.format_exc(e))
 
 def monitoring_hotel_detail2ImgOrComment():
     sql = """select source, source_id, city_id, img_items, update_time from %s where update_time > '%s' order by update_time"""
@@ -153,14 +153,13 @@ def monitoring_hotel_detail2ImgOrComment():
 
             timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
                                         is_poi_task=False)
-            print 'timestamp  :  %s, success_count  :  %s' % (timestamp, success_count)
+            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
-        print traceback.format_exc(e)
-        raise e
+        logger.error(traceback.format_exc(e))
 
 def monitoring_poi_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
@@ -185,14 +184,13 @@ def monitoring_poi_list2detail():
 
             timestamp, success_count = send_poi_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
-            print 'timestamp  :  %s, success_count  :  %s' % (timestamp, success_count)
+            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
-        print traceback.format_exc(e)
-        raise e
+        logger.error(traceback.format_exc(e))
 
 def monitoring_poi_detail2imgOrComment():
     sql = """select source, id, city_id, imgurl, utime from %s where utime > '%s' order by utime"""
@@ -209,14 +207,13 @@ def monitoring_poi_detail2imgOrComment():
 
             timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
                                         is_poi_task=True)
-            print 'timestamp  :  %s, success_count  :  %s' % (timestamp, success_count)
+            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
-        print traceback.format_exc(e)
-        raise e
+        logger.error(traceback.format_exc(e))
 
 def monitoring_qyer_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
@@ -241,14 +238,13 @@ def monitoring_qyer_list2detail():
                 create_table(detail_table_name)
 
             timestamp, success_count = send_qyer_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
-            print 'timestamp  :  %s, success_count  :  %s' % (timestamp, success_count)
+            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
-        print traceback.format_exc(e)
-        raise e
+        logger.error(traceback.format_exc(e))
 
 def monitoring_zombies_task():
     collections.update({
