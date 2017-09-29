@@ -13,6 +13,7 @@ from itertools import repeat
 import redis
 import pymysql
 import pymongo
+import os
 
 from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task
 from proj.my_lib.logger import get_logger
@@ -35,14 +36,24 @@ POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 # TODO  所有表的update_time字段加索引
 # TODO  所有表的update_time字段改为timestramp(6)类型
-SQL_FILE = {
-    'hotel': './sql/hotel_detail.sql',
-    'rest': './sql/daodao_rest_detail.sql',
-    'attr': './sql/daodao_attr_detail.sql',
-    'shop': './sql/daodao_attr_detail.sql',
-    'total': './sql/qyer_detail.sql',
-    'list': './sql/list.sql',
+
+SQL_FILE_TO_SOURCE = {
+    'hotel_detail.sql': 'hotel',
+    'daodao_rest_detail.sql': 'rest',
+    'daodao_attr_detail.sql': 'attr',
+    'daodao_shop_detail.sql': 'shop',
+    'qyer_detail.sql': 'total',
+    'list.sql': 'list',
 }
+LOAD_FILES = {}
+def loads_sql():
+    sql_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sql')
+    files = os.listdir(sql_file_path)
+    for file_name in files:
+        with open(os.path.join(sql_file_path, file_name), 'r') as f:
+            source = SQL_FILE_TO_SOURCE[file_name]
+            LOAD_FILES[source] = f.read()
+loads_sql()
 
 def get_default_timestramp():
     return datetime.datetime(year=1970, month=2, day=4, hour=6, minute=8, second=10, microsecond=666666)
@@ -97,15 +108,13 @@ def create_table(table_name):
     cursor = conn.cursor()
     tab_args = table_name.split('_')
     if tab_args[0]=='detail':
-        sql_file = SQL_FILE[tab_args[1]]
+        sql_file = LOAD_FILES[tab_args[1]]
     elif tab_args[0]=='list':
-        sql_file = SQL_FILE['list']
+        sql_file = LOAD_FILES['list']
 
-    with open(sql_file) as f:
-        sql = f.read()
-        cursor.execute(sql % table_name)
-        cursor.close()
-        conn.close()
+    cursor.execute(sql_file % table_name)
+    cursor.close()
+    conn.close()
 
 def monitoring_hotel_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
