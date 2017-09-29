@@ -7,6 +7,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 import re, json
+import urlparse
 from proj.my_lib import db_localhost
 from lxml import html
 from pyquery import PyQuery
@@ -14,6 +15,7 @@ from proj.my_lib.Common.Browser import MySession
 from common.common import get_proxy
 from util.UserAgent import GetUserAgent
 from proj.my_lib.Common.Utils import try3times
+from proj.my_lib.Common.Utils import all_chinese, has_chinese
 
 from proj.my_lib.decode_raw_site import decode_raw_site
 
@@ -22,33 +24,18 @@ img_get_url = 'http://www.tripadvisor.cn/LocationPhotoAlbum?detail='
 
 pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 
-ss = MySession(need_proxies=True)
-
-
-# ss = MySession(need_proxies=False)
-
-def has_chinese(contents, encoding='utf-8'):
-    zh_pattern = re.compile(u'[\u4e00-\u9fa5]+')
-    if not isinstance(contents, unicode):
-        u_contents = unicode(contents, encoding=encoding)
-    results = zh_pattern.findall(u_contents)
-    if len(results) > 0:
-        return True
-    else:
-        return False
-
 
 @try3times(try_again_times=10)
 def image_paser(detail_id):
-    page = ss.get(img_get_url + detail_id)
-    root = PyQuery(page.text)
-    images_list = []
-    for div in root('.photos.inHeroList div').items():
-        images_list.append(div.attr['data-bigurl'])
-    img_list = '|'.join(images_list)
-    assert img_list != '', 'NO IMAGES'
-
-    return img_list
+    with MySession(need_proxies=True, need_cache=True) as session:
+        page = session.get(urlparse.urljoin(img_get_url, detail_id))
+        root = PyQuery(page.text)
+        images_list = []
+        for div in root('.photos.inHeroList div').items():
+            images_list.append(div.attr['data-bigurl'])
+        img_list = '|'.join(images_list)
+        assert img_list != '', 'NO IMAGES'
+        return img_list
 
 
 # m@d
@@ -69,7 +56,7 @@ def image_paser(detail_id):
 #     return result
 
 
-def parse(content, url, city_id):
+def parse(content, url, city_id, debug=False):
     result = []
     try:
         content = content.decode('utf8')
@@ -114,54 +101,50 @@ def parse(content, url, city_id):
         map_info = ''
 
     if len(content) < 2000:
-        print 'no content'
+        print('no content')
         return "Error"
 
     # 名字 name,name_en
+    name = ''
+    name_en = ''
     try:
-        name_en = root.find_class('altHead')[0].text_content().encode('utf-8').strip()
-    except:
-        name_en = ''
-    if not name_en:
-        try:
-            # m@ori
-            name_en = root.find_class('heading_name_wrapper')[0].text_content().encode('utf-8').strip().split('\n')[1]
-        except:
-            name_en = ''
+        name = root.xpath('//*[@class="heading_title"]/text()')[0]
+    except Exception as e:
+        pass
 
     try:
-        try:
-            # m@ class变更 name = root.find_class('heading_name_wrapper')[0].text_content().encode('utf-8').strip()
-            name = root.find_class('heading_title')[0].text_content().encode('utf-8').strip()
-        except:
-            name = root.get_element_by_id('HEADING').text_content().encode('utf-8').strip()
+        name_en = root.xpath('//*[@class="heading_title"]/*[@class="altHead"]/text()')[0]
+    except Exception as e:
+        pass
 
-        if len(name.split('\n')) > 1:
-            if name.find('停业') > -1 or name.find('移除') > -1:
-                print 'stop:', source_id, '\t', url
-                raise Exception
-            else:
-                name = name.split('\n')[0]
-    except Exception, e:
-        name = ''
-        print 'name error', url
-        # print str(e)
-        # 若出错则返回空的list
-        return "Error"
-
-    if name == '' and name_en != '':
-        name = name_en
-    if name == '' and name_en == '':
-        print 'no name'
-        # return rest_info
-    if name_en == '':
-        if not has_chinese(name):
-            name_en = name
+    if name and name_en:
+        pass
+    elif name or name_en:
+        if name:
+            name_key = name
         else:
+            name_key = name_en
+
+        # 确定中英文名
+        if has_chinese(name):
+            name = name_key
             name_en = ''
-    # 如果name是英文，则name_en=name
-    if not has_chinese(name):
-        name_en = name
+        else:
+            name = ''
+            name_en = name_key
+    else:
+        # todo new func to get name
+        pass
+
+    # 排除已经停业的 POI
+    name_test_case = ''
+    try:
+        name_test_case = root.find_class('heading_title')[0].text_content().encode('utf-8').strip()
+    except Exception as e:
+        pass
+
+    if name_test_case.find('停业') > -1 or name_test_case.find('移除') > -1:
+        raise Exception("POI 已停业")
 
     # 地址address
     try:
@@ -331,10 +314,13 @@ def parse(content, url, city_id):
             traveler_choice = 1
 
     # 图片抓取
-    try:
-        detail_id = source_id
-        image_urls = image_paser(detail_id)
-    except:
+    if not debug:
+        try:
+            detail_id = source_id
+            image_urls = image_paser(detail_id)
+        except:
+            image_urls = ''
+    else:
         image_urls = ''
 
     # if image_urls == '':
@@ -411,7 +397,10 @@ if __name__ == '__main__':
     url = 'https://www.tripadvisor.cn/Attraction_Review-g187147-d188151-Reviews-Eiffel_Tower-Paris_Ile_de_France.html'
     url = 'https://www.tripadvisor.cn/Attraction_Review-g1024140-d10000541-Reviews-Castaway_Yoga-Ko_Lipe_Satun_Province.html'
     url = 'https://www.tripadvisor.cn//Attraction_Review-g297524-d314609-Reviews-Darwin_Bay-Genovesa_Galapagos_Islands.html,https://www.tripadvisor.cn//Attraction_Review-g297524-d314610-Reviews-Darwin_Trail-Genovesa_Galapagos_Islands.html'
-    content = ss.get(url).content
+    url = 'https://www.tripadvisor.cn/Attraction_Review-g187147-d188150-Reviews-Musee_d_Orsay-Paris_Ile_de_France.html'
+    import requests
+
+    content = requests.get(url).content
     a = '阿什顿发斯蒂芬'
     result = parse(content, url, a)
     print json.dumps(result, ensure_ascii=False)

@@ -5,11 +5,15 @@
 # @Site    : 
 # @File    : Utils.py
 # @Software: PyCharm
+import sys
+
+reload(sys)
+sys.setdefaultencoding('utf8')
 import hashlib
 import socket
 import traceback
 import proj.my_lib.Common.Browser
-import types
+import unittest
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from urllib import quote
@@ -27,6 +31,24 @@ def get_local_ip():
 
 def get_md5(string):
     return hashlib.md5(string).hexdigest()
+
+
+def has_chinese(str_or_unicode):
+    if isinstance(str_or_unicode, str):
+        string = str_or_unicode.decode()
+    else:
+        string = str_or_unicode
+
+    return any(map(lambda c: u'\u4e00' <= c <= u'\u9fff', string))
+
+
+def all_chinese(str_or_unicode):
+    if isinstance(str_or_unicode, str):
+        string = str_or_unicode.decode()
+    else:
+        string = str_or_unicode
+
+    return all(map(lambda c: u'\u4e00' <= c <= u'\u9fff', string))
 
 
 def try3times(try_again_times=3, others_exptions=None):
@@ -77,8 +99,19 @@ def google_get_map_info(address):
         return str(Coordinate(longitude, latitude))
 
 
+class TestUtil(unittest.TestCase):
+    def test_has_chinese(self):
+        self.assertTrue(has_chinese('你好世界 Hello World'))
+        self.assertFalse(has_chinese('Hello World'))
+
+    def test_all_chinese(self):
+        self.assertTrue(all_chinese(u"你好世界"))
+        self.assertFalse(all_chinese(u"你好世界 asdfasdf"))
+
+
 if __name__ == '__main__':
     # print(get_md5('abc'))
     # print get_local_ip()
     # print(google_get_map_info('Plaza Soledad, 11, 06001 Badajoz, Spain'))
-    print(google_get_map_info('3355 Las Vegas Blvd S'))
+    # print(google_get_map_info('3355 Las Vegas Blvd S'))
+    unittest.main()
