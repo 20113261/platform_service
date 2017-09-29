@@ -20,7 +20,7 @@ from my_lib.new_hotel_parser.data_obj import text_2_sql
 
 logger = get_logger("HotelDetail")
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='3/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='6/s')
 def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
     self.task_source = source.title()
     self.task_type = 'Hotel'
