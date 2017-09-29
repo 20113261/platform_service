@@ -20,10 +20,27 @@ def send_hotel_list_task(task_name, datas):
     data = []
     _count = 0
     success_count = 0
-    for city_id, args in datas.items():
-        # print args
-        source, suggestions, select_index, country_id = args
-        city_url = json.loads(suggestions)[select_index-1]['url']
+    for city_id, source, suggestions, select_index, country_id, suggest_type, is_new_type, part in datas:
+
+        # print city_id, source, suggestions, select_index, country_id, suggest_type, is_new_type, part
+        if select_index is None:  #新表直接拿suggestios赋值
+            if source=='booking' or source=='ctrip':
+                _suggest = suggestions
+            else:
+                _suggest = json.dumps(eval(suggestions))
+        else: #老表需要解析json在通过select_index获取url
+            if is_new_type==1:
+                _suggest = json.loads(suggestions)[select_index-1]['url']
+            else: #老表任务is_new_type为0的，当成新任务发，suggest_type为2
+
+                try:
+                    _suggest = json.dumps(json.loads(suggestions)[select_index - 1])
+                except Exception as e:
+                    _suggest = json.dumps(json.loads(suggestions.decode('string_escape'))[select_index - 1])
+
+                suggest_type = 2
+                is_new_type = 1
+
         for i in range(10):
             check_in = ''.join(str(datetime.datetime.now()+datetime.timedelta(days=10*i)).split(' ')[0].split('-'))
             _count += 1
@@ -36,21 +53,22 @@ def send_hotel_list_task(task_name, datas):
                     'source': source,
                     'city_id': city_id,
                     'country_id': country_id,
-                    'check_in': check_in,
-                    'part': '102',
-                    'is_new_type': True,
-                    'suggest_type': 1,
-                    'suggest': city_url,
-                },
+                    'part': part,
+                    'is_new_type': is_new_type,
+                    'suggest_type': suggest_type,
+                    'suggest': _suggest,
+                },#source, city_id, country_id, check_in, part, is_new_type, suggest_type, suggest
                 'priority': 3,
                 'finished': 0,
                 'used_times': 0,
                 'running': 0,
                 'utime': datetime.datetime.now()
             }
+            task_info['list_task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
+            task_info['args']['check_in'] = check_in
             task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
             data.append(task_info)
-            print task_info
+            # print task_info
 
             if _count % 10000 == 0:
                 print(_count)
@@ -59,13 +77,14 @@ def send_hotel_list_task(task_name, datas):
                     data = []
                 except Exception as exc:
                     print '==========================0======================='
-                    print city_url, city_id
+                    print country_id, city_id
                     print traceback.format_exc(exc)
                     print '==========================1======================='
 
     else:
-        print(_count)
-        success_count += hourong_patch(data)
+        if data:
+            print(_count)
+            success_count += hourong_patch(data)
 
     return success_count
 
@@ -73,9 +92,7 @@ def send_daodao_list_task(task_name, datas):
     data = []
     _count = 0
     success_count = 0
-    for city_id, args in datas.items():
-        # print args
-        url, country_id = args
+    for city_id, url, country_id, poi_type in datas:
         _count += 1
         task_info = {
             'worker': 'proj.poi_list_task.poi_list_task',
@@ -86,9 +103,9 @@ def send_daodao_list_task(task_name, datas):
                 'source': 'daodao',
                 'city_id': city_id,
                 'country_id': country_id,
-                'poi_type': 'rest',
+                'poi_type': poi_type,
                 'url': urlparse.urlsplit(url).path,
-            },
+            },#source, url, city_id, country_id, poi_type
             'priority': 3,
             'finished': 0,
             'used_times': 0,
@@ -96,8 +113,9 @@ def send_daodao_list_task(task_name, datas):
             'utime': datetime.datetime.now()
         }
         task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
+        task_info['list_task_token'] = task_info['task_token']
         data.append(task_info)
-        print task_info
+        # print task_info
 
         if _count % 10000 == 0:
             print(_count)
@@ -111,17 +129,16 @@ def send_daodao_list_task(task_name, datas):
                 print '==========================1======================='
 
     else:
-        print(_count)
-        success_count += hourong_patch(data)
+        if data:
+            print(_count)
+            success_count += hourong_patch(data)
     return success_count
 
 def send_qyer_list_task(task_name, datas):
     data = []
     _count = 0
     success_count = 0
-    for city_id, args in datas.items():
-        # print args
-        url, country_id = args
+    for city_id, country_id, url, check_in in datas:
         _count += 1
         task_info = {
             'worker': 'proj.qyer_list_task.qyer_list_task',
@@ -132,8 +149,7 @@ def send_qyer_list_task(task_name, datas):
                 'source': 'qyer',
                 'city_id': city_id,
                 'country_id': country_id,
-                'check_in': '20170925',
-                'part': '1',
+                'check_in': check_in,
                 'city_url': url,
             },  # source, city_id, country_id, check_in, city_url
             'priority': 3,
@@ -143,8 +159,9 @@ def send_qyer_list_task(task_name, datas):
             'utime': datetime.datetime.now()
         }
         task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
+        task_info['list_task_token'] = task_info['task_token']
         data.append(task_info)
-        print task_info
+        # print task_info
 
         if _count % 10000 == 0:
             print(_count)
@@ -158,8 +175,9 @@ def send_qyer_list_task(task_name, datas):
                 print '==========================1======================='
 
     else:
-        print(_count)
-        success_count += hourong_patch(data)
+        if data:
+            print(_count)
+            success_count += hourong_patch(data)
     return success_count
 
 task2func = {
