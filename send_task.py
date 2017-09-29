@@ -62,7 +62,6 @@ def send_hotel_detail_task(tasks, task_tag):
             'task_name': task_tag,
             'args': {
                 'source': source,
-                'url': hotel_url,
                 'other_info': {
                     'source_id': source_id,
                     'city_id': 'NULL'
@@ -77,6 +76,7 @@ def send_hotel_detail_task(tasks, task_tag):
             'utime': datetime.datetime.now()
         }
         task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
+        task_info['args']['url'] = hotel_url
 
         data.append(task_info)
 
