@@ -144,7 +144,7 @@ def parse(content, url, city_id, debug=False):
         pass
 
     if name_test_case.find('停业') > -1 or name_test_case.find('移除') > -1:
-        raise Exception("POI 已停业")
+        name = name_en = '停业'
 
     # 地址address
     try:
