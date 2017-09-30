@@ -42,7 +42,7 @@ key 任务队列名称 val (队列中最少的任务数，单次插入任务数)
 '''
 TASK_CONF = {
     'default': (0, 0),
-    'file_downloader': (18000, 40000),
+    'file_downloader': (9000, 20000),
     'hotel_detail': (18000, 50000),
     'hotel_list': (18000, 50000),
     'poi_detail': (18000, 50000),
@@ -122,7 +122,7 @@ def mongo_task_watcher():
             logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
 
 
-@schedule.scheduled_job('cron', second='*/30', id='file_downloader_queue')
+@schedule.scheduled_job('cron', second='*/10', id='file_downloader_queue')
 def mongo_task_watcher2():
     logger.info('Start Searching Queue Info')
     target_url = 'http://10.10.189.213:15672/api/queues/celery'
