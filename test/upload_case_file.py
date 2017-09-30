@@ -9,6 +9,11 @@ import os
 import hashlib
 from logging import getLogger
 from mioji.common.ufile_handler import upload_file
+from ucloud.ufile import config
+
+config.set_default(uploadsuffix='.ufile.cn-north-03.ucloud.cn')
+config.set_default(downloadsuffix='.ufile.cn-north-03.ucloud.cn')
+config.set_default(connection_timeout=60)
 
 public_key = 'vCuKhG6UcHvB1UswK/q5zjMMHxt7PjKIu3/6q1JtxiZHtAuv'
 private_key = 'fdfbdf9cb0ebfeed522f664efc44f752694b15f6'

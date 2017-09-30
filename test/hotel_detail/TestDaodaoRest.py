@@ -3,11 +3,11 @@
 # @Time    : 2017/9/29 下午8:49
 # @Author  : Hou Rong
 # @Site    : 
-# @File    : TestDaodao.py
+# @File    : TestDaodaoAttr.py
 # @Software: PyCharm
 import unittest
 import json
-from proj.my_lib.attr_parser import parse
+from proj.my_lib.rest_parser import parse
 from mioji.common.ufile_handler import download_file
 
 
@@ -19,15 +19,24 @@ def test_parser(page):
                  )
 
 
-class TestDaodao(unittest.TestCase):
+class TestDaodaoRest(unittest.TestCase):
     def test_name(self):
-        name_cases = ['299895401f7d7a3ee20a5bfe3bfebbc7']
-        name_result = [(u'奥赛美术馆', "Musee d'Orsay")]
+        name_cases = ['3f9b04594307a160e800dfdbe21b1c30']
+        name_result = [('', 'The Coffee Club - Jungceylon')]
         for case, res in zip(name_cases, name_result):
             page = download_file(case)
             j_data = json.loads(page)
             result = test_parser(j_data['data'])
             self.assertTupleEqual((result['name'], result['name_en']), res)
+
+    def test_ranking(self):
+        name_cases = ['3f9b04594307a160e800dfdbe21b1c30']
+        name_result = ['33']
+        for case, res in zip(name_cases, name_result):
+            page = download_file(case)
+            j_data = json.loads(page)
+            result = test_parser(j_data['data'])
+            self.assertEqual(result['ranking'], res)
 
 
 if __name__ == '__main__':

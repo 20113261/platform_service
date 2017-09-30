@@ -8,6 +8,7 @@ sys.setdefaultencoding('utf-8')
 import re, json
 import traceback
 import db_localhost
+from urlparse import urljoin
 from lxml import html
 from pyquery import PyQuery
 
@@ -26,8 +27,6 @@ pattern_g = re.compile('-g(\d+)')
 pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 
 pattern_d = re.compile('-d(\d+)')
-
-ss = MySession(need_proxies=True)
 
 
 def dining_options_parser(content, url):
@@ -75,28 +74,28 @@ def has_chinese(contents, encoding='utf-8'):
 
 
 @try3times(try_again_times=10)
-def image_paser(detail_id):
-    page = ss.get(img_get_url + detail_id)
-    root = PyQuery(page.text)
-    images_list = []
-    for div in root('.photos.inHeroList div').items():
-        images_list.append(div.attr['data-bigurl'])
-    img_list = '|'.join(images_list)
-    assert img_list != '' or img_list != None, 'NO IMAGES'
-
-    logger.info('----0---------      ' + img_list)
-    return img_list
+def image_parser(detail_id):
+    with MySession(need_proxies=True, need_cache=True) as session:
+        page = session.get(urljoin(img_get_url, detail_id))
+        root = PyQuery(page.text)
+        images_list = []
+        for div in root('.photos.inHeroList div').items():
+            images_list.append(div.attr['data-bigurl'])
+        img_list = '|'.join(images_list)
+        assert img_list != '' or img_list is not None, 'NO IMAGES'
+        logger.info('----0---------      ' + img_list)
+        return img_list
 
 
 @try3times(try_again_times=10)
 def intro_parse(detail_id):
-    page = ss.get(introduction_url % detail_id)
-    root = PyQuery(page.text)
-    return root('.description .section_content').text()
+    with MySession(need_proxies=True, need_cache=True) as session:
+        page = session.get(introduction_url % detail_id)
+        root = PyQuery(page.text)
+        return root('.description .section_content').text()
 
 
-def parse(content, url, city_id):
-    print 'url: %s' % url
+def parse(content, url, city_id, debug=False):
     rest_info = []
     try:
         content = content.decode('utf-8')
@@ -140,45 +139,49 @@ def parse(content, url, city_id):
     source = 'daodao'
 
     # 名字 name,name_en
+    name = ''
+    name_en = ''
     try:
-        name_en = root.find_class('heading_name_wrapper')[0].text_content().encode('utf-8').strip().split('\n')[1]
-    except:
-        name_en = ''
+        name = root.xpath('//*[@class="heading_title"]/text()')[0]
+    except Exception as e:
+        pass
 
     try:
-        try:
-            name = root.find_class('heading_name_wrapper')[0].text_content().encode('utf-8').strip()
-        except:
-            name = root.get_element_by_id('HEADING').text_content().encode('utf-8').strip()
-        if len(name.split('\n')) > 1:
-            if name.find('停业') > -1 or name.find('移除') > -1:
-                print 'stop:', source_id, '\t', url
-                raise Exception
-            else:
-                name = name.split('\n')[0]
-    except Exception, e:
-        name = ''
-        print 'name error', url
-        # print str(e)
-        # 若出错则返回空的list
-        return "Error"
+        name_en = root.xpath('//*[@class="heading_title"]/*[@class="altHead"]/text()')[0]
+    except Exception as e:
+        pass
 
-    if name == '' and name_en != '':
-        name = name_en
-    if name == '' and name_en == '':
-        print 'no name'
-        # return rest_info
-    if name_en == '':
-        if not has_chinese(name):
-            name_en = name
+    if name and name_en:
+        pass
+    elif name or name_en:
+        if name:
+            name_key = name
         else:
-            name_en = ''
-    # 如果name是英文，则name_en=name
-    if not has_chinese(name):
-        name_en = name
+            name_key = name_en
 
-    print 'name: %s' % name
-    print 'name_en: %s' % name_en
+        # 确定中英文名
+        if has_chinese(name):
+            name = name_key
+            name_en = ''
+        else:
+            name = ''
+            name_en = name_key
+    else:
+        # todo new func to get name
+        pass
+
+    # 排除已经停业的 POI
+    name_test_case = ''
+    try:
+        name_test_case = root.find_class('heading_title')[0].text_content().encode('utf-8').strip()
+    except Exception as e:
+        pass
+
+    if name_test_case.find('停业') > -1 or name_test_case.find('移除') > -1:
+        name = name_en = '停业'
+
+    print('name: %s' % name)
+    print('name_en: %s' % name_en)
 
     # 地址address
     try:
@@ -192,7 +195,7 @@ def parse(content, url, city_id):
     # 电话tel
     try:
         tel = root.find_class('blEntry phone')[0][1].text
-        if not re.search(r'[0-9]+',tel):
+        if not re.search(r'[0-9]+', tel):
             tel = ''
     except:
         tel = ''
@@ -347,16 +350,16 @@ def parse(content, url, city_id):
             traveler_choice = 1
 
     # 图片抓取
-    image_urls = ''
-    try:
-        image_urls = image_paser(re.search(pattern_d, url).groups()[0])
-    except Exception, e:
+    if not debug:
+        try:
+            detail_id = source_id
+            image_urls = image_parser(detail_id)
+        except Exception as e:
+            image_urls = ''
+
+        print'Image_urls: ', image_urls
+    else:
         image_urls = ''
-
-    print 'Image_urls: ', image_urls
-
-    if not image_urls:
-        raise Exception('NO IMAGES')
 
     logger.info('----2---------      ' + image_urls)
     # 简介抓取
@@ -422,8 +425,6 @@ def parse(content, url, city_id):
     except Exception, e:
         print(e)
 
-    if not image_urls:
-        raise Exception('NO IMAGES')
     result = {
         'source': source,
         'name': name,  #

@@ -26,7 +26,7 @@ pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 
 
 @try3times(try_again_times=10)
-def image_paser(detail_id):
+def image_parser(detail_id):
     with MySession(need_proxies=True, need_cache=True) as session:
         page = session.get(urlparse.urljoin(img_get_url, detail_id))
         root = PyQuery(page.text)
@@ -34,7 +34,7 @@ def image_paser(detail_id):
         for div in root('.photos.inHeroList div').items():
             images_list.append(div.attr['data-bigurl'])
         img_list = '|'.join(images_list)
-        assert img_list != '', 'NO IMAGES'
+        assert img_list != '' or img_list is not None, 'NO IMAGES'
         return img_list
 
 
@@ -318,7 +318,7 @@ def parse(content, url, city_id, debug=False):
     if not debug:
         try:
             detail_id = source_id
-            image_urls = image_paser(detail_id)
+            image_urls = image_parser(detail_id)
         except:
             image_urls = ''
     else:
