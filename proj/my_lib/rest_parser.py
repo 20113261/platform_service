@@ -192,6 +192,8 @@ def parse(content, url, city_id):
     # 电话tel
     try:
         tel = root.find_class('blEntry phone')[0][1].text
+        if not re.search(r'[0-9]+',tel):
+            tel = ''
     except:
         tel = ''
     print 'tel: %s' % tel
