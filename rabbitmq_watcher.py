@@ -122,7 +122,7 @@ def mongo_task_watcher():
             logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
 
 
-@schedule.scheduled_job('cron', second='*/6', id='file_downloader_queue')
+@schedule.scheduled_job('cron', second='*/30', id='file_downloader_queue')
 def mongo_task_watcher2():
     logger.info('Start Searching Queue Info')
     target_url = 'http://10.10.189.213:15672/api/queues/celery'
