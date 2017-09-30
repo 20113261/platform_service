@@ -123,7 +123,7 @@ def expedia_parser(content, url, other_info):
         # info_table = encode_unicode(
         #     root.find_class('tab-pane')[0].find_class('col')[0].xpath('section')[0].text_content())
         internet_info = root.xpath('//div[@data-section="internet"]')[0].text_content()
-        if '免费 WiFi' in internet_info:
+        if '免费 WiFi' in internet_info or '免費無線上網' in internet_info:
             has_wifi = 'Yes'
             is_wifi_free = 'Yes'
         hotel.has_wifi = has_wifi
@@ -134,10 +134,10 @@ def expedia_parser(content, url, other_info):
         print str(e)
     try:
         parking_info = root.xpath('//div[@data-section="parking"]')[0].text_content()
-        if '收费' in parking_info:
+        if '收费' in parking_info or '收費' in parking_info:
             has_parking = 'Yes'
             is_parking_free = 'No'
-        if '免费' in parking_info:
+        if '免费' in parking_info or '免費' in parking_info:
             has_parking = 'Yes'
             is_parking_free = 'Yes'
         hotel.has_parking = has_parking
@@ -246,23 +246,35 @@ def expedia_parser(content, url, other_info):
         print str(e)
     print 'accepted_cards=>%s' % hotel.accepted_cards
     try:
-        policy_table = root.find_class('tab-pane')[0].find_class('col')[1].xpath('section')[0].getchildren()
-        check_in_text = policy_table[2].xpath('p/text()')
-        if '中午' in check_in_text:
-            check_in_time = '中午'
-        else:
-            check_in_time = re.findall(r'(\d+.*)', check_in_text[0])[0]
+        # policy_table = root.find_class('tab-pane')[0].find_class('col')[1].xpath('section')[0].getchildren()
+        policy_table = root.xpath('//div[@data-section="checkIn"]/p/text()')
+        for text in policy_table:
+            index = max(text.find('入住时间'), text.find('入住登記開始時間： 14:00'))
+            if index > -1:
+                check_in_time = text.split(' ')[-1]
+                break
+        # check_in_text = policy_table[2].xpath('p/text()')
+        # if '中午' in check_in_text:
+        #     check_in_time = '中午'
+        # else:
+        #     check_in_time = re.findall(r'(\d+.*)', check_in_text[0])[0]
         hotel.check_in_time = check_in_time
     except Exception, e:
         print str(e)
     print 'check_in_time=>%s' % hotel.check_in_time
     try:
-        policy_table = root.find_class('tab-pane')[0].find_class('col')[1].xpath('section')[0].getchildren()
-        check_out_text = policy_table[4].xpath('p/text()')[0].encode('utf-8').strip()
-        if '中午' in check_out_text:
-            check_out_time = '中午'
-        else:
-            check_out_time = check_out_text.split('退房时间为 ')[1]
+        policy_table = root.xpath('//div[@data-section="checkOut"]/p/text()')
+        for text in policy_table:
+            index = max(text.find('退房时间为'), text.find('退房時間'))
+            if index > -1:
+                check_out_time = text.split(' ')[-1]
+                break
+        # policy_table = root.find_class('tab-pane')[0].find_class('col')[1].xpath('section')[0].getchildren()
+        # check_out_text = policy_table[4].xpath('p/text()')[0].encode('utf-8').strip()
+        # if '中午' in check_out_text:
+        #     check_out_time = '中午'
+        # else:
+        #     check_out_time = check_out_text.split('退房时间为 ')[1]
         hotel.check_out_time = check_out_time
     except Exception, e:
         print str(e)
@@ -282,7 +294,7 @@ def encode_unicode(str):
 if __name__ == '__main__':
     from proj.my_lib.new_hotel_parser.lang_convert import tradition2simple
 
-    url = 'https://www.expedia.cn/h1000.Hotel-Information'
+    # url = 'https://www.expedia.cn/h1000.Hotel-Information'
     # url = 'https://www.expedia.cn/cn/Red-Lodge-Hotels-Rock-Creek-Resort.h4738480.Hotel-Information?chkin=2017%2F03%2F10&chkout=2017%2F03%2F11&rm1=a2&regionId=0&hwrqCacheKey=1b1ae982-7ce1-495b-8e39-95fda9024720HWRQ1489143096310&vip=false&c=f14b28c2-998c-4ed9-be72-b832c4eb08ff&&exp_dp=1071.2&exp_ts=1489143098007&exp_curr=CNY&exp_pg=HSR'
     # url = 'https://www.expedia.cn/cn/Billings-Hotels-Yellowstone-River-Lodge.h13180651.Hotel-Information?chkin=2017%2F03%2F10&chkout=2017%2F03%2F11&rm1=a2&regionId=0&hwrqCacheKey=1b1ae982-7ce1-495b-8e39-95fda9024720HWRQ1489143192290&vip=false&c=4c8a0d41-19d1-4a60-8cef-757c92a29e97&'
     # url = 'https://www.expedia.cn/cn/Tainan-Hotels-The-Vintage-Maison-Tainan.h13323178.Hotel-Information'
@@ -294,8 +306,9 @@ if __name__ == '__main__':
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=0035837c89d997704b1312cd3cf6c50e'
     # url = 'https://www.expedia.com.hk/cn/h10000.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Wagga-Wagga-Hotels-International-Hotel-Wagga-Wagga.h8966967.Hotel-Information?chkin=2017%2F9%2F25&chkout=2017%2F9%2F26&rm1=a2&regionId=181592&hwrqCacheKey=cf20f4e6-25d7-4183-99d0-954735abcb77HWRQ1506309449240&vip=false&c=297cd267-27af-484b-9117-f3f38e35362c&&exp_dp=729.14&exp_ts=1506309449666&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
-    url = 'https://www.expedia.com.hk/Hotels-Sahara-Motel.h13279481.Hotel-Information'
-    url = 'https://www.expedia.com.hk/cn/Mauritius-Island-Hotels-Ocean-Villas.h1466602.Hotel-Information?chkin=2017%2F11%2F25&chkout=2017%2F11%2F26&rm1=a2&regionId=6051080&sort=recommended&hwrqCacheKey=58665cc7-0e73-4f2d-89da-6cf5f79637efHWRQ1506387257474&vip=false&c=251228bc-5980-49ea-ac6d-87d847977318&'
+    # url = 'https://www.expedia.com.hk/Hotels-Sahara-Motel.h13279481.Hotel-Information'
+    # url = 'https://www.expedia.com.hk/cn/Mauritius-Island-Hotels-Ocean-Villas.h1466602.Hotel-Information?chkin=2017%2F11%2F25&chkout=2017%2F11%2F26&rm1=a2&regionId=6051080&sort=recommended&hwrqCacheKey=58665cc7-0e73-4f2d-89da-6cf5f79637efHWRQ1506387257474&vip=false&c=251228bc-5980-49ea-ac6d-87d847977318&'
+    url = 'https://www.expedia.com.hk/Hotels-Saint-Georges-Hotel.h1.Hotel-Information?chkin=2017%2F11%2F7&chkout=2017%2F11%2F8&rm1=a2&regionId=178279&sort=recommended&hwrqCacheKey=3a7247f4-a225-4f75-afd4-8fd3463f2d85HWRQ1506618956146&vip=false&c=c6d00f50-8b75-4eec-b23c-f9c20f690aa8&'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'
