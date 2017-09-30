@@ -93,7 +93,7 @@ def initialize_logger(loglevel=logging.INFO, **kwargs):
     handler = RotatingFileHandler(
         '/search/log/{0}.log'.format(log_name),
         maxBytes=100 * 1024 * 1024,
-        backupCount=3
+        backupCount=2
     )
     # fmt = "%(asctime)-15s %(threadName)s %(filename)s:%(lineno)d %(levelname)s %(message)s"
     # formatter = logging.Formatter(fmt)
@@ -118,7 +118,7 @@ def initialize_logger(loglevel=logging.INFO, **kwargs):
 NewFrameHandler = RotatingFileHandler(
     '/data/log/service_platform/newframe.log',
     maxBytes=100 * 1024 * 1024,
-    backupCount=3
+    backupCount=2
 )
 
 new_frame_log = logging.getLogger('newframe')

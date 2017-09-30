@@ -17,7 +17,7 @@ class NamedRotatingFileHandler(RotatingFileHandler):
         super(NamedRotatingFileHandler, self).__init__(
             filename=os.path.join(log_path, "{0}.log".format(filename)),
             maxBytes=100 * 1024 * 1024,
-            backupCount=3
+            backupCount=2
         )
 
 
