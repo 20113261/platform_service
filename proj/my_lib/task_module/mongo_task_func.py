@@ -14,6 +14,7 @@ failed_task_collections = client['MongoTask']['FailedTask']
 
 
 def get_task_total(queue, used_times=6, limit=30000):
+    now = datetime.datetime.now()
     for line in collections.find(
             {
                 'finished': 0,
@@ -29,7 +30,7 @@ def get_task_total(queue, used_times=6, limit=30000):
             'task_token': task_token
         }, {
             '$set': {
-                'utime': datetime.datetime.now(),
+                'utime': now,
                 'running': 1
             },
             '$inc': {'used_times': 1}
