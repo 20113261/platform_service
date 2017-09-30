@@ -30,19 +30,19 @@ def get_logger(logger_name):
         os.mkdir(log_path)
 
     # getLogger 为单例模式
-    api_logger = logging.getLogger(logger_name)
-    api_logger.setLevel(logging.DEBUG)
+    service_platform_logger = logging.getLogger(logger_name)
+    service_platform_logger.setLevel(logging.DEBUG)
     datefmt = "%Y-%m-%d %H:%M:%S"
     file_log_format = "%(asctime)-15s %(threadName)s %(filename)s:%(lineno)d %(levelname)s:        %(message)s"
     formtter = logging.Formatter(file_log_format, datefmt)
 
     # handler 存在的判定
-    if not api_logger.handlers:
+    if not service_platform_logger.handlers:
         # rotating file logger
         file_handle = NamedRotatingFileHandler(logger_name)
         file_handle.setFormatter(formtter)
-        api_logger.addHandler(file_handle)
+        service_platform_logger.addHandler(file_handle)
         steam_handler = logging.StreamHandler()
-        api_logger.addHandler(steam_handler)
+        service_platform_logger.addHandler(steam_handler)
 
-    return api_logger
+    return service_platform_logger
