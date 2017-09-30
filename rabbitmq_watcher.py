@@ -101,7 +101,7 @@ def insert_task(queue, limit):
     logger.info("Insert queue: {0} Total task count: {1}".format(queue, _count))
 
 
-@schedule.scheduled_job('cron', second='*/60')
+@schedule.scheduled_job('cron', second='*/20')
 def mongo_task_watcher():
     logger.info('Start Searching Queue Info')
     target_url = 'http://10.10.189.213:15672/api/queues/celery'
