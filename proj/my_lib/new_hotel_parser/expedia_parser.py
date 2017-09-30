@@ -105,8 +105,9 @@ def expedia_parser(content, url, other_info):
     print 'grade=>%s' % hotel.grade
     try:
         star = root.xpath('//span[contains(@class, "stars-grey value-title")]')[0].attrib['title']
-        hotel.star = str(int(star))
-    except:
+        hotel.star = str(int(float(star)))
+    except Exception as e:
+        print e
         hotel.star = -1
     print 'star=>%s' % hotel.star
 
@@ -194,8 +195,41 @@ def expedia_parser(content, url, other_info):
             hotel.service = service
         except Exception, e:
             print str(e)
-    except Exception, e:
-        print str(e)
+
+        try:
+            house_facilities = info_table.xpath('div[@data-section="amenities-family"]/article/section/ul/li/text()')
+            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in house_facilities))
+            service += '家居型设施：' + facilities + '|'
+            print service
+        except Exception as e:
+            print e
+
+        try:
+            guestroom_facilities = info_table.xpath('div[@data-section="room"]/article/section/ul/li/text()')
+            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in guestroom_facilities))
+            service += '客房设施：' + facilities + '|'
+            print service
+        except Exception as e:
+            print e
+
+        try:
+            foods = info_table.xpath('div[@data-section="dining"]/article/section/p/text()')
+            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in foods))
+            service += '美食佳肴：' + facilities + '|'
+            print service
+        except Exception as e:
+            print e
+
+        try:
+            accessibility = info_table.xpath('div[@data-section="accessibility"]/article/section/p/text()')
+            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in accessibility))
+            service += '无障碍设施：' + facilities + '|'
+            print service
+        except Exception as e:
+            print e
+
+    except Exception as e:
+        print e
     print 'service=>%s' % hotel.service
     try:
         map_part = root.xpath('// div[@class="map"]/a/figure/@data-src')
@@ -301,14 +335,14 @@ if __name__ == '__main__':
     # url = 'https://www.expedia.cn/h15421134.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/h9999647.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Savannah-Hotels-Best-Western-Savannah-Historic-District.h454.Hotel-Information'
-    # url = 'https://www.expedia.com.hk/cn/Chiang-Mai-Hotels-VCSuanpaak-Hotel-Serviced-Apartments.h6713388.Hotel-Information?chkin=2016%2F12%2F14&chkout=2016%2F12%2F15&rm1=a3&hwrqCacheKey=f03a3186-af50-40c4-881f-b5f8c58d19a7HWRQ1480420091939&c=4617cc10-b9c1-46dc-992b-5a6fe87f7f49&'
+    url = 'https://www.expedia.com.hk/cn/Chiang-Mai-Hotels-VCSuanpaak-Hotel-Serviced-Apartments.h6713388.Hotel-Information?chkin=2016%2F12%2F14&chkout=2016%2F12%2F15&rm1=a3&hwrqCacheKey=f03a3186-af50-40c4-881f-b5f8c58d19a7HWRQ1480420091939&c=4617cc10-b9c1-46dc-992b-5a6fe87f7f49&'
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=ef1d21e286502f87feaea39098c11b1c'
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=0035837c89d997704b1312cd3cf6c50e'
     # url = 'https://www.expedia.com.hk/cn/h10000.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Wagga-Wagga-Hotels-International-Hotel-Wagga-Wagga.h8966967.Hotel-Information?chkin=2017%2F9%2F25&chkout=2017%2F9%2F26&rm1=a2&regionId=181592&hwrqCacheKey=cf20f4e6-25d7-4183-99d0-954735abcb77HWRQ1506309449240&vip=false&c=297cd267-27af-484b-9117-f3f38e35362c&&exp_dp=729.14&exp_ts=1506309449666&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
     # url = 'https://www.expedia.com.hk/Hotels-Sahara-Motel.h13279481.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Mauritius-Island-Hotels-Ocean-Villas.h1466602.Hotel-Information?chkin=2017%2F11%2F25&chkout=2017%2F11%2F26&rm1=a2&regionId=6051080&sort=recommended&hwrqCacheKey=58665cc7-0e73-4f2d-89da-6cf5f79637efHWRQ1506387257474&vip=false&c=251228bc-5980-49ea-ac6d-87d847977318&'
-    url = 'https://www.expedia.com.hk/Hotels-Saint-Georges-Hotel.h1.Hotel-Information?chkin=2017%2F11%2F7&chkout=2017%2F11%2F8&rm1=a2&regionId=178279&sort=recommended&hwrqCacheKey=3a7247f4-a225-4f75-afd4-8fd3463f2d85HWRQ1506618956146&vip=false&c=c6d00f50-8b75-4eec-b23c-f9c20f690aa8&'
+    # url = 'https://www.expedia.com.hk/Hotels-Saint-Georges-Hotel.h1.Hotel-Information?chkin=2017%2F11%2F7&chkout=2017%2F11%2F8&rm1=a2&regionId=178279&sort=recommended&hwrqCacheKey=3a7247f4-a225-4f75-afd4-8fd3463f2d85HWRQ1506618956146&vip=false&c=c6d00f50-8b75-4eec-b23c-f9c20f690aa8&'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'
