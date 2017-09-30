@@ -59,7 +59,7 @@ class MySession(requests.Session):
                     req[k] = v
 
             # get cache
-            file_path_str, md5 = RespStore.file_path(req)
+            md5 = RespStore.calculate_md5(req)
             self.md5.append(md5)
             if not RespStore.has_cache(md5):
                 resp = None
