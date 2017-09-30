@@ -28,12 +28,12 @@ def parse_comment_counts(poi_id):
     return json.loads(start_level.text).get('data', {}).get('all', -1)
 
 
-@try3times()
+@try3times(try_again_times=15)
 def parse_image_urls(target_url):
     image_page = ss.get(target_url + '/photo').content.decode('utf8')
     page = pyquery.PyQuery(image_page)
     ul = page('.pla_photolist.clearfix li')
-    return '|'.join(li('._jsbigphotoinfo img').attr('src') for li in ul.items())
+    return '|'.join(li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items())
 
 
 def parse_comment(qyer):
@@ -89,6 +89,8 @@ def page_parser(content, target_url):
         qyer.map_info = doc('meta[@property="og:location:longitude"]').attr.content + ',' + doc(
             'meta[@property="og:location:latitude"]').attr.content
         qyer.star = len(doc('.poi-stars>.single-star.full')) + 0.5 * len(doc('.poi-stars>.single-star.half'))
+        if qyer.star==0:
+            qyer.star = ''
         qyer.grade = doc('.points>.number').text()
         qyer.ranking = re.findall(r'(\d+)', doc('.infos .rank').text())[-1]
         qyer.beentocounts = doc('.golden').text()
@@ -155,6 +157,8 @@ def page_parser(content, target_url):
     try:
         # qyer.commentcounts = re.findall(r'(\d+)', doc('.summery').text())[0]
         qyer.commentcounts = int(parse_comment_counts(qyer.id))
+        if qyer.commentcounts==0:
+            qyer.commentcounts = None
     except Exception as e:
         print(traceback.format_exc(e))
 
@@ -179,6 +183,7 @@ if __name__ == '__main__':
 
     target_url = 'http://place.qyer.com/poi/V2AJZVFlBzNTYVI2/'
     # target_url = 'http://place.qyer.com/poi/V2cJYFFvBzdTYQ/'
+    target_url = 'http://place.qyer.com/poi/V2cJa1FkBzNTbA/'
     page = requests.get(target_url)
     page.encoding = 'utf8'
     content = page.text

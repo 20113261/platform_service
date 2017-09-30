@@ -56,6 +56,8 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
         retry_count = kwargs['retry_count']
 
         name = result['name']
+        if name.find('停业')>-1:
+            result['name'] = result['name'].replace(' - 停业', '').replace('- 停业', '').replace('停业', '')
         name_en = result['name_en']
         map_info = result['map_info']
         address = result['address']

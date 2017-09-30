@@ -41,7 +41,7 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
         map_info = result.map_info
         address = result.address
 
-        if not key_is_legal(map_info):
+        if not key_is_legal(map_info) or map_info=="0.000000,0.000000":
             if retry_count > 3:
                 if not key_is_legal(address):
                     raise TypeCheckError(
