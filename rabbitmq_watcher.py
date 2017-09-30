@@ -24,11 +24,11 @@ schedule = BlockingScheduler()
 import datetime
 
 # schedule.add_job(monitoring_hotel_list2detail, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
-schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/300', id='monitoring_hotel_list')
-schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/450', id='monitoring_hotel_detail')
-schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/300', id='monitoring_poi_list')
-schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/450', id='monitoring_poi_detail')
-schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/300', id='monitoring_qyer_detail')
+# schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/300', id='monitoring_hotel_list')
+# schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/450', id='monitoring_hotel_detail')
+# schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/300', id='monitoring_poi_list')
+# schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/450', id='monitoring_poi_detail')
+# schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/300', id='monitoring_qyer_detail')
 
 # stream_handler = logging.StreamHandler()
 # logger = logging.getLogger('rabbitmq_watcher')
@@ -42,7 +42,7 @@ key 任务队列名称 val (队列中最少的任务数，单次插入任务数)
 '''
 TASK_CONF = {
     'default': (0, 0),
-    'file_downloader': (18000, 50000),
+    'file_downloader': (1000, 5000),
     'hotel_detail': (18000, 50000),
     'hotel_list': (18000, 50000),
     'poi_detail': (18000, 50000),
@@ -112,6 +112,28 @@ def mongo_task_watcher():
     # celery message bool
     for each in list(filter(lambda x: 'celery@' not in x['name'] and 'celeryev' not in x['name'], j_data)):
         queue_name = each['name']
+        if queue_name=='file_downloader':continue
+        message_count = int(each['messages'])
+        queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
+        if message_count <= queue_min_task:
+            logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
+            insert_task(queue_name, insert_task_count)
+        else:
+            logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
+
+
+@schedule.scheduled_job('cron', second='*/6', id='file_downloader_queue')
+def mongo_task_watcher2():
+    logger.info('Start Searching Queue Info')
+    target_url = 'http://10.10.189.213:15672/api/queues/celery'
+    page = requests.get(target_url, auth=HTTPBasicAuth('hourong', '1220'))
+    content = page.text
+    j_data = json.loads(content)
+
+    # celery message bool
+    for each in list(filter(lambda x: 'celery@' not in x['name'] and 'celeryev' not in x['name'], j_data)):
+        queue_name = each['name']
+        if queue_name!='file_downloader':continue
         message_count = int(each['messages'])
         queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
         if message_count <= queue_min_task:
