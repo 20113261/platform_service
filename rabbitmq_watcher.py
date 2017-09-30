@@ -112,7 +112,8 @@ def mongo_task_watcher():
     # celery message bool
     for each in list(filter(lambda x: 'celery@' not in x['name'] and 'celeryev' not in x['name'], j_data)):
         queue_name = each['name']
-        if queue_name=='file_downloader':continue
+        if queue_name == 'file_downloader':
+            continue
         message_count = int(each['messages'])
         queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
         if message_count <= queue_min_task:
@@ -133,7 +134,8 @@ def mongo_task_watcher2():
     # celery message bool
     for each in list(filter(lambda x: 'celery@' not in x['name'] and 'celeryev' not in x['name'], j_data)):
         queue_name = each['name']
-        if queue_name!='file_downloader':continue
+        if queue_name != 'file_downloader':
+            continue
         message_count = int(each['messages'])
         queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
         if message_count <= queue_min_task:
