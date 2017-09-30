@@ -42,7 +42,7 @@ key 任务队列名称 val (队列中最少的任务数，单次插入任务数)
 '''
 TASK_CONF = {
     'default': (0, 0),
-    'file_downloader': (9000, 20000),
+    'file_downloader': (9000, 50000),
     'hotel_detail': (18000, 50000),
     'hotel_list': (18000, 50000),
     'poi_detail': (18000, 50000),
