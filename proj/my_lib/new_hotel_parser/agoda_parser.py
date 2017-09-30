@@ -186,17 +186,32 @@ def agoda_parser(content, url, other_info):
         hotel.description = 'NULL'
     print 'hotel.description=>%s' % hotel.description
 
+    hotel.check_in_time = None
+    hotel.check_in_time = None
     try:
         for checkInOut in json_data['UsefulInfoGroups']:
             if '入住/退房' in checkInOut['Name']:
                 for item in checkInOut['Items']:
                     if '入住办理起始' in item['Title']:
                         hotel.check_in_time = item['Description']
-                    elif '退房办理起始' in item['Title']:
+                        break
+                for item in checkInOut['Items']:
+                    if '退房办理截止' in item['Title']:
                         hotel.check_out_time = item['Description']
+                        break
                 break
     except:
         pass
+
+    if hotel.check_in_time is None and hotel.check_out_time is None:
+        try:
+            in_and_out = json_data.get("CheckInOutInfo", {})
+            hotel.check_in_time = in_and_out.get("CheckInAndOutTime", {}).get("CheckInTime", {}).get("From", {}).get("Description")
+            hotel.check_out_time = in_and_out.get("CheckInAndOutTime", {}).get("CheckOutTime", {}).get("Until", {}).get("Description")
+        except:
+            pass
+
+
     hotel.accepted_cards = 'NULL'
     print "accepted_cards:",hotel.accepted_cards
     print "check_in_time：",hotel.check_in_time
@@ -250,14 +265,15 @@ if __name__ == '__main__':
     #url = 'https://www.agoda.com/zh-cn/estudio-casco-antiguo/hotel/all/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7'
     #url = 'https://www.agoda.com/zh-cn/ilunion-golf-badajoz-hotel/hotel/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
     #url = 'https://www.agoda.com/zh-cn/hotel-lisboa/hotel/all/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
-    #url = 'https://www.agoda.com/zh-cn/oarsman-s-bay-lodge/hotel/yasawa-islands-fj.html?checkin=2017-11-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=b5bd9776-41c6-4fdd-b361-4abcaf8c8703'
+    url = 'https://www.agoda.com/zh-cn/oarsman-s-bay-lodge/hotel/yasawa-islands-fj.html?checkin=2017-11-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=b5bd9776-41c6-4fdd-b361-4abcaf8c8703'
     #url = 'https://www.agoda.com/zh-cn/hotel-huatian-chinagora/hotel/alfortville-fr.html?checkin=2017-12-20&los=1&adults=2&rooms=1&cid=-1&searchrequestid=f53c35ca-007e-4974-af8f-ebfa20c4dfee'
     #url = 'https://www.agoda.com/zh-cn/puesta-del-sol-apartment/hotel/all/asilah-ma.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=a00c61b5-db95-40f9-b5c3-a385219f7e7a'
     #url = 'https://www.agoda.com/zh-cn/ana-o-tai/hotel/all/hanga-roa-cl.html?checkin=2017-12-15&los=1&adults=2&rooms=1&cid=-1&searchrequestid=1b174d8d-2aef-4fea-836d-fb7a5e70e234'
     #url = 'https://www.agoda.com/zh-cn/cabanas-teo/hotel/all/isla-de-pascua-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=5460efbf-de01-4b89-99c8-11e1adc2f066'
     #url = 'https://www.agoda.com/zh-cn/cabanas-aorangi/hotel/all/isla-de-pascua-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
-    #url = 'https://www.agoda.com/zh-cn/hare-vivanka/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
-    url = 'https://www.agoda.com/zh-cn/cabana-meme/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
+    # url = 'https://www.agoda.com/zh-cn/hare-vivanka/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
+    # url = 'https://www.agoda.com/zh-cn/cabana-meme/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
+    # url = 'https://www.agoda.com/zh-cn/hotel-alagare/hotel/lausanne-ch.html?checkin=2017-12-07&los=1&adults=2&rooms=1&cid=-1&searchrequestid=9127dc90-fd5e-4cbb-aa22-4cf62afbdecd'
     page = requests.get(url=url, headers=headers)
     page.encoding = 'utf8'
     content = page.text
