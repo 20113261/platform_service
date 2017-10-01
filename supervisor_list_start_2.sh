@@ -6,4 +6,4 @@ export PYTHONPATH='/data/lib'
 export PATH="$PATH:/usr/local/bin"
 export CONFIG_FILE="/data/lib/slave.spider.ini"
 export CELERY_LOG_NAME="list"
-/usr/local/bin/celery worker -A proj -P gevent --autoscale=1000,100 -Q hotel_list,poi_list -l info
+/usr/local/bin/celery worker -A proj -P gevent --autoscale=1000,30 -Q hotel_list,poi_list -l info
