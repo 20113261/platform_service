@@ -7,5 +7,7 @@
 # @Software: PyCharm
 
 list_cache_path = '/data/nfs/page_saver/cache'
-cache_config = {'enable': True, 'lifetime_sec': 86400}
+# cache_config = {'enable': True, 'lifetime_sec': 86400}
+cache_config = {'enable': False}
+none_cache_config = {'enable': False}
 cache_type = 'ufile'

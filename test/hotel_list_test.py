@@ -65,16 +65,45 @@ if __name__ == '__main__':
     #     task_name="list_hotel_test_test",
     # )
 
-    hotel_list_task(
-        source='ctrip',
-        city_id='TEST',
-        country_id='TEST',
-        check_in='20171006',
-        part='test',
+    # hotel_list_task(
+    #     source='ctrip',
+    #     city_id='TEST',
+    #     country_id='TEST',
+    #     check_in='20171006',
+    #     part='test',
+    #     is_new_type=True,
+    #     suggest_type=1,
+    #     suggest='http://hotels.ctrip.com/international/brianon22797',
+    #     task_name="list_hotel_test_test",
+    #     retry_count=0,
+    #     max_retry_times=6
+    # )
+
+    # hotel_list_task(
+    #     source='hotels',
+    #     city_id='NULL',
+    #     country_id='205',
+    #     check_in='20171228',
+    #     part='20170929a',
+    #     is_new_type=True,
+    #     suggest_type=2,
+    #     suggest='''{"caption": "\u96f7\u76ae\u4e9a, \u70ed\u90a3\u4e9a\uff08\u7701\uff09, \u610f\u5927\u5229 (<span class='highlighted'>Reppia</span>)", "destinationId": "10368135", "name": "\u96f7\u76ae\u4e9a", "latitude": 44.366699, "landmarkCityDestinationId": null, "type": "CITY", "redirectPage": "DEFAULT_PAGE", "longitude": 9.45, "geoId": "1000000000006360769"}''',
+    #     task_name="list_hotel_test_test",
+    #     retry_count=0,
+    #     max_retry_times=6
+    # )
+
+
+    print(hotel_list_task(
+        source='hotels',
+        city_id='NULL',
+        country_id='238',
+        check_in='20171128',
+        part='20170929a',
         is_new_type=True,
-        suggest_type=1,
-        suggest='http://hotels.ctrip.com/international/brianon22797',
+        suggest_type=2,
+        suggest='''{"caption": "\u7d22\u5c14\u5361, \u7f57\u9a6c\u5c3c\u4e9a (<span class='highlighted'>Solca</span>)", "destinationId": "10383790", "name": "\u7d22\u5c14\u5361", "latitude": 47.700001, "landmarkCityDestinationId": null, "type": "CITY", "redirectPage": "DEFAULT_PAGE", "longitude": 25.85, "geoId": "1000000000006374000"}''',
         task_name="list_hotel_test_test",
-        retry_count=0,
+        retry_count=2,
         max_retry_times=6
-    )
+    ))

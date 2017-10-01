@@ -27,7 +27,7 @@ import pymongo
 import mioji.common.pool
 import mioji.common.pages_store
 import mioji.common
-from proj.list_config import cache_config, list_cache_path, cache_type
+from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 
 mioji.common.pool.pool.set_size(2024)
 logger = get_task_logger(__name__)
@@ -77,7 +77,7 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_ty
     if need_cache:
         error_code = spider.crawl(required=['hotel'], cache_config=cache_config)
     else:
-        error_code = spider.crawl(required=['hotel'])
+        error_code = spider.crawl(required=['hotel'], cache_config=none_cache_config)
     logger.info(str(task.ticket_info) + '  --  ' + task.content)
     return error_code, spider.result
 

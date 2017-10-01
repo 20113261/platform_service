@@ -19,7 +19,7 @@ from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.logger import get_logger
 from proj.mysql_pool import service_platform_pool
-from proj.list_config import cache_config, list_cache_path, cache_type
+from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 
 from urlparse import urljoin
 import datetime
@@ -57,7 +57,7 @@ def hotel_list_database(source, url, required, old_spider_name, need_cache=True)
     if need_cache:
         code = spider.crawl(required=[required], cache_config=cache_config)
     else:
-        code = spider.crawl(required=[required])
+        code = spider.crawl(required=[required], cache_config=none_cache_config)
     return code, spider.result.get(required, {})
 
 
