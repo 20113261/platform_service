@@ -19,12 +19,13 @@ import mioji.common.logger
 import mioji.common.pool
 import mioji.common
 import mioji.common.pages_store
-from proj.list_config import cache_config, list_cache_path
+from proj.list_config import cache_config, list_cache_path, cache_type
 
 mioji.common.pool.pool.set_size(2024)
 logger = get_task_logger(__name__)
 mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path
+mioji.common.pages_store.STORE_TYPE = cache_type
 
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None

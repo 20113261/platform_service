@@ -42,11 +42,11 @@ key 任务队列名称 val (队列中最少的任务数，单次插入任务数)
 '''
 TASK_CONF = {
     'default': (0, 0),
-    'file_downloader': (9000, 20000),
-    'hotel_detail': (18000, 50000),
-    'hotel_list': (18000, 50000),
-    'poi_detail': (18000, 50000),
-    'poi_list': (18000, 50000)
+    'file_downloader': (30000, 40000),
+    'hotel_detail': (24000, 50000),
+    'hotel_list': (24000, 50000),
+    'poi_detail': (24000, 50000),
+    'poi_list': (24000, 50000)
 }
 
 MAX_RETRY_TIMES_CONF = {
@@ -112,7 +112,8 @@ def mongo_task_watcher():
     # celery message bool
     for each in list(filter(lambda x: 'celery@' not in x['name'] and 'celeryev' not in x['name'], j_data)):
         queue_name = each['name']
-        if queue_name=='file_downloader':continue
+        if queue_name == 'file_downloader':
+            continue
         message_count = int(each['messages'])
         queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
         if message_count <= queue_min_task:
@@ -133,7 +134,8 @@ def mongo_task_watcher2():
     # celery message bool
     for each in list(filter(lambda x: 'celery@' not in x['name'] and 'celeryev' not in x['name'], j_data)):
         queue_name = each['name']
-        if queue_name!='file_downloader':continue
+        if queue_name != 'file_downloader':
+            continue
         message_count = int(each['messages'])
         queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
         if message_count <= queue_min_task:

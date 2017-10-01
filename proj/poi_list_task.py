@@ -19,8 +19,7 @@ from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.logger import get_logger
 from proj.mysql_pool import service_platform_pool
-from proj.list_config import cache_config, list_cache_path
-
+from proj.list_config import cache_config, list_cache_path, cache_type
 
 from urlparse import urljoin
 import datetime
@@ -30,6 +29,7 @@ logger = get_logger("poiDaodao")
 mioji.common.spider.NEED_FLIP_LIMIT = False
 mioji.common.pool.pool.set_size(2024)
 mioji.common.pages_store.cache_dir = list_cache_path
+mioji.common.pages_store.STORE_TYPE = cache_type
 
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None

@@ -41,7 +41,7 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
         map_info = result.map_info
         address = result.address
 
-        if not key_is_legal(map_info) or map_info=="0.000000,0.000000":
+        if not key_is_legal(map_info) or map_info == "0.000000,0.000000":
             if retry_count > 3:
                 if not key_is_legal(address):
                     raise TypeCheckError(
@@ -64,20 +64,20 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
                 'Error name and name_en Both NULL        with parser %s    url %s' % (
                     page_parser.func_name, target_url))
 
-        sql_result = result.__dict__
-        sql_key = sql_result.keys()
-        if '_sa_instance_state' in sql_key:
-            sql_key.remove('_sa_instance_state')
+    sql_result = result.__dict__
+    sql_key = sql_result.keys()
+    if '_sa_instance_state' in sql_key:
+        sql_key.remove('_sa_instance_state')
 
-        try:
-            session = DBSession()
-            # session.merge(result)
-            session.execute(text(text_2_sql(sql_key).format(table_name=kwargs['task_name'])), [sql_result])
-            session.commit()
-            session.close()
-        except Exception as e:
-            self.error_code = 33
-            raise e
+    try:
+        session = DBSession()
+        # session.merge(result)
+        session.execute(text(text_2_sql(sql_key).format(table_name=kwargs['task_name'])), [sql_result])
+        session.commit()
+        session.close()
+    except Exception as e:
+        self.error_code = 33
+        raise e
 
-        self.error_code = 0
-        return self.error_code
+    self.error_code = 0
+    return self.error_code

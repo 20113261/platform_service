@@ -13,6 +13,10 @@ logger = get_logger('BaseTask')
 
 FAILED_TASK_BLACK_LIST = {'proj.full_website_spider_task.full_site_spider'}
 
+# 当为 0 正常，106 图片大于 10MB，107 图片因尺寸原因被过滤导致的问题不进行重试，直接 finished 1
+# 109 对方停业，入库过滤
+FINISHED_ERROR_CODE = [0, 106, 107, 109]
+
 KnownTaskType = {
     "HotelList": "List",
     "Hotel": "Detail",
@@ -159,12 +163,8 @@ class BaseTask(Task):
                 crawl_type=_crawl_type,
                 max_retry_times=max_retry_times
             )
-            # if task_tag != 'NULL' and retry_count != 'NULL' and error_code != 'NULL' and max_retry_times != "NULL":
-        #     report_type = get_report_type(task_type)
-        #     # 入库任务进度以及分失败任务统计
-        #     check_error_code(error_code, retry_count, task_tag, task_source, report_type, max_retry_times)
 
-        if int(error_code) == 0:
+        if int(error_code) in FINISHED_ERROR_CODE:
             finished = True
         else:
             finished = False
@@ -240,8 +240,7 @@ class BaseTask(Task):
             celery_task_id = task_id
             task_id = kwargs.get('mongo_task_id', '')
 
-            # 当为 0 正常，106 图片大于 10MB，107 图片因尺寸原因被过滤导致的问题不进行重试，直接 finished 1
-            if int(error_code) in [0, 106, 107]:
+            if int(error_code) in FINISHED_ERROR_CODE:
                 special_type = True
                 mongo_update_task(kwargs['mongo_task_id'], 1)
             else:

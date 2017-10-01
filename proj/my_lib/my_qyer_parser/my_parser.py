@@ -17,56 +17,57 @@ from data_obj import Qyer, DBSession
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.Common.Utils import try3times
 
-ss = MySession(need_proxies=True)
 comment_counts_url = 'http://place.qyer.com/poi.php?action=starlevel'
 comment_url = 'http://place.qyer.com/poi.php?action=comment&page=1&order=5&poiid=57110&starLevel=all&_=1494983732352'
 
 
 @try3times()
 def parse_comment_counts(poi_id):
-    start_level = ss.post(comment_counts_url, data={'poiid': poi_id})
-    return json.loads(start_level.text).get('data', {}).get('all', -1)
+    with MySession(need_proxies=True, need_cache=True) as session:
+        start_level = session.post(comment_counts_url, data={'poiid': poi_id})
+        return json.loads(start_level.text).get('data', {}).get('all', -1)
 
 
 @try3times(try_again_times=15)
 def parse_image_urls(target_url):
-    image_page = ss.get(target_url + '/photo').content.decode('utf8')
-    page = pyquery.PyQuery(image_page)
-    ul = page('.pla_photolist.clearfix li')
-    return '|'.join(li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items())
+    with MySession(need_proxies=True, need_cache=True) as session:
+        image_page = session.get(target_url + '/photo').content.decode('utf8')
+        page = pyquery.PyQuery(image_page)
+        ul = page('.pla_photolist.clearfix li')
+        return '|'.join(li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items())
 
 
-def parse_comment(qyer):
-    params = {
-        'page': 1,
-        'order': 5,
-        'poiid': qyer.id,
-        'starLevel': 'all',
-        '_': time.time() * 1000,
-    }
-    json_data = json.loads(ss.get(comment_url, params=params).content.decode('utf-8'))
-
-    # pprint.pprint(json_data)
-
-    for item in json_data.get('data', {}).get('lists', []):
-        comment = {
-            'source': 'qyer',
-            'source_city_id': qyer.source_city_id,
-            'source_id': qyer.id,
-            'miaoji_id': 'NULL',
-            'language': 'zhCN',
-            'review_id': item.get('id'),
-            'review_text': item.get('content').encode('utf8'),
-            'review_link': item.get('link'),
-            'comment_time': item.get('date'),
-            # 'review_id': item.get('id'),
-            'comment_rating': item.get('starlevel'),
-            'user_name': item.get('userinfo', {}).get('name'),
-            'user_link': item.get('userinfo', {}).get('link'),
-        }
-        # comment.comment_rating = item.get('userinfo', {}).get('name')
-
-        db_localhost.insert_mb4('tp_comment_0814', **comment)
+# def parse_comment(qyer):
+#     params = {
+#         'page': 1,
+#         'order': 5,
+#         'poiid': qyer.id,
+#         'starLevel': 'all',
+#         '_': time.time() * 1000,
+#     }
+#     json_data = json.loads(ss.get(comment_url, params=params).content.decode('utf-8'))
+#
+#     # pprint.pprint(json_data)
+#
+#     for item in json_data.get('data', {}).get('lists', []):
+#         comment = {
+#             'source': 'qyer',
+#             'source_city_id': qyer.source_city_id,
+#             'source_id': qyer.id,
+#             'miaoji_id': 'NULL',
+#             'language': 'zhCN',
+#             'review_id': item.get('id'),
+#             'review_text': item.get('content').encode('utf8'),
+#             'review_link': item.get('link'),
+#             'comment_time': item.get('date'),
+#             # 'review_id': item.get('id'),
+#             'comment_rating': item.get('starlevel'),
+#             'user_name': item.get('userinfo', {}).get('name'),
+#             'user_link': item.get('userinfo', {}).get('link'),
+#         }
+#         # comment.comment_rating = item.get('userinfo', {}).get('name')
+#
+#         db_localhost.insert_mb4('tp_comment_0814', **comment)
 
 
 def page_parser(content, target_url):
@@ -89,8 +90,8 @@ def page_parser(content, target_url):
         qyer.map_info = doc('meta[@property="og:location:longitude"]').attr.content + ',' + doc(
             'meta[@property="og:location:latitude"]').attr.content
         qyer.star = len(doc('.poi-stars>.single-star.full')) + 0.5 * len(doc('.poi-stars>.single-star.half'))
-        if qyer.star==0:
-            qyer.star = ''
+        if qyer.star == 0:
+            qyer.star = -1
         qyer.grade = doc('.points>.number').text()
         qyer.ranking = re.findall(r'(\d+)', doc('.infos .rank').text())[-1]
         qyer.beentocounts = doc('.golden').text()
@@ -157,7 +158,7 @@ def page_parser(content, target_url):
     try:
         # qyer.commentcounts = re.findall(r'(\d+)', doc('.summery').text())[0]
         qyer.commentcounts = int(parse_comment_counts(qyer.id))
-        if qyer.commentcounts==0:
+        if qyer.commentcounts == 0:
             qyer.commentcounts = None
     except Exception as e:
         print(traceback.format_exc(e))

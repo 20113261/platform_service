@@ -8,3 +8,4 @@
 
 list_cache_path = '/data/nfs/page_saver/cache'
 cache_config = {'enable': True, 'lifetime_sec': 86400}
+cache_type = 'ufile'

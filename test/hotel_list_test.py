@@ -75,6 +75,6 @@ if __name__ == '__main__':
         suggest_type=1,
         suggest='http://hotels.ctrip.com/international/brianon22797',
         task_name="list_hotel_test_test",
-        retry_count=2,
+        retry_count=0,
         max_retry_times=6
     )
