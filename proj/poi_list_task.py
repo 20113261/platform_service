@@ -89,7 +89,7 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
         for one in result:
             for key, view in one.items():
                 data.append(
-                    (source, int(view['source_id']), int(city_id), country_id, view['view_url'],
+                    (source, view['source_id'], city_id, country_id, view['view_url'],
                      datetime.datetime.now()))
         insert(sql, data)
         data = []
