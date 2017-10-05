@@ -132,7 +132,10 @@ class MySession(requests.Session):
         return True
 
     def update_proxy(self, error_code):
-        update_proxy('Platform', self.p_r_o_x_y or 'NULL', time.time() - self.start, error_code)
+        try:
+            update_proxy('Platform', self.p_r_o_x_y or 'NULL', time.time() - self.start, error_code)
+        except Exception:
+            pass
 
     def __enter__(self):
         return self
