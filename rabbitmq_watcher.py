@@ -109,6 +109,7 @@ def insert_task(queue, limit):
 @schedule.scheduled_job('cron', second='*/20')
 def mongo_task_watcher():
     logger.info('Start Searching Queue Info')
+    logger.info(TARGET_URL)
     target_url = TARGET_URL
     page = requests.get(target_url, auth=HTTPBasicAuth('hourong', '1220'))
     content = page.text
@@ -131,6 +132,7 @@ def mongo_task_watcher():
 @schedule.scheduled_job('cron', second='*/10', id='file_downloader_queue')
 def mongo_task_watcher2():
     logger.info('Start Searching Queue Info')
+    logger.info(TARGET_URL)
     target_url = TARGET_URL
     page = requests.get(target_url, auth=HTTPBasicAuth('hourong', '1220'))
     content = page.text
@@ -151,7 +153,7 @@ def mongo_task_watcher2():
 
 
 if __name__ == '__main__':
-    schedule.start()
+    # schedule.start()
     # insert_task('hotel_detail', 10000)
-    # mongo_task_watcher()
+    mongo_task_watcher()
     # insert_task('hotel_task', 100)
