@@ -30,7 +30,7 @@ from kombu import Queue, Exchange
 #     'amqp://hourong:1220@10.10.213.148/celery',
 #     'amqp://hourong:1220@10.10.189.213/celery'
 # ]
-CELERYD_MAX_TASKS_PER_CHILD = 40
+CELERYD_MAX_TASKS_PER_CHILD = 3
 CELERY_IGNORE_RESULT = True
 CELERY_ACCEPT_CONTENT = ['pickle']
 CELERY_TASK_SERIALIZER = 'pickle'
