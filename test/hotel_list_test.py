@@ -94,15 +94,46 @@ if __name__ == '__main__':
     # )
 
 
+    # print(hotel_list_task(
+    #     source='hotels',
+    #     city_id='NULL',
+    #     country_id='238',
+    #     check_in='20171128',
+    #     part='20170929a',
+    #     is_new_type=True,
+    #     suggest_type=2,
+    #     suggest='''{"caption": "\u7d22\u5c14\u5361, \u7f57\u9a6c\u5c3c\u4e9a (<span class='highlighted'>Solca</span>)", "destinationId": "10383790", "name": "\u7d22\u5c14\u5361", "latitude": 47.700001, "landmarkCityDestinationId": null, "type": "CITY", "redirectPage": "DEFAULT_PAGE", "longitude": 25.85, "geoId": "1000000000006374000"}''',
+    #     task_name="list_hotel_test_test",
+    #     retry_count=2,
+    #     max_retry_times=6
+    # ))
+
+    '''
+    
+    '''
+    # print(hotel_list_task(
+    #     source='ctrip',
+    #     city_id='NULL',
+    #     country_id='238',
+    #     check_in='20171218',
+    #     part='20170929a',
+    #     is_new_type=1,
+    #     suggest_type=2,
+    #     suggest='''SantAlbino|桑塔比诺，托斯卡纳大区，意大利|city|33376|santalbino|33376|santalbino|桑塔比诺|8|0||3600''',
+    #     task_name="list_hotel_test_test",
+    #     retry_count=2,
+    #     max_retry_times=6
+    # ))
+
     print(hotel_list_task(
-        source='hotels',
+        source='booking',
         city_id='NULL',
-        country_id='238',
-        check_in='20171128',
+        country_id='205',
+        check_in='20171019',
         part='20170929a',
-        is_new_type=True,
+        is_new_type=1,
         suggest_type=2,
-        suggest='''{"caption": "\u7d22\u5c14\u5361, \u7f57\u9a6c\u5c3c\u4e9a (<span class='highlighted'>Solca</span>)", "destinationId": "10383790", "name": "\u7d22\u5c14\u5361", "latitude": 47.700001, "landmarkCityDestinationId": null, "type": "CITY", "redirectPage": "DEFAULT_PAGE", "longitude": 25.85, "geoId": "1000000000006374000"}''',
+        suggest='''{"label_highlighted": "\u5a01\u5c3c\u65af, \u5a01\u5c3c\u6258\u5927\u533a, \u610f\u5927\u5229", "label_cjk": "<span class='search_hl_cjk'>\u5a01\u5c3c\u65af</span> <span class='search_hl_cjk'>\u5a01\u5c3c\u6258\u5927\u533a</span>, <span class='search_hl_cjk'>\u610f\u5927\u5229</span>", "__part": 0, "lc": "zh", "genius_hotels": "379", "rtl": 0, "hotels": "1953", "dest_id": "-132007", "cc1": "it", "label_multiline": "<span>\u5a01\u5c3c\u65af</span> \u5a01\u5c3c\u6258\u5927\u533a, \u610f\u5927\u5229", "nr_hotels_25": "3119", "_ef": [{"name": "ac_popular_badge", "value": 1}], "labels": [{"text": "\u5a01\u5c3c\u65af", "required": 1, "type": "city", "hl": 1}, {"text": "\u5a01\u5c3c\u6258\u5927\u533a", "required": 1, "type": "region", "hl": 1}, {"text": "\u610f\u5927\u5229", "required": 1, "type": "country", "hl": 1}], "__query_covered": 9, "flags": {"popular": 1}, "nr_hotels": "1953", "city_ufi": null, "label": "\u5a01\u5c3c\u65af, \u5a01\u5c3c\u6258\u5927\u533a, \u610f\u5927\u5229", "type": "ci", "dest_type": "city", "region_id": "914"}''',
         task_name="list_hotel_test_test",
         retry_count=2,
         max_retry_times=6
