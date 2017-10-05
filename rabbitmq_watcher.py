@@ -10,6 +10,7 @@ import sys
 sys.path.append('/root/data/lib')
 import json
 import requests
+import re
 from proj.my_lib.logger import get_logger
 from apscheduler.schedulers.blocking import BlockingScheduler
 from requests.auth import HTTPBasicAuth
@@ -18,6 +19,10 @@ from proj.my_lib.task_module.mongo_task_func import get_task_total
 from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, \
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail
+from proj.config import BROKER_URL
+
+host, queue = re.findall("amqp://.+?@(.+?)/(.+)", 'amqp://hourong:1220@10.10.189.213/celery')[0]
+TARGET_URL = 'http://{0}:15672/api/queues/{1}'.format(host, queue)
 
 schedule = BlockingScheduler()
 
@@ -104,7 +109,7 @@ def insert_task(queue, limit):
 @schedule.scheduled_job('cron', second='*/20')
 def mongo_task_watcher():
     logger.info('Start Searching Queue Info')
-    target_url = 'http://10.10.189.213:15672/api/queues/celery'
+    target_url = TARGET_URL
     page = requests.get(target_url, auth=HTTPBasicAuth('hourong', '1220'))
     content = page.text
     j_data = json.loads(content)
@@ -126,7 +131,7 @@ def mongo_task_watcher():
 @schedule.scheduled_job('cron', second='*/10', id='file_downloader_queue')
 def mongo_task_watcher2():
     logger.info('Start Searching Queue Info')
-    target_url = 'http://10.10.189.213:15672/api/queues/celery'
+    target_url = TARGET_URL
     page = requests.get(target_url, auth=HTTPBasicAuth('hourong', '1220'))
     content = page.text
     j_data = json.loads(content)
@@ -147,5 +152,6 @@ def mongo_task_watcher2():
 
 if __name__ == '__main__':
     schedule.start()
+    # insert_task('hotel_detail', 10000)
     # mongo_task_watcher()
     # insert_task('hotel_task', 100)
