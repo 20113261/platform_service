@@ -21,7 +21,7 @@ from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail
 from proj.config import BROKER_URL
 
-host, queue = re.findall("amqp://.+?@(.+?)/(.+)", 'amqp://hourong:1220@10.10.189.213/celery')[0]
+host, queue = re.findall("amqp://.+?@(.+?)/(.+)", BROKER_URL)[0]
 TARGET_URL = 'http://{0}:15672/api/queues/{1}'.format(host, queue)
 
 schedule = BlockingScheduler()
