@@ -153,7 +153,7 @@ def mongo_task_watcher2():
 
 
 if __name__ == '__main__':
-    # schedule.start()
+    schedule.start()
     # insert_task('hotel_detail', 10000)
-    mongo_task_watcher()
+    # mongo_task_watcher()
     # insert_task('hotel_task', 100)
