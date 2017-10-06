@@ -122,9 +122,7 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
         self.error_code = 33
         raise e
 
-    if error_code in (0, '0'):
-        self.error_code = 0
-    if len(res_data) > 0:
+    if error_code in (0, '0') and self.error_code == 103:
         self.error_code = 0
 
     return res_data, error_code, self.error_code, kwargs['task_name'], suggest
