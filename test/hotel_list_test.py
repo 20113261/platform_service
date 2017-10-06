@@ -125,16 +125,30 @@ if __name__ == '__main__':
     #     max_retry_times=6
     # ))
 
+    # print(hotel_list_task(
+    #     source='booking',
+    #     city_id='NULL',
+    #     country_id='205',
+    #     check_in='20171019',
+    #     part='20170929a',
+    #     is_new_type=1,
+    #     suggest_type=2,
+    #     suggest='''{"label_highlighted": "\u5a01\u5c3c\u65af, \u5a01\u5c3c\u6258\u5927\u533a, \u610f\u5927\u5229", "label_cjk": "<span class='search_hl_cjk'>\u5a01\u5c3c\u65af</span> <span class='search_hl_cjk'>\u5a01\u5c3c\u6258\u5927\u533a</span>, <span class='search_hl_cjk'>\u610f\u5927\u5229</span>", "__part": 0, "lc": "zh", "genius_hotels": "379", "rtl": 0, "hotels": "1953", "dest_id": "-132007", "cc1": "it", "label_multiline": "<span>\u5a01\u5c3c\u65af</span> \u5a01\u5c3c\u6258\u5927\u533a, \u610f\u5927\u5229", "nr_hotels_25": "3119", "_ef": [{"name": "ac_popular_badge", "value": 1}], "labels": [{"text": "\u5a01\u5c3c\u65af", "required": 1, "type": "city", "hl": 1}, {"text": "\u5a01\u5c3c\u6258\u5927\u533a", "required": 1, "type": "region", "hl": 1}, {"text": "\u610f\u5927\u5229", "required": 1, "type": "country", "hl": 1}], "__query_covered": 9, "flags": {"popular": 1}, "nr_hotels": "1953", "city_ufi": null, "label": "\u5a01\u5c3c\u65af, \u5a01\u5c3c\u6258\u5927\u533a, \u610f\u5927\u5229", "type": "ci", "dest_type": "city", "region_id": "914"}''',
+    #     task_name="list_hotel_test_test",
+    #     retry_count=2,
+    #     max_retry_times=6
+    # ))
+
     print(hotel_list_task(
         source='booking',
         city_id='NULL',
         country_id='205',
-        check_in='20171019',
+        check_in='20171128',
         part='20170929a',
         is_new_type=1,
-        suggest_type=2,
-        suggest='''{"label_highlighted": "\u5a01\u5c3c\u65af, \u5a01\u5c3c\u6258\u5927\u533a, \u610f\u5927\u5229", "label_cjk": "<span class='search_hl_cjk'>\u5a01\u5c3c\u65af</span> <span class='search_hl_cjk'>\u5a01\u5c3c\u6258\u5927\u533a</span>, <span class='search_hl_cjk'>\u610f\u5927\u5229</span>", "__part": 0, "lc": "zh", "genius_hotels": "379", "rtl": 0, "hotels": "1953", "dest_id": "-132007", "cc1": "it", "label_multiline": "<span>\u5a01\u5c3c\u65af</span> \u5a01\u5c3c\u6258\u5927\u533a, \u610f\u5927\u5229", "nr_hotels_25": "3119", "_ef": [{"name": "ac_popular_badge", "value": 1}], "labels": [{"text": "\u5a01\u5c3c\u65af", "required": 1, "type": "city", "hl": 1}, {"text": "\u5a01\u5c3c\u6258\u5927\u533a", "required": 1, "type": "region", "hl": 1}, {"text": "\u610f\u5927\u5229", "required": 1, "type": "country", "hl": 1}], "__query_covered": 9, "flags": {"popular": 1}, "nr_hotels": "1953", "city_ufi": null, "label": "\u5a01\u5c3c\u65af, \u5a01\u5c3c\u6258\u5927\u533a, \u610f\u5927\u5229", "type": "ci", "dest_type": "city", "region_id": "914"}''',
-        task_name="list_hotel_test_test",
+        suggest_type=1,
+        suggest='''http://www.booking.com/searchresults.zh-cn.html?label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985:pl:ta:p1:p2:ac:ap1t1:neg:fi:tikwd-11455299683:lp9061505:li:dec:dm&sid=2fabc4030e6b847b9ef3b059e24c6b83&aid=376390&error_url=http://www.booking.com/index.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=8ba5e9abe3eb9fcadf8e837d4d5a2464;sb_price_type=total&;&ss=Saint-Martial-de-Nabirat&ssne=Saint-Martial-de-Nabirat&ssne_untouched=Saint-Martial-de-Nabirat&dest_id=-1466961&dest_type=city&checkin_year=&checkin_month=&checkin_monthday=&checkout_year=&checkout_month=&checkout_monthday=&no_rooms=&group_adults=&group_children=0&from_sf=1ss=Saint-Martial-de-Nabirat&ssne=Saint-Martial-de-Nabirat&ssne_untouched=Saint-Martial-de-Nabirat&dest_id=-1466961&dest_type=city&checkin_year=&checkin_month=&checkin_monthday=&checkout_year=&checkout_month=&checkout_monthday=&no_rooms=&group_adults=&group_children=0&from_sf=1''',
+        task_name="list_hotel_booking_20170929a",
         retry_count=2,
         max_retry_times=6
     ))

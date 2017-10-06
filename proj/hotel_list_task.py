@@ -12,6 +12,7 @@ from __future__ import absolute_import
 from celery.utils.log import get_task_logger
 import json
 import traceback
+import copy
 from mioji.spider_factory import factory
 from mioji.common.task_info import Task
 from proj.celery import app
@@ -120,6 +121,11 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
     except Exception as e:
         self.error_code = 33
         raise e
+
+    if error_code in (0, '0'):
+        self.error_code = 0
+    if len(res_data) > 0:
+        self.error_code = 0
 
     return res_data, error_code, self.error_code, kwargs['task_name'], suggest
 
