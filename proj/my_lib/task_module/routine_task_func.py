@@ -67,6 +67,7 @@ def get_per_task(task_id):
 
 def insert_failed_task(task_id, celery_task_id, args, kwargs, einfo, source, s_type, error_code,
                        is_routine_task=True):
+    return True
     try:
         if is_routine_task:
             failed_routine_task_collections.save({
