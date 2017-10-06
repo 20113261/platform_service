@@ -23,15 +23,17 @@ from mioji import spider_factory
 from proj.mysql_pool import service_platform_pool
 import mioji.common.spider
 import mioji.common.logger
+import time
 import datetime
 import pymongo
 import mioji.common.pool
 import mioji.common.pages_store
 import mioji.common
+from proj.my_lib.logger import func_time_logger
 from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 
 mioji.common.pool.pool.set_size(2024)
-logger = get_task_logger(__name__)
+logger = get_task_logger('hotel_list')
 mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path
 mioji.common.pages_store.STORE_TYPE = cache_type
@@ -91,8 +93,16 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
     task_response.type = 'HotelList'
 
     retry_count = kwargs.get('retry_count', 0)
-    error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, is_new_type=is_new_type,
-                                             suggest_type=suggest_type, suggest=suggest, need_cache=retry_count == 0)
+
+    @func_time_logger
+    def hotel_list_crawl():
+        error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in,
+                                                 is_new_type=is_new_type,
+                                                 suggest_type=suggest_type, suggest=suggest,
+                                                 need_cache=retry_count == 0)
+        return error_code, result
+
+    error_code, result = hotel_list_crawl()
     task_response.error_code = error_code
 
     res_data = []
@@ -109,18 +119,22 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
         for sid, hotel_url in result['hotel']:
             res_data.append((source, sid, city_id, country_id, hotel_url))
 
-    try:
-        service_platform_conn = service_platform_pool.connection()
-        cursor = service_platform_conn.cursor()
-        sql = "REPLACE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)".format(
-            kwargs['task_name'])
-        cursor.executemany(sql, res_data)
-        service_platform_conn.commit()
-        cursor.close()
-        service_platform_conn.close()
-    except Exception as e:
-        self.error_code = 33
-        raise e
+    @func_time_logger
+    def hotel_list_insert_db():
+        try:
+            service_platform_conn = service_platform_pool.connection()
+            cursor = service_platform_conn.cursor()
+            sql = "REPLACE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)".format(
+                kwargs['task_name'])
+            cursor.executemany(sql, res_data)
+            service_platform_conn.commit()
+            cursor.close()
+            service_platform_conn.close()
+        except Exception as e:
+            self.error_code = 33
+            raise e
+
+    hotel_list_insert_db()
 
     # if error_code in (0, '0') and self.error_code == 103:
     #     self.error_code = 0
