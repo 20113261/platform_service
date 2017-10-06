@@ -223,13 +223,11 @@ class BaseTask(Task):
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         # 获取本批次任务，任务批次
-        task_tag = get_tag(kwargs)
-
         task_response = kwargs['task_response']
         task_source = task_response.source
         task_type = task_response.type
         error_code = task_response.error_code
-        
+
         # task_source = get_source(self)
         # task_type = get_type(self)
         # error_code = get_error_code(self)
@@ -252,10 +250,13 @@ class BaseTask(Task):
         error_code = int(error_code)
 
         # 更新任务统计
+        start = time.time()
         r.incr('|_||_|'.join(
             map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'failure'])))
         logger.debug('|_||_|'.join(
             map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'failure'])))
+
+        logger.debug("[single task report][takes: {}]".format(time.time() - start))
 
         special_type = False
         if 'mongo_task_id' in kwargs:
@@ -280,6 +281,7 @@ class BaseTask(Task):
                                      error_code, is_routine_task=True)
 
         # 流程统计入库
+        start = time.time()
         _key_list = get_report_key(kwargs.get('task_name', ''))
         if _key_list:
             _crawl_type, _task_source, _task_tag = _key_list
@@ -294,6 +296,7 @@ class BaseTask(Task):
                 max_retry_times=max_retry_times,
                 is_special=special_type
             )
+        logger.debug("[error code check report][takes: {}]".format(time.time() - start))
 
 
 if __name__ == '__main__':

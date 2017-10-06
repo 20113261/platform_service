@@ -7,12 +7,16 @@
 # @Software: PyCharm
 import pymongo
 import datetime
+from proj.my_lib.logger import get_logger, func_time_logger
+
+logger = get_logger("mongo_task_func")
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['Task']
 failed_task_collections = client['MongoTask']['FailedTask']
 
 
+@func_time_logger
 def get_task_total(queue, used_times=6, limit=30000):
     now = datetime.datetime.now()
     for line in collections.find(
@@ -38,6 +42,7 @@ def get_task_total(queue, used_times=6, limit=30000):
         yield task_token, worker, queue, routing_key, line['args'], line['used_times'], line['task_name']
 
 
+@func_time_logger
 def update_task(task_id, finish_code=0):
     if int(finish_code) == 1:
         return collections.update({
@@ -58,10 +63,12 @@ def update_task(task_id, finish_code=0):
         })
 
 
+@func_time_logger
 def get_per_task(task_id):
     return collections.find_one({'task_token': task_id})
 
 
+@func_time_logger
 def insert_failed_task(task_id, celery_task_id, args, kwargs, einfo):
     try:
         failed_task_collections.save({

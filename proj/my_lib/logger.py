@@ -7,6 +7,10 @@
 # @Software: PyCharm
 import os
 import logging
+import functools
+import inspect
+from datetime import datetime
+from collections import defaultdict
 from logging.handlers import RotatingFileHandler
 
 log_path = "/data/log/service_platform"
@@ -46,3 +50,29 @@ def get_logger(logger_name):
         service_platform_logger.addHandler(steam_handler)
 
     return service_platform_logger
+
+
+func_count_dict = defaultdict(int)
+time_logger = get_logger('func_time_logger')
+
+
+def func_time_logger(fun):
+    @functools.wraps(fun)
+    def logging(*args, **kw):
+        try:
+            func_file = inspect.getfile(fun)
+        except Exception:
+            func_file = ''
+        func_name = fun.__name__
+        func_key = (func_file, func_name)
+        func_count_dict[func_key] += 1
+        begin = datetime.now()
+        result = fun(*args, **kw)
+        end = datetime.now()
+        time_logger.debug('[文件: {}][函数: {}][耗时 {}][当前运行 {} 个此函数]'.format(
+            func_file, func_name, end - begin, func_count_dict[func_key]
+        ))
+        func_count_dict[func_key] -= 1
+        return result
+
+    return logging
