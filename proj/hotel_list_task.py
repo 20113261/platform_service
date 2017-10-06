@@ -86,14 +86,14 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_ty
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='8/s')
 def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_type=False, suggest_type='1', suggest='',
                     **kwargs):
-    self.task_source = source.title()
-    self.task_type = 'HotelList'
-    self.error_code = 103
+    task_response = kwargs['task_response']
+    task_response.source = source.title()
+    task_response.type = 'HotelList'
 
     retry_count = kwargs.get('retry_count', 0)
     error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, is_new_type=is_new_type,
                                              suggest_type=suggest_type, suggest=suggest, need_cache=retry_count == 0)
-    self.error_code = error_code
+    task_response.error_code = error_code
 
     res_data = []
     if source in ('ctrip', 'ctripcn'):
@@ -129,10 +129,10 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
     # 对于抓取平台来讲，当出现此中情况时，数据均应该入库
     # 用 res_data 判断，修改 self.error_code 的值
     if len(res_data) > 0:
-        self.error_code = 0
+        task_response.error_code = 0
     else:
-        self.error_code = 29
-    return res_data, error_code, self.error_code, kwargs['task_name'], suggest
+        task_response.error_code = 29
+    return res_data, error_code, task_response.error_code, kwargs['task_name'], suggest
 
 
 if __name__ == '__main__':

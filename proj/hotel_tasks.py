@@ -23,9 +23,10 @@ logger = get_logger("HotelDetail")
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='9/s')
 def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
-    self.task_source = source.title()
-    self.task_type = 'Hotel'
-    self.error_code = 103
+    task_response = kwargs['task_response']
+    task_response.source = source.title()
+    task_response.type = 'Hotel'
+
     headers = {
         'User-agent': GetUserAgent()
     }
@@ -118,7 +119,7 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
             session.commit()
             session.close()
         except Exception as e:
-            self.error_code = 33
+            task_response.error_code = 33
             logger.exception(e)
             raise e
 
@@ -138,5 +139,5 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
         #                                        source=source,
         #                                        source_id=other_info['source_id'],
         #                                        city_id=other_info['city_id'], url=url)
-        self.error_code = 0
-        return self.error_code
+        task_response.error_code = 0
+        return task_response.error_code

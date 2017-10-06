@@ -8,6 +8,7 @@ from logger import get_logger
 from proj.my_lib.Common.Utils import get_local_ip
 from proj.my_lib.task_module.mongo_task_func import update_task as mongo_update_task
 from proj.my_lib.task_module.routine_task_func import insert_failed_task as mongo_insert_failed_task
+from celery.signals import task_prerun
 
 logger = get_logger('BaseTask')
 
@@ -125,6 +126,18 @@ def check_error_code(error_code, retry_count, task_tag, task_source, report_type
         logger.debug("Increase: {0}".format(error_code_task_report_key))
 
 
+@task_prerun.connect
+def task_sent_handler(task_id, task, *args, **kwargs):
+    kw = kwargs['kwargs']
+    kw['task_response'] = TaskResponse()
+
+
+class TaskResponse(object):
+    source = ''
+    type = ''
+    error_code = 103
+
+
 class BaseTask(Task):
     default_retry_delay = 1
     max_retries = 1
@@ -138,10 +151,15 @@ class BaseTask(Task):
         max_retry_times = kwargs.get('max_retry_times', "NULL")
 
         # 增加源以及抓取类型统计
-        task_source = get_source(self)
-        task_type = get_type(self)
+        task_response = kwargs['task_response']
+        task_source = task_response.source
+        task_type = task_response.type
+        error_code = task_response.error_code
+
+        # task_source = get_source(self)
+        # task_type = get_type(self)
+        # error_code = get_error_code(self)
         r = redis.Redis(host='10.10.180.145', db=15)
-        error_code = get_error_code(self)
 
         # 无错误码返回错误为 103
         if error_code == "NULL":
@@ -207,10 +225,15 @@ class BaseTask(Task):
         # 获取本批次任务，任务批次
         task_tag = get_tag(kwargs)
 
-        task_source = get_source(self)
-        task_type = get_type(self)
+        task_response = kwargs['task_response']
+        task_source = task_response.source
+        task_type = task_response.type
+        error_code = task_response.error_code
+        
+        # task_source = get_source(self)
+        # task_type = get_type(self)
+        # error_code = get_error_code(self)
         r = redis.Redis(host='10.10.180.145', db=15)
-        error_code = get_error_code(self)
         if error_code == 'NULL':
             error_code = get_error_code(exc)
 

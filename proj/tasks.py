@@ -289,9 +289,10 @@ def get_lost_rest_no_proxy(self, target_url):
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='10/s')
 def get_images(self, source, source_id, target_url, part, file_path, desc_path, is_poi_task=True, need_insert_db=True,
                special_file_name='', **kwargs):
-    self.error_code = 103
-    self.task_source = source.title()
-    self.task_type = 'DownloadImages'
+    task_response = kwargs['task_response']
+    task_response.source = source.title()
+    task_response.type = 'DownloadImages'
+
     flag = None
     h = None
     w = None
@@ -309,7 +310,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
 
         if f_stream.len > 10485760:
             # 大于 10MB 的图片信息不入库
-            self.error_code = 106
+            task_response.error_code = 106
             raise Exception('Too Large')
 
         file_md5 = get_stream_md5(f_stream)
@@ -322,7 +323,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         file_name = hashlib.md5(target_url).hexdigest() + '.' + suffix
 
         if flag in [1, 2]:
-            self.error_code = 105
+            task_response.error_code = 105
             raise Exception("Image Error with Proxy " + session.p_r_o_x_y)
         else:
             if not os.path.exists(file_path):
@@ -337,11 +338,11 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
                 r2 = upload_ks_file_stream('mioji-shop', file_name, s_f_stream, page.headers['Content-Type'])
 
             if not (r1 and r2):
-                self.error_code = 108
+                task_response.error_code = 108
                 raise Exception("Upload File Error")
 
-            # with open(temp_file, 'wb') as f:
-            #     f.write(page.content)
+                # with open(temp_file, 'wb') as f:
+                #     f.write(page.content)
 
         use_flag = 1 if flag == 0 else 0
         size = str((h, w))
@@ -381,20 +382,20 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
                     hotel_make_kw(data)
 
             # 设置标识位
-            self.error_code = 0
+            task_response.error_code = 0
         except exc.SQLAlchemyError as err:
-            self.error_code = 33
+            task_response.error_code = 33
             raise Exception(err)
         except IOError as err:
-            self.error_code = 108
+            task_response.error_code = 108
             raise Exception(err)
 
     # 被过滤的图片返回错误码不为 0
     if flag in [3, 4, 5]:
-        self.error_code = 107
+        task_response.error_code = 107
         raise Exception("Img Has Been Filtered")
 
-    return flag, h, w, self.error_code, kwargs['task_name']
+    return flag, h, w, task_response.error_code, kwargs['task_name']
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
