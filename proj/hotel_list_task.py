@@ -122,9 +122,16 @@ def hotel_list_task(self, source, city_id, country_id, check_in, part, is_new_ty
         self.error_code = 33
         raise e
 
-    if error_code in (0, '0') and self.error_code == 103:
+    # if error_code in (0, '0') and self.error_code == 103:
+    #     self.error_code = 0
+    # 由于错误都是 raise 的，
+    # 所以当出现此种情况是，return 的内容均为正确内容
+    # 对于抓取平台来讲，当出现此中情况时，数据均应该入库
+    # 用 res_data 判断，修改 self.error_code 的值
+    if len(res_data) > 0:
         self.error_code = 0
-
+    else:
+        self.error_code = 29
     return res_data, error_code, self.error_code, kwargs['task_name'], suggest
 
 
