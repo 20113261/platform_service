@@ -34,9 +34,10 @@ parser_type = {
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
     # TODO 入库处理未指定
-    self.task_source = 'Daodao'
-    self.task_type = 'DaodaoDetail'
-    self.error_code = 103
+    task_response = kwargs['task_response']
+    task_response.source = 'Daodao'
+    task_response.type = 'DaodaoDetail'
+
     target_url = target_url.replace('.com.hk', '.cn')
     with MySession(need_cache=True) as session:
         page = session.get(target_url, timeout=15)
@@ -46,7 +47,7 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
         result = parser(page.content, target_url, city_id=city_id)
 
         if result == 'Error':
-            self.error_code = 27
+            task_response.error_code = 27
             raise Exception('parse %s Error' % target_url)
 
         result['city_id'] = city_id
@@ -57,8 +58,8 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
 
         name = result['name']
         if name.find('停业') > -1:
-            self.error_code = 109
-            return self.error_code
+            task_response.error_code = 109
+            return task_response.error_code
         name_en = result['name_en']
         map_info = result['map_info']
         address = result['address']
@@ -91,9 +92,9 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
             session.commit()
             session.close()
         except Exception as e:
-            self.error_code = 33
+            task_response.error_code = 33
             logger.exception(e)
             raise e
 
-        self.error_code = 0
-        return self.error_code
+        task_response.error_code = 0
+        return task_response.error_code

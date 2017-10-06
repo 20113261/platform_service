@@ -24,8 +24,9 @@ logger = get_logger("QyerPoiDetail")
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/s')
 def qyer_poi_task(self, target_url, city_id, **kwargs):
-    self.task_source = 'Qyer'
-    self.task_type = 'Qyerinfo'
+    task_response = kwargs['task_response']
+    task_response.source = 'Qyer'
+    task_response.type = 'Qyerinfo'
 
     with MySession(need_cache=True) as session:
         page = session.get(target_url, timeout=240)
@@ -76,8 +77,8 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
         session.commit()
         session.close()
     except Exception as e:
-        self.error_code = 33
+        task_response.error_code = 33
         raise e
 
-    self.error_code = 0
-    return self.error_code
+    task_response.error_code = 0
+    return task_response.error_code

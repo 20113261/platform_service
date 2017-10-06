@@ -51,13 +51,15 @@ def hotel_list_database(source, city_id, check_in, city_url, need_cache=True):
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def qyer_list_task(self, source, city_id, country_id, check_in, city_url='', **kwargs):
-    self.task_source = source.title()
-    self.task_type = 'QyerList'
-    self.error_code = 0
+    task_response = kwargs['task_response']
+    task_response.source = source.title()
+    task_response.type = 'QyerList'
 
     retry_count = kwargs.get('retry_count', 0)
     error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, city_url=city_url,
                                              need_cache=retry_count == 0)
+
+    task_response.error_code = error_code
 
     sql = SQL.format(kwargs['task_name'])
     datas = []
@@ -78,10 +80,18 @@ def qyer_list_task(self, source, city_id, country_id, check_in, city_url='', **k
         cursor.close()
         service_platform_conn.close()
     except Exception as e:
-        self.error_code = 33
+        task_response.error_code = 33
         raise e
 
-    self.error_code = error_code
+    # 由于错误都是 raise 的，
+    # 所以当出现此种情况是，return 的内容均为正确内容
+    # 对于抓取平台来讲，当出现此中情况时，数据均应该入库
+    # 用 res_data 判断，修改 self.error_code 的值
+    if len(datas) > 0:
+        task_response.error_code = 0
+    else:
+        task_response.error_code = 29
+
     return result, error_code
 
 

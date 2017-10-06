@@ -73,16 +73,17 @@ def insert(sql, data):
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
-    self.task_source = source.title()
-    self.task_type = 'DaodaoListInfo'
-    self.error_code = 103
+    task_response = kwargs['task_response']
+    task_response.source = source.title()
+    task_response.type = 'DaodaoListInfo'
+
     sql = SQL.format(table_name=kwargs.get('task_name'))
 
     retry_count = kwargs.get('retry_count', 0)
     code, result = hotel_list_database(source, url, type_dict[poi_type], spider_name[poi_type],
                                        need_cache=retry_count == 0)
 
-    self.error_code = code
+    task_response.error_code = code
 
     data = []
     try:
@@ -92,12 +93,17 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
                     (source, view['source_id'], city_id, country_id, view['view_url'],
                      datetime.datetime.now()))
         insert(sql, data)
-        data = []
     except Exception as e:
-        self.error_code = 33
+        task_response.error_code = 33
         raise e
 
-    self.error_code = code
+    # 由于错误都是 raise 的，
+    # 所以当出现此种情况是，return 的内容均为正确内容
+    # 对于抓取平台来讲，当出现此中情况时，数据均应该入库
+    # 用 res_data 判断，修改 self.error_code 的值
+    if len(data) > 0:
+        task_response.error_code = 0
+    else:
+        task_response.error_code = 29
 
-    logger.info('code: %s' % self.error_code)
-    return self.error_code, url
+    return task_response.error_code, url
