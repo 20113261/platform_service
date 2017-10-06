@@ -39,3 +39,4 @@ CELERY_MESSAGE_COMPRESSION = 'gzip'
 # task_queue_ha_policy = 'all'
 CELERYD_POOL_RESTARTS = True
 CELERY_EVENT_QUEUE_TTL = 5
+CELERYD_AUTOSCALER = 'proj.my_lib.CustomAutoScale.CustomAutoScale'
