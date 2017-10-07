@@ -17,5 +17,5 @@ echo $CELERY_WORKER_NAME
 #        Queue('full_site_task', exchange=Exchange('full_site_task', type='direct'), routing_key='full_site_task'),
 #        Queue('hotel_task', exchange=Exchange('hotel_task', type='direct'), routing_key='hotel_task'),
 #        Queue('hotel_list_task', exchange=Exchange('hotel_list_task', type='direct'), routing_key='hotel_list_task'),
-/usr/local/bin/celery worker -A proj -P eventlet --autoscale=1200,40 -Q file_downloader,hotel_detail,poi_detail -l info -n $CELERY_WORKER_NAME
+/usr/local/bin/celery worker -A proj -P eventlet --autoscale=1200,4 -Q file_downloader,hotel_detail,poi_detail -l info -n $CELERY_WORKER_NAME
 #/usr/local/bin/celery worker -A proj --autoscal=10,3 -l info --logfile=/search/log/celery.log
