@@ -18,7 +18,7 @@ class CustomAutoScale(Autoscaler):
         memory_obj = psutil.virtual_memory()
         memory_percent = memory_obj.percent
         procs = self.processes
-        if memory_percent < 80.0:
+        if memory_percent < 60.0:
             cur = min(self.qty, self.max_concurrency)
             if cur > procs:
                 self.scale_up(cur - procs)
@@ -31,6 +31,13 @@ class CustomAutoScale(Autoscaler):
                 logger.debug("[worker_name: {}][memory_percent: {}][current: {}][scale down: {}]".
                              format(worker_name, memory_percent, self.processes, procs - cur))
                 return True
+        elif memory_percent < 85.0:
+            return True
+        elif memory_percent < 90.0:
+            self.scale_down(1)
+            logger.debug("[worker_name: {}][memory_percent: {}][current: {}][scale down: {}]".
+                         format(worker_name, memory_percent, self.processes, 1))
+            return True
         else:
             cur = procs - self.min_concurrency
             down_process = max(int(cur / 2), 1)
