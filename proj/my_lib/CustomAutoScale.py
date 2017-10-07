@@ -32,6 +32,8 @@ class CustomAutoScale(Autoscaler):
                              format(worker_name, memory_percent, self.processes, procs - cur))
                 return True
         elif memory_percent < 85.0:
+            logger.debug("[worker_name: {}][memory_percent: {}][current: {}][scale: {}]".
+                         format(worker_name, memory_percent, self.processes, 0))
             return True
         elif memory_percent < 90.0:
             self.scale_down(1)
