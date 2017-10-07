@@ -8,6 +8,7 @@ from sqlalchemy import Column, String, Text, create_engine, TIMESTAMP, Float, In
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
+from proj.my_lib.logger import func_time_logger
 
 # from proj.my_lib.logger import get_logger
 # logger = get_logger('imgmd5_primary_key')
@@ -19,6 +20,7 @@ engine = create_engine('mysql+pymysql://hourong:hourong@10.10.189.213:3306/updat
 DBSession = sessionmaker(bind=engine)
 SQL_HOTEL = 'replace into {table_name} (source, source_id, pic_url, pic_md5, part, hotel_id, status, update_date, size, flag, file_md5) values (:source, :source_id, :pic_url, :pic_md5, :part, :hotel_id, :status, :update_date, :size, :flag, :file_md5)'
 SQL_POI = 'replace into {table_name} (file_name, source, sid, url, pic_size, bucket_name, url_md5, pic_md5, `use`, part, `date`) values (:file_name, :source, :sid, :url, :pic_size, :bucket_name, :url_md5, :pic_md5, :use, :part, :date)'
+
 
 class PicRelation(Base):
     __tablename__ = 'pic_relation_0905'
@@ -34,6 +36,7 @@ class PicRelation(Base):
     flag = Column(String(10))
     file_md5 = Column(String(32), primary_key=True)
 
+
 class PoiRelation(Base):
     __tablename__ = 'poi_bucket_relation_0925'
     file_name = Column(String(100))
@@ -47,6 +50,7 @@ class PoiRelation(Base):
     use = Column(String(10))
     part = Column(String(32))
     date = Column(TIMESTAMP, default=datetime.datetime.now)
+
 
 '''
 | source      | varchar(20)  | NO   | PRI | NULL              |                             |
@@ -76,6 +80,7 @@ def get_stream_md5(stream):
         hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
+
 def get_file_md5(f_name):
     hash_md5 = hashlib.md5()
     with open(f_name, "rb") as f:
@@ -84,6 +89,7 @@ def get_file_md5(f_name):
     return hash_md5.hexdigest()
 
 
+@func_time_logger
 def hotel_make_kw(args):
     relation = PicRelation()
     relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5, _temp = args
@@ -95,6 +101,8 @@ def hotel_make_kw(args):
     # logger.info(relation.source+'|'+ relation.source_id+'|'+relation.part+'|'+relation.file_md5+'|'+relation.pic_md5)
     insert_db(sql, relation)
 
+
+@func_time_logger
 def poi_make_kw(args):
     relation = PoiRelation()
     relation.source, relation.sid, relation.url, relation.file_name, relation.part, relation.pic_size, relation.use, relation.pic_md5, relation.bucket_name = args
@@ -104,10 +112,12 @@ def poi_make_kw(args):
     insert_db(sql, relation)
 
 
+@func_time_logger
 def insert_db(sql, relation):
     dbss = DBSession()
     dbss.execute(text(sql), [relation.__dict__])
     dbss.commit()
+
 
 def insert_db_old(args):
     conn = pymysql.connect(**__sql_dict)
@@ -141,5 +151,5 @@ if __name__ == '__main__':
           'pic_url': u'https://exp.cdn-hotels.com/hotels/6000000/5390000/5388400/5388301/5388301_2_y.jpg',
           'size': '(334, 500)'}
     args = ('hotels', '418161', 'https://exp.cdn-hotels.com/hotels/6000000/5390000/5388400/5388301/5388301_2_y.jpg',
-            '4fef069236f03ec10a97fa84deeeefa4.jpg', '44', '(334, 500)', 0, 'd41d8cd98f00b204e9800998ecf8427e', )
+            '4fef069236f03ec10a97fa84deeeefa4.jpg', '44', '(334, 500)', 0, 'd41d8cd98f00b204e9800998ecf8427e',)
     hotel_make_kw(args)

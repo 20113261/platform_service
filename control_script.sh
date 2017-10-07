@@ -14,3 +14,6 @@ ps -aux|grep "celery worker"|grep -v grep|awk '{print $2}'|xargs -I each_pid kil
 
 # restart all running process from master
 /usr/bin/pssh -h /root/hosts.txt -i "ps -aux|grep 'celery worker'|grep -v grep|awk '{print \$2}'|xargs -I each_pid kill -HUP each_pid"
+
+# test socks5 proxy
+curl --socks5 10.10.233.246:36347 http://www.baidu.com

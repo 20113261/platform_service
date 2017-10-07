@@ -40,6 +40,7 @@ from .my_lib.task_module.task_func import get_task_id, update_task, insert_task
 from .my_lib.get_rate_limit import get_rate_limit
 from .my_lib.Common.Browser import MySession
 from proj.my_lib.ks_upload_file_stream import upload_ks_file_stream
+from proj.my_lib.logger import func_time_logger
 
 platforms.C_FORCE_ROOT = True
 
@@ -305,7 +306,14 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         bucket_name = 'mioji-rest'
 
     with MySession() as session:
-        page = session.get(target_url, timeout=(1200, None))
+        @func_time_logger
+        def img_file_get():
+            _page = session.get(target_url, timeout=(1200, None))
+            return _page
+
+        page = img_file_get()
+
+
         f_stream = StringIO(page.content)
 
         if f_stream.len > 10485760:

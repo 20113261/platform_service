@@ -1,6 +1,8 @@
 from scipy import misc
+from proj.my_lib.logger import func_time_logger
 
 
+@func_time_logger
 def is_complete_scale_ok(image_name, min_sum_pixels=200000, min_scale=0.9, max_scale=2.5):
     '''
     Check the completeness and whether the scale of the Image is ok
