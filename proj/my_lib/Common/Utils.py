@@ -12,13 +12,9 @@ sys.setdefaultencoding('utf8')
 import hashlib
 import socket
 import traceback
-import proj.my_lib.Common.Browser
 import unittest
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
-from urllib import quote
-import json
-from proj.my_lib.Common.KeyMatch import key_is_legal
 
 
 def get_local_ip():
@@ -79,24 +75,6 @@ class Coordinate:
 
     def __str__(self):
         return str(self.longitude) + ',' + str(self.latitude)
-
-
-def google_get_map_info(address):
-    with proj.my_lib.Common.Browser.MySession(need_cache=True) as session:
-        page = session.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + quote(address))
-        results = json.loads(page.text).get(
-            'results', [])
-        if len(results) == 0:
-            return None
-        map_info = results[0].get('geometry', {}).get('location', {})
-
-        try:
-            longitude = float(map_info.get('lng', None))
-            latitude = float(map_info.get('lat', None))
-        except Exception as e:
-            print(e)
-            return None
-        return str(Coordinate(longitude, latitude))
 
 
 class TestUtil(unittest.TestCase):

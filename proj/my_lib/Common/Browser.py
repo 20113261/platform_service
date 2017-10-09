@@ -13,14 +13,17 @@ import json
 import redis
 import time
 import datetime
+import proj.my_lib.Common.RespStore
+import proj.my_lib.logger
 from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
-from proj.my_lib.Common import RespStore
-from proj.my_lib.logger import get_logger
 
-logger = get_logger('Browser')
+# from proj.my_lib.Common import RespStore
+# from proj.my_lib.logger import get_logger
+
+logger = proj.my_lib.logger.get_logger('Browser')
 httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
@@ -59,12 +62,12 @@ class MySession(requests.Session):
                     req[k] = v
 
             # get cache
-            md5 = RespStore.calculate_md5(req)
+            md5 = proj.my_lib.Common.RespStore.calculate_md5(req)
             self.md5.append(md5)
-            if not RespStore.has_cache(md5):
+            if not proj.my_lib.Common.RespStore.has_cache(md5):
                 resp = None
             else:
-                resp = RespStore.get_by_md5(md5, self.cache_expire_time)
+                resp = proj.my_lib.Common.RespStore.get_by_md5(md5, self.cache_expire_time)
 
             # check cache
             if resp:
@@ -154,15 +157,15 @@ class MySession(requests.Session):
             if exc_type is None:
                 # save any not stored cache
                 for k, v in self.md5_resp.items():
-                    if not RespStore.has_cache(k):
+                    if not proj.my_lib.Common.RespStore.has_cache(k):
                         logger.info('[保存缓存][md5: {}]'.format(k))
-                        RespStore.put_by_md5(k, v)
+                        proj.my_lib.Common.RespStore.put_by_md5(k, v)
             else:
                 # don't store page or delete the page
                 for each_md5 in self.md5:
-                    if RespStore.has_cache(each_md5):
+                    if proj.my_lib.Common.RespStore.has_cache(each_md5):
                         logger.info('[删除缓存][md5: {}]'.format(each_md5))
-                        RespStore.delete_cache(each_md5)
+                        proj.my_lib.Common.RespStore.delete_cache(each_md5)
 
 
 if __name__ == '__main__':

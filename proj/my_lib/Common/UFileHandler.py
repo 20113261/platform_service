@@ -5,12 +5,14 @@
 # @Site    : 
 # @File    : UFileHandler.py
 # @Software: PyCharm
+from __future__ import absolute_import
 import json
 import zlib
 import requests
 import time
 import datetime
 import logging
+import proj.my_lib.Common.Utils
 from ucloud.ufile import putufile, downloadufile, postufile, deleteufile
 from ucloud.compact import BytesIO
 from proj.my_lib.logger import get_logger
@@ -20,8 +22,15 @@ u_logger = logging.getLogger("UCLOUD")
 u_logger.setLevel(logging.ERROR)
 logger = get_logger("ufile_uploader")
 
-config.set_default(uploadsuffix='.ufile.cn-north-03.ucloud.cn')
-config.set_default(downloadsuffix='.ufile.cn-north-03.ucloud.cn')
+local_ip = proj.my_lib.Common.Utils.get_local_ip()
+if local_ip.startswith('10.10'):
+    config.set_default(uploadsuffix='.ufile.cn-north-03.ucloud.cn')
+    config.set_default(downloadsuffix='.ufile.cn-north-03.ucloud.cn')
+elif local_ip.startswith('10.19'):
+    config.set_default(uploadsuffix='.ufile.cn-north-04.ucloud.cn')
+    config.set_default(downloadsuffix='.ufile.cn-north-04.ucloud.cn')
+else:
+    logger.debug("[no ucloud machine][use public ip]")
 config.set_default(connection_timeout=60)
 
 public_key = 'vCuKhG6UcHvB1UswK/q5zjMMHxt7PjKIu3/6q1JtxiZHtAuv'
@@ -120,7 +129,8 @@ def upload_stream(key, data):
 
 if __name__ == '__main__':
     # print(upload_stream('test', json.dumps({'status': 'OK', 'data': 'Hello World', 'test': '中文测试'})))
-    print(has_file('service_platform_cdfdb55def0b654eadba37812bfc66bd'))
+    # print(has_file('service_platform_cdfdb55def0b654eadba37812bfc66bd'))
+    pass
     # print(delete_ufile('test'))
     # print(get_ufile('test'))
     # print(get_file_info('test'))

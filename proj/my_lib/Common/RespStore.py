@@ -11,9 +11,10 @@ import time
 import json
 import pickle
 import proj.my_lib.Common.Utils
+import proj.my_lib.Common.UFileHandler
 from os import path
 from proj.my_lib.logger import get_logger
-from UFileHandler import upload_stream, get_ufile_and_info, delete_ufile, has_file
+# from proj.my_lib.Common.UFileHandler import upload_stream, get_ufile_and_info, delete_ufile, has_file
 
 logger = get_logger('RespStore')
 
@@ -30,7 +31,7 @@ def has_cache(md5):
     if STORE_TYPE == 'file':
         return path.exists(path.join(cache_dir, md5))
     elif STORE_TYPE == 'ufile':
-        return has_file("service_platform_{}".format(md5))
+        return proj.my_lib.Common.UFileHandler.has_file("service_platform_{}".format(md5))
     else:
         raise TypeError('Unknown Type {}'.format(STORE_TYPE))
 
@@ -42,7 +43,7 @@ def delete_cache(md5):
         os.remove(path.join(cache_dir, md5))
         logger.info('delete cache md5: {0}'.format(md5))
     elif STORE_TYPE == 'ufile':
-        return delete_ufile("service_platform_{}".format(md5))
+        return proj.my_lib.Common.UFileHandler.delete_ufile("service_platform_{}".format(md5))
     else:
         raise TypeError('Unknown Type {}'.format(STORE_TYPE))
 
@@ -69,7 +70,7 @@ def put_by_md5(md5, resp):
         length2 = len(res)
         logger.info(
             "[cache zipped][len1: {0}][len2: {1}][ration: {2}]".format(length1, length2, length2 / float(length1)))
-        upload_stream("service_platform_{}".format(md5), data=res)
+        proj.my_lib.Common.UFileHandler.upload_stream("service_platform_{}".format(md5), data=res)
         return md5
     else:
         raise TypeError("Unknown Type {}".format(STORE_TYPE))
@@ -102,7 +103,7 @@ def get_by_md5(md5, expire_time=3600):
     elif STORE_TYPE == 'ufile':
         if not has_cache(md5):
             return None
-        returned = get_ufile_and_info("service_platform_{}".format(md5))
+        returned = proj.my_lib.Common.UFileHandler.get_ufile_and_info("service_platform_{}".format(md5))
         if not returned:
             return None
         else:
