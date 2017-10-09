@@ -43,5 +43,6 @@ CREATE TABLE IF NOT EXISTS `%s` (
   `status` int(11) DEFAULT NULL,
   `insert_time` TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   `flag` int(11) DEFAULT NULL,
-  PRIMARY KEY (`id`,`source`,`source_city_id`)
+  PRIMARY KEY (`id`,`source`,`source_city_id`),
+  KEY `insert_time` (`insert_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
