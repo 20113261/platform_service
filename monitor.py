@@ -120,7 +120,7 @@ def create_table(table_name):
     conn.close()
 
 def monitoring_hotel_list2detail():
-    sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
+    sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime"""
 
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
@@ -151,7 +151,7 @@ def monitoring_hotel_list2detail():
         logger.error(traceback.format_exc(e))
 
 def monitoring_hotel_detail2ImgOrComment():
-    sql = """select source, source_id, city_id, img_items, update_time from %s where update_time > '%s' order by update_time"""
+    sql = """select source, source_id, city_id, img_items, update_time from %s where update_time >= '%s' order by update_time"""
     try:
         for (table_name,) in get_all_tables():
 
@@ -174,7 +174,7 @@ def monitoring_hotel_detail2ImgOrComment():
         logger.error(traceback.format_exc(e))
 
 def monitoring_poi_list2detail():
-    sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
+    sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime"""
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
@@ -205,7 +205,7 @@ def monitoring_poi_list2detail():
         logger.error(traceback.format_exc(e))
 
 def monitoring_poi_detail2imgOrComment():
-    sql = """select source, id, city_id, imgurl, utime from %s where utime > '%s' order by utime"""
+    sql = """select source, id, city_id, imgurl, utime from %s where utime >= '%s' order by utime"""
     try:
         for (table_name,) in get_all_tables():
 
@@ -228,7 +228,7 @@ def monitoring_poi_detail2imgOrComment():
         logger.error(traceback.format_exc(e))
 
 def monitoring_qyer_list2detail():
-    sql = """select source, source_id, city_id, hotel_url, utime from %s where utime > '%s' order by utime"""
+    sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime"""
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
