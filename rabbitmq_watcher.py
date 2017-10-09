@@ -29,11 +29,11 @@ schedule = BlockingScheduler()
 import datetime
 
 # schedule.add_job(monitoring_hotel_list2detail, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
-# schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/300', id='monitoring_hotel_list')
-# schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/450', id='monitoring_hotel_detail')
-# schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/300', id='monitoring_poi_list')
-# schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/450', id='monitoring_poi_detail')
-# schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/300', id='monitoring_qyer_detail')
+schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/300', id='monitoring_hotel_list')
+schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/450', id='monitoring_hotel_detail')
+schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/300', id='monitoring_poi_list')
+schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/450', id='monitoring_poi_detail')
+schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/300', id='monitoring_qyer_detail')
 
 # stream_handler = logging.StreamHandler()
 # logger = logging.getLogger('rabbitmq_watcher')
