@@ -51,7 +51,7 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
             raise Exception('parse %s Error' % target_url)
 
         result['city_id'] = city_id
-        result['utime'] = datetime.datetime.now()
+        # result['utime'] = datetime.datetime.now()
         sql_key = result.keys()
 
         retry_count = kwargs['retry_count']

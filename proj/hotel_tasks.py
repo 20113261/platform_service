@@ -110,7 +110,8 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
         try:
             result.country_id = country_id
 
-            result.update_time = datetime.datetime.now()
+            del result.update_time
+            # result.update_time = datetime.datetime.now()
             sql_key = result.__dict__.keys()
             sql_key.remove('_sa_instance_state')
 

@@ -41,7 +41,7 @@ mioji.common.spider.NEED_FLIP_LIMIT = False
 mioji.common.logger.logger = logger
 
 URL = 'https://www.tripadvisor.cn'
-SQL = """replace into {table_name} (source, source_id, city_id, country_id, hotel_url, utime) values(%s, %s, %s, %s, %s, %s)"""
+SQL = """replace into {table_name} (source, source_id, city_id, country_id, hotel_url) values(%s, %s, %s, %s, %s, %s)"""
 type_dict = {'attr': 'view', 'rest': 'restaurant'}
 spider_name = {'attr': 'View', 'rest': 'Rest'}
 
@@ -90,8 +90,7 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
         for one in result:
             for key, view in one.items():
                 data.append(
-                    (source, view['source_id'], city_id, country_id, view['view_url'],
-                     datetime.datetime.now()))
+                    (source, view['source_id'], city_id, country_id, view['view_url']))
         insert(sql, data)
     except Exception as e:
         task_response.error_code = 33
