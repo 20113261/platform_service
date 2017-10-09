@@ -29,11 +29,11 @@ schedule = BlockingScheduler()
 import datetime
 
 # schedule.add_job(monitoring_hotel_list2detail, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
-schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/300', id='monitoring_hotel_list')
-schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/450', id='monitoring_hotel_detail')
-schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/300', id='monitoring_poi_list')
-schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/450', id='monitoring_poi_detail')
-schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/300', id='monitoring_qyer_detail')
+# schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/300', id='monitoring_hotel_list')
+# schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/450', id='monitoring_hotel_detail')
+# schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/300', id='monitoring_poi_list')
+# schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/450', id='monitoring_poi_detail')
+# schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/300', id='monitoring_qyer_detail')
 
 # stream_handler = logging.StreamHandler()
 # logger = logging.getLogger('rabbitmq_watcher')
@@ -43,15 +43,15 @@ logger = get_logger("rabbitmq_watcher")
 '''
 用于管理分发任务的数目
 默认为 default 值
-key 任务队列名称 val (队列中最少的任务数，单次插入任务数)
+key 任务队列名称 val (队列中最少的任务数，单次插入任务数，执行时间间隔)
 '''
 TASK_CONF = {
-    'default': (0, 0),
-    'file_downloader': (36000, 40000),
-    'hotel_detail': (45000, 50000),
-    'hotel_list': (45000, 50000),
-    'poi_detail': (45000, 50000),
-    'poi_list': (45000, 50000)
+    'default': (0, 0, 10),
+    'file_downloader': (36000, 40000, 10),
+    'hotel_detail': (45000, 50000, 10),
+    'hotel_list': (45000, 50000, 10),
+    'poi_detail': (45000, 50000, 10),
+    'poi_list': (45000, 50000, 10)
 }
 
 MAX_RETRY_TIMES_CONF = {
@@ -105,76 +105,25 @@ def insert_task(queue, limit):
     logger.info("Insert queue: {0} Routine task count: {1}".format(queue, _count - emergency_count))
     logger.info("Insert queue: {0} Total task count: {1}".format(queue, _count))
 
-def mongo_task_watcher(task_name):
+def mongo_task_watcher(*args):
     logger.info('Start Searching Queue Info')
     logger.info(TARGET_URL)
     target_url = TARGET_URL
+    queue_name = args[0]
     page = requests.get(target_url, auth=HTTPBasicAuth('hourong', '1220'))
     content = page.text
     j_data = json.loads(content)
-    return list(filter(lambda x: task_name == x['name'], j_data))[0]
-
-
-@schedule.scheduled_job('cron', second='*/10', id='hotel_list_queue')
-def hotel_list():
-    queue_name = sys._getframe().f_code.co_name
-    each = mongo_task_watcher(queue_name)
+    each = list(filter(lambda x: queue_name == x['name'], j_data))[0]
     message_count = int(each['messages'])
-    queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
+    queue_min_task, insert_task_count, _time = TASK_CONF.get(queue_name, TASK_CONF['default'])
     if message_count <= queue_min_task:
         logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
         insert_task(queue_name, insert_task_count)
     else:
         logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
 
-@schedule.scheduled_job('cron', second='*/10', id='hotel_detail_queue')
-def hotel_detail():
-    queue_name = sys._getframe().f_code.co_name
-    each = mongo_task_watcher(queue_name)
-    message_count = int(each['messages'])
-    queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
-    if message_count <= queue_min_task:
-        logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
-        insert_task(queue_name, insert_task_count)
-    else:
-        logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
-
-@schedule.scheduled_job('cron', second='*/10', id='poi_list_queue')
-def poi_list():
-    queue_name = sys._getframe().f_code.co_name
-    each = mongo_task_watcher(queue_name)
-    message_count = int(each['messages'])
-    queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
-    if message_count <= queue_min_task:
-        logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
-        insert_task(queue_name, insert_task_count)
-    else:
-        logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
-
-@schedule.scheduled_job('cron', second='*/10', id='poi_detail_queue')
-def poi_detail():
-    queue_name = sys._getframe().f_code.co_name
-    each = mongo_task_watcher(queue_name)
-    message_count = int(each['messages'])
-    queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
-    if message_count <= queue_min_task:
-        logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
-        insert_task(queue_name, insert_task_count)
-    else:
-        logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
-
-
-@schedule.scheduled_job('cron', second='*/10', id='file_downloader_queue')
-def file_downloader():
-    queue_name = sys._getframe().f_code.co_name
-    each = mongo_task_watcher(queue_name)
-    message_count = int(each['messages'])
-    queue_min_task, insert_task_count = TASK_CONF.get(queue_name, TASK_CONF['default'])
-    if message_count <= queue_min_task:
-        logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
-        insert_task(queue_name, insert_task_count)
-    else:
-        logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
+for queue_name, (_min, _max, seconds) in TASK_CONF.items():
+    schedule.add_job(mongo_task_watcher, 'cron', args=[queue_name], second='*/'+str(seconds), id=queue_name+'_queue')
 
 
 if __name__ == '__main__':
