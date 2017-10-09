@@ -17,24 +17,53 @@ if __name__ == '__main__':
         pass
     time.sleep(2)
 
-    for line in get_task_total_iter('file_downloader', limit=50, debug=True):
+    for line in get_task_total_iter('hotel_list', limit=50, debug=True):
         # print(line)
         pass
 
     time.sleep(2)
-    for line in get_task_total_iter('file_downloader', limit=50, debug=True):
-        # print(line)
-        pass
-
-    time.sleep(2)
-
-    for line in get_task_total_iter('file_downloader', limit=50, debug=True):
+    for line in get_task_total_iter('hotel_detail', limit=50, debug=True):
         # print(line)
         pass
 
     time.sleep(2)
 
+    for line in get_task_total_iter('poi_list', limit=50, debug=True):
+        # print(line)
+        pass
+
+    time.sleep(2)
+
+    for line in get_task_total_iter('poi_detail', limit=50, debug=True):
+        # print(line)
+        pass
+
+    time.sleep(2)
+
+    print(time.time())
     for line in get_task_total_iter('file_downloader', limit=50, debug=True):
+        # print(line)
+        pass
+    time.sleep(2)
+
+    for line in get_task_total_iter('hotel_list', limit=50, debug=True):
+        # print(line)
+        pass
+
+    time.sleep(2)
+    for line in get_task_total_iter('hotel_detail', limit=50, debug=True):
+        # print(line)
+        pass
+
+    time.sleep(2)
+
+    for line in get_task_total_iter('poi_list', limit=50, debug=True):
+        # print(line)
+        pass
+
+    time.sleep(2)
+
+    for line in get_task_total_iter('poi_detail', limit=50, debug=True):
         # print(line)
         pass
 

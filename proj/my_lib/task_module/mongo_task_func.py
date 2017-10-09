@@ -42,7 +42,7 @@ def get_task_total_iter(queue, used_times=6, limit=30000, debug=False):
     # init now time
     now = datetime.datetime.now()
 
-    logger.debug('[queue: {}][mongo task cursor: {}]'.format(queue, cursor.cursor_id))
+    logger.debug('[queue: {}][mongo task cursor: {}][cursor mem id: {}]'.format(queue, cursor.cursor_id, id(cursor)))
     _count = 0
     while True:
         if _count == limit:
