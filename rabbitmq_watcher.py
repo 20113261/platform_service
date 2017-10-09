@@ -15,7 +15,7 @@ from proj.my_lib.logger import get_logger
 from apscheduler.schedulers.blocking import BlockingScheduler
 from requests.auth import HTTPBasicAuth
 from proj.celery import app
-from proj.my_lib.task_module.mongo_task_func import get_task_total
+from proj.my_lib.task_module.mongo_task_func import get_task_total_iter
 from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, \
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail
@@ -68,8 +68,9 @@ def get_max_retry_times(queue_name):
 def insert_task(queue, limit):
     _count = 0
     max_retry_times = get_max_retry_times(queue_name=queue)
-    for task_token, worker, queue, routing_key, args, used_times, task_name in get_task_total(queue=queue, limit=limit,
-                                                                                              used_times=max_retry_times):
+    for task_token, worker, queue, routing_key, args, used_times, task_name in get_task_total_iter(queue=queue,
+                                                                                                   limit=limit,
+                                                                                                   used_times=max_retry_times):
         _count += 1
         kwargs = {
             'mongo_task_id': task_token,
@@ -105,6 +106,7 @@ def insert_task(queue, limit):
     logger.info("Insert queue: {0} Routine task count: {1}".format(queue, _count - emergency_count))
     logger.info("Insert queue: {0} Total task count: {1}".format(queue, _count))
 
+
 def mongo_task_watcher(*args):
     logger.info('Start Searching Queue Info')
     logger.info(TARGET_URL)
@@ -122,9 +124,10 @@ def mongo_task_watcher(*args):
     else:
         logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
 
-for queue_name, (_min, _max, seconds) in TASK_CONF.items():
-    schedule.add_job(mongo_task_watcher, 'cron', args=[queue_name], second='*/'+str(seconds), id=queue_name+'_queue')
 
+for queue_name, (_min, _max, seconds) in TASK_CONF.items():
+    schedule.add_job(mongo_task_watcher, 'cron', args=[queue_name], second='*/' + str(seconds),
+                     id=queue_name + '_queue')
 
 if __name__ == '__main__':
     schedule.start()

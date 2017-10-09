@@ -15,6 +15,62 @@ client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['Task']
 failed_task_collections = client['MongoTask']['FailedTask']
 
+cursor_dict = {}
+
+
+def init_cursor(queue, used_times):
+    cursor = collections.find(
+        {
+            'finished': 0,
+            'queue': queue,
+            'used_times': {'$lte': used_times},
+            'running': 0
+        }
+    )
+    # ).sort([('priority', -1), ('used_times', 1), ('utime', 1)])
+    return cursor
+
+
+@func_time_logger
+def get_task_total_iter(queue, used_times=6, limit=30000, debug=False):
+    # init cursor
+    global cursor_dict
+    cursor = cursor_dict.get(queue, None)
+    if cursor is None:
+        cursor = init_cursor(queue=queue, used_times=used_times)
+        cursor_dict[queue] = cursor
+    # init now time
+    now = datetime.datetime.now()
+
+    _count = 0
+    while True:
+        if _count == limit:
+            break
+        _count += 1
+
+        # get per line
+        try:
+            line = cursor.next()
+        except StopIteration:
+            # end of iter break
+            break
+
+        task_token = line['task_token']
+        worker = line['worker']
+        routing_key = line['routing_key']
+
+        if not debug:
+            collections.update({
+                'task_token': task_token
+            }, {
+                '$set': {
+                    'utime': now,
+                    'running': 1
+                },
+                '$inc': {'used_times': 1}
+            })
+        yield task_token, worker, queue, routing_key, line['args'], line['used_times'], line['task_name']
+
 
 @func_time_logger
 def get_task_total(queue, used_times=6, limit=30000):
@@ -96,6 +152,7 @@ if __name__ == '__main__':
     #     count += 1
     #
     # print count
-    for each in get_task_total('poi_detail', used_times=6, limit=30000):
-        print(each)
-        # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
+    # for each in get_task_total('poi_detail', used_times=6, limit=30000):
+    #     print(each)
+    # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
+    pass
