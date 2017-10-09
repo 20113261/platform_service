@@ -23,7 +23,7 @@ def get_task_total(queue, used_times=6, limit=30000):
             {
                 'finished': 0,
                 'queue': queue,
-                'used_times': {'$lte': used_times},
+                # 'used_times': {'$lte': used_times},
                 'running': 0
             }
     ).sort([('priority', -1), ('used_times', 1), ('utime', 1)]).limit(limit):
