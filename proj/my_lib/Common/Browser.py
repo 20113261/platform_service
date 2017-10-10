@@ -67,6 +67,7 @@ class MySession(requests.Session):
                 try:
                     return super(MySession, self).send(request, **kwargs)
                 except Exception as e:
+                    self.change_proxies()
                     logger.exception(msg="[request retry][retry times: {}]".format(i + 1), exc_info=e)
                     error = e
             raise error
