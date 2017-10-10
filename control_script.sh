@@ -46,3 +46,6 @@ pssh -h new_hosts.txt -i 'ln -s /data /search'
 
 # send lib env
 cat new_hosts.txt |xargs -I host scp -r lib host:/data/
+
+# kill all slave
+pssh -h hosts.txt -i 'sh /data/hourong/ServicePlatform/kill_all.sh'
