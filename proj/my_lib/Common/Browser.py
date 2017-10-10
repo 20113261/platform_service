@@ -64,6 +64,16 @@ class MySession(requests.Session):
             if 'Host' not in request.headers:
                 request.headers['Host'] = urlparse.urlparse(request.url).netloc
 
+        def get_resp():
+            error = None
+            for i in range(4):
+                try:
+                    return super(MySession, self).send(request, **kwargs)
+                except Exception as e:
+                    logger.exception("[request retry][retry times: {}]".format(i + 1), e)
+                    error = e
+            raise error
+
         if self.need_cache:
             # get cache key
             req = {}
@@ -91,19 +101,9 @@ class MySession(requests.Session):
 
             # need crawl
             if not resp:
-                resp = super(MySession, self).send(request, **kwargs)
+                resp = get_resp()
                 self.md5_resp[md5] = resp
         else:
-            def get_resp():
-                error = None
-                for i in range(4):
-                    try:
-                        return super(MySession, self).send(request, **kwargs)
-                    except Exception as e:
-                        logger.exception("[request retry][retry times: {}]".format(i + 1), e)
-                        error = e
-                raise error
-
             resp = get_resp()
         return resp
 
