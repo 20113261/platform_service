@@ -19,7 +19,9 @@ from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from proj.my_lib.Common.Utils import try3times, get_out_ip_async
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
 
@@ -161,12 +163,13 @@ if __name__ == '__main__':
     #         'http://www.tripadvisor.cn/ShowUrl?&excludeFromVS=false&odc=BusinessListingsUrl&d=10006331&url=0')
     #     print page.url
 
-    with MySession(need_proxies=False) as session:
-        # session.headers.update({
-        #     'Host': 'www.tripadvisor.cn'
-        # })
-        page = session.get(
-            'http://bbs.qyer.com/thread-1384644-1.html')
-        print(page.url)
-        print(page.text)
-        # raise Exception()
+    # with MySession(need_proxies=False) as session:
+    #     # session.headers.update({
+    #     #     'Host': 'www.tripadvisor.cn'
+    #     # })
+    #     page = session.get(
+    #         'http://bbs.qyer.com/thread-1384644-1.html')
+    #     print(page.url)
+    #     print(page.text)
+    # raise Exception()
+    print(simple_get_socks_proxy())
