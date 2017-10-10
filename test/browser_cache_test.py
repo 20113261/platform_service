@@ -32,3 +32,7 @@ if __name__ == '__main__':
     with MySession(need_proxies=False, need_cache=True) as session:
         resp = session.get('http://hilton.com.cn/zh-cn/city/Suzhou-hotels.html')
         # print(resp.text)
+
+    with MySession(need_proxies=True, need_cache=False) as session:
+        resp = session.get('http://www.baidu.com')
+        # print(resp.text)

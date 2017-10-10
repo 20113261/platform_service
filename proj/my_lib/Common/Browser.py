@@ -19,7 +19,9 @@ from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from proj.my_lib.Common.Utils import try3times, get_out_ip_async
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
 
@@ -28,7 +30,7 @@ httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
 
-@try3times(try_again_times=1)
+@try3times(try_again_times=3)
 def simple_get_socks_proxy():
     url = "http://10.10.239.46:8087/proxy?source=ServicePlatform"
     r = requests.get(url)
@@ -62,6 +64,16 @@ class MySession(requests.Session):
             if 'Host' not in request.headers:
                 request.headers['Host'] = urlparse.urlparse(request.url).netloc
 
+        def get_resp():
+            error = None
+            for i in range(4):
+                try:
+                    return super(MySession, self).send(request, **kwargs)
+                except Exception as e:
+                    logger.exception("[request retry][retry times: {}]".format(i + 1), e)
+                    error = e
+            raise error
+
         if self.need_cache:
             # get cache key
             req = {}
@@ -89,11 +101,10 @@ class MySession(requests.Session):
 
             # need crawl
             if not resp:
-                resp = super(MySession, self).send(request, **kwargs)
+                resp = get_resp()
                 self.md5_resp[md5] = resp
         else:
-            resp = super(MySession, self).send(request, **kwargs)
-
+            resp = get_resp()
         return resp
 
     def cache_check(self, req, resp):
@@ -161,12 +172,13 @@ if __name__ == '__main__':
     #         'http://www.tripadvisor.cn/ShowUrl?&excludeFromVS=false&odc=BusinessListingsUrl&d=10006331&url=0')
     #     print page.url
 
-    with MySession(need_proxies=False) as session:
-        # session.headers.update({
-        #     'Host': 'www.tripadvisor.cn'
-        # })
-        page = session.get(
-            'http://bbs.qyer.com/thread-1384644-1.html')
-        print(page.url)
-        print(page.text)
-        # raise Exception()
+    # with MySession(need_proxies=False) as session:
+    #     # session.headers.update({
+    #     #     'Host': 'www.tripadvisor.cn'
+    #     # })
+    #     page = session.get(
+    #         'http://bbs.qyer.com/thread-1384644-1.html')
+    #     print(page.url)
+    #     print(page.text)
+    # raise Exception()
+    print(simple_get_socks_proxy())

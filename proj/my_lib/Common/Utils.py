@@ -58,7 +58,7 @@ def all_chinese(str_or_unicode):
     return all(map(lambda c: u'\u4e00' <= c <= u'\u9fff', string))
 
 
-def try3times(try_again_times=3, others_exptions=None):
+def try3times(try_again_times=3, others_exptions=None, final_raise_exception=False):
     """用于任务中需要发小请求的，可以指定重试次数，添加兼容的异常"""
 
     def try_three(func):
@@ -68,6 +68,9 @@ def try3times(try_again_times=3, others_exptions=None):
                     return func(*args, **kwargs)
                 except (SSLError, ConnectionError, ConnectTimeout, ProxyError, others_exptions) as e:
                     print(traceback.format_exc(e))
+            else:
+                if final_raise_exception:
+                    raise e
 
         return try_
 
