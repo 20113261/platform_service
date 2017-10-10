@@ -16,7 +16,7 @@ client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['Task']
 
 # TODO {0}|_|{1} tag + source   [city_id,]
-def send_hotel_list_task(task_name, datas):
+def send_hotel_list_task(task_name, datas, priority):
     data = []
     _count = 0
     success_count = 0
@@ -58,7 +58,7 @@ def send_hotel_list_task(task_name, datas):
                     'suggest_type': suggest_type,
                     'suggest': _suggest,
                 },#source, city_id, country_id, check_in, part, is_new_type, suggest_type, suggest
-                'priority': 3,
+                'priority': priority,
                 'finished': 0,
                 'used_times': 0,
                 'running': 0,
@@ -88,7 +88,7 @@ def send_hotel_list_task(task_name, datas):
 
     return success_count
 
-def send_daodao_list_task(task_name, datas):
+def send_daodao_list_task(task_name, datas, priority):
     data = []
     _count = 0
     success_count = 0
@@ -106,7 +106,7 @@ def send_daodao_list_task(task_name, datas):
                 'poi_type': poi_type,
                 'url': urlparse.urlsplit(url).path,
             },#source, url, city_id, country_id, poi_type
-            'priority': 3,
+            'priority': priority,
             'finished': 0,
             'used_times': 0,
             'running': 0,
@@ -134,7 +134,7 @@ def send_daodao_list_task(task_name, datas):
             success_count += hourong_patch(data)
     return success_count
 
-def send_qyer_list_task(task_name, datas):
+def send_qyer_list_task(task_name, datas, priority):
     data = []
     _count = 0
     success_count = 0
@@ -152,7 +152,7 @@ def send_qyer_list_task(task_name, datas):
                 'check_in': check_in,
                 'city_url': url,
             },  # source, city_id, country_id, check_in, city_url
-            'priority': 3,
+            'priority': priority,
             'finished': 0,
             'used_times': 0,
             'running': 0,
@@ -193,7 +193,7 @@ def list_task(task_name, datas, priority=3):
 
     func = task2func.get(tab_args[0]+'_'+tab_args[1], task2func['default'])
 
-    success_count = func(task_name, datas)
+    success_count = func(task_name, datas, priority)
 
     if success_count != 0:
         update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', success_count, sum_or_set=False)
