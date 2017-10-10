@@ -116,7 +116,8 @@ def mongo_task_watcher(*args):
     content = page.text
     j_data = json.loads(content)
     # each = list(filter(lambda x: queue_name == x['name'], j_data))[0]
-    message_count = int(j_data['messages'])
+    count = j_data.get('messages_ready', j_data.get('messages', 0))
+    message_count = int(count)
     queue_min_task, insert_task_count, _time = TASK_CONF.get(queue_name, TASK_CONF['default'])
     if message_count <= queue_min_task:
         logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
