@@ -15,7 +15,6 @@ import time
 import datetime
 import proj.my_lib.Common.RespStore
 import proj.my_lib.logger
-# from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
@@ -99,7 +98,6 @@ class MySession(requests.Session):
         return True
 
     def change_proxies(self):
-        # self.p_r_o_x_y = get_proxy(source="Platform")
         self.p_r_o_x_y = simple_get_socks_proxy()
         proxies = {
             'http': 'socks5://' + self.p_r_o_x_y,
