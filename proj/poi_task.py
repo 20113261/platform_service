@@ -65,20 +65,17 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
         address = result['address']
 
         if not key_is_legal(map_info):
-            if retry_count > 3:
-                if not key_is_legal(address):
-                    raise TypeCheckError(
-                        'Error map_info and address NULL        with parser %ss    url %s' % (
-                            parser.func_name, target_url))
-                google_map_info = google_get_map_info(address)
-                if not key_is_legal(google_map_info):
-                    raise TypeCheckError(
-                        'Error google_map_info  NULL        with parser %ss    url %s' % (parser.func_name, target_url))
-                result['map_info'] = google_map_info
-            else:
+            if not key_is_legal(address):
                 raise TypeCheckError(
-                    'Error map_info NULL        with parser %ss    url %s' % (parser.func_name, target_url))
-
+                    'Error map_info and address NULL        with parser %ss    url %s' % (
+                        parser.func_name, target_url))
+            google_map_info = google_get_map_info(address)
+            if not key_is_legal(google_map_info):
+                raise TypeCheckError(
+                    'Error google_map_info  NULL  with [parser: {}][url: {}][address: {}][map_info: {}]'.format(
+                        parser.func_name, target_url, address, map_info)
+                )
+            result['map_info'] = google_map_info
         if key_is_legal(name) or key_is_legal(name_en):
             logger.info(name + '  ----------  ' + name_en)
         else:
