@@ -21,8 +21,8 @@ from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail
 from proj.config import BROKER_URL
 
-host, queue = re.findall("amqp://.+?@(.+?)/(.+)", BROKER_URL)[0]
-TARGET_URL = 'http://{0}:15672/api/queues/{1}'.format(host, queue)
+host, v_host = re.findall("amqp://.+?@(.+?)/(.+)", BROKER_URL)[0]
+TARGET_URL = 'http://{0}:15672/api/queues/{1}'.format(host, v_host)
 
 schedule = BlockingScheduler()
 
@@ -109,14 +109,14 @@ def insert_task(queue, limit):
 
 def mongo_task_watcher(*args):
     logger.info('Start Searching Queue Info')
-    logger.info(TARGET_URL)
-    target_url = TARGET_URL
     queue_name = args[0]
+    target_url = TARGET_URL + '/' + queue_name
+    logger.info(target_url)
     page = requests.get(target_url, auth=HTTPBasicAuth('hourong', '1220'))
     content = page.text
     j_data = json.loads(content)
-    each = list(filter(lambda x: queue_name == x['name'], j_data))[0]
-    message_count = int(each['messages'])
+    # each = list(filter(lambda x: queue_name == x['name'], j_data))[0]
+    message_count = int(j_data['messages'])
     queue_min_task, insert_task_count, _time = TASK_CONF.get(queue_name, TASK_CONF['default'])
     if message_count <= queue_min_task:
         logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
