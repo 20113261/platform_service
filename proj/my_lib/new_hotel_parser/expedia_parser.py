@@ -247,10 +247,10 @@ def expedia_parser(content, url, other_info):
         img_url_set = set()
         for each in img_list:
             try:
-                each_url = 'https:' + each.get('data-src')
+                each_url = urlparse.urljoin('https:', each.get('data-src'))
             except:
                 try:
-                    each_url = 'https:' + each.get('src')
+                    each_url = urlparse.urljoin('https:', each.get('src'))
                 except:
                     pass
             if each_url != 'https:':
