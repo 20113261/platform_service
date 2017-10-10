@@ -76,7 +76,7 @@ def has_chinese(contents, encoding='utf-8'):
 @try3times(try_again_times=10)
 def image_parser(detail_id):
     with MySession(need_proxies=True, need_cache=True) as session:
-        page = session.get(urljoin(img_get_url, detail_id))
+        page = session.get(img_get_url + str(detail_id))
         root = PyQuery(page.text)
         images_list = []
         for div in root('.photos.inHeroList div').items():

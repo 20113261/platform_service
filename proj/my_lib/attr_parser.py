@@ -28,7 +28,7 @@ pattern = re.compile('\{\'aHref\'\:\'([\s\S]+?)\'\,\ \'')
 @try3times(try_again_times=10)
 def image_parser(detail_id):
     with MySession(need_proxies=True, need_cache=True) as session:
-        page = session.get(urlparse.urljoin(img_get_url, detail_id))
+        page = session.get(img_get_url+str(detail_id))
         root = PyQuery(page.text)
         images_list = []
         for div in root('.photos.inHeroList div').items():
@@ -399,6 +399,7 @@ if __name__ == '__main__':
     url = 'https://www.tripadvisor.cn/Attraction_Review-g1024140-d10000541-Reviews-Castaway_Yoga-Ko_Lipe_Satun_Province.html'
     url = 'https://www.tripadvisor.cn//Attraction_Review-g297524-d314609-Reviews-Darwin_Bay-Genovesa_Galapagos_Islands.html,https://www.tripadvisor.cn//Attraction_Review-g297524-d314610-Reviews-Darwin_Trail-Genovesa_Galapagos_Islands.html'
     url = 'https://www.tripadvisor.cn/Attraction_Review-g187147-d188150-Reviews-Musee_d_Orsay-Paris_Ile_de_France.html'
+    url = 'https://www.tripadvisor.cn//Attraction_Review-g297533-d8749417-Reviews-Santa_Cruz_Fish_Market-Puerto_Ayora_Santa_Cruz_Galapagos_Islands.html'
     import requests
 
     content = requests.get(url).content
