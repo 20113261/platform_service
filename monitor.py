@@ -34,6 +34,7 @@ HOTEL_SOURCE = ('agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hote
         'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton')
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
+PRIORITY = 3
 # TODO  所有表的update_time字段加索引
 # TODO  所有表的update_time字段改为timestramp(6)类型
 
@@ -94,13 +95,13 @@ def get_seek(task_name):
     conn.close()
     logger.info('timestramp, priority :  %s ' % str(result))
     if not result or len(result)==0:
-        return get_default_timestramp(), 3
+        return get_default_timestramp(), PRIORITY
 
     return result
 
-def update_seek(task_name, seek):
-    sql = """replace into task_seek (task_name, seek) values('%s','%s');"""
-    execute_sql(sql % (task_name, seek), commit=True)
+def update_seek(task_name, seek, priority=3):
+    sql = """replace into task_seek (task_name, seek, priority) values('%s','%s', %d);"""
+    execute_sql(sql % (task_name, seek, priority), commit=True)
 
 def get_all_tables():
     sql = """select table_name from information_schema.tables where table_schema = 'ServicePlatform';"""
@@ -144,7 +145,7 @@ def monitoring_hotel_list2detail():
             timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
-                update_seek(table_name, timestamp)
+                update_seek(table_name, timestamp, priority)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
@@ -167,7 +168,7 @@ def monitoring_hotel_detail2ImgOrComment():
                                                        priority, is_poi_task=False)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
-                update_seek(table_name, timestamp)
+                update_seek(table_name, timestamp, priority)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
@@ -198,7 +199,7 @@ def monitoring_poi_list2detail():
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
-                update_seek(table_name, timestamp)
+                update_seek(table_name, timestamp, priority)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
@@ -221,7 +222,7 @@ def monitoring_poi_detail2imgOrComment():
                                                        priority, is_poi_task=True)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
-                update_seek(table_name, timestamp)
+                update_seek(table_name, timestamp, priority)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
@@ -252,7 +253,7 @@ def monitoring_qyer_list2detail():
             timestamp, success_count = send_qyer_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
-                update_seek(table_name, timestamp)
+                update_seek(table_name, timestamp, priority)
             if success_count != 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
@@ -272,9 +273,9 @@ def monitoring_zombies_task():
 
 if __name__ == '__main__':
     # get_default_timestramp()
-    # get_seek('hotel_list2detail')
-    # update_seek('hotel_list2detail', datetime.datetime.now())
+    get_seek('hotel_list2detail_test')
+    # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
     # test_timstramp()
-    monitoring_hotel_list2detail()
+    # monitoring_hotel_list2detail()
     # monitoring_hotel_detail2ImgOrComment()
     # monitoring_zombies_task()
