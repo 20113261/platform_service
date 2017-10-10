@@ -15,7 +15,7 @@ from proj.my_lib.logger import get_logger
 from apscheduler.schedulers.blocking import BlockingScheduler
 from requests.auth import HTTPBasicAuth
 from proj.celery import app
-from proj.my_lib.task_module.mongo_task_func import get_task_total_iter
+from proj.my_lib.task_module.mongo_task_func import get_task_total_simple
 from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, \
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail
@@ -68,9 +68,9 @@ def get_max_retry_times(queue_name):
 def insert_task(queue, limit):
     _count = 0
     max_retry_times = get_max_retry_times(queue_name=queue)
-    for task_token, worker, queue, routing_key, args, used_times, task_name in get_task_total_iter(queue=queue,
-                                                                                                   limit=limit,
-                                                                                                   used_times=max_retry_times):
+    for task_token, worker, queue, routing_key, args, used_times, task_name in get_task_total_simple(queue=queue,
+                                                                                                     limit=limit,
+                                                                                                     used_times=max_retry_times):
         _count += 1
         kwargs = {
             'mongo_task_id': task_token,

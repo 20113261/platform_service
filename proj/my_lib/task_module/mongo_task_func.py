@@ -8,6 +8,7 @@
 import pymongo
 import datetime
 from proj.my_lib.logger import get_logger, func_time_logger
+from collections import defaultdict
 
 logger = get_logger("mongo_task_func")
 
@@ -16,6 +17,10 @@ collections = client['MongoTask']['Task']
 failed_task_collections = client['MongoTask']['FailedTask']
 
 cursor_dict = {}
+
+
+class StopException(Exception):
+    pass
 
 
 def init_cursor(queue, used_times):
@@ -29,6 +34,53 @@ def init_cursor(queue, used_times):
     )
     # ).sort([('priority', -1), ('used_times', 1), ('utime', 1)])
     return cursor
+
+
+@func_time_logger
+def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
+    _count = limit
+    _total = defaultdict(int)
+    try:
+        for each_priority in range(10, 0, -1):
+            for each_used_times in range(0, used_times + 1):
+                cursor = collections.find(
+                    {
+                        'finished': 0,
+                        'queue': queue,
+                        'used_times': {'$lte': each_used_times},
+                        'priority': each_priority,
+                        'running': 0
+                    }
+                ).limit(_count)
+                now = datetime.datetime.now()
+                logger.debug(
+                    '[queue: {}][priority: {}][used_times: {}][limit: {}][debug: {}]'.format(queue, each_priority,
+                                                                                             each_used_times, _count,
+                                                                                             debug))
+
+                for line in cursor:
+                    _total[(each_priority, each_used_times)] += 1
+                    _count -= 1
+
+                    if _count == 0:
+                        raise StopException()
+                    task_token = line['task_token']
+                    worker = line['worker']
+                    routing_key = line['routing_key']
+
+                    if not debug:
+                        collections.update({
+                            'task_token': task_token
+                        }, {
+                            '$set': {
+                                'utime': now,
+                                'running': 1
+                            },
+                            '$inc': {'used_times': 1}
+                        })
+                    yield task_token, worker, queue, routing_key, line['args'], line['used_times'], line['task_name']
+    except StopException:
+        logger.debug("[end of search][queue: {}][num: {}]".format(queue, _total))
 
 
 @func_time_logger
@@ -156,4 +208,5 @@ if __name__ == '__main__':
     # for each in get_task_total('poi_detail', used_times=6, limit=30000):
     #     print(each)
     # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
-    pass
+    for line in get_task_total_simple('hotel_list', debug=True):
+        pass
