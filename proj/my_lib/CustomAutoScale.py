@@ -9,11 +9,32 @@ import psutil
 import os
 from celery.worker.autoscale import Autoscaler
 from proj.my_lib.logger import get_logger
+from time import sleep
 
 logger = get_logger('auto scale logger')
 
+INIT_POOL_PERCENT = 0.75
+
 
 class CustomAutoScale(Autoscaler):
+    def __init__(self, pool, max_concurrency):
+        super(CustomAutoScale, self).__init__(pool, max_concurrency)
+        init_pool_size = self.min_concurrency + int(INIT_POOL_PERCENT * (self.max_concurrency - self.min_concurrency))
+        with self.mutex:
+            self.pool.grow(init_pool_size - self.processes)
+
+    def body(self):
+        with self.mutex:
+            self.maybe_scale()
+        memory_obj = psutil.virtual_memory()
+        memory_percent = memory_obj.percent
+        if memory_percent < 85.0:
+            sleep(3.0)
+        elif memory_percent < 90.0:
+            sleep(10.0)
+        else:
+            sleep(30.0)
+
     def _maybe_scale(self, req=None):
         worker_name = self.worker.hostname
         memory_obj = psutil.virtual_memory()
@@ -59,11 +80,11 @@ class CustomAutoScale(Autoscaler):
                                                                                                          0))
             return False
         else:
-            cur = procs - self.min_concurrency
-            # down_process = max(int(cur / 2), 1)
-            down_process = 2
-            # self.scale_down(down_process)
-            self._shrink(down_process)
-            logger.debug("[worker_name: {}][memory_percent: {}][load_average: {}][current: {}][scale down: {}]".
-                         format(worker_name, memory_percent, load_average, self.processes, down_process))
-            return True
+            if self.processes > self.min_concurrency:
+                # down_process = max(int(cur / 2), 1)
+                down_process = 1
+                # self.scale_down(down_process)
+                self._shrink(down_process)
+                logger.debug("[worker_name: {}][memory_percent: {}][load_average: {}][current: {}][scale down: {}]".
+                             format(worker_name, memory_percent, load_average, self.processes, down_process))
+                return True
