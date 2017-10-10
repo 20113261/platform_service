@@ -18,29 +18,6 @@ INIT_POOL_PERCENT = 0.75
 
 
 class CustomAutoScale(Autoscaler):
-    def body(self):
-        is_first = getattr(self, 'is_first', False)
-        if is_first:
-            # 首次执行时，调整为适中 process
-            setattr(self, 'is_first', True)
-            init_pool_size = self.min_concurrency + int(
-                INIT_POOL_PERCENT * (self.max_concurrency - self.min_concurrency))
-            with self.mutex:
-                self._grow(init_pool_size - self.processes)
-            self.pool.grow(init_pool_size - self.processes)
-            self.keepalive = 60.0
-
-        with self.mutex:
-            self.maybe_scale()
-        memory_obj = psutil.virtual_memory()
-        memory_percent = memory_obj.percent
-        if memory_percent < 85.0:
-            sleep(3.0)
-        elif memory_percent < 90.0:
-            sleep(10.0)
-        else:
-            sleep(30.0)
-
     def _maybe_scale(self, req=None):
         worker_name = self.worker.hostname
         memory_obj = psutil.virtual_memory()
