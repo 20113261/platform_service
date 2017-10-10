@@ -1,6 +1,6 @@
 # !/usr/bin/python
 # -*- coding: UTF-8 -*-
-from monitor import create_table, update_task_statistics
+from monitor import create_table, update_task_statistics, get_default_timestramp, update_seek
 from send_task import hourong_patch
 
 import pymysql
@@ -186,9 +186,10 @@ task2func = {
     'default': send_daodao_list_task
 }
 
-def list_task(task_name, datas):
+def list_task(task_name, datas, priority=3):
     tab_args = task_name.split('_')
     create_table(task_name)
+    update_seek(task_name, get_default_timestramp(), int(priority))
 
     func = task2func.get(tab_args[0]+'_'+tab_args[1], task2func['default'])
 
