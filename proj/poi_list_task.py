@@ -98,6 +98,7 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
                 data.append(
                     (source, view['source_id'], city_id, country_id, view['view_url']))
                 logger.info('%s' % str((source, view['source_id'], city_id, country_id, view['view_url'])))
+        logger.info('%s %s' % (sql, str(data)))
         insert(sql, data)
     except Exception as e:
         task_response.error_code = 33
