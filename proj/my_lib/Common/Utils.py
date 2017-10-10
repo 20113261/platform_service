@@ -67,7 +67,7 @@ def try3times(try_again_times=3, others_exptions=None):
                 try:
                     return func(*args, **kwargs)
                 except (SSLError, ConnectionError, ConnectTimeout, ProxyError, others_exptions) as e:
-                    print traceback.format_exc(e)
+                    print(traceback.format_exc(e))
 
         return try_
 

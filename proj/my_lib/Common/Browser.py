@@ -33,6 +33,8 @@ def simple_get_socks_proxy():
     url = "http://10.10.239.46:8087/proxy?source=ServicePlatform"
     r = requests.get(url)
     proxy = r.content
+    if proxy is None:
+        raise Exception("Error Proxy: {}".format(proxy))
     return proxy
 
 
