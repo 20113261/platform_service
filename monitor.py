@@ -14,9 +14,11 @@ import redis
 import pymysql
 import pymongo
 import os
+import sys
 
 from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task
 from proj.my_lib.logger import get_logger
+from send_email import send_email
 
 logger = get_logger('monitor')
 # from sqlalchemy import create_engine
@@ -26,6 +28,9 @@ logger = get_logger('monitor')
 # DBSession = sessionmaker(bind=engine)
 # session = DBSession()
 from proj.mysql_pool import service_platform_pool
+
+SEND_TO = 'hourong@mioji.com;luwanning@mioji.com'
+EMAIL_TITLE = '[异常监控]定时发任务挂了'
 
 task_statistics = redis.Redis(host='10.10.180.145', db=9)
 client = pymongo.MongoClient(host='10.10.231.105')
@@ -150,6 +155,7 @@ def monitoring_hotel_list2detail():
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
 
 def monitoring_hotel_detail2ImgOrComment():
     sql = """select source, source_id, city_id, img_items, update_time from %s where update_time >= '%s' order by update_time limit 5000"""
@@ -173,6 +179,7 @@ def monitoring_hotel_detail2ImgOrComment():
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
 
 def monitoring_poi_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
@@ -204,6 +211,7 @@ def monitoring_poi_list2detail():
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
 
 def monitoring_poi_detail2imgOrComment():
     sql = """select source, id, city_id, imgurl, utime from %s where utime >= '%s' order by utime limit 5000"""
@@ -227,6 +235,7 @@ def monitoring_poi_detail2imgOrComment():
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
 
 def monitoring_qyer_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
@@ -258,6 +267,7 @@ def monitoring_qyer_list2detail():
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
 
 def monitoring_zombies_task():
     collections.update({
