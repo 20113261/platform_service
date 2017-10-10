@@ -18,6 +18,8 @@ failed_task_collections = client['MongoTask']['FailedTask']
 
 cursor_dict = {}
 
+MIN_PRIORITY = 5
+
 
 class StopException(Exception):
     pass
@@ -41,7 +43,7 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     _count = limit
     _total = defaultdict(int)
     try:
-        for each_priority in range(10, 0, -1):
+        for each_priority in range(10, MIN_PRIORITY, -1):
             for each_used_times in range(0, used_times + 1):
                 cursor = collections.find(
                     {
