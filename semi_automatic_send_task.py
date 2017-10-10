@@ -190,6 +190,7 @@ def list_task(task_name, datas, priority=3):
     tab_args = task_name.split('_')
     create_table(task_name)
     update_seek(task_name, get_default_timestramp(), int(priority))
+    update_seek(task_name.replace('list', 'detail'), get_default_timestramp(), int(priority))
 
     func = task2func.get(tab_args[0]+'_'+tab_args[1], task2func['default'])
 
