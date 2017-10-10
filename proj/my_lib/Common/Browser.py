@@ -19,9 +19,6 @@ from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from proj.my_lib.Common.Utils import try3times, get_out_ip_async
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
 
