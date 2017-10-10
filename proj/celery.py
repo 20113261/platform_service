@@ -91,7 +91,7 @@ class StdoutFormatter(logging.Formatter):
 def initialize_logger(loglevel=logging.INFO, **kwargs):
     log_name = os.environ.get('CELERY_LOG_NAME', 'celery')
     handler = RotatingFileHandler(
-        '/search/log/{0}.log'.format(log_name),
+        '/data/log/{0}.log'.format(log_name),
         maxBytes=100 * 1024 * 1024,
         backupCount=2
     )

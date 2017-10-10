@@ -15,7 +15,6 @@ import time
 import datetime
 import proj.my_lib.Common.RespStore
 import proj.my_lib.logger
-# from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
@@ -29,7 +28,7 @@ httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
 
-@try3times
+@try3times(try_again_times=1)
 def simple_get_socks_proxy():
     url = "http://10.10.239.46:8087/proxy?source=ServicePlatform"
     r = requests.get(url)
@@ -99,7 +98,6 @@ class MySession(requests.Session):
         return True
 
     def change_proxies(self):
-        # self.p_r_o_x_y = get_proxy(source="Platform")
         self.p_r_o_x_y = simple_get_socks_proxy()
         proxies = {
             'http': 'socks5://' + self.p_r_o_x_y,
