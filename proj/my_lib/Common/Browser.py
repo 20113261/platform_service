@@ -94,10 +94,15 @@ class MySession(requests.Session):
                 resp = super(MySession, self).send(request, **kwargs)
                 self.md5_resp[md5] = resp
         else:
-            @try3times(try_again_times=3, final_raise_exception=True, others_exptions=ValueError)
             def get_resp():
-                _resp = super(MySession, self).send(request, **kwargs)
-                return _resp
+                error = None
+                for i in range(4):
+                    try:
+                        return super(MySession, self).send(request, **kwargs)
+                    except Exception as e:
+                        logger.exception("[request retry][retry times: {}]".format(i + 1), e)
+                        error = e
+                raise error
 
             resp = get_resp()
         return resp
