@@ -20,11 +20,13 @@ class CustomAutoScale(Autoscaler):
         memory_percent = memory_obj.percent
         procs = self.processes
         if memory_percent < 85.0:
-            cur = min(self.qty, self.max_concurrency)
-            if cur > procs:
-                self.scale_up(cur - procs)
+            # cur = min(self.qty, self.max_concurrency)
+            # if cur > procs:
+            if self.max_concurrency > procs:
+                up_process = max(self.max_concurrency / 100, 2)
+                self.scale_up(up_process)
                 logger.debug("[worker_name: {}][memory_percent: {}][current: {}][scale up: {}]".
-                             format(worker_name, memory_percent, self.processes, cur - procs))
+                             format(worker_name, memory_percent, self.processes, up_process))
                 return True
                 # cur = max(self.qty, self.min_concurrency)
                 # if cur < procs:
