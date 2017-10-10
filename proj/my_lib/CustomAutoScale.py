@@ -10,6 +10,7 @@ import os
 from celery.worker.autoscale import Autoscaler
 from proj.my_lib.logger import get_logger
 from time import sleep
+from celery.five import monotonic
 
 logger = get_logger('auto scale logger')
 
@@ -17,13 +18,18 @@ INIT_POOL_PERCENT = 0.75
 
 
 class CustomAutoScale(Autoscaler):
-    def __init__(self, pool, max_concurrency):
-        super(CustomAutoScale, self).__init__(pool, max_concurrency)
-        init_pool_size = self.min_concurrency + int(INIT_POOL_PERCENT * (self.max_concurrency - self.min_concurrency))
-        with self.mutex:
-            self.pool.grow(init_pool_size - self.processes)
-
     def body(self):
+        is_first = getattr(self, 'is_first', False)
+        if is_first:
+            # 首次执行时，调整为适中 process
+            setattr(self, 'is_first', True)
+            init_pool_size = self.min_concurrency + int(
+                INIT_POOL_PERCENT * (self.max_concurrency - self.min_concurrency))
+            with self.mutex:
+                self._grow(init_pool_size - self.processes)
+            self.pool.grow(init_pool_size - self.processes)
+            self.keepalive = 60.0
+
         with self.mutex:
             self.maybe_scale()
         memory_obj = psutil.virtual_memory()
@@ -45,7 +51,7 @@ class CustomAutoScale(Autoscaler):
             cur = min(self.qty, self.max_concurrency)
             if cur > procs:
                 up_process = (cur - procs)
-                self._grow(up_process)
+                self.scale_up(up_process)
                 logger.debug("[worker_name: {}][memory_percent: {}][load_average: {}][current: {}][scale up: {}]".
                              format(worker_name, memory_percent, load_average, self.processes, up_process))
                 return True
@@ -81,10 +87,17 @@ class CustomAutoScale(Autoscaler):
             return False
         else:
             if self.processes > self.min_concurrency:
-                # down_process = max(int(cur / 2), 1)
                 down_process = 1
-                # self.scale_down(down_process)
-                self._shrink(down_process)
-                logger.debug("[worker_name: {}][memory_percent: {}][load_average: {}][current: {}][scale down: {}]".
-                             format(worker_name, memory_percent, load_average, self.processes, down_process))
+                self.scale_down(down_process)
+                if self._last_scale_up and (
+                                monotonic() - self._last_scale_up > self.keepalive):
+                    logger.debug(
+                        "[worker_name: {}][memory_percent: {}][load_average: {}][current: {}][last_scale_up: {}][scale down: {}]".
+                            format(worker_name, memory_percent, load_average, self.processes, self._last_scale_up,
+                                   down_process))
+                else:
+                    logger.debug(
+                        "[worker_name: {}][memory_percent: {}][load_average: {}][current: {}][last_scale_up: {}][scale down: {}]".
+                            format(worker_name, memory_percent, load_average, self.processes, self._last_scale_up,
+                                   0))
                 return True
