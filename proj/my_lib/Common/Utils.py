@@ -13,8 +13,19 @@ import hashlib
 import socket
 import traceback
 import unittest
+import time
+import requests
+import json
+import redis
+import datetime
+import eventlet.greenpool
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
+from proj.my_lib.logger import get_logger
+
+ip_save_logger = get_logger("ip_save_logger")
+ip_saver_pool = redis.ConnectionPool(host='10.10.213.148', port=6379, db=0, max_connections=1)
+ip_saver_thread_pool = eventlet.greenpool.GreenPool(size=10)
 
 
 def get_local_ip():
@@ -77,6 +88,39 @@ class Coordinate:
         return str(self.longitude) + ',' + str(self.latitude)
 
 
+def get_real_ip(targets, proxies):
+    host, key = targets
+    try:
+        start = time.time()
+        ip_page = requests.get(host, proxies=proxies, timeout=10)
+        out_ip = json.loads(ip_page.text)[key]
+        ip_save_logger.debug("[获取公网 ip 地址][ip: {0}][耗时: {1}]".format(out_ip, time.time() - start))
+    except Exception as e:
+        ip_save_logger.exception("[获取公网 ip 地址失败]", exc_info=e)
+        return None
+    return out_ip
+
+
+def get_out_ip(proxies):
+    out_ip = None
+    for targets in [('http://httpbin.org/ip', 'origin'), ('https://api.ipify.org?format=json', 'ip')]:
+        out_ip = get_real_ip(targets, proxies)
+        if out_ip:
+            break
+
+    if out_ip:
+        try:
+            r = redis.Redis(connection_pool=ip_saver_pool)
+            r.incr(datetime.datetime.now().strftime("ip_%Y_%m_%d_{0}".format(out_ip)))
+        except Exception as e:
+            ip_save_logger.exception("[ip 地址入 redis 失败]", exc_info=e)
+            return False
+
+
+def get_out_ip_async(proxies):
+    ip_saver_thread_pool.spawn_n(get_out_ip, proxies)
+
+
 class TestUtil(unittest.TestCase):
     def test_has_chinese(self):
         self.assertTrue(has_chinese('你好世界 Hello World'))
@@ -92,4 +136,13 @@ if __name__ == '__main__':
     # print get_local_ip()
     # print(google_get_map_info('Plaza Soledad, 11, 06001 Badajoz, Spain'))
     # print(google_get_map_info('3355 Las Vegas Blvd S'))
-    unittest.main()
+    # unittest.main()
+    p_r_o_x_y = '10.10.233.246:38530'
+    proxies = {
+        'http': 'socks5://' + p_r_o_x_y,
+        'https': 'socks5://' + p_r_o_x_y
+    }
+    print(get_out_ip_async(proxies))
+    # while True:
+    #     get_out_ip_async(proxies)
+    #     time.sleep(1)

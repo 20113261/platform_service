@@ -15,10 +15,11 @@ import time
 import datetime
 import proj.my_lib.Common.RespStore
 import proj.my_lib.logger
-from common.common import get_proxy, update_proxy
+# from common.common import get_proxy, update_proxy
 from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
+from proj.my_lib.Common.Utils import try3times, get_out_ip_async
 
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
@@ -27,7 +28,13 @@ logger = proj.my_lib.logger.get_logger('Browser')
 httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
-ip_saver_pool = redis.ConnectionPool(host='10.10.213.148', port=6379, db=0, max_connections=1)
+
+@try3times
+def simple_get_socks_proxy():
+    url = "http://10.10.239.46:8087/proxy?source=ServicePlatform"
+    r = requests.get(url)
+    proxy = r.content
+    return proxy
 
 
 class MySession(requests.Session):
@@ -91,54 +98,30 @@ class MySession(requests.Session):
     def cache_check(self, req, resp):
         return True
 
-    def get_real_ip(self, targets):
-        host, key = targets
-        try:
-            start = time.time()
-            ip_page = self.get(host, proxies=self.proxies, timeout=10)
-            out_ip = json.loads(ip_page.text)[key]
-            logger.debug("[获取公网 ip 地址][ip: {0}][耗时: {1}]".format(out_ip, time.time() - start))
-        except Exception as e:
-            logger.exception("[获取公网 ip 地址失败]", exc_info=e)
-            return None
-        return out_ip
-
     def change_proxies(self):
-        self.p_r_o_x_y = get_proxy(source="Platform")
+        # self.p_r_o_x_y = get_proxy(source="Platform")
+        self.p_r_o_x_y = simple_get_socks_proxy()
         proxies = {
             'http': 'socks5://' + self.p_r_o_x_y,
             'https': 'socks5://' + self.p_r_o_x_y
         }
         self.proxies = proxies
 
-        # 缓存属性
-        need_cache = self.need_cache
+        # 更新代理使用状况
+        try:
+            get_out_ip_async(proxies)
+        except Exception:
+            pass
 
-        # ip report get real ip address
-        self.need_cache = False
-
-        out_ip = None
-        for targets in [('http://httpbin.org/ip', 'origin'), ('https://api.ipify.org?format=json', 'ip')]:
-            out_ip = self.get_real_ip(targets)
-            if out_ip:
-                break
-
-        if out_ip:
-            try:
-                r = redis.Redis(connection_pool=ip_saver_pool)
-                r.incr(datetime.datetime.now().strftime("ip_%Y_%m_%d_{0}".format(out_ip)))
-            except Exception as e:
-                logger.exception("[ip 地址入 redis 失败]", exc_info=e)
-                return False
-
-        self.need_cache = need_cache
         return True
 
     def update_proxy(self, error_code):
-        try:
-            update_proxy('Platform', self.p_r_o_x_y or 'NULL', time.time() - self.start, error_code)
-        except Exception:
-            pass
+        # 暂时未更新代理状态
+        return
+        # try:
+        #     update_proxy('Platform', self.p_r_o_x_y or 'NULL', time.time() - self.start, error_code)
+        # except Exception:
+        #     pass
 
     def __enter__(self):
         return self
