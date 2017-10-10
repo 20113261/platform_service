@@ -85,18 +85,18 @@ def execute_sql(sql, commit=False):
     return result
 
 def get_seek(task_name):
-    sql = """select seek from task_seek where task_name = '%s'"""
+    sql = """select seek, priority from task_seek where task_name = '%s'"""
     conn = service_platform_pool.connection()
     cursor = conn.cursor()
     cursor.execute(sql % task_name)
-    timestramp = cursor.fetchone()
+    result = cursor.fetchone()
     cursor.close()
     conn.close()
-    logger.info('timestramp  :  %s ' % timestramp)
-    if not timestramp or len(timestramp)==0:
-        return get_default_timestramp()
+    logger.info('timestramp, priority :  %s ' % str(result))
+    if not result or len(result)==0:
+        return get_default_timestramp(), 3
 
-    return timestramp[0]
+    return result
 
 def update_seek(task_name, seek):
     sql = """replace into task_seek (task_name, seek) values('%s','%s');"""
@@ -133,7 +133,7 @@ def monitoring_hotel_list2detail():
             if tab_args[2] not in HOTEL_SOURCE: continue
             if tab_args[3] == 'test':continue
 
-            timestamp = get_seek(table_name)
+            timestamp, priority = get_seek(table_name)
 
             update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name":table_name}).count(), sum_or_set=False)
 
@@ -141,7 +141,7 @@ def monitoring_hotel_list2detail():
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
+            timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp)
@@ -161,10 +161,10 @@ def monitoring_hotel_detail2ImgOrComment():
             if tab_args[2] not in HOTEL_SOURCE: continue
             if tab_args[3] == 'test': continue
 
-            timestamp = get_seek(table_name)
+            timestamp, priority = get_seek(table_name)
 
             timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
-                                        is_poi_task=False)
+                                                       priority, is_poi_task=False)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp)
@@ -186,7 +186,7 @@ def monitoring_poi_list2detail():
             if tab_args[2] != POI_SOURCE: continue
             if tab_args[3] == 'test': continue
 
-            timestamp = get_seek(table_name)
+            timestamp, priority = get_seek(table_name)
 
             update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
@@ -195,7 +195,7 @@ def monitoring_poi_list2detail():
                 create_table(detail_table_name)
 
             timestamp, success_count = send_poi_detail_task(
-                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
+                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp)
@@ -215,10 +215,10 @@ def monitoring_poi_detail2imgOrComment():
             if tab_args[2] != POI_SOURCE: continue
             if tab_args[3] == 'test': continue
 
-            timestamp = get_seek(table_name)
+            timestamp, priority = get_seek(table_name)
 
             timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
-                                        is_poi_task=True)
+                                                       priority, is_poi_task=True)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp)
@@ -240,7 +240,7 @@ def monitoring_qyer_list2detail():
             if tab_args[2] != QYER_SOURCE: continue
             if tab_args[3] == 'test': continue
 
-            timestamp = get_seek(table_name)
+            timestamp, priority = get_seek(table_name)
 
             update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
                                         collections.find({"task_name": table_name}).count(), sum_or_set=False)
@@ -249,7 +249,7 @@ def monitoring_qyer_list2detail():
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_qyer_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name)
+            timestamp, success_count = send_qyer_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp)

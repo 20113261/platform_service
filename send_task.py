@@ -48,7 +48,7 @@ def get_country_id(tasks):
     return tasks_tmep.values()
 
 
-def send_hotel_detail_task(tasks, task_tag):
+def send_hotel_detail_task(tasks, task_tag, priority):
     data = []
     _count = 0
     utime = None
@@ -69,7 +69,7 @@ def send_hotel_detail_task(tasks, task_tag):
                 'country_id': 'NULL',
                 'part': task_tag
             },
-            'priority': 3,
+            'priority': priority,
             'finished': 0,
             'used_times': 0,
             'running': 0,
@@ -98,7 +98,7 @@ def send_hotel_detail_task(tasks, task_tag):
 
     return utime, success_count
 
-def send_poi_detail_task(tasks, task_tag):
+def send_poi_detail_task(tasks, task_tag, priority):
     data = []
     _count = 0
     utime = None
@@ -118,7 +118,7 @@ def send_poi_detail_task(tasks, task_tag):
                 'country_id': 'NULL',
                 'part': task_tag
             },
-            'priority': 3,
+            'priority': priority,
             'finished': 0,
             'used_times': 0,
             'running': 0,
@@ -146,7 +146,7 @@ def send_poi_detail_task(tasks, task_tag):
 
     return utime, success_count
 
-def send_qyer_detail_task(tasks, task_tag):
+def send_qyer_detail_task(tasks, task_tag, priority):
     data = []
     _count = 0
     utime = None
@@ -163,7 +163,7 @@ def send_qyer_detail_task(tasks, task_tag):
                 'city_id': 'NULL',
                 'part': task_tag
             },
-            'priority': 3,
+            'priority': priority,
             'finished': 0,
             'used_times': 0,
             'running': 0,
@@ -191,7 +191,7 @@ def send_qyer_detail_task(tasks, task_tag):
 
     return utime, success_count
 
-def send_image_task(tasks, task_tag, is_poi_task):
+def send_image_task(tasks, task_tag, priority, is_poi_task):
     _count = 0
     data = []
     md5_data = []
@@ -228,7 +228,7 @@ def send_image_task(tasks, task_tag, is_poi_task):
                     'is_poi_task': is_poi_task,
                     'new_part': task_tag
                 },
-                'priority': 3,
+                'priority': priority,
                 'finished': 0,
                 'used_times': 0,
                 'running': 0,
