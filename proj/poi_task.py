@@ -40,7 +40,7 @@ def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
 
     target_url = target_url.replace('.com.hk', '.cn')
     with MySession(need_cache=True) as session:
-        page = session.get(target_url, timeout=15)
+        page = session.get(target_url, timeout=120)
         page.encoding = 'utf8'
 
         parser = parser_type[poi_type]
