@@ -24,7 +24,7 @@ class CustomAutoScale(Autoscaler):
             # if cur > procs:
             if self.max_concurrency > procs:
                 up_process = max(self.max_concurrency / 100, 2)
-                self.scale_up(up_process)
+                self.force_scale_up(up_process)
                 logger.debug("[worker_name: {}][memory_percent: {}][current: {}][scale up: {}]".
                              format(worker_name, memory_percent, self.processes, up_process))
                 return True
@@ -59,7 +59,8 @@ class CustomAutoScale(Autoscaler):
             cur = procs - self.min_concurrency
             # down_process = max(int(cur / 2), 1)
             down_process = 2
-            self.scale_down(down_process)
+            # self.scale_down(down_process)
+            self.force_scale_down(down_process)
             logger.debug("[worker_name: {}][memory_percent: {}][current: {}][scale down: {}]".
                          format(worker_name, memory_percent, self.processes, down_process))
             return True
