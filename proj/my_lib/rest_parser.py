@@ -16,6 +16,7 @@ from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.Common.Utils import try3times
 from decode_raw_site import decode_raw_site
 from proj.my_lib.logger import get_logger
+from proj.my_lib.Common.Utils import has_chinese
 
 logger = get_logger('ImgList')
 
@@ -60,17 +61,6 @@ def get_site_encode_string(content):
             except:
                 continue
     return result
-
-
-def has_chinese(contents, encoding='utf-8'):
-    zh_pattern = re.compile(u'[\u4e00-\u9fa5]+')
-    if not isinstance(contents, unicode):
-        u_contents = unicode(contents, encoding=encoding)
-    results = zh_pattern.findall(u_contents)
-    if len(results) > 0:
-        return True
-    else:
-        return False
 
 
 @try3times(try_again_times=10)
