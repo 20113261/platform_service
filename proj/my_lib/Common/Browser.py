@@ -29,7 +29,7 @@ httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
 
-@try3times
+@try3times(try_again_times=1)
 def simple_get_socks_proxy():
     url = "http://10.10.239.46:8087/proxy?source=ServicePlatform"
     r = requests.get(url)
