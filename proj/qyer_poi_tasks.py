@@ -50,8 +50,9 @@ def qyer_poi_task(self, target_url, city_id, **kwargs):
             google_map_info = google_get_map_info(address)
             if not key_is_legal(google_map_info):
                 raise TypeCheckError(
-                    'Error google_map_info  NULL        with parser %ss    url %s' % (
-                        page_parser.func_name, target_url))
+                    'Error google_map_info  NULL  with [parser: {}][url: {}][address: {}][map_info: {}]'.format(
+                        page_parser.func_name, target_url, address, map_info)
+                )
             result.map_info = google_map_info
         if key_is_legal(name) or key_is_legal(name_en):
             logger.info(name + '  ----------  ' + name_en)
