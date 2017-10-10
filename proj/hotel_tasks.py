@@ -110,10 +110,10 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
         try:
             result.country_id = country_id
 
-            del result.update_time
-            # result.update_time = datetime.datetime.now()
             sql_key = result.__dict__.keys()
             sql_key.remove('_sa_instance_state')
+            if sql_key.get('update_time', None):
+                sql_key.remove('update_time')
 
             session = DBSession()
             session.execute(text(text_2_sql(sql_key).format(table_name=kwargs['task_name'])), [result.__dict__])
