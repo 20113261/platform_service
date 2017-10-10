@@ -22,6 +22,7 @@ from proj.mysql_pool import service_platform_pool
 from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 
 from urlparse import urljoin
+import traceback
 import datetime
 
 logger = get_logger("poiDaodao")
@@ -47,18 +48,22 @@ spider_name = {'attr': 'View', 'rest': 'Rest'}
 
 
 def hotel_list_database(source, url, required, old_spider_name, need_cache=True):
-    task = Task()
-    task.content = urljoin(URL, url)
-    logger.info('%s  %s' % (task.content, required))
-    task.source = source.lower().capitalize() + 'ListInfo'
-    # spider = factory.get_spider('daodao', task.source)
-    spider = factory.get_spider_by_old_source('daodao' + old_spider_name)
-    spider.task = task
-    if need_cache:
-        code = spider.crawl(required=[required], cache_config=cache_config)
-    else:
-        code = spider.crawl(required=[required], cache_config=none_cache_config)
-    return code, spider.result.get(required, {})
+    try:
+        task = Task()
+        task.content = urljoin(URL, url)
+        logger.info('%s  %s' % (task.content, required))
+        task.source = source.lower().capitalize() + 'ListInfo'
+        # spider = factory.get_spider('daodao', task.source)
+        spider = factory.get_spider_by_old_source('daodao' + old_spider_name)
+        spider.task = task
+        if need_cache:
+            code = spider.crawl(required=[required], cache_config=cache_config)
+        else:
+            code = spider.crawl(required=[required], cache_config=none_cache_config)
+        return code, spider.result.get(required, {})
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        raise e
 
 
 def insert(sql, data):
@@ -94,6 +99,7 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
         insert(sql, data)
     except Exception as e:
         task_response.error_code = 33
+        logger.error(traceback.format_exc(e))
         raise e
 
     # 由于错误都是 raise 的，
