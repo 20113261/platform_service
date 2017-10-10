@@ -42,7 +42,7 @@ mioji.common.spider.NEED_FLIP_LIMIT = False
 mioji.common.logger.logger = logger
 
 URL = 'https://www.tripadvisor.cn'
-SQL = """replace into {table_name} (source, source_id, city_id, country_id, hotel_url) values(%s, %s, %s, %s, %s, %s)"""
+SQL = """replace into {table_name} (source, source_id, city_id, country_id, hotel_url) values(%s, %s, %s, %s, %s)"""
 type_dict = {'attr': 'view', 'rest': 'restaurant'}
 spider_name = {'attr': 'View', 'rest': 'Rest'}
 
