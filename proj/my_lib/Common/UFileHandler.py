@@ -88,7 +88,7 @@ def get_ufile_and_info(key):
             resp = requests.get(url)
             status = resp.status_code
         except Exception as exc:
-            logger.exception(msg="[download file error]", exc_info=exc)
+            logger.exception(msg="[download file error][retry_times: {}]".format(retry_times), exc_info=exc)
             status = -1
     if status == 200:
         logger.debug("[Succeed][download file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, key,
