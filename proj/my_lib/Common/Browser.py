@@ -67,7 +67,7 @@ class MySession(requests.Session):
                 try:
                     return super(MySession, self).send(request, **kwargs)
                 except Exception as e:
-                    logger.exception("[request retry][retry times: {}]".format(i + 1), e)
+                    logger.exception(msg="[request retry][retry times: {}]".format(i + 1), exc_info=e)
                     error = e
             raise error
 
