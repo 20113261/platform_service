@@ -12,4 +12,7 @@ if __name__ == '__main__':
     memory_obj = psutil.virtual_memory()
     memory_percent = memory_obj.percent
     load_average = os.getloadavg()[0]
+
+    print(memory_percent)
     print(load_average)
+    print(load_average * memory_percent)
