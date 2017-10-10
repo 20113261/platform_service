@@ -18,14 +18,14 @@ import requests
 import json
 import redis
 import datetime
-import eventlet.greenpool
+# import eventlet.greenpool
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from proj.my_lib.logger import get_logger
 
 ip_save_logger = get_logger("ip_save_logger")
 ip_saver_pool = redis.ConnectionPool(host='10.10.213.148', port=6379, db=0, max_connections=1)
-ip_saver_thread_pool = eventlet.greenpool.GreenPool(size=10)
+# ip_saver_thread_pool = eventlet.greenpool.GreenPool(size=10)
 
 
 def get_local_ip():
@@ -120,8 +120,8 @@ def get_out_ip(proxies):
             return False
 
 
-def get_out_ip_async(proxies):
-    ip_saver_thread_pool.spawn_n(get_out_ip, proxies)
+# def get_out_ip_async(proxies):
+#     ip_saver_thread_pool.spawn_n(get_out_ip, proxies)
 
 
 class TestUtil(unittest.TestCase):
@@ -145,7 +145,7 @@ if __name__ == '__main__':
         'http': 'socks5://' + p_r_o_x_y,
         'https': 'socks5://' + p_r_o_x_y
     }
-    print(get_out_ip_async(proxies))
+    # print(get_out_ip_async(proxies))
     # while True:
     #     get_out_ip_async(proxies)
     #     time.sleep(1)

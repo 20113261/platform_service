@@ -18,7 +18,7 @@ import proj.my_lib.logger
 from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
-from proj.my_lib.Common.Utils import try3times, get_out_ip_async
+from proj.my_lib.Common.Utils import try3times
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
 
@@ -116,10 +116,10 @@ class MySession(requests.Session):
         self.proxies = proxies
 
         # 更新代理使用状况
-        try:
-            get_out_ip_async(proxies)
-        except Exception:
-            pass
+        # try:
+        #     get_out_ip_async(proxies)
+        # except Exception:
+        #     pass
 
         return True
 
