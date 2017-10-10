@@ -87,6 +87,7 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
     retry_count = kwargs.get('retry_count', 0)
     code, result = hotel_list_database(source, url, type_dict[poi_type], spider_name[poi_type],
                                        need_cache=retry_count == 0)
+    logger.info('spider    %s %s' % (str(code), str(result)))
 
     task_response.error_code = code
 
@@ -96,6 +97,7 @@ def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
             for key, view in one.items():
                 data.append(
                     (source, view['source_id'], city_id, country_id, view['view_url']))
+                logger.info('%s' % str((source, view['source_id'], city_id, country_id, view['view_url'])))
         insert(sql, data)
     except Exception as e:
         task_response.error_code = 33
