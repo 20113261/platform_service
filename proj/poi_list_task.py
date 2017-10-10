@@ -35,8 +35,8 @@ mioji.common.pages_store.STORE_TYPE = cache_type
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
 get_proxy = simple_get_socks_proxy
-debug = False
-spider_factory.config_spider(insert_db, get_proxy, debug)
+debug = True
+spider_factory.config_spider(insert_db, None, debug)
 mioji.common.spider.NEED_FLIP_LIMIT = False
 
 mioji.common.logger.logger = logger
