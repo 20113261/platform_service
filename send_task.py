@@ -260,7 +260,7 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
         if len(data)>0:
             success_count += hourong_patch(data)
         if len(md5_data)>0:
-            cursor.executemany('insert into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
+            cursor.executemany('replace into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
             conn.commit()
             cursor.close()
             conn.close()
