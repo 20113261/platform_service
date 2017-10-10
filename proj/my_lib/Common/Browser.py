@@ -30,7 +30,7 @@ httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
 
-@try3times(try_again_times=1)
+@try3times(try_again_times=3)
 def simple_get_socks_proxy():
     url = "http://10.10.239.46:8087/proxy?source=ServicePlatform"
     r = requests.get(url)
@@ -94,8 +94,12 @@ class MySession(requests.Session):
                 resp = super(MySession, self).send(request, **kwargs)
                 self.md5_resp[md5] = resp
         else:
-            resp = super(MySession, self).send(request, **kwargs)
+            @try3times(try_again_times=3, final_raise_exception=True, others_exptions=ValueError)
+            def get_resp():
+                _resp = super(MySession, self).send(request, **kwargs)
+                return _resp
 
+            resp = get_resp()
         return resp
 
     def cache_check(self, req, resp):
