@@ -299,6 +299,8 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
     h = None
     w = None
 
+    file_name = ''
+
     if not is_poi_task:
         bucket_name = 'mioji-hotel'
     elif 'attr' in desc_path:
@@ -404,7 +406,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         task_response.error_code = 107
         # raise Exception("Img Has Been Filtered")
 
-    return flag, h, w, task_response.error_code, kwargs['task_name']
+    return flag, h, w, task_response.error_code, bucket_name, file_name, kwargs['task_name']
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
