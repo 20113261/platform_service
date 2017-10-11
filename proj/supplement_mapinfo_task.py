@@ -14,7 +14,7 @@ from proj.mysql_pool import service_platform_pool
 import json
 
 update_map_info = "update %s set map_info='%s' where source='%s' and {field}='%s'"
-update_status = "update supplement_field set status=1 where source='%s' and sid='%s' and type='map_info' and table_name='%s'"
+update_status = "update supplement_field set status=%d where source='%s' and sid='%s' and type='map_info' and table_name='%s'"
 
 def execute_sql(sql):
     service_platform_conn = service_platform_pool.connection()
@@ -32,10 +32,12 @@ def supplement_map_info(self, table_name, source, sid, other_info, **kwargs):
 
     address = json.loads(other_info).get('address').encode('utf8')
     if not address:
+        execute_sql(update_status % (2, source, sid, table_name))
         raise Exception(u'address 为空')
 
     map_info = google_get_map_info(address)
     if not map_info:
+        execute_sql(update_status % (2, source, sid, table_name))
         raise Exception(u'mapinfo 为空')
 
     sql = update_map_info % (table_name, map_info, source, sid)
@@ -43,7 +45,7 @@ def supplement_map_info(self, table_name, source, sid, other_info, **kwargs):
     sql = sql.format(field='source_id' if typ2=='hotel' else 'id')
 
     execute_sql(sql)
-    execute_sql(update_status % (source, sid, table_name))
+    execute_sql(update_status % (1, source, sid, table_name))
 
     task_response.error_code = 0
     return source, sid
