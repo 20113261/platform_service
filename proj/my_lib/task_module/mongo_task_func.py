@@ -7,6 +7,7 @@
 # @Software: PyCharm
 import pymongo
 import datetime
+import time
 from proj.my_lib.logger import get_logger, func_time_logger
 from collections import defaultdict
 
@@ -19,7 +20,7 @@ failed_task_collections = client['MongoTask']['FailedTask']
 cursor_dict = {}
 
 MIN_PRIORITY = 1
-EACH_UPDATE = 1000
+EACH_UPDATE = 10000
 
 
 class StopException(Exception):
