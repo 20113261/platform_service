@@ -90,25 +90,25 @@ def get_file_md5(f_name):
 
 
 @func_time_logger
-def hotel_make_kw(args):
+def hotel_make_kw(args, table_name):
     relation = PicRelation()
     relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5, _temp = args
     relation.hotel_id = ''
     relation.status = -1
     relation.update_date = datetime.datetime.now()
-    sql = SQL_HOTEL.format(table_name=relation.__tablename__)
+    sql = SQL_HOTEL.format(table_name=table_name)
 
     # logger.info(relation.source+'|'+ relation.source_id+'|'+relation.part+'|'+relation.file_md5+'|'+relation.pic_md5)
     insert_db(sql, relation)
 
 
 @func_time_logger
-def poi_make_kw(args):
+def poi_make_kw(args, table_name):
     relation = PoiRelation()
     relation.source, relation.sid, relation.url, relation.file_name, relation.part, relation.pic_size, relation.use, relation.pic_md5, relation.bucket_name = args
     relation.date = datetime.datetime.now()
     relation.url_md5 = relation.file_name.split('.')[0]
-    sql = SQL_POI.format(table_name=relation.__tablename__)
+    sql = SQL_POI.format(table_name=table_name)
     insert_db(sql, relation)
 
 

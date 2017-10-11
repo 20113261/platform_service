@@ -383,12 +383,12 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             # if not is_poi_task:
             #     with open(os.path.join(desc_path, file_name), 'wb') as f:
             #         f.write(page.content)
-
+            table_name = kwargs.get('task_name')
             if need_insert_db:
                 if is_poi_task:
-                    poi_make_kw(data)
+                    poi_make_kw(data, table_name)
                 else:
-                    hotel_make_kw(data)
+                    hotel_make_kw(data, table_name)
 
             # 设置标识位
             task_response.error_code = 0
