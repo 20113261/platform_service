@@ -37,6 +37,7 @@ app = Celery('proj', include=['proj.tasks',
                               'proj.poi_task',
                               'proj.poi_list_task',
                               'proj.qyer_list_task',
+                              'proj.supplement_mapinfo_task.supplement_map_info',
                               ])
 app.config_from_object('proj.config')
 app.conf.update(
@@ -46,6 +47,7 @@ app.conf.update(
         Queue('hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='hotel_list'),
         Queue('poi_detail', exchange=Exchange('poi_detail', type='direct'), routing_key='poi_detail'),
         Queue('poi_list', exchange=Exchange('poi_list', type='direct'), routing_key='poi_list'),
+        Queue('supplement_field', exchange=Exchange('supplement_field', type='direct'), routing_key='supplement_field'),
     ),
 
 )
