@@ -19,6 +19,7 @@ from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from proj.my_lib.Common.Utils import try3times
+
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
 
@@ -38,7 +39,7 @@ def simple_get_socks_proxy():
 
 
 class MySession(requests.Session):
-    def __init__(self, need_proxies=True, auto_update_host=True, need_cache=False):
+    def __init__(self, need_proxies=True, auto_update_host=False, need_cache=False):
         self.start = time.time()
         super(MySession, self).__init__()
         headers = {
