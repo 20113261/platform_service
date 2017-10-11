@@ -17,6 +17,7 @@ import os
 import sys
 
 from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task
+from attach_send_task import qyer_supplement_map_info
 from proj.my_lib.logger import get_logger
 from send_email import send_email
 
@@ -299,6 +300,19 @@ def monitoring_zombies_task():
             'running': 0
         }
     }, multi=True)
+
+def monitoring_supplement_field():
+    try:
+        table_name = 'supplement_field'
+        sql = """select table_name, type, source, sid, other_info, status, utime from %s where status = 0 and utime >= '%s' order by utime"""
+        timestamp, _v = get_seek(table_name)
+        timestamp, success_count = qyer_supplement_map_info(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)))
+        logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+        if timestamp is not None:
+            update_seek(table_name, timestamp)
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
 
 if __name__ == '__main__':
     # get_default_timestramp()

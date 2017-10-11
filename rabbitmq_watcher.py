@@ -18,7 +18,8 @@ from proj.celery import app
 from proj.my_lib.task_module.mongo_task_func import get_task_total_simple
 from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, \
-    monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail
+    monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail, \
+    monitoring_supplement_field
 from proj.config import BROKER_URL
 
 host, v_host = re.findall("amqp://.+?@(.+?)/(.+)", BROKER_URL)[0]
@@ -28,12 +29,13 @@ schedule = BlockingScheduler()
 
 import datetime
 
-# schedule.add_job(monitoring_hotel_list2detail, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
+# schedule.add_job(monitoring_supplement_field, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
 schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45', id='monitoring_hotel_list')
 schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/60', id='monitoring_hotel_detail')
 schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/45', id='monitoring_poi_list')
 schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/60', id='monitoring_poi_detail')
 schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/45', id='monitoring_qyer_detail')
+schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2', id='monitoring_supplement_field')
 
 # stream_handler = logging.StreamHandler()
 # logger = logging.getLogger('rabbitmq_watcher')
