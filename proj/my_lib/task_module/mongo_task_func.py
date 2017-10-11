@@ -49,7 +49,8 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
                     {
                         'finished': 0,
                         'queue': queue,
-                        'used_times': {'$lte': each_used_times},
+                        # 'used_times': {'$lte': each_used_times},
+                        'used_times': each_used_times,
                         'priority': each_priority,
                         'running': 0
                     }

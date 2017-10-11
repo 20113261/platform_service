@@ -13,6 +13,7 @@ import db_localhost
 import os
 import re
 import requests
+import copy
 from celery.utils.log import logger
 from celery import platforms
 from celery.exceptions import MaxRetriesExceededError
@@ -340,9 +341,10 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             # save file stream
             r2 = True
             s_f_stream = StringIO(page.content)
-            r1 = upload_ks_file_stream(bucket_name, file_name, s_f_stream, page.headers['Content-Type'])
+            r1 = upload_ks_file_stream(bucket_name, file_name, copy.deepcopy(s_f_stream), page.headers['Content-Type'])
             if bucket_name == 'mioji-attr':
-                r2 = upload_ks_file_stream('mioji-shop', file_name, s_f_stream, page.headers['Content-Type'])
+                r2 = upload_ks_file_stream('mioji-shop', file_name, copy.deepcopy(s_f_stream),
+                                           page.headers['Content-Type'])
 
             if not (r1 and r2):
                 task_response.error_code = 108
@@ -400,7 +402,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
     # 被过滤的图片返回错误码不为 0
     if flag in [3, 4, 5]:
         task_response.error_code = 107
-        raise Exception("Img Has Been Filtered")
+        # raise Exception("Img Has Been Filtered")
 
     return flag, h, w, task_response.error_code, kwargs['task_name']
 
