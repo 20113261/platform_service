@@ -19,6 +19,7 @@ failed_task_collections = client['MongoTask']['FailedTask']
 cursor_dict = {}
 
 MIN_PRIORITY = 1
+EACH_UPDATE = 1000
 
 
 class StopException(Exception):
@@ -42,6 +43,8 @@ def init_cursor(queue, used_times):
 def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     _count = limit
     _total = defaultdict(int)
+    _id_list = []
+    now = datetime.datetime.now()
     try:
         for each_priority in range(10, MIN_PRIORITY, -1):
             for each_used_times in range(0, used_times + 1):
@@ -55,7 +58,6 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
                         'running': 0
                     }
                 ).limit(_count)
-                now = datetime.datetime.now()
                 logger.debug(
                     '[queue: {}][priority: {}][used_times: {}][limit: {}][debug: {}]'.format(queue, each_priority,
                                                                                              each_used_times, _count,
@@ -72,16 +74,52 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
                     routing_key = line['routing_key']
 
                     if not debug:
-                        collections.update({
-                            'task_token': task_token
-                        }, {
-                            '$set': {
-                                'utime': now,
-                                'running': 1
-                            },
-                            '$inc': {'used_times': 1}
-                        })
+                        if len(_id_list) == EACH_UPDATE:
+                            collections.update({
+                                '_id': {
+                                    '$in': _id_list
+                                }
+                            }, {
+                                '$set': {
+                                    'utime': now,
+                                    'running': 1
+                                },
+                                '$inc': {'used_times': 1}
+                            }, multi=True)
+                            _id_list = []
+                    else:
+                        if len(_id_list) == 5:
+                            for i in collections.find({
+                                '_id': {
+                                    '$in': _id_list
+                                }
+                            }):
+                                logger.debug(i['_id'])
+                                logger.debug(i)
+                            _id_list = []
+                    _id_list.append(line['_id'])
                     yield task_token, worker, queue, routing_key, line['args'], line['used_times'], line['task_name']
+
+        if not debug:
+            collections.update({
+                '_id': {
+                    '$in': _id_list
+                }
+            }, {
+                '$set': {
+                    'utime': now,
+                    'running': 1
+                },
+                '$inc': {'used_times': 1}
+            }, multi=True)
+        else:
+            for i in collections.find({
+                '_id': {
+                    '$in': _id_list
+                }
+            }):
+                logger.debug(i['_id'])
+                logger.debug(i)
     except StopException:
         logger.debug("[end of search][queue: {}][num: {}]".format(queue, _total))
 
@@ -211,5 +249,5 @@ if __name__ == '__main__':
     # for each in get_task_total('poi_detail', used_times=6, limit=30000):
     #     print(each)
     # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
-    for line in get_task_total_simple('hotel_list', debug=True):
+    for line in get_task_total_simple('file_downloader', debug=True, limit=20):
         pass
