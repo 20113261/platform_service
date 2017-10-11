@@ -29,7 +29,7 @@ logger = get_logger('monitor')
 # session = DBSession()
 from proj.mysql_pool import service_platform_pool
 
-SEND_TO = 'hourong@mioji.com;luwanning@mioji.com'
+SEND_TO = ['hourong@mioji.com', 'luwanning@mioji.com']
 EMAIL_TITLE = '[异常监控]定时发任务挂了'
 
 task_statistics = redis.Redis(host='10.10.180.145', db=9)
