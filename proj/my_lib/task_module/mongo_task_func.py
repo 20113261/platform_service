@@ -20,7 +20,7 @@ failed_task_collections = client['MongoTask']['FailedTask']
 cursor_dict = {}
 
 MIN_PRIORITY = 1
-EACH_UPDATE = 10000
+EACH_UPDATE = 50000
 
 
 class StopException(Exception):
