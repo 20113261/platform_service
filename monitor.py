@@ -50,6 +50,8 @@ SQL_FILE_TO_SOURCE = {
     'daodao_shop_detail.sql': 'shop',
     'qyer_detail.sql': 'total',
     'list.sql': 'list',
+    'images_hotel.sql': 'images_hotel',
+    'images_poi.sql': 'images_daodao'
 }
 LOAD_FILES = {}
 def loads_sql():
@@ -120,6 +122,11 @@ def create_table(table_name):
         sql_file = LOAD_FILES[tab_args[1]]
     elif tab_args[0]=='list':
         sql_file = LOAD_FILES['list']
+    elif tab_args[0]=='images':
+        if tab_args[1]=='hotel':
+            sql_file = LOAD_FILES['images_hotel']
+        elif tab_args[2]=='daodao':
+            sql_file = LOAD_FILES['images_daodao']
 
     cursor.execute(sql_file % table_name)
     cursor.close()
@@ -160,7 +167,9 @@ def monitoring_hotel_list2detail():
 def monitoring_hotel_detail2ImgOrComment():
     sql = """select source, source_id, city_id, img_items, update_time from %s where update_time >= '%s' order by update_time limit 5000"""
     try:
-        for (table_name,) in get_all_tables():
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+
+        for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
             if tab_args[0] != 'detail': continue
@@ -169,6 +178,10 @@ def monitoring_hotel_detail2ImgOrComment():
             if tab_args[3] == 'test': continue
 
             timestamp, priority = get_seek(table_name)
+
+            images_table_name = ''.join(['images_', table_name.split('_', 1)[1]])
+            if table_dict.get(images_table_name, True):
+                create_table(images_table_name)
 
             timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
                                                        priority, is_poi_task=False)
@@ -216,7 +229,9 @@ def monitoring_poi_list2detail():
 def monitoring_poi_detail2imgOrComment():
     sql = """select source, id, city_id, imgurl, utime from %s where utime >= '%s' order by utime limit 5000"""
     try:
-        for (table_name,) in get_all_tables():
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+
+        for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
             if tab_args[0] != 'detail': continue
@@ -225,6 +240,10 @@ def monitoring_poi_detail2imgOrComment():
             if tab_args[3] == 'test': continue
 
             timestamp, priority = get_seek(table_name)
+
+            images_table_name = ''.join(['images_', table_name.split('_', 1)[1]])
+            if table_dict.get(images_table_name, True):
+                create_table(images_table_name)
 
             timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
                                                        priority, is_poi_task=True)
