@@ -305,14 +305,13 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
     else:
         bucket_name = 'mioji-rest'
 
-    with MySession() as session:
+    with MySession(need_cache=True) as session:
         @func_time_logger
         def img_file_get():
             _page = session.get(target_url, timeout=(1200, None))
             return _page
 
         page = img_file_get()
-
 
         f_stream = StringIO(page.content)
 
