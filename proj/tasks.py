@@ -402,7 +402,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
     # 被过滤的图片返回错误码不为 0
     if flag in [3, 4, 5]:
         task_response.error_code = 107
-        raise Exception("Img Has Been Filtered")
+        # raise Exception("Img Has Been Filtered")
 
     return flag, h, w, task_response.error_code, kwargs['task_name']
 
