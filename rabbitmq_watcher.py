@@ -51,7 +51,8 @@ TASK_CONF = {
     'hotel_detail': (36000, 40000, 10),
     'hotel_list': (36000, 40000, 10),
     'poi_detail': (36000, 40000, 10),
-    'poi_list': (36000, 40000, 10)
+    'poi_list': (36000, 40000, 10),
+    'supplement_field': (9000, 40000, 10)
 }
 
 MAX_RETRY_TIMES_CONF = {
