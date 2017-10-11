@@ -243,6 +243,7 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
                 print _count
                 try:
                     success_count += hourong_patch(data)
+                    data = []
                 except Exception as exc:
                     print '==========================0======================='
                     print source, source_id, url
