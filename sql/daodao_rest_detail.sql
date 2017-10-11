@@ -1,4 +1,4 @@
-CREATE TABLE `%s` (
+CREATE TABLE IF NOT EXISTS `%s` (
   `id` varchar(32) NOT NULL,
   `source` varchar(32) NOT NULL,
   `name` varchar(256) DEFAULT NULL,

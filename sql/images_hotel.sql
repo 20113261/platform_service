@@ -1,4 +1,4 @@
-CREATE TABLE `%s` (
+CREATE TABLE IF NOT EXISTS `%s` (
   `id`  BIGINT NOT NULL AUTO_INCREMENT,
   `source` varchar(20) NOT NULL,
   `source_id` varchar(64) NOT NULL DEFAULT '',
@@ -11,6 +11,7 @@ CREATE TABLE `%s` (
   `size` varchar(40) DEFAULT '',
   `flag` varchar(10) DEFAULT '1',
   `file_md5` varchar(32) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `s_sid_md5` (`source`,`source_id`,`file_md5`),
   KEY `pic_md5` (`pic_md5`),
   KEY `pic_md5_2` (`pic_md5`,`file_md5`),
