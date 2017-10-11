@@ -32,11 +32,11 @@ def supplement_map_info(self, table_name, source, sid, other_info, **kwargs):
 
     address = json.loads(other_info).get('address').encode('utf8')
     if not address:
-        raise Exception('address 为空')
+        raise Exception(u'address 为空')
 
     map_info = google_get_map_info(address)
     if not map_info:
-        raise Exception('mapinfo 为空')
+        raise Exception(u'mapinfo 为空')
 
     sql = update_map_info % (table_name, map_info, source, sid)
     typ2 = table_name.split('_')[1]
