@@ -13,6 +13,9 @@ class ServiceStandardError(Exception):
         self.error_code = error_code
         self.msg = msg
 
+        if 'wrapped_exception' in kwargs:
+            self.wrapped_exception = kwargs['wrapped_exception']
+
 
 class TypeCheckError(ServiceStandardError):
     def __init__(self, *args, **kwargs):
@@ -36,6 +39,11 @@ class TestStandardError(unittest.TestCase):
         except ServiceStandardError as e:
             self.assertEqual(e.error_code, 102)
             self.assertEqual(e.msg, error_msg)
+
+    def test_wrap_exception(self):
+        test_exc = Exception()
+        test_exc = ServiceStandardError(111, 'just a test', wrapped_exception=test_exc)
+        self.assertEqual(test_exc.error_code, 111)
 
 
 if __name__ == '__main__':
