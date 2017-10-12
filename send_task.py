@@ -16,6 +16,7 @@ import hashlib
 import pymysql
 import mock
 import proj.my_lib.my_mongo_insert
+from pymongo.errors import DuplicateKeyError
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['Task']
@@ -81,9 +82,12 @@ def send_hotel_detail_task(tasks, task_tag, priority):
         data.append(task_info)
 
         if _count % 10000 == 0:
-            print(_count)
-            success_count = hourong_patch(data)
-            data = []
+            try:
+                print(_count)
+                success_count = hourong_patch(data)
+                data = []
+            except DuplicateKeyError as e:
+                print traceback.format_exc(e)
 
     else:
         print(_count)
@@ -123,9 +127,12 @@ def send_poi_detail_task(tasks, task_tag, priority):
         data.append(task_info)
 
         if _count % 10000 == 0:
-            print(_count)
-            success_count += hourong_patch(data)
-            data = []
+            try:
+                print(_count)
+                success_count += hourong_patch(data)
+                data = []
+            except DuplicateKeyError as e:
+                print traceback.format_exc(e)
 
     else:
         print(_count)
@@ -162,9 +169,12 @@ def send_qyer_detail_task(tasks, task_tag, priority):
         data.append(task_info)
 
         if _count % 10000 == 0:
-            print(_count)
-            success_count += hourong_patch(data)
-            data = []
+            try:
+                print(_count)
+                success_count += hourong_patch(data)
+                data = []
+            except DuplicateKeyError as e:
+                print traceback.format_exc(e)
 
     else:
         print(_count)
@@ -222,9 +232,12 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
 
             data.append(task_info)
             if _count % 10000 == 0:
-                print _count
-                success_count += hourong_patch(data)
-                data = []
+                try:
+                    print _count
+                    success_count += hourong_patch(data)
+                    data = []
+                except DuplicateKeyError as e:
+                    print traceback.format_exc(e)
 
                 cursor.executemany('insert into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
                 conn.commit()
