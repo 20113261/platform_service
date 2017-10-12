@@ -11,6 +11,7 @@ import datetime
 import json
 import hashlib
 import pymysql
+from pymongo.errors import DuplicateKeyError
 
 from send_task import hourong_patch
 
@@ -43,11 +44,8 @@ def qyer_supplement_map_info(tasks):
         try:
             success_count += hourong_patch(data)
             data = []
-        except Exception as exc:
-            print '==========================0======================='
-            # print source_id, city_id
+        except DuplicateKeyError as exc:
             print traceback.format_exc(exc)
-            print '==========================1======================='
     else:
         if len(data)>0:
             success_count += hourong_patch(data)

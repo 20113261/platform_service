@@ -10,6 +10,7 @@ import traceback
 import pymongo
 import hashlib
 import urlparse
+from pymongo.errors import DuplicateKeyError
 
 
 client = pymongo.MongoClient(host='10.10.231.105')
@@ -75,11 +76,8 @@ def send_hotel_list_task(task_name, datas, priority):
                 try:
                     success_count += hourong_patch(data)
                     data = []
-                except Exception as exc:
-                    print '==========================0======================='
-                    print country_id, city_id
+                except DuplicateKeyError as exc:
                     print traceback.format_exc(exc)
-                    print '==========================1======================='
 
     else:
         if data:
@@ -105,6 +103,7 @@ def send_daodao_list_task(task_name, datas, priority):
                 'country_id': country_id,
                 'poi_type': poi_type,
                 'url': urlparse.urlsplit(url).path,
+                'part': task_name,
             },#source, url, city_id, country_id, poi_type
             'priority': priority,
             'finished': 0,
@@ -122,16 +121,14 @@ def send_daodao_list_task(task_name, datas, priority):
             try:
                 success_count += hourong_patch(data)
                 data = []
-            except Exception as exc:
-                print '==========================0======================='
-                print url, city_id
+            except DuplicateKeyError as exc:
                 print traceback.format_exc(exc)
-                print '==========================1======================='
 
     else:
         if data:
             print(_count)
             success_count += hourong_patch(data)
+
     return success_count
 
 def send_qyer_list_task(task_name, datas, priority):
@@ -168,11 +165,8 @@ def send_qyer_list_task(task_name, datas, priority):
             try:
                 success_count += hourong_patch(data)
                 data = []
-            except Exception as exc:
-                print '==========================0======================='
-                print url, city_id
+            except DuplicateKeyError as exc:
                 print traceback.format_exc(exc)
-                print '==========================1======================='
 
     else:
         if data:
