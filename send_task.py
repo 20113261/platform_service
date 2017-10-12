@@ -82,14 +82,8 @@ def send_hotel_detail_task(tasks, task_tag, priority):
 
         if _count % 10000 == 0:
             print(_count)
-            try:
-                success_count = hourong_patch(data)
-                data = []
-            except Exception as exc:
-                print '==========================0======================='
-                print hotel_url, city_id
-                print traceback.format_exc(exc)
-                print '==========================1======================='
+            success_count = hourong_patch(data)
+            data = []
 
     else:
         print(_count)
@@ -130,14 +124,8 @@ def send_poi_detail_task(tasks, task_tag, priority):
 
         if _count % 10000 == 0:
             print(_count)
-            try:
-                success_count += hourong_patch(data)
-                data = []
-            except Exception as exc:
-                print '==========================0======================='
-                print source_id, city_id
-                print traceback.format_exc(exc)
-                print '==========================1======================='
+            success_count += hourong_patch(data)
+            data = []
 
     else:
         print(_count)
@@ -175,14 +163,8 @@ def send_qyer_detail_task(tasks, task_tag, priority):
 
         if _count % 10000 == 0:
             print(_count)
-            try:
-                success_count += hourong_patch(data)
-                data = []
-            except Exception as exc:
-                print '==========================0======================='
-                print source_id, city_id
-                print traceback.format_exc(exc)
-                print '==========================1======================='
+            success_count += hourong_patch(data)
+            data = []
 
     else:
         print(_count)
@@ -241,21 +223,12 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
             data.append(task_info)
             if _count % 10000 == 0:
                 print _count
-                try:
-                    success_count += hourong_patch(data)
-                    data = []
-                except Exception as exc:
-                    print '==========================0======================='
-                    print source, source_id, url
-                    print traceback.format_exc(exc)
-                    print '==========================1======================='
+                success_count += hourong_patch(data)
+                data = []
 
-                try:
-                    cursor.executemany('insert into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
-                    conn.commit()
-                    md5_data = []
-                except Exception as e:
-                    print traceback.format_exc(e)
+                cursor.executemany('insert into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
+                conn.commit()
+                md5_data = []
 
     else:
         print(_count)
