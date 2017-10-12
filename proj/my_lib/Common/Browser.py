@@ -19,6 +19,7 @@ from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from proj.my_lib.Common.Utils import try3times
+from proj.my_lib.ServiceStandardError import ServiceStandardError
 
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
@@ -142,8 +143,10 @@ class MySession(requests.Session):
             self.update_proxy(0)
         elif exc_type in (SSLError, ProxyError):
             self.update_proxy(22)
+            raise ServiceStandardError(22, "代理异常 from Browser", wrapped_exception=exc_type)
         elif exc_type in (ConnectionError, ConnectTimeout):
             self.update_proxy(23)
+            raise ServiceStandardError(23, "代理被禁 from Browser", wrapped_exception=exc_type)
 
         if self.need_cache:
             # store page check
