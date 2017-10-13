@@ -31,7 +31,7 @@ parser_type = {
 }
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='4/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def get_lost_poi(self, target_url, city_id, poi_type, country_id, **kwargs):
     # TODO 入库处理未指定
     task_response = kwargs['task_response']
