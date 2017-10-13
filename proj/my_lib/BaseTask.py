@@ -187,9 +187,11 @@ class BaseTask(Task):
         else:
             finished = False
         r.incr('|_||_|'.join(
-            map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'success'])))
+            map(lambda x: str(x),
+                [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
         logger.debug('|_||_|'.join(
-            map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'success'])))
+            map(lambda x: str(x),
+                [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
 
         if 'mongo_task_id' in kwargs:
             if finished:
@@ -252,9 +254,11 @@ class BaseTask(Task):
         # 更新任务统计
         start = time.time()
         r.incr('|_||_|'.join(
-            map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'failure'])))
+            map(lambda x: str(x),
+                [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
         logger.debug('|_||_|'.join(
-            map(lambda x: str(x), [self.name, get_local_ip(), task_source, task_type, error_code, 'failure'])))
+            map(lambda x: str(x),
+                [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
 
         logger.debug("[single task report][takes: {}]".format(time.time() - start))
 
