@@ -82,6 +82,7 @@ def execute_sql(sql, commit=False):
     if commit:
         conn.commit()
         cursor.close()
+        conn.close()
         return
 
     result = cursor.fetchall()
