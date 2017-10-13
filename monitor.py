@@ -163,7 +163,9 @@ def monitoring_hotel_list2detail():
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
-        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
 
 def monitoring_hotel_detail2ImgOrComment():
     sql = """select source, source_id, city_id, img_items, update_time from %s where update_time >= '%s' order by update_time limit 5000"""
@@ -193,7 +195,9 @@ def monitoring_hotel_detail2ImgOrComment():
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
-        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
 
 def monitoring_poi_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
@@ -225,7 +229,9 @@ def monitoring_poi_list2detail():
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
-        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
 
 def monitoring_poi_detail2imgOrComment():
     sql = """select source, id, city_id, imgurl, utime from %s where utime >= '%s' order by utime limit 5000"""
@@ -255,7 +261,9 @@ def monitoring_poi_detail2imgOrComment():
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
-        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
 
 def monitoring_qyer_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
@@ -287,7 +295,9 @@ def monitoring_qyer_list2detail():
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
-        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
 
 def monitoring_zombies_task():
     collections.update({
@@ -312,7 +322,9 @@ def monitoring_supplement_field():
             update_seek(table_name, timestamp)
     except Exception as e:
         logger.error(traceback.format_exc(e))
-        send_email(EMAIL_TITLE, '%s \n %s' % (sys._getframe().f_code.co_name, traceback.format_exc(e)), SEND_TO)
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
 
 if __name__ == '__main__':
     # get_default_timestramp()
