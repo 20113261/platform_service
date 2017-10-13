@@ -9,6 +9,9 @@
 import requests
 import sys
 
+SEND_TO = ['hourong@mioji.com', 'luwanning@mioji.com']
+EMAIL_TITLE = '[异常监控]定时发任务挂了'
+
 def send_email(title, mail_info, mail_list, want_send_html=False):
     try:
         mail_list = ';'.join(mail_list)

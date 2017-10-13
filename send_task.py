@@ -13,10 +13,12 @@ import datetime
 import json
 import redis
 import hashlib
+import sys
 import pymysql
 import mock
 import proj.my_lib.my_mongo_insert
 from pymongo.errors import DuplicateKeyError
+from send_email import send_email, SEND_TO, EMAIL_TITLE
 
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['Task']
@@ -24,9 +26,16 @@ redis_sourceid = redis.Redis(host='10.10.114.35', db=8)
 redis_md5 = redis.Redis(host='10.10.114.35', db=9)
 
 def hourong_patch(data):
-    with mock.patch('pymongo.collection.Collection._insert', proj.my_lib.my_mongo_insert.Collection._insert):
-        result = collections.insert(data, continue_on_error=True)
-        return result['n']
+    try:
+        with mock.patch('pymongo.collection.Collection._insert', proj.my_lib.my_mongo_insert.Collection._insert):
+            result = collections.insert(data, continue_on_error=True)
+            return result['n']
+    except DuplicateKeyError as e:
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
+        print traceback.format_exc(e)
+        return -1
 
 def get_country_id(tasks):
     conn_c = pymysql.connect(host='10.10.69.170', user='reader', password='miaoji1109', charset='utf8', db='base_data')
@@ -82,18 +91,17 @@ def send_hotel_detail_task(tasks, task_tag, priority):
         data.append(task_info)
 
         if _count % 10000 == 0:
-            try:
-                print(_count)
-                success_count = hourong_patch(data)
-                data = []
-            except DuplicateKeyError as e:
-                print traceback.format_exc(e)
+            print(_count)
+            success_count = hourong_patch(data)
+            data = []
 
     else:
         print(_count)
         if len(data)>0:
             success_count += hourong_patch(data)
 
+    if success_count==-1:
+        utime = None
     return utime, success_count
 
 def send_poi_detail_task(tasks, task_tag, priority):
@@ -127,17 +135,17 @@ def send_poi_detail_task(tasks, task_tag, priority):
         data.append(task_info)
 
         if _count % 10000 == 0:
-            try:
-                print(_count)
-                success_count += hourong_patch(data)
-                data = []
-            except DuplicateKeyError as e:
-                print traceback.format_exc(e)
+            print(_count)
+            success_count += hourong_patch(data)
+            data = []
 
     else:
         print(_count)
         if len(data)>0:
             success_count += hourong_patch(data)
+
+    if success_count==-1:
+        utime = None
 
     return utime, success_count
 
@@ -169,17 +177,17 @@ def send_qyer_detail_task(tasks, task_tag, priority):
         data.append(task_info)
 
         if _count % 10000 == 0:
-            try:
-                print(_count)
-                success_count += hourong_patch(data)
-                data = []
-            except DuplicateKeyError as e:
-                print traceback.format_exc(e)
+            print(_count)
+            success_count += hourong_patch(data)
+            data = []
 
     else:
         print(_count)
         if len(data)>0:
             success_count += hourong_patch(data)
+
+    if success_count==-1:
+        utime = None
 
     return utime, success_count
 
@@ -232,12 +240,9 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
 
             data.append(task_info)
             if _count % 10000 == 0:
-                try:
-                    print _count
-                    success_count += hourong_patch(data)
-                    data = []
-                except DuplicateKeyError as e:
-                    print traceback.format_exc(e)
+                print _count
+                success_count += hourong_patch(data)
+                data = []
 
                 cursor.executemany('insert into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
                 conn.commit()
@@ -253,7 +258,8 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
             cursor.close()
             conn.close()
 
-
+    if success_count==-1:
+        update_time = None
 
     return update_time, success_count
 
