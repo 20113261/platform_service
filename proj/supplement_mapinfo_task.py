@@ -55,7 +55,7 @@ def supplement_map_info(self, table_name, source, sid, other_info, **kwargs):
     return source, sid
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='4/s')
 def supplement_daodao_img(self, table_name, source, sid, url, **kwargs):
     task_response = kwargs['task_response']
     task_response.source = source.title()
