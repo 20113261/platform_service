@@ -55,7 +55,7 @@ def supplement_map_info(self, table_name, source, sid, other_info, **kwargs):
     return source, sid
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='4/s')
 def supplement_daodao_img(self, table_name, source, sid, url, **kwargs):
     task_response = kwargs['task_response']
     task_response.source = source.title()
@@ -86,8 +86,10 @@ def supplement_daodao_img(self, table_name, source, sid, url, **kwargs):
 if __name__ == '__main__':
     # supplement_map_info('', 'detail_total_qyer_20170928a', 'qyer', '101904', '{"address": "Parsonage Gardens"}')
     # supplement_map_info('', 'detail_total_qyer_20170928a', 'qyer', '1201768', '{"address": "Lungarno Degli Acciaiuoli, 6-8/R"}')
-    supplement_daodao_img('', 'detail_attr_daodao_20170929a', 'daodao', '10005621', 'https://www.tripadvisor.cn//Attraction_Review-g298484-d10024357-Reviews-Church_of_The_Holy_Apostle_and_Evangelist_John_The_Theologian-Moscow_Central_Rus.html')
+    # supplement_daodao_img('', 'detail_attr_daodao_20170929a', 'daodao', '10005621', 'https://www.tripadvisor.cn//Attraction_Review-g298484-d10024357-Reviews-Church_of_The_Holy_Apostle_and_Evangelist_John_The_Theologian-Moscow_Central_Rus.html')
     # supplement_daodao_img('', 'detail_rest_daodao_20170929a', 'daodao', '10000025', 'https://www.tripadvisor.cn/Restaurant_Review-g1983013-d10000025-Reviews-Mexicanos-Markt_Indersdorf_Upper_Bavaria_Bavaria.html')
     # supplement_daodao_img('', 'detail_rest_daodao_20170929a', 'daodao', '1000321', 'https://www.tripadvisor.cn//Restaurant_Review-g187472-d1000321-Reviews-Tapa_en_Tapa-Las_Palmas_de_Gran_Canaria_Gran_Canaria_Canary_Islands.html')
+    # supplement_daodao_img('', 'detail_attr_daodao_20170929a', 'daodao', '10670935', 'https://www.tripadvisor.cn//Attraction_Review-g1554295-d10670935-Reviews-Chiesa_di_San_Silvestro_I_Papa-Fanano_Province_of_Modena_Emilia_Romagna.html')
+    supplement_daodao_img('', 'detail_attr_daodao_20170929a', 'daodao', '10000109', 'https://www.tripadvisor.cn//Attraction_Review-g55557-d10000109-Reviews-Off_Duty_Armory-Burleson_Texas.html')
 
 
