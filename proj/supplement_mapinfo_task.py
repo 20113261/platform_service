@@ -64,8 +64,11 @@ def supplement_daodao_img(self, table_name, source, sid, url, **kwargs):
     typ2 = table_name.split('_')[1]
     try:
         source_id = re.compile(r'd(\d+)').findall(url)[0]
-        if not source_id:raise Exception
+        if not source_id:
+            task_response.error_code = 27
+            raise Exception
     except Exception as e:
+        task_response.error_code = 27
         raise Exception('can not find source_id, url    %s' % url)
 
     if typ2=='attr':
@@ -74,6 +77,7 @@ def supplement_daodao_img(self, table_name, source, sid, url, **kwargs):
         imgurl = rest_image_parser(source_id)
     print imgurl
     if not imgurl:
+        task_response.error_code = 27
         raise Exception('imgurl is None')
     sql = update_imgurl % (table_name, imgurl, source, sid)
     print sql
