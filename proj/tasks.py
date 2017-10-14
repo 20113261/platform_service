@@ -288,7 +288,7 @@ def get_lost_rest_no_proxy(self, target_url):
         self.retry(exc=traceback.format_exc(exc))
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='20/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='13/s')
 def get_images(self, source, source_id, target_url, part, file_path, desc_path, is_poi_task=True, need_insert_db=True,
                special_file_name='', **kwargs):
     task_response = kwargs['task_response']
