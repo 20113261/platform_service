@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 import pymysql
 
+
 class Qyer(Base):
     __tablename__ = 'qyer_0918'
     id = Column(String(32), nullable=False, primary_key=True, default='NULL')
@@ -57,9 +58,9 @@ class Qyer(Base):
 
 
 # 初始化数据库连接:
-#engine = create_engine('mysql+pymysql://hourong:hourong@10.10.180.145:3306/Qyer')
+# engine = create_engine('mysql+pymysql://hourong:hourong@10.10.180.145:3306/Qyer')
 engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/ServicePlatform?charset=utf8',
-                       encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
+                       encoding="utf-8", pool_size=3, pool_recycle=3600, echo=False)
 # 创建DBSession类型:
 
 DBSession = sessionmaker(bind=engine)
