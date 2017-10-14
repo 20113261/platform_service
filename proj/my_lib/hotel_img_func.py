@@ -16,7 +16,7 @@ from proj.my_lib.logger import func_time_logger
 Base = declarative_base()
 
 engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/ServicePlatform?charset=utf8',
-                       encoding="utf-8", pool_size=50, pool_recycle=3600, echo=False)
+                       encoding="utf-8", pool_size=35, pool_recycle=3600, echo=False)
 DBSession = sessionmaker(bind=engine)
 SQL_HOTEL = 'replace into {table_name} (source, source_id, pic_url, pic_md5, part, hotel_id, status, update_date, size, flag, file_md5) values (:source, :source_id, :pic_url, :pic_md5, :part, :hotel_id, :status, :update_date, :size, :flag, :file_md5)'
 SQL_POI = 'replace into {table_name} (file_name, source, sid, url, pic_size, bucket_name, url_md5, pic_md5, `use`, part, `date`) values (:file_name, :source, :sid, :url, :pic_size, :bucket_name, :url_md5, :pic_md5, :use, :part, :date)'
