@@ -19,7 +19,7 @@ failed_task_collections = client['MongoTask']['FailedTask']
 
 cursor_dict = {}
 
-MIN_PRIORITY = 1
+MIN_PRIORITY = 0
 EACH_UPDATE = 50000
 
 
