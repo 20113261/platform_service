@@ -77,7 +77,7 @@ def supplement_daodao_img(self, table_name, source, sid, url, **kwargs):
         imgurl = rest_image_parser(source_id)
     print imgurl
     if not imgurl:
-        task_response.error_code = 27
+        task_response.error_code = 29
         raise Exception('imgurl is None')
     sql = update_imgurl % (table_name, imgurl, source, sid)
     print sql
