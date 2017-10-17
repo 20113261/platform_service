@@ -119,8 +119,7 @@ def get_by_md5(md5, expire_time=3600):
                 '[ get cache ][md5: {0}][expire: {1}][ save_time: {2}]'.format(md5, expire_time, file_info.st_mtime))
             return resp
         else:
-            delete_cache(md5)
-            logger.info('[ delete expired response cache {0} ]'.format(md5))
+            logger.info('[ cache file has expired ][ cache {0} ]'.format(md5))
             return None
     else:
         raise TypeError('Unknown Type {}'.format(STORE_TYPE))
