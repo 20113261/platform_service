@@ -262,7 +262,7 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
                 cursor.close()
                 conn.close()
             except Exception as e:
-            raise Exception('%s\n%s' % (str(md5_data), traceback.format_exc(e)))
+                raise Exception('%s\n%s' % (str(md5_data), traceback.format_exc(e)))
 
     if success_count==-1:
         update_time = None
