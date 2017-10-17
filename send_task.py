@@ -239,7 +239,7 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
             task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
 
             data.append(task_info)
-            if _count % 10000 == 0:
+            if _count % 5000 == 0:
                 print _count
                 success_count += hourong_patch(data)
                 data = []
