@@ -9,7 +9,7 @@ LOG_FORMAT = ('%(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
 
 
-class ExampleConsumer(object):
+class AsyncConsumer(object):
     """This is an example consumer that will handle unexpected interactions
     with RabbitMQ such as channel and connection closures.
 
@@ -339,14 +339,10 @@ class ExampleConsumer(object):
         self._connection.close()
 
 
-def main():
-    logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-    example = ExampleConsumer('amqp://hourong:1220@10.10.213.148:5672/task_info')
-    try:
-        example.run()
-    except KeyboardInterrupt:
-        example.stop()
+logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+example = AsyncConsumer('amqp://hourong:1220@10.10.213.148:5672/task_info')
+try:
+    example.run()
+except KeyboardInterrupt:
+    example.stop()
 
-
-if __name__ == '__main__':
-    main()

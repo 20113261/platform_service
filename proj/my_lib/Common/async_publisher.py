@@ -11,7 +11,7 @@ LOG_FORMAT = ('%(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
 
 
-class ExamplePublisher(object):
+class AsyncPublisher(object):
     """This is an example publisher that will handle unexpected interactions
     with RabbitMQ such as channel and connection closures.
 
@@ -26,7 +26,7 @@ class ExamplePublisher(object):
     """
     EXCHANGE = 'task_info'
     EXCHANGE_TYPE = 'direct'
-    PUBLISH_INTERVAL = 1
+    PUBLISH_INTERVAL = 0
     QUEUE = 'update_failed_task'
     ROUTING_KEY = 'update_failed_task'
 
@@ -230,7 +230,7 @@ class ExamplePublisher(object):
         """
         LOGGER.info('Issuing consumer related RPC commands')
         self.enable_delivery_confirmations()
-        self.schedule_next_message()
+        # self.schedule_next_message()
 
     def enable_delivery_confirmations(self):
         """Send the Confirm.Select RPC method to RabbitMQ to enable delivery
@@ -285,7 +285,7 @@ class ExamplePublisher(object):
         self._connection.add_timeout(self.PUBLISH_INTERVAL,
                                      self.publish_message)
 
-    def publish_message(self):
+    def publish_message(self, message):
         """If the class is not stopping, publish a message to RabbitMQ,
         appending a list of deliveries with the message number that was sent.
         This list will be used to check for delivery confirmations in the
@@ -301,12 +301,13 @@ class ExamplePublisher(object):
         if self._stopping:
             return
 
-        message = {u'مفتاح': u' قيمة',
-                   u'键': u'值',
-                   u'キー': u'値'}
+        # message = {u'مفتاح': u' قيمة',
+        #            u'键': u'值',
+        #            u'キー': u'値'}
         properties = pika.BasicProperties(app_id='update-failed-task-publisher',
                                           content_type='application/json',
-                                          headers=message)
+                                          headers=message,
+                                          delivery_mode=2)
 
         self._channel.basic_publish(self.EXCHANGE, self.ROUTING_KEY,
                                     json.dumps(message, ensure_ascii=False),
@@ -314,7 +315,7 @@ class ExamplePublisher(object):
         self._message_number += 1
         self._deliveries.append(self._message_number)
         LOGGER.info('Published message # %i', self._message_number)
-        self.schedule_next_message()
+        # self.schedule_next_message()
 
     def close_channel(self):
         """Invoke this command to close the channel with RabbitMQ by sending
@@ -355,15 +356,14 @@ class ExamplePublisher(object):
         self._connection.close()
 
 
-def main():
-    logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
+logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT)
 
-    # Connect to localhost:5672 as guest with the password guest and virtual host "/" (%2F)
-    example = ExamplePublisher('amqp://hourong:1220@10.10.213.148:5672/task_info?connection_attempts=3&heartbeat_interval=3600')
-    try:
-        example.run()
-    except KeyboardInterrupt:
-        example.stop()
+# Connect to localhost:5672 as guest with the password guest and virtual host "/" (%2F)
+async = AsyncPublisher('amqp://hourong:1220@10.10.213.148:5672/task_info?connection_attempts=3&heartbeat_interval=3600')
+try:
+    async.run()
+except KeyboardInterrupt:
+    async.stop()
 
-if __name__ == '__main__':
-    main()
+
+publish_message = async.publish_message('aaaaaaaaa')
