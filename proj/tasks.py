@@ -845,54 +845,37 @@ def insert_crawled_html(args, table_name):
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='40/s')
 def craw_html(self, url, flag, table_name, **kwargs):
-    self.task_source = 'Google'
-    self.task_type = 'GoogleDriveApi'
-    PROXY = get_proxy(source="Platform")
-    x = time.time()
-    proxies = {
-        'http': 'socks5://' + PROXY,
-        'https': 'socks5://' + PROXY
-    }
-    print "Now Proxy is " + PROXY
-    headers = {
-        'User-agent': GetUserAgent()
-    }
+    task_response = kwargs['task_response']
+    task_response.source = 'Google'
+    task_response.type = 'GoogleDriveApi'
     md5_url = hashlib.md5(url).hexdigest()
-    try:
-        page = requests.get(url, proxies=proxies, headers=headers, timeout=240)
+    with MySession(need_cache=True) as session:
+        page = session.get(url, timeout=240)
         page.encoding = 'utf8'
         if len(page.text) == 0:
-            update_proxy('Platform', PROXY, x, '23')
-            self.error_code = 23
+            task_response.error_code = 23
             self.retry()
         else:
-            print "Success with " + PROXY + ' CODE 0 takes ' + str(time.time() - x)
             content = page.text
-            # test data
             j_data = json.loads(content)
             if j_data['status'] not in ['OK', 'ZERO_RESULTS']:
+                task_response.error_code = 23
                 raise Exception('Status:\t' + j_data['status'])
+
             data = (md5_url, url, content, flag)
-            # print insert_crawled_html(data, table_name)
             conn = MySQLdb.connect(host='10.10.231.105', user='hourong', passwd='hourong', db='crawled_html',
                                    charset="utf8")
-            with conn as cursor:
-                sql = 'insert ignore into crawled_html.{0}(`md5`,`url`,`content`,`flag`) values (%s,%s,%s,%s)'.format(
-                    table_name)
-                print cursor.execute(sql, data)
-            update_proxy('Platform', PROXY, x, '0')
-            task_id = kwargs.get('task_id', '')
-            if task_id != '':
-                update_task(task_id=task_id)
-        # return data
-        self.error_code = 0
-        return 'OK' + str(len(data))
-    except Exception as exc:
-        update_proxy('Platform', PROXY, x, '23')
-        self.error_code = 23
-        print "Error", exc, 'takes', str(time.time() - x)
-        print traceback.print_exc()
-        self.retry(exc=traceback.format_exc(exc))
+            try:
+                with conn as cursor:
+                    sql = 'insert ignore into crawled_html.{0}(`md5`,`url`,`content`,`flag`) values (%s,%s,%s,%s)'.format(
+                        table_name)
+                    print(cursor.execute(sql, data))
+            except Exception as e:
+                task_response.error_code = 33
+                raise e
+
+        task_response.error_code = 0
+        return 'OK', url
 
 
 # add lost attr
