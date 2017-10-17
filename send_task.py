@@ -244,25 +244,19 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
                 success_count += hourong_patch(data)
                 data = []
 
-                try:
-                    cursor.executemany('insert into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
-                    conn.commit()
-                    md5_data = []
-                except Exception as e:
-                    raise Exception('%s\n%s' % (str(md5_data), traceback.format_exc(e)))
+                cursor.executemany('replace into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
+                conn.commit()
+                md5_data = []
 
     else:
         print(_count)
         if len(data)>0:
             success_count += hourong_patch(data)
         if len(md5_data)>0:
-            try:
-                cursor.executemany('replace into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
-                conn.commit()
-                cursor.close()
-                conn.close()
-            except Exception as e:
-                raise Exception('%s\n%s' % (str(md5_data), traceback.format_exc(e)))
+            cursor.executemany('replace into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
+            conn.commit()
+            cursor.close()
+            conn.close()
 
     if success_count==-1:
         update_time = None

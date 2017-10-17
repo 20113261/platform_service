@@ -30,9 +30,9 @@ schedule = BlockingScheduler()
 import datetime
 
 # schedule.add_job(monitoring_supplement_field, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
-schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45', id='monitoring_hotel_list')
-schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/90', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=20), id='monitoring_hotel_detail')
-schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/45', id='monitoring_poi_list')
+schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=60),id='monitoring_hotel_list')
+schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/90', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=120), id='monitoring_hotel_detail')
+schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=30), id='monitoring_poi_list')
 schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/90', id='monitoring_poi_detail')
 schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/45', id='monitoring_qyer_detail')
 schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2', id='monitoring_supplement_field')
