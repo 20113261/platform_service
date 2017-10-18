@@ -298,16 +298,27 @@ def monitoring_qyer_list2detail():
                    SEND_TO)
 
 def monitoring_zombies_task():
-    collections.update({
-        'running': 1,
-        'utime': {'$lt': datetime.datetime.now()-datetime.timedelta(hours=1)}
-    }, {
-        '$set': {
-            'finished': 0,
-            'used_times': 0,
-            'running': 0
-        }
-    }, multi=True)
+    try:
+
+        cursor = collections.find({'running': 1, 'utime': {'$lt': datetime.datetime.now()-datetime.timedelta(hours=1)}}, {'_id': 1}).limit(5000)
+        id_list = [id_dict['_id'] for id_dict in cursor]
+        logger.info('monitoring_zombies_task  --  filter:  %s, count: %d' % (str(cursor._Cursor__spec), len(id_list)))
+        collections.update({
+            '_id': {
+                '$in': id_list
+            }
+        }, {
+            '$set': {
+                'finished': 0,
+                'used_times': 0,
+                'running': 0
+            }
+        }, multi=True)
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
 
 def monitoring_supplement_field():
     try:
@@ -326,9 +337,9 @@ def monitoring_supplement_field():
 
 if __name__ == '__main__':
     # get_default_timestramp()
-    get_seek('hotel_list2detail_test')
+    # get_seek('hotel_list2detail_test')
     # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
     # test_timstramp()
     # monitoring_hotel_list2detail()
     # monitoring_hotel_detail2ImgOrComment()
-    # monitoring_zombies_task()
+    monitoring_zombies_task()
