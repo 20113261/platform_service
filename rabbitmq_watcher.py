@@ -63,7 +63,7 @@ MAX_RETRY_TIMES_CONF = {
 
 QUEUE_MAX_COUNT = 100000
 
-DEFAULT_MAX_RETRY_TIMES = 6
+DEFAULT_MAX_RETRY_TIMES = 12
 
 
 def get_max_retry_times(queue_name):
