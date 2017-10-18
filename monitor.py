@@ -299,11 +299,9 @@ def monitoring_qyer_list2detail():
 
 def monitoring_zombies_task():
     try:
-
         cursor = collections.find({'running': 1, 'utime': {'$lt': datetime.datetime.now()-datetime.timedelta(hours=1)}}, {'_id': 1}).limit(5000)
         id_list = [id_dict['_id'] for id_dict in cursor]
-        logger.info('monitoring_zombies_task  --  filter:  %s, count: %d' % (str(cursor._Cursor__spec), len(id_list)))
-        collections.update({
+        result = collections.update({
             '_id': {
                 '$in': id_list
             }
@@ -314,6 +312,7 @@ def monitoring_zombies_task():
                 'running': 0
             }
         }, multi=True)
+        logger.info('monitoring_zombies_task  --  filter:  %s, count: %d, result: %s' % (str(cursor._Cursor__spec), len(id_list), str(result)))
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
