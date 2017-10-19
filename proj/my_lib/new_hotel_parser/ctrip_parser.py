@@ -14,9 +14,9 @@ import traceback
 import re
 import requests
 from lxml import html as HTML
-
+from urlparse import urljoin
 from data_obj import Hotel, DBSession
-
+import json
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -229,6 +229,29 @@ def ctrip_parser(page, url, other_info):
     except Exception, e:
         print str(e)
 
+    #获取酒店城市信息
+    try:
+        pattern_str = root.xpath('//form[@id="aspnetForm"]')[0].attrib['action']
+        source_city_id = re.search(r'international/([0-9a-zA-Z]+)',pattern_str).group(1)
+        hotel.source_city_id = source_city_id
+    except Exception as e:
+        print e
+
+    print "hotel.source_city_id:",hotel.source_city_id
+    #获取others_info信息
+    try:
+        first_img = urljoin('http:', root.xpath('//div[@id="picList"]/div/div')[0].attrib['_src'])
+    except Exception as e:
+        print e
+
+    try:
+        city_name = page_js.eval('hotelDomesticConfig')['query']['cityName'].encode('raw-unicode-escape')
+        country_id = page_js.eval('hotelDomesticConfig')['query']['country']
+    except Exception as e:
+        print e
+    print "city_name",city_name,country_id
+    hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name, 'country_id': country_id})
+    print "hotel.others_info:",hotel.others_info
     print 'hotel.has_wifi =>', hotel.has_wifi
 
     print 'hotel.is_wifi_free =>', hotel.is_wifi_free
@@ -253,6 +276,7 @@ def ctrip_parser(page, url, other_info):
     #
     # print 'pay method-->>', hotel.pay_method
 
+
     hotel.hotel_url = url
     hotel.source = 'ctrip'
     hotel.source_id = other_info['source_id']
@@ -264,7 +288,7 @@ def ctrip_parser(page, url, other_info):
 if __name__ == '__main__':
     # url = 'http://hotels.ctrip.com/international/992466.html'
     # url = 'http://hotels.ctrip.com/international/3723551.html?IsReposted=3723551'
-    url = 'http://hotels.ctrip.com/international/1479993.html'
+    url = 'http://hotels.ctrip.com/international/2611722.html'
     # url = 'http://hotels.ctrip.com/international/10146828.html'
     other_info = {
         'source_id': '1039433',

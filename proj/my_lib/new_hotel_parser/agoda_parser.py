@@ -35,7 +35,8 @@ def agoda_parser(content, url, other_info):
     ph_runtime = execjs.get('PhantomJS')
     page_js = ph_runtime.compile(root.xpath('//script[contains(text(),"propertyPageParams")]/text()')[0])
     page_params = page_js.eval('propertyPageParams')
-
+    with open('result.txt','w+') as result:
+        result.write(json.dumps(page_params))
     try:
         hotel_name = page_params['hotelInfo']['name']
     except:
@@ -212,6 +213,21 @@ def agoda_parser(content, url, other_info):
             pass
 
 
+
+    #从酒店页面获取城市信息
+    try:
+        country_id = page_params['hotelSearchCriteria']['countryId']
+        country_name = page_params['hotelInfo']['address']['countryName']
+        city_name = page_params['hotelInfo']['address']['cityName']
+        city_id = page_params['hotelInfo']['address']['cityId']
+    except Exception as e:
+        print e
+
+    hotel.others_info = json.dumps({'country_id':country_id,'country_name':country_name,'city_name':city_name,'city_id':city_id})
+    hotel.source_city_id = city_id
+
+    print "hotel.others_info:",hotel.others_info
+    print "hotel.source_city_id:",hotel.source_city_id
     hotel.accepted_cards = 'NULL'
     print "accepted_cards:",hotel.accepted_cards
     print "check_in_time：",hotel.check_in_time
@@ -274,6 +290,7 @@ if __name__ == '__main__':
     # url = 'https://www.agoda.com/zh-cn/hare-vivanka/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
     # url = 'https://www.agoda.com/zh-cn/cabana-meme/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
     # url = 'https://www.agoda.com/zh-cn/hotel-alagare/hotel/lausanne-ch.html?checkin=2017-12-07&los=1&adults=2&rooms=1&cid=-1&searchrequestid=9127dc90-fd5e-4cbb-aa22-4cf62afbdecd'
+    url = 'https://www.agoda.com/zh-cn/grand-hyatt-new-york-hotel/hotel/new-york-ny-us.html?checkin=2017-12-20&los=1&adults=2&rooms=1&cid=-1&searchrequestid=7e5812dd-d6a4-4ca3-90a1-60437e475f93'
     page = requests.get(url=url, headers=headers)
     page.encoding = 'utf8'
     content = page.text
