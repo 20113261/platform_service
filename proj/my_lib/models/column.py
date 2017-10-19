@@ -16,7 +16,7 @@ class Column(object):
         return self._typ.type(value)
 
     def __str__(self):
-        return str(self._default) if self._value is None else str(self._value)
+        return str(self._default)
 
 
 
@@ -30,7 +30,7 @@ class BaseType(object):
 
 class String(BaseType):
     def type(self, value):
-        return type(value) is str
+        return type(value) is str or type(value) is int or type(value) is float
 
 class Integer(BaseType):
     def type(self, value):

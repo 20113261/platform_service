@@ -10,34 +10,39 @@ import json
 
 class BaseModel(object):
     __sql = ''
+    __columns_dict = {}
+    def __new__(cls, *args, **kwargs):
+        for item in dir(cls):
+            if item.startswith('_BaseModel__') or item.startswith('__'): continue
+            column = getattr(cls, item, None)
+            if isinstance(column, Column):
+                cls._BaseModel__columns_dict[item] = column
+                setattr(cls, item, column._default)
 
-    def __init__(self):
-        self.__instance_dict = {}
+        return object.__new__(cls, *args, **kwargs)
 
     def __setattr__(self, key, value):
-        column = getattr(self, key, None)
-        if key.startswith('_BaseModel__'):
-            self.__dict__[key] = value
-            return
+        if key == '_BaseModel__columns_dict':return
+        column = self._BaseModel__columns_dict.get(key, None)
         if not column:
             raise KeyError(str(key))
         if not column.judgement_type(value):
             raise TypeError('%s must be %s' % (value, column._typ))
         if not key_is_legal(value):
-            self.__instance_dict[key] = column._default
-        column._value = value
-        self.__instance_dict[key] = value
+            self.__dict__[key] = column._default
 
-    def __delattr__(self, key):
-        column = getattr(self, key, None)
-        if not column:
-            raise KeyError(str(key))
-        column._value = None
-        del self.__instance_dict[key]
+        self.__dict__[key] = value
+
+    # def __delattr__(self, key):
+    #     column = getattr(self, key, None)
+    #     if not column:
+    #         raise KeyError(str(key))
+    #     column._value = None
+    #     del self.__instance_dict[key]
 
     def generation_sql(self):
         self._completion_obj()
-        attribute = self.__instance_dict
+        attribute = self.__dict__
         keys = attribute.keys()
         sql = self._keys_to_sql(keys)
         print sql
@@ -47,21 +52,21 @@ class BaseModel(object):
         keys = []
         for item in dir(self):
             if item.startswith('__'):continue
-            column = getattr(self, item, None)
+            column = self._BaseModel__columns_dict.get(item, None)
             if column is None:continue
             if isinstance(column, Column):
                 keys.append(item)
         for key in keys:
-            if self.__instance_dict.has_key(key):
+            if self.__dict__.has_key(key):
                 continue
-            column = getattr(self, key, None)
-            self.__instance_dict[key] = column._default
+            column = self._BaseModel__columns_dict.get(key, None)
+            self.__dict__[key] = column._default
 
     def values(self, backdict=False):
         self._completion_obj()
         if backdict:
-            return self.__instance_dict
-        return tuple(self.__instance_dict.values())
+            return self.__dict__
+        return tuple(self.__dict__.values())
 
     # def load_sql(self):
     #     for item in dir(self):
@@ -79,7 +84,7 @@ class BaseModel(object):
         values = ""
         for key in keys:
             params += key + ", "
-            column = getattr(self, key, None)
+            column = self._BaseModel__columns_dict.get(key, None)
             if isinstance(column._typ, Integer):
                 values += "%s, "
             else:
@@ -87,7 +92,7 @@ class BaseModel(object):
         return sql + "(" + params[:-2] + ") values (" + values[:-2] + ")"
 
     def __str__(self):
-        return str(self.__instance_dict)
+        return str(self.__dict__)
 
 class Hotel_model(BaseModel):
     hotel_name = Column(String(512), default='NULL')
@@ -137,7 +142,7 @@ if __name__ == '__main__':
     # h.map_info = '120.2345,80.4321'
     h.address = '中国河南省林州市'
     h.city = '林州市'
-    h.country = '1022'
+    h.country = 1022
     h.city_id = '6666'
     h.postal_code = '13'
     h.star = 88

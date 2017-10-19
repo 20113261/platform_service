@@ -33,7 +33,7 @@ class HotelBase(BaseModel):
     hotel_url = Column(String(1024), default='NULL')
     # update_time = Column(Datetime(6), default=datetime.datetime.now)
     continent = Column(String(96), default='NULL')
-    other_info = Column(JSON(1000), default='NUll')
+    others_info = Column(JSON(1000), default='NUll')
 
 
 class BookingHotel(HotelBase):
