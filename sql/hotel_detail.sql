@@ -1,4 +1,5 @@
 CREATE TABLE IF NOT EXISTS `%s` (
+  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
   `hotel_name` varchar(512) CHARACTER SET utf8 DEFAULT NULL,
   `hotel_name_en` varchar(512) CHARACTER SET utf8 DEFAULT NULL,
   `source` varchar(64) CHARACTER SET utf8 NOT NULL,
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS `%s` (
   `update_time` TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   `continent` varchar(96) CHARACTER SET utf8 DEFAULT NULL,
   `country_id` varchar(11) NOT NULL,
-  PRIMARY KEY (`source`,`source_id`,`city_id`),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (`source`,`source_id`,`city_id`),
   KEY `update_time` (`update_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
