@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from proj.my_lib.models.column import Column, String, Integer, Datetime, Text, Map
+from proj.my_lib.models.base_model import BaseModel
 import datetime
 
-class HotelBase(object):
+class HotelBase(BaseModel):
     hotel_name = Column(String(512), default='NULL')
     hotel_name_en = Column(String(512), default='NULL')
     source = Column(String(64), default='NULL')
