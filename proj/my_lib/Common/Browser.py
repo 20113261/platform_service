@@ -40,7 +40,7 @@ def simple_get_socks_proxy():
 
 
 class MySession(requests.Session):
-    def __init__(self, need_proxies=True, auto_update_host=False, need_cache=False):
+    def __init__(self, need_proxies=True, auto_update_host=False, need_cache=False, do_not_delete_cache=False):
         self.start = time.time()
         super(MySession, self).__init__()
         headers = {
@@ -53,6 +53,7 @@ class MySession(requests.Session):
         self.md5_resp = {}
         self.need_cache = need_cache
         self.cache_expire_time = 2592000  # 60 * 60 * 24 * 30
+        self.do_not_delete_cache = do_not_delete_cache
 
         self.p_r_o_x_y = None
         if need_proxies:
@@ -157,11 +158,22 @@ class MySession(requests.Session):
                         logger.info('[保存缓存][md5: {}]'.format(k))
                         proj.my_lib.Common.RespStore.put_by_md5(k, v)
             else:
+                # store debug page
+                for k, v in self.md5_resp.items():
+                    debug_key = "debug_{}".format(k)
+                    logger.info('[保存 debug 缓存][md5: {}]'.format(debug_key))
+                    if not proj.my_lib.Common.RespStore.has_cache(debug_key):
+                        proj.my_lib.Common.RespStore.put_by_md5(debug_key, v)
+
                 # don't store page or delete the page
-                for each_md5 in self.md5:
-                    if proj.my_lib.Common.RespStore.has_cache(each_md5):
-                        logger.info('[删除缓存][md5: {}]'.format(each_md5))
-                        proj.my_lib.Common.RespStore.delete_cache(each_md5)
+                if not self.do_not_delete_cache:
+                    for each_md5 in self.md5:
+                        if proj.my_lib.Common.RespStore.has_cache(each_md5):
+                            logger.info('[删除缓存][md5: {}]'.format(each_md5))
+                            proj.my_lib.Common.RespStore.delete_cache(each_md5)
+                else:
+                    for each_md5 in self.md5:
+                        logger.info('[出现异常不清楚并不清除缓存][md5: {}]'.format(each_md5))
 
 
 if __name__ == '__main__':
