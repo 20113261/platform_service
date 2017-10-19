@@ -80,9 +80,13 @@ def try3times(try_again_times=3, others_exptions=None, final_raise_exception=Fal
 class Coordinate:
     """赋值前请仔细确认，经度在前纬度在后"""
 
-    def __init__(self, longitude, latitude):
+    def __init__(self, longitude='NULL', latitude='NULL'):
         self.longitude = longitude
         self.latitude = latitude
+
+    def translate(self, value):
+        """连接池 转义字段需要此方法"""
+        return str(self.longitude) + ',' + str(self.latitude)
 
     def __repr__(self):
         return self.__str__()
