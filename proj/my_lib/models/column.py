@@ -21,14 +21,15 @@ class Column(object):
 
 
 class BaseType(object):
+    def __str__(self):
+        return self.__class__.__name__
+
+class BaseLenType(BaseType):
     def __init__(self, length):
         if type(length) is not int:
             raise TypeError('%s must be int' % str(length))
 
-    def __str__(self):
-        return self.__class__.__name__
-
-class String(BaseType):
+class String(BaseLenType):
     def type(self, value):
         return type(value) is str or type(value) is int or type(value) is float
 
