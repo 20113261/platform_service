@@ -24,7 +24,7 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
         'User-agent': GetUserAgent()
     }
 
-    with MySession(need_cache=True) as session:
+    with MySession(need_cache=True, do_not_delete_cache=True) as session:
         # hotels
         if source == 'hotels':
             url = 'https://zh.hotels.com/ho{0}/'.format(other_info['source_id'])
@@ -107,7 +107,6 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
                 del result_dict['update_time']
             sql_key = result_dict.keys()
             sql_key.remove('_sa_instance_state')
-
 
             session = DBSession()
             session.execute(text(text_2_sql(sql_key).format(table_name=kwargs['task_name'])), [result_dict])

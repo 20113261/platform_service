@@ -22,7 +22,6 @@ if __name__ == '__main__':
             raise Exception()
     except Exception:
         pass
-
     # multi redirect test
     with MySession(need_proxies=False, need_cache=True) as session:
         resp = session.get('http://hilton.com.cn/zh-cn/city/Suzhou-hotels.html')
@@ -36,3 +35,11 @@ if __name__ == '__main__':
     with MySession(need_proxies=True, need_cache=False) as session:
         resp = session.get('http://www.baidu.com')
         # print(resp.text)
+    try:
+        with MySession(need_proxies=False, auto_update_host=False, need_cache=True,
+                       do_not_delete_cache=True) as session:
+            resp = session.get('http://www.baidu.com')
+            # print(resp.text)
+            raise Exception()
+    except Exception:
+        pass
