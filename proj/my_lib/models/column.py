@@ -4,6 +4,7 @@
 from proj.my_lib.Common.Utils import Coordinate
 
 import datetime
+import json
 
 class Column(object):
     def __init__(self, typ, default):
@@ -46,6 +47,14 @@ class Text(BaseType):
 class Map(BaseType):
     def type(self, value):
         return isinstance(value, Coordinate)
+
+class JSON(BaseType):
+    def type(self, value):
+        try:
+            json.loads(value)
+            return True
+        except Exception as e:
+            return False
 
 
 if __name__ == '__main__':

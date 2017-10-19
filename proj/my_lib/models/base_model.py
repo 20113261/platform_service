@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from proj.my_lib.models.column import Column, String, Integer, Datetime, Text, Map
+from proj.my_lib.models.column import Column, String, Integer, Datetime, Text, Map, JSON
 from proj.my_lib.Common.KeyMatch import key_is_legal
 from proj.my_lib.Common.Utils import Coordinate
 
 import datetime
+import json
 
 class BaseModel(object):
     __sql = ''
@@ -15,7 +16,7 @@ class BaseModel(object):
 
     def __setattr__(self, key, value):
         column = getattr(self, key, None)
-        if key.startswith('_Base__'):
+        if key.startswith('_BaseModel__'):
             self.__dict__[key] = value
             return
         if not column:
@@ -116,6 +117,7 @@ class Hotel_model(BaseModel):
     hotel_url = Column(String(1024), default='NULL')
     update_time = Column(Datetime(6), default=datetime.datetime.now)
     continent = Column(String(96), default='NULL')
+    other_info = Column(JSON(1000), default='NULL')
 
     @staticmethod
     def load_data():
@@ -154,6 +156,7 @@ if __name__ == '__main__':
     # h.hotel_url = 'https://map.baidu.com'
     h.update_time = datetime.datetime.now()
     # h.continent = 'NULL'
+    h.other_info = json.dumps({'json':'个性不'})
 
     print h
     sql = h.generation_sql()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from proj.my_lib.models.column import Column, String, Integer, Datetime, Text, Map
+from proj.my_lib.models.column import Column, String, Integer, Datetime, Text, Map, JSON
 from proj.my_lib.models.base_model import BaseModel
 import datetime
 
@@ -9,6 +9,7 @@ class HotelBase(BaseModel):
     hotel_name_en = Column(String(512), default='NULL')
     source = Column(String(64), default='NULL')
     source_id = Column(String(128), default='NULL')
+    source_city_id = Column(String(128), default='NULL')
     brand_name = Column(String(512), default='NULL')
     map_info = Column(String(512), default='NULL')
     address = Column(String(512), default='NULL')
@@ -32,6 +33,7 @@ class HotelBase(BaseModel):
     hotel_url = Column(String(1024), default='NULL')
     # update_time = Column(Datetime(6), default=datetime.datetime.now)
     continent = Column(String(96), default='NULL')
+    other_info = Column(JSON(1000), default='NUll')
 
 
 class BookingHotel(HotelBase):
