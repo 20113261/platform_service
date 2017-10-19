@@ -46,6 +46,14 @@ class TestAgoda(unittest.TestCase):
             result = test_agoda_parser(j_data['data'])
             self.assertEqual(result.service, res)
 
+    def test_cityId(self):
+        cases = ['71cdba64fdcaa92bfeb8ba3d6530ec76']
+        results = ['21245']
+        for case, res in zip(cases, results):
+            page = download_file(case)
+            j_data = json.loads(page)
+            result = test_agoda_parser(j_data['data'])
+            self.assertEqual(result.source_city_id, res)
             # def test_desc(self):
             #     cases = ['83ba683f30f00298c4808a0b7b79bcc6', '2d46474aa51e51ca70e134e17d9efcbc',
             #              '8d3b32c6f9b824466344e600958c3684', 'a042d06f6147dd44c38fc24e4f0d266e']

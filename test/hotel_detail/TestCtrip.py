@@ -47,6 +47,14 @@ class TestCtrip(unittest.TestCase):
             result = test_ctrip_parser(j_data['data'])
             self.assertEqual(result.description, res)
 
+    def test_cityId(self):
+        cases = ['71cdba64fdcaa92bfeb8ba3d6530ec76']
+        results = ['tokyo228']
+        for case, res in zip(cases, results):
+            page = download_file(case)
+            j_data = json.loads(page)
+            result = test_ctrip_parser(j_data['data'])
+            self.assertEqual(result.source_city_id, res)
     # def test_pay_method(self):
     #     cases = ['d80436af0e5cc301b52ebd6dc0f0ef52', '516a5403a6773c16e9988d3efc81062c']
     #     results = [u'在线付|到店付|礼品卡支付', u'在线付|到店付|礼品卡支付']
