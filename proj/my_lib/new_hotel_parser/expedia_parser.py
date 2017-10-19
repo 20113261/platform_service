@@ -7,10 +7,12 @@ import sys
 import re
 import urlparse
 import requests
+import json
 # from common.logger import logger
 from lxml import html as HTML
 
-from data_obj import ExpediaHotel  # DBSession
+# from data_obj import ExpediaHotel  # DBSession
+from proj.my_lib.models.HotelModel import ExpediaHotel
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -31,7 +33,14 @@ def expedia_parser(content, url, other_info):
     except Exception, e:
         print str(e)
 
-    name_en = 'NULL'
+    try:
+        source_city_id = re.findall(r'cityRegionId: \'(\d+)\',', content)[0]
+        hotel.source_city_id = source_city_id.encode('utf8')
+    except Exception as e:
+        print e
+
+    print 'source_city_id=>%s' % hotel.source_city_id
+
 
     hotel.brand_name = 'NULL'
     hotel.hotel_name = 'NULL'
@@ -242,15 +251,19 @@ def expedia_parser(content, url, other_info):
         print str(e)
 
     print 'map_info=>%s' % map_info
+    first_img = None
     try:
         img_list = root.find_class('jumbo-wrapper')[0].find_class('jumbo-hero')[0].xpath('img')
         img_url_set = set()
         for each in img_list:
             try:
                 each_url = urlparse.urljoin('https:', each.get('data-src'))
+                if each_url == 'https:':
+                    raise Exception
             except:
                 try:
                     each_url = urlparse.urljoin('https:', each.get('src'))
+                    first_img = each_url
                 except:
                     pass
             if each_url != 'https:':
@@ -259,6 +272,7 @@ def expedia_parser(content, url, other_info):
     except Exception, e:
         print str(e)
     print 'img_items=>%s' % hotel.img_items
+    print 'first_img=>%s' % first_img
     try:
         # desc = encode_unicode(root.find_class('hotel-description')[0].find_class('visuallyhidden')[0].tail.strip())
         h3s = root.xpath('//div[@class="hotel-description"]/h3//text()')
@@ -318,6 +332,11 @@ def expedia_parser(content, url, other_info):
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
+    others_info_dict = hotel.__dict__
+    if first_img:
+        others_info_dict['first_img'] = first_img
+    hotel.others_info = json.dumps(others_info_dict)
+    print hotel
     return hotel
 
 
@@ -343,6 +362,7 @@ if __name__ == '__main__':
     # url = 'https://www.expedia.com.hk/Hotels-Sahara-Motel.h13279481.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Mauritius-Island-Hotels-Ocean-Villas.h1466602.Hotel-Information?chkin=2017%2F11%2F25&chkout=2017%2F11%2F26&rm1=a2&regionId=6051080&sort=recommended&hwrqCacheKey=58665cc7-0e73-4f2d-89da-6cf5f79637efHWRQ1506387257474&vip=false&c=251228bc-5980-49ea-ac6d-87d847977318&'
     # url = 'https://www.expedia.com.hk/Hotels-Saint-Georges-Hotel.h1.Hotel-Information?chkin=2017%2F11%2F7&chkout=2017%2F11%2F8&rm1=a2&regionId=178279&sort=recommended&hwrqCacheKey=3a7247f4-a225-4f75-afd4-8fd3463f2d85HWRQ1506618956146&vip=false&c=c6d00f50-8b75-4eec-b23c-f9c20f690aa8&'
+    # url = 'https://www.expedia.cn/cn/Lansing-Hotels-The-English-Inn.h36874.Hotel-Information?chkin=2017%2F10%2F19&chkout=2017%2F10%2F20&rm1=a2&regionId=100011&hwrqCacheKey=9cbe2ff3-4cb7-497c-95dc-6dbde2ac34beHWRQ1508384715126&vip=false&c=f41b55eb-3095-45d6-ba58-ef205e58f100&&exp_dp=762.15&exp_ts=1508384715401&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'

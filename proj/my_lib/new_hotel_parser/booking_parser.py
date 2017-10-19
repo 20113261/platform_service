@@ -5,9 +5,11 @@ import sys
 
 import re
 import requests
+import json
 from lxml import html as HTML
 
-from data_obj import BookingHotel
+# from data_obj import BookingHotel
+from proj.my_lib.models.HotelModel import BookingHotel
 from common.common import get_proxy
 
 from proj.my_lib.Common.KeyMatch import key_is_legal
@@ -34,6 +36,14 @@ def booking_parser(content, url, other_info):
         root = HTML.fromstring(content)
     except Exception, e:
         print str(e)
+
+    try:
+        source_city_id = re.findall(r'params.context_dest_id = \'([-+]?\d+)\'', content)[0]
+        hotel.source_city_id = source_city_id.encode('utf8')
+    except Exception as e:
+        print e
+
+    print 'source_city_id=>%s' % hotel.source_city_id
 
     # 解析酒店中英文名，如果没有中文名则置为英文名，如果都解析失败则退出
     # try:
@@ -426,27 +436,42 @@ def booking_parser(content, url, other_info):
     except:
         pass
 
+    first_img = None
     if not key_is_legal(hotel.img_items):
         try:
             hotels_class = root.find_class('hp-gallery-slides hp-gallery-top')[0]
             img_src = hotels_class.xpath('.//img/@src')[0]
             img_lazy = hotels_class.xpath('.//img/@data-lazy')
             img_items = img_src + '|' + '|'.join(img_lazy)
+            first_img = img_src
             hotel.img_items = img_items
         except:
             try:
-                img_items = root.xpath('//div[@id="b_imgList"]/ul/li/a/@href')
-                img_items = '|'.join(img_items)
+                # img_items = root.xpath('//div[@id="b_imgList"]/ul/li/a/@href')
+                img_items = root.xpath('//a[@class="hotel_thumbs_sprite change_large_image_on_hover"]/img/@src')
+                img_items = '|'.join(item.replace('square60', 'max1024x768') for item in img_items)
                 hotel.img_items = img_items
             except Exception as e:
                 hotel.img_items = 'NULL'
 
+            try:
+                first_img = root.xpath('//a[contains(@class, "active-image")]/img/@src')[0]
+            except Exception as e:
+                print e
+
     print 'img_item=>%s' % hotel.img_items
+    print 'first_img=>%s' % first_img
     # print hotel.img_items
     hotel.source = 'booking'
     hotel.hotel_url = url.encode('utf-8')
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
+
+    others_info_dict = hotel.__dict__
+    if first_img:
+        others_info_dict['first_img'] = first_img
+    hotel.others_info = json.dumps(others_info_dict)
+    print hotel
 
     return hotel
 

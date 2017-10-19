@@ -4,10 +4,12 @@
 import sys
 
 import re
+import json
 import requests
 from lxml import html as HTML
 
-from data_obj import HotelsHotel  # , DBSession
+# from data_obj import HotelsHotel  # , DBSession
+from proj.my_lib.models.HotelModel import HotelsHotel
 
 star_pat = re.compile(r'在此页面中显示为 (.*) 星')
 num_pat = re.compile(r'\d+')
@@ -24,6 +26,16 @@ def hotels_parser(content, url, other_info):
     hotel = HotelsHotel()
     content = content.decode('utf-8')
     root = HTML.fromstring(content)
+
+    ""
+    try:
+        source_city_id = re.findall(r'\"cityId\":(\d+),', content)[0]
+        hotel.source_city_id = source_city_id.encode('utf8')
+    except Exception as e:
+        print e
+
+    print 'source_city_id=>%s' % hotel.source_city_id
+
     try:
         name_temp = root.xpath('//div[@class="property-description"]/div[@class="vcard"]/h1/text()')[0]
     except Exception as e:
@@ -65,7 +77,7 @@ def hotels_parser(content, url, other_info):
         print '------va---'
         name_temp = root.xpath('//div[@class="widget-query-group widget-query-destination"]/input/@value')[0]
         # re.findall('[a-zA-Z ]+',name_temp)
-        hotel.hotel_name_en = re.findall('\((.*?)\)', name_temp)[0]
+        hotel.hotel_name_en = re.findall('\((.*?)\)', name_temp)[0].encode('utf8')
 
         # 城市清除
         if '-' in hotel.hotel_name:
@@ -146,10 +158,11 @@ def hotels_parser(content, url, other_info):
     print ('review_num_temp=>%s' % hotel.review_num)
     # print hotel.review_num
 
+    first_img = None
     try:
         img_list = root.xpath('//div[@id="carousel-container"]/div[1]/ul/li[@data-src]')
         hotel.img_items = ''
-        for li in img_list:
+        for i, li in enumerate(img_list):
             src = li.xpath('./@data-src')
             if len(src):
                 size = li.xpath('./@data-sizes')
@@ -160,6 +173,8 @@ def hotels_parser(content, url, other_info):
                         img_url = src[0].strip().encode('utf-8').replace('{size}', 'y')
                     else:
                         img_url = src[0].strip().encode('utf-8').replace('{size}', 'n')
+                if i==0:
+                    first_img = img_url
                 hotel.img_items += img_url + '|'
         hotel.img_items = hotel.img_items[:-1]
         # image_list = root.find_class('carousel-thumbnails')[0].xpath('ol/li')
@@ -174,6 +189,7 @@ def hotels_parser(content, url, other_info):
         hotel.img_items = 'NULL'
 
     print ('hotel_img_items=>%s' % hotel.img_items)
+    print 'first_img=>%s' % first_img
     # print hotel.img_items
 
     try:
@@ -281,6 +297,13 @@ def hotels_parser(content, url, other_info):
     hotel.hotel_url = url
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
+
+    others_info_dict = hotel.__dict__
+    if first_img:
+        others_info_dict['first_img'] = first_img
+    hotel.others_info = json.dumps(others_info_dict)
+    print hotel
+    return hotel
 
     return hotel
 
