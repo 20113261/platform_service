@@ -132,7 +132,7 @@ def create_table(table_name):
     conn.close()
 
 def monitoring_hotel_list2detail():
-    sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
+    sql = """select source, source_id, city_id, hotel_url, id from %s where id >= %d order by id limit 5000"""
 
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
@@ -145,7 +145,7 @@ def monitoring_hotel_list2detail():
             if tab_args[2] not in HOTEL_SOURCE: continue
             if tab_args[3] == 'test':continue
 
-            timestamp, priority = get_seek(table_name)
+            sequence, priority = get_seek(table_name)
 
             update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name":table_name}).count(), sum_or_set=False)
 
@@ -153,10 +153,10 @@ def monitoring_hotel_list2detail():
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
-            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
-            if timestamp is not None:
-                update_seek(table_name, timestamp, priority)
+            sequence, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, sequence)), detail_table_name, priority)
+            logger.info('sequence  :  %s, success_count  :  %s' % (sequence, success_count))
+            if sequence is not None:
+                update_seek(table_name, sequence, priority)
             if success_count > 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
