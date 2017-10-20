@@ -10,10 +10,12 @@ import zlib
 import time
 import json
 import pickle
+import datetime
 import proj.my_lib.Common.Utils
 import proj.my_lib.Common.UFileHandler
 from os import path
 from proj.my_lib.logger import get_logger
+
 # from proj.my_lib.Common.UFileHandler import upload_stream, get_ufile_and_info, delete_ufile, has_file
 
 logger = get_logger('RespStore')
@@ -112,14 +114,19 @@ def get_by_md5(md5, expire_time=3600):
         res = zlib.decompress(res)
         length2 = len(res)
         resp = pickle.loads(res)
+        cache_date = datetime.datetime.fromtimestamp(
+            int(file_info.st_mtime)
+        ).strftime('%Y-%m-%d %H:%M:%S')
         logger.info(
             "[cache unzipped][len1: {0}][len2: {1}][ration: {2}]".format(length1, length2, length1 / float(length2)))
         if time.time() - file_info.st_mtime < expire_time:
             logger.info(
-                '[ get cache ][md5: {0}][expire: {1}][ save_time: {2}]'.format(md5, expire_time, file_info.st_mtime))
+                '[ get cache ][md5: {0}][expire: {1}][ save_time: {2}][ date: {3} ]'.format(md5, expire_time,
+                                                                                            file_info.st_mtime,
+                                                                                            cache_date))
             return resp
         else:
-            logger.info('[ cache file has expired ][ cache {0} ]'.format(md5))
+            logger.info('[ cache file has expired ][ cache {0} ][ date: {1} ]'.format(md5, cache_date))
             return None
     else:
         raise TypeError('Unknown Type {}'.format(STORE_TYPE))

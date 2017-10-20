@@ -15,7 +15,9 @@ import time
 import datetime
 import proj.my_lib.Common.RespStore
 import proj.my_lib.logger
-from util.UserAgent import GetUserAgent
+import random
+from mioji.common.user_agent_list import random_useragent
+# from util.UserAgent import GetUserAgent
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from proj.my_lib.Common.Utils import try3times
@@ -44,7 +46,8 @@ class MySession(requests.Session):
         self.start = time.time()
         super(MySession, self).__init__()
         headers = {
-            'User-agent': GetUserAgent()
+            'User-Agent': random_useragent(),
+            'Connection': 'keep-alive'
         }
         self.headers = headers
         self.verify = False
