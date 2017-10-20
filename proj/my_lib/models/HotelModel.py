@@ -24,16 +24,17 @@ class HotelBase(BaseModel):
     is_wifi_free = Column(String(20), default='NULL')
     has_parking = Column(String(20), default='NULL')
     is_parking_free = Column(String(20), default='NULL')
-    service = Column(Text(5000), default='NULL')
-    img_items = Column(Text(5000), default='NULL')
-    description = Column(Text(5000), default='NULL')
+    service = Column(Text(), default='NULL')
+    img_items = Column(Text(), default='NULL')
+    description = Column(Text(), default='NULL')
     accepted_cards = Column(String(512), default='NULL')
     check_in_time = Column(String(128), default='NULL')
     check_out_time = Column(String(128), default='NULL')
     hotel_url = Column(String(1024), default='NULL')
     # update_time = Column(Datetime(6), default=datetime.datetime.now)
     continent = Column(String(96), default='NULL')
-    others_info = Column(JSON(1000), default='NUll')
+    country_id = Column(String(512), default='NULL')
+    others_info = Column(JSON(), default='NUll')
 
 
 class BookingHotel(HotelBase):
@@ -55,6 +56,9 @@ class HotelsHotel(HotelBase):
 class ElongHotel(HotelBase):
     pass
 
+
+class CtripHotel(HotelBase):
+    pass
 
 class CtripCNHotel(HotelBase):
     pass

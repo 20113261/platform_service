@@ -49,18 +49,9 @@ class BaseModel(object):
         return sql
 
     def _completion_obj(self):
-        keys = []
-        for item in dir(self):
-            if item.startswith('__'):continue
-            column = self._BaseModel__columns_dict.get(item, None)
-            if column is None:continue
-            if isinstance(column, Column):
-                keys.append(item)
-        for key in keys:
-            if self.__dict__.has_key(key):
-                continue
-            column = self._BaseModel__columns_dict.get(key, None)
-            self.__dict__[key] = column._default
+        for key, column in self._BaseModel__columns_dict.items():
+            if not self.__dict__.has_key(key):
+                self.__dict__[key] = column._default
 
     def values(self, backdict=False):
         self._completion_obj()

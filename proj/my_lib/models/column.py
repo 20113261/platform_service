@@ -5,6 +5,7 @@ from proj.my_lib.Common.Utils import Coordinate
 
 import datetime
 import json
+import types
 
 class Column(object):
     def __init__(self, typ, default):
@@ -31,7 +32,7 @@ class BaseLenType(BaseType):
 
 class String(BaseLenType):
     def type(self, value):
-        return type(value) is str or type(value) is int or type(value) is float
+        return isinstance(value,types.StringTypes) or type(value) is int or type(value) is float
 
 class Integer(BaseType):
     def type(self, value):
