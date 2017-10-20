@@ -25,6 +25,9 @@ def elong_parser(content, url, other_info):
 
     try:
         root = HTML.fromstring(content.decode('utf-8'))
+        phantom_js = execjs.get('PhantomJS')
+        js_str = root.xpath('//script[contains(text(),"window.newDetailController")]/text()')[0]
+        page_js = phantom_js.compile(js_str[js_str.index('window.newDetailController'):][:-1])
     except Exception, e:
         print str(e)
         # return hotel
@@ -183,6 +186,32 @@ def elong_parser(content, url, other_info):
         hotel.service = 'NULL'
     print 'hotel.service=>%s' % hotel.service
     # print hotel.service
+
+
+    try:
+        pattern_img = root.xpath('//div[@class="newdetaiL-img imgMore"]/@style')[0]
+        first_img = re.search(r'url\(([^)]+)\)', pattern_img).group(1)
+    except Exception as e:
+        print e
+    #others_info信息
+
+    try:
+        city_name = page_js.eval('window.newDetailController')['Region']['RegionName']
+    except Exception as e:
+        print e
+    print city_name
+    hotel.others_info = json.dumps({'city_name': city_name, 'first_img': first_img})
+
+    #获取source_city_id
+
+    try:
+        pattern_city_id = root.xpath('//p[@class="link555 t12"]/a[contains(@href,"region")]/@href')[0]
+        source_city_id = re.search(r'[0-9]+',pattern_city_id).group()
+    except Exception as e:
+        print e
+    hotel.source_city_id = source_city_id
+    print "hotel.source_city_id",hotel.source_city_id
+    print "hotel.others_info:",hotel.others_info
 
     if '免费自助停车设施' in hotel.service:
         hotel.is_parking_free = 'Yes'
