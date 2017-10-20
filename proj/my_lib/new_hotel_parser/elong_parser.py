@@ -208,6 +208,7 @@ def elong_parser(content, url, other_info):
 
     #获取source_city_id
 
+    source_city_id = 'NULL'
     try:
         pattern_city_id = root.xpath('//p[@class="link555 t12"]/a[contains(@href,"region")]/@href')[0]
         source_city_id = re.search(r'[0-9]+',pattern_city_id).group()
