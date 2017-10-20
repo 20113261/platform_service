@@ -38,6 +38,14 @@ class TestElong(unittest.TestCase):
             result = test_elong_parser(j_data['data'])
             self.assertEqual(result.address, res)
 
+    def test_cityId(self):
+        cases = ['d70fa0b2c45bcb444e0c5c69abedf666']
+        results = ['178276']
+        for case, res in zip(cases, results):
+            page = download_file(case)
+            j_data = json.loads(page)
+            result = test_elong_parser(j_data['data'])
+            self.assertEqual(result.source_city_id, res)
 
 if __name__ == '__main__':
     unittest.main()
