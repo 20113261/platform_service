@@ -224,7 +224,7 @@ def agoda_parser(content, url, other_info):
     except Exception as e:
         print e
 
-    # hotel.others_info = json.dumps({'country_id':country_id,'country_name':country_name,'city_name':city_name,'city_id':city_id})
+    hotel.others_info = json.dumps({'country_id':country_id,'country_name':country_name,'city_name':city_name,'city_id':city_id})
     hotel.source_city_id = city_id
 
     print "hotel.others_info:",hotel.others_info
@@ -259,9 +259,9 @@ def agoda_parser(content, url, other_info):
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
-    others_info_dict = hotel.__dict__
-    hotel.others_info = json.dumps(others_info_dict)
-    print hotel
+    # others_info_dict = hotel.__dict__
+    # hotel.others_info = json.dumps(others_info_dict)
+    # print hotel
 
     return hotel
 

@@ -255,7 +255,7 @@ def ctrip_parser(page, url, other_info):
         print e
     print "city_name",city_name,country_id
 
-    # hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name, 'country_id': country_id})
+    hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name, 'country_id': country_id})
 
     print "hotel.others_info:",hotel.others_info
     print 'hotel.has_wifi =>', hotel.has_wifi
@@ -288,13 +288,13 @@ def ctrip_parser(page, url, other_info):
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
-    others_info_dict = hotel.__dict__
-    if first_img:
-        others_info_dict['first_img'] = first_img
-    hotel.others_info = json.dumps(others_info_dict)
-    if first_img:
-        del others_info_dict['first_img']
-    print hotel
+    # others_info_dict = hotel.__dict__
+    # if first_img:
+    #     others_info_dict['first_img'] = first_img
+    # hotel.others_info = json.dumps(others_info_dict)
+    # if first_img:
+    #     del others_info_dict['first_img']
+    # print hotel
 
     return hotel
 

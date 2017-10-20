@@ -335,9 +335,9 @@ def expedia_parser(content, url, other_info):
     others_info_dict = hotel.__dict__
     if first_img:
         others_info_dict['first_img'] = first_img
-    hotel.others_info = json.dumps(others_info_dict)
-    if first_img:
-        del others_info_dict['first_img']
+    # hotel.others_info = json.dumps(others_info_dict)
+    # if first_img:
+    #     del others_info_dict['first_img']
     print hotel
     return hotel
 

@@ -198,12 +198,13 @@ def elong_parser(content, url, other_info):
     #others_info信息
     print 'first_img=>%s' % first_img
 
+    city_name = 'NULL'
     try:
         city_name = page_js.eval('window.newDetailController')['Region']['RegionName']
     except Exception as e:
         print e
     print city_name
-    # hotel.others_info = json.dumps({'city_name': city_name, 'first_img': first_img})
+    hotel.others_info = json.dumps({'city_name': city_name, 'first_img': first_img})
 
     #获取source_city_id
 
@@ -253,13 +254,13 @@ def elong_parser(content, url, other_info):
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
-    others_info_dict = hotel.__dict__
-    if first_img:
-        others_info_dict['first_img'] = first_img
-    hotel.others_info = json.dumps(others_info_dict)
-    if first_img:
-        del others_info_dict['first_img']
-    print hotel
+    # others_info_dict = hotel.__dict__
+    # if first_img:
+    #     others_info_dict['first_img'] = first_img
+    # hotel.others_info = json.dumps(others_info_dict)
+    # if first_img:
+    #     del others_info_dict['first_img']
+    # print hotel
 
     return hotel
 
