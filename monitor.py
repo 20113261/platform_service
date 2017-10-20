@@ -101,6 +101,8 @@ def get_seek(task_name):
     conn.close()
     logger.info('timestramp, priority :  %s ' % str(result))
     if not result or len(result)==0:
+        if task_name.startswith('detail_hotel'):
+            return 0, PRIORITY
         return get_default_timestramp(), PRIORITY
 
     return result
