@@ -7,7 +7,8 @@ import re
 import requests
 from lxml import html as HTML
 # from selenium.webdriver.phantomjs import webdriver
-from data_obj import ElongHotel
+# from data_obj import ElongHotel
+from proj.my_lib.models.HotelModel import ElongHotel
 import json
 import execjs
 
@@ -188,19 +189,21 @@ def elong_parser(content, url, other_info):
     # print hotel.service
 
 
+    first_img = None
     try:
         pattern_img = root.xpath('//div[@class="newdetaiL-img imgMore"]/@style')[0]
         first_img = re.search(r'url\(([^)]+)\)', pattern_img).group(1)
     except Exception as e:
         print e
     #others_info信息
+    print 'first_img=>%s' % first_img
 
     try:
         city_name = page_js.eval('window.newDetailController')['Region']['RegionName']
     except Exception as e:
         print e
     print city_name
-    hotel.others_info = json.dumps({'city_name': city_name, 'first_img': first_img})
+    # hotel.others_info = json.dumps({'city_name': city_name, 'first_img': first_img})
 
     #获取source_city_id
 
@@ -211,7 +214,7 @@ def elong_parser(content, url, other_info):
         print e
     hotel.source_city_id = source_city_id
     print "hotel.source_city_id",hotel.source_city_id
-    print "hotel.others_info:",hotel.others_info
+    # print "hotel.others_info:",hotel.others_info
 
     if '免费自助停车设施' in hotel.service:
         hotel.is_parking_free = 'Yes'
@@ -249,6 +252,15 @@ def elong_parser(content, url, other_info):
     hotel.hotel_url = url
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
+
+    others_info_dict = hotel.__dict__
+    if first_img:
+        others_info_dict['first_img'] = first_img
+    hotel.others_info = json.dumps(others_info_dict)
+    if first_img:
+        del others_info_dict['first_img']
+    print hotel
+
     return hotel
 
 

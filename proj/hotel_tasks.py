@@ -6,10 +6,8 @@ from proj.my_lib.Common.Browser import MySession
 from proj.celery import app
 from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from proj.my_lib.BaseTask import BaseTask
-from my_lib.new_hotel_parser.data_obj import DBSession
 from proj.my_lib.logger import get_logger
-from sqlalchemy.sql import text
-from my_lib.new_hotel_parser.data_obj import text_2_sql
+from proj.mysql_pool import service_platform_pool
 
 logger = get_logger("HotelDetail")
 
@@ -101,17 +99,16 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
 
         start = time.time()
         try:
-            result.country_id = country_id
-            result_dict = result.__dict__
-            if result_dict.get('update_time', None):
-                del result_dict['update_time']
-            sql_key = result_dict.keys()
-            sql_key.remove('_sa_instance_state')
-
-            session = DBSession()
-            session.execute(text(text_2_sql(sql_key).format(table_name=kwargs['task_name'])), [result_dict])
-            session.commit()
-            session.close()
+            service_platform_conn = service_platform_pool.connection()
+            cursor = service_platform_conn.cursor()
+            sql = result.generation_sql()
+            sql = sql.format(table_name=kwargs['task_name'])
+            values = result.values()
+            print result.__dict__
+            cursor.execute(sql, values)
+            service_platform_conn.commit()
+            cursor.close()
+            service_platform_conn.close()
         except Exception as e:
             task_response.error_code = 33
             logger.exception(e)
