@@ -92,7 +92,7 @@ def execute_sql(sql, commit=False):
     return result
 
 def get_seek(task_name):
-    sql = """select seek, priority from task_seek where task_name = '%s'"""
+    sql = """select seek, priority, sequence from task_seek where task_name = '%s'"""
     conn = service_platform_pool.connection()
     cursor = conn.cursor()
     cursor.execute(sql % task_name)
@@ -101,15 +101,13 @@ def get_seek(task_name):
     conn.close()
     logger.info('timestramp, priority :  %s ' % str(result))
     if not result or len(result)==0:
-        if task_name.startswith('detail_hotel'):
-            return 0, PRIORITY
-        return get_default_timestramp(), PRIORITY
+        return get_default_timestramp(), PRIORITY, 0
 
     return result
 
-def update_seek(task_name, seek, priority=3):
-    sql = """replace into task_seek (task_name, seek, priority) values('%s','%s', %d);"""
-    execute_sql(sql % (task_name, seek, priority), commit=True)
+def update_seek(task_name, seek, priority=3, sequence=0):
+    sql = """replace into task_seek (task_name, seek, priority, sequence) values('%s','%s', %d, %d);"""
+    execute_sql(sql % (task_name, seek, priority, sequence), commit=True)
 
 def get_all_tables():
     sql = """select table_name from information_schema.tables where table_schema = 'ServicePlatform';"""
@@ -147,7 +145,7 @@ def monitoring_hotel_list2detail():
             if tab_args[2] not in HOTEL_SOURCE: continue
             if tab_args[3] == 'test':continue
 
-            sequence, priority = get_seek(table_name)
+            timestamp, priority, sequence = get_seek(table_name)
 
             update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name":table_name}).count(), sum_or_set=False)
 
@@ -158,7 +156,7 @@ def monitoring_hotel_list2detail():
             sequence, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, sequence)), detail_table_name, priority)
             logger.info('sequence  :  %s, success_count  :  %s' % (sequence, success_count))
             if sequence is not None:
-                update_seek(table_name, sequence, priority)
+                update_seek(table_name, timestamp, priority, sequence)
             if success_count > 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
@@ -180,7 +178,7 @@ def monitoring_hotel_detail2ImgOrComment():
             if tab_args[2] not in HOTEL_SOURCE: continue
             if tab_args[3] == 'test': continue
 
-            timestamp, priority = get_seek(table_name)
+            timestamp, priority, sequence = get_seek(table_name)
 
             images_table_name = ''.join(['images_', table_name.split('_', 1)[1]])
             if table_dict.get(images_table_name, True):
@@ -190,7 +188,7 @@ def monitoring_hotel_detail2ImgOrComment():
                                                        priority, is_poi_task=False)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
-                update_seek(table_name, timestamp, priority)
+                update_seek(table_name, timestamp, priority, sequence)
             if success_count > 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
@@ -212,7 +210,7 @@ def monitoring_poi_list2detail():
             if tab_args[2] != POI_SOURCE: continue
             if tab_args[3] == 'test': continue
 
-            timestamp, priority = get_seek(table_name)
+            timestamp, priority, sequence = get_seek(table_name)
 
             update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
@@ -224,7 +222,7 @@ def monitoring_poi_list2detail():
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
-                update_seek(table_name, timestamp, priority)
+                update_seek(table_name, timestamp, priority, sequence)
             if success_count > 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
@@ -246,7 +244,7 @@ def monitoring_poi_detail2imgOrComment():
             if tab_args[2] != POI_SOURCE: continue
             if tab_args[3] == 'test': continue
 
-            timestamp, priority = get_seek(table_name)
+            timestamp, priority, sequence = get_seek(table_name)
 
             images_table_name = ''.join(['images_', table_name.split('_', 1)[1]])
             if table_dict.get(images_table_name, True):
@@ -256,7 +254,7 @@ def monitoring_poi_detail2imgOrComment():
                                                        priority, is_poi_task=True)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
-                update_seek(table_name, timestamp, priority)
+                update_seek(table_name, timestamp, priority, sequence)
             if success_count > 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
@@ -278,7 +276,7 @@ def monitoring_qyer_list2detail():
             if tab_args[2] != QYER_SOURCE: continue
             if tab_args[3] == 'test': continue
 
-            timestamp, priority = get_seek(table_name)
+            timestamp, priority, sequence = get_seek(table_name)
 
             update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
                                         collections.find({"task_name": table_name}).count(), sum_or_set=False)
@@ -290,7 +288,7 @@ def monitoring_qyer_list2detail():
             timestamp, success_count = send_qyer_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
-                update_seek(table_name, timestamp, priority)
+                update_seek(table_name, timestamp, priority, sequence)
             if success_count > 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
@@ -325,7 +323,7 @@ def monitoring_supplement_field():
     try:
         table_name = 'supplement_field'
         sql = """select table_name, type, source, sid, other_info, status, utime from %s where status = 0 and utime >= '%s' order by utime"""
-        timestamp, _v = get_seek(table_name)
+        timestamp, _v, _seq = get_seek(table_name)
         timestamp, success_count = qyer_supplement_map_info(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)))
         logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
         if timestamp is not None:
