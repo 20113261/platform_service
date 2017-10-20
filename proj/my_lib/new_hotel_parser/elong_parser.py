@@ -329,7 +329,7 @@ if __name__ == '__main__':
     url = 'http://ihotel.elong.com/443150/'
     url = 'http://ihotel.elong.com/589177/'
     url = 'http://ihotel.elong.com/31131/'
-    url = 'http://ihotel.elong.com/308868/'
+    #url = 'http://ihotel.elong.com/308868/'
 
     other_info = {u'source_id': u'670847', u'city_id': u'20236'}
 
