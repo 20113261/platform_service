@@ -8,7 +8,8 @@ import requests
 import execjs
 from lxml import html as HTML
 from util.UserAgent import GetUserAgent
-from data_obj import AgodaHotel
+# from data_obj import AgodaHotel
+from proj.my_lib.models.HotelModel import AgodaHotel
 from urlparse import urljoin
 import json
 review_num_pat = re.compile(r'(\d+)')
@@ -177,7 +178,7 @@ def agoda_parser(content, url, other_info):
             hotel.service = '|'.join(
                 [service['text'] for services in page_params['featuresYouLove']['features'] for service in services])
         except:
-            hotel.service = '|'.join()
+            # hotel.service = '|'.join()
             hotel.service = 'NULL'
     print 'hotel.service=>%s' % hotel.service
 
@@ -187,8 +188,8 @@ def agoda_parser(content, url, other_info):
         hotel.description = 'NULL'
     print 'hotel.description=>%s' % hotel.description
 
-    hotel.check_in_time = None
-    hotel.check_in_time = None
+    # hotel.check_in_time = None
+    # hotel.check_in_time = None
     try:
         for checkInOut in json_data['UsefulInfoGroups']:
             if '入住/退房' in checkInOut['Name']:
@@ -223,7 +224,7 @@ def agoda_parser(content, url, other_info):
     except Exception as e:
         print e
 
-    hotel.others_info = json.dumps({'country_id':country_id,'country_name':country_name,'city_name':city_name,'city_id':city_id})
+    # hotel.others_info = json.dumps({'country_id':country_id,'country_name':country_name,'city_name':city_name,'city_id':city_id})
     hotel.source_city_id = city_id
 
     print "hotel.others_info:",hotel.others_info
@@ -257,6 +258,10 @@ def agoda_parser(content, url, other_info):
     hotel.hotel_url = url.encode('utf-8')
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
+
+    others_info_dict = hotel.__dict__
+    hotel.others_info = json.dumps(others_info_dict)
+    print hotel
 
     return hotel
 

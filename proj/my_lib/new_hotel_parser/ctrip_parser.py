@@ -16,6 +16,7 @@ import requests
 from lxml import html as HTML
 from urlparse import urljoin
 from data_obj import Hotel, DBSession
+from proj.my_lib.models.HotelModel import CtripHotel
 import json
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -34,7 +35,7 @@ pat2 = re.compile(r'Latitude="(.*?)" Longitude="(.*?)"', re.S)
 
 
 def ctrip_parser(page, url, other_info):
-    hotel = Hotel()
+    hotel = CtripHotel()
     try:
         root = HTML.fromstring(page.decode('utf-8'))
     except Exception, e:
@@ -239,10 +240,13 @@ def ctrip_parser(page, url, other_info):
 
     print "hotel.source_city_id:",hotel.source_city_id
     #获取others_info信息
+    first_img = None
     try:
         first_img = urljoin('http:', root.xpath('//div[@id="picList"]/div/div')[0].attrib['_src'])
     except Exception as e:
         print e
+
+    print 'first_img=>%s' % first_img
 
     try:
         city_name = page_js.eval('hotelDomesticConfig')['query']['cityName'].encode('raw-unicode-escape')
@@ -250,7 +254,9 @@ def ctrip_parser(page, url, other_info):
     except Exception as e:
         print e
     print "city_name",city_name,country_id
-    hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name, 'country_id': country_id})
+
+    # hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name, 'country_id': country_id})
+
     print "hotel.others_info:",hotel.others_info
     print 'hotel.has_wifi =>', hotel.has_wifi
 
@@ -281,6 +287,14 @@ def ctrip_parser(page, url, other_info):
     hotel.source = 'ctrip'
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
+
+    others_info_dict = hotel.__dict__
+    if first_img:
+        others_info_dict['first_img'] = first_img
+    hotel.others_info = json.dumps(others_info_dict)
+    if first_img:
+        del others_info_dict['first_img']
+    print hotel
 
     return hotel
 
