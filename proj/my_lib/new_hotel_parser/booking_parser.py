@@ -447,15 +447,16 @@ def booking_parser(content, url, other_info):
             hotel.img_items = img_items
         except:
             try:
-                # img_items = root.xpath('//div[@id="b_imgList"]/ul/li/a/@href')
-                img_items = root.xpath('//a[@class="hotel_thumbs_sprite change_large_image_on_hover"]/img/@src')
-                img_items = '|'.join(item.replace('square60', 'max1024x768') for item in img_items)
+                img_items = root.xpath('//div[@id="b_imgList"]/ul/li/a/@href')
+                img_items = '|'.join(img_items)
                 hotel.img_items = img_items
             except Exception as e:
                 hotel.img_items = 'NULL'
 
             try:
                 first_img = root.xpath('//a[contains(@class, "active-image")]/img/@src')[0]
+                if not hotel.img_items:
+                    hotel.img_items += first_img
             except Exception as e:
                 print e
 
