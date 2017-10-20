@@ -468,13 +468,8 @@ def booking_parser(content, url, other_info):
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
-    others_info_dict = hotel.__dict__
     if first_img:
-        others_info_dict['first_img'] = first_img
-    # hotel.others_info = json.dumps(others_info_dict)
-    if first_img:
-        del others_info_dict['first_img']
-    # print hotel
+        hotel.others_info = json.dumps({'first_img':first_img})
 
     return hotel
 
