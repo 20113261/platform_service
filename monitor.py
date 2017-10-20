@@ -132,7 +132,7 @@ def create_table(table_name):
     conn.close()
 
 def monitoring_hotel_list2detail():
-    sql = """select source, source_id, city_id, hotel_url, id from %s where id >= %d order by id limit 5000"""
+    sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
 
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
@@ -153,9 +153,9 @@ def monitoring_hotel_list2detail():
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            sequence, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, sequence)), detail_table_name, priority)
-            logger.info('sequence  :  %s, success_count  :  %s' % (sequence, success_count))
-            if sequence is not None:
+            timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
+            logger.info('sequence  :  %s, success_count  :  %s' % (timestamp, success_count))
+            if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
             if success_count > 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
@@ -166,7 +166,7 @@ def monitoring_hotel_list2detail():
                    SEND_TO)
 
 def monitoring_hotel_detail2ImgOrComment():
-    sql = """select source, source_id, city_id, img_items, update_time from %s where update_time >= '%s' order by update_time limit 5000"""
+    sql = """select source, source_id, city_id, img_items, id from %s where id >= %d order by id limit 5000"""
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
@@ -184,10 +184,10 @@ def monitoring_hotel_detail2ImgOrComment():
             if table_dict.get(images_table_name, True):
                 create_table(images_table_name)
 
-            timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
+            sequence, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, sequence)), table_name,
                                                        priority, is_poi_task=False)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
-            if timestamp is not None:
+            if sequence is not None:
                 update_seek(table_name, timestamp, priority, sequence)
             if success_count > 0:
                 update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)

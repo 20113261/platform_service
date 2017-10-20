@@ -61,9 +61,9 @@ def get_country_id(tasks):
 def send_hotel_detail_task(tasks, task_tag, priority):
     data = []
     _count = 0
-    sequence = None
+    timestamp = None
     success_count = 0
-    for source, source_id, city_id, hotel_url, sequence in tasks:
+    for source, source_id, city_id, hotel_url, timestamp in tasks:
         _count += 1
         task_info = {
             'worker': 'proj.hotel_tasks.hotel_base_data',
@@ -101,8 +101,8 @@ def send_hotel_detail_task(tasks, task_tag, priority):
             success_count += hourong_patch(data)
 
     if success_count==-1:
-        sequence = None
-    return sequence, success_count
+        timestamp = None
+    return timestamp, success_count
 
 def send_poi_detail_task(tasks, task_tag, priority):
     data = []
