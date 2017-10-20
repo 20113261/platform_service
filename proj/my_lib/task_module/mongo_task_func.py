@@ -51,8 +51,8 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
             for each_used_times in range(0, used_times + 1):
                 cursor = collections.find(
                     {
-                        'finished': 0,
                         'queue': queue,
+                        'finished': 0,
                         # 'used_times': {'$lte': each_used_times},
                         'used_times': each_used_times,
                         'priority': each_priority,
@@ -250,5 +250,5 @@ if __name__ == '__main__':
     # for each in get_task_total('poi_detail', used_times=6, limit=30000):
     #     print(each)
     # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
-    for line in get_task_total_simple('file_downloader', debug=True, limit=20):
+    for line in get_task_total_simple('supplement_field', debug=True, limit=20):
         pass
