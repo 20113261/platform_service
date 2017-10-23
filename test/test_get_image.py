@@ -54,17 +54,32 @@ if __name__ == '__main__':
     #     }
     # )
 
+    # get_images(
+    #     **{
+    #         'source': "daodao",
+    #         'new_part': "detail_rest_daodao_20170928a",
+    #         'target_url': "https://ccm.ddcdn.com/ext/photo-w/05/9d/be/f4/spaghetti-ai-ricci-di.jpg",
+    #         'desc_path': "/data/nfs/image/img_rest_daodao_20170928a_filter",
+    #         'is_poi_task': True,
+    #         'source_id': "4697785",
+    #         'part': "20170928a",
+    #         'file_path': "/data/nfs/image/img_rest_daodao_20170928a",
+    #         "task_name": "images_rest_daodao_20170928a",
+    #         "task_response": TaskResponse()
+    #     }
+    # )
+
     get_images(
         **{
-            'source': "daodao",
-            'new_part': "detail_rest_daodao_20170928a",
-            'target_url': "https://ccm.ddcdn.com/ext/photo-w/05/9d/be/f4/spaghetti-ai-ricci-di.jpg",
-            'desc_path': "/data/nfs/image/img_rest_daodao_20170928a_filter",
+            'source': "huantaoyou",
+            'new_part': "image_wanle_huantaoyou_20171023a",
+            'target_url': "http://img.huantaoyou.com/CT/AU/439/c3cf851ae0b246f7b8ba49fc08b8a2b7.png",
+            'desc_path': "/data/nfs/image/img_wanle_huantaoyou_20171023a_filter",
             'is_poi_task': True,
-            'source_id': "4697785",
-            'part': "20170928a",
-            'file_path': "/data/nfs/image/img_rest_daodao_20170928a",
-            "task_name": "images_rest_daodao_20170928a",
+            'source_id': "test",
+            'part': "20171023a",
+            'file_path': "/data/nfs/image/img_wanle_huantaoyou_20171023a",
+            "task_name": "image_wanle_huantaoyou_20171023a",
             "task_response": TaskResponse()
         }
     )
