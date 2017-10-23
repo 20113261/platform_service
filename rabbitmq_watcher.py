@@ -96,21 +96,21 @@ def insert_task(queue, limit):
     emergency_count = _count
     logger.info("Insert queue: {0} Emergency task count: {1}".format(queue, _count))
 
-    for task_token, worker, queue, routing_key, args in get_routine_task_total(queue=queue, limit=limit - _count):
-        _count += 1
-        kwargs = {
-            'mongo_task_id': task_token
-        }
-        kwargs.update(args)
-        app.send_task(
-            worker,
-            task_id=task_token,
-            kwargs=kwargs,
-            queue=queue,
-            routing_key=routing_key
-        )
-
-    logger.info("Insert queue: {0} Routine task count: {1}".format(queue, _count - emergency_count))
+    # for task_token, worker, queue, routing_key, args in get_routine_task_total(queue=queue, limit=limit - _count):
+    #     _count += 1
+    #     kwargs = {
+    #         'mongo_task_id': task_token
+    #     }
+    #     kwargs.update(args)
+    #     app.send_task(
+    #         worker,
+    #         task_id=task_token,
+    #         kwargs=kwargs,
+    #         queue=queue,
+    #         routing_key=routing_key
+    #     )
+    #
+    # logger.info("Insert queue: {0} Routine task count: {1}".format(queue, _count - emergency_count))
     logger.info("Insert queue: {0} Total task count: {1}".format(queue, _count))
 
 
