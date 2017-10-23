@@ -176,7 +176,7 @@ def monitoring_hotel_detail2ImgOrComment():
             if tab_args[0] != 'detail': continue
             if tab_args[1] != 'hotel': continue
             if tab_args[2] not in HOTEL_SOURCE: continue
-            if tab_args[3] == 'test': continue
+            if tab_args[3] in ('test', '20170928d', '20170926a'): continue
 
             timestamp, priority, sequence = get_seek(table_name)
 
