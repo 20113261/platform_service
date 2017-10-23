@@ -249,7 +249,8 @@ def ctrip_parser(page, url, other_info):
     print 'first_img=>%s' % first_img
 
     try:
-        city_name = page_js.eval('hotelDomesticConfig')['query']['cityName'].encode('raw-unicode-escape')
+        city_name = page_js.eval('hotelDomesticConfig')['query']['cityName']
+        # city_name = page_js.eval('hotelDomesticConfig')['query']['cityName'].encode('raw-unicode-escape')
         country_id = page_js.eval('hotelDomesticConfig')['query']['country']
     except Exception as e:
         print e
