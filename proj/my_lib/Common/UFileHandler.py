@@ -12,6 +12,8 @@ import requests
 import time
 import datetime
 import logging
+import httplib
+import functools
 import proj.my_lib.Common.Utils
 from ucloud.ufile import putufile, downloadufile, postufile, deleteufile
 from ucloud.compact import BytesIO
@@ -39,6 +41,18 @@ put_handler = putufile.PutUFile(public_key, private_key)
 bucket_name = "verify-case"
 
 
+def do_not_print_http_debug_log(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        temp = httplib.HTTPConnection.debuglevel
+        httplib.HTTPConnection.debuglevel = 0
+        res = f(*args, **kwargs)
+        httplib.HTTPConnection.debuglevel = temp
+        return res
+
+    return wrapper
+
+
 class FileInfo(object):
     st_mtime = 0.0
     content_type = ''
@@ -51,6 +65,7 @@ def has_file(key):
     return get_ufile_and_info(key)
 
 
+@do_not_print_http_debug_log
 def delete_ufile(key):
     start = time.time()
     status = -1
@@ -74,6 +89,7 @@ def delete_ufile(key):
         return False
 
 
+@do_not_print_http_debug_log
 def get_ufile_and_info(key):
     start = time.time()
     status = -1
@@ -104,6 +120,7 @@ def get_ufile_and_info(key):
         return None
 
 
+@do_not_print_http_debug_log
 def upload_stream(key, data):
     start = time.time()
     status = -1

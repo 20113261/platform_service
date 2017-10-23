@@ -53,4 +53,4 @@ if __name__ == '__main__':
 
     # 'Content-Type': 'application/octet-stream'
     # s = StringIO.StringIO(f.read())
-    upload_ks_file_stream('mioji-attr', 'hello_world', f)
+    upload_ks_file_stream('mioji-wanle', 'huantaoyou/hello_world', f)

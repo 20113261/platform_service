@@ -305,8 +305,12 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         bucket_name = 'mioji-hotel'
     elif 'attr' in desc_path:
         bucket_name = 'mioji-attr'
-    else:
+    elif 'rest' in desc_path:
         bucket_name = 'mioji-rest'
+    elif 'wanle' in desc_path:
+        bucket_name = 'mioji-wanle'
+    else:
+        raise TypeError("Unknown Bucket Name: {}".format(desc_path))
 
     with MySession(need_cache=True) as session:
         @func_time_logger
@@ -343,7 +347,12 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             # save file stream
             r2 = True
             s_f_stream = StringIO(page.content)
-            r1 = upload_ks_file_stream(bucket_name, file_name, copy.deepcopy(s_f_stream), page.headers['Content-Type'])
+            if bucket_name != 'mioji-wanle':
+                r1 = upload_ks_file_stream(bucket_name, file_name, copy.deepcopy(s_f_stream),
+                                           page.headers['Content-Type'])
+            else:
+                r1 = upload_ks_file_stream(bucket_name, 'huantaoyou/' + file_name, copy.deepcopy(s_f_stream),
+                                           page.headers['Content-Type'])
             if bucket_name == 'mioji-attr':
                 r2 = upload_ks_file_stream('mioji-shop', file_name, copy.deepcopy(s_f_stream),
                                            page.headers['Content-Type'])
@@ -362,7 +371,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         if special_file_name != '':
             file_name = special_file_name
 
-        bucket_name = file_path.split('_')[1] + '_bucket' if is_poi_task else ''
+        # bucket_name = file_path.split('_')[1] + '_bucket' if is_poi_task else ''
 
         data = (
             source,  # source
