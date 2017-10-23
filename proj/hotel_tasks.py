@@ -22,7 +22,7 @@ def hotel_base_data(self, source, url, other_info, country_id, part, **kwargs):
         'User-agent': GetUserAgent()
     }
 
-    with MySession(need_cache=True, do_not_delete_cache=True) as session:
+    with MySession() as session:
         # hotels
         if source == 'hotels':
             url = 'https://zh.hotels.com/ho{0}/'.format(other_info['source_id'])
