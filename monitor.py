@@ -33,8 +33,9 @@ from proj.mysql_pool import service_platform_pool
 task_statistics = redis.Redis(host='10.10.180.145', db=9)
 client = pymongo.MongoClient(host='10.10.231.105')
 collections = client['MongoTask']['Task']
-HOTEL_SOURCE = ('agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
-        'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton')
+HOTEL_SOURCE = (
+    'agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
+    'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton')
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 PRIORITY = 3
@@ -52,6 +53,8 @@ SQL_FILE_TO_SOURCE = {
     'images_poi.sql': 'images_daodao'
 }
 LOAD_FILES = {}
+
+
 def loads_sql():
     sql_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sql')
     files = os.listdir(sql_file_path)
@@ -59,10 +62,14 @@ def loads_sql():
         with open(os.path.join(sql_file_path, file_name), 'r') as f:
             source = SQL_FILE_TO_SOURCE[file_name]
             LOAD_FILES[source] = f.read()
+
+
 loads_sql()
+
 
 def get_default_timestramp():
     return datetime.datetime(year=1970, month=2, day=4, hour=6, minute=8, second=10, microsecond=666666)
+
 
 def update_task_statistics(task_tag, typ2, source, typ1, success_count, sum_or_set=True):
     try:
@@ -73,6 +80,7 @@ def update_task_statistics(task_tag, typ2, source, typ1, success_count, sum_or_s
             task_statistics.set(report_key, success_count)
     except Exception as e:
         logger.error('redis推送入队任务总数报错  :  \n%s ' % traceback.format_exc(e))
+
 
 def execute_sql(sql, commit=False):
     conn = service_platform_pool.connection()
@@ -91,6 +99,7 @@ def execute_sql(sql, commit=False):
     conn.close()
     return result
 
+
 def get_seek(task_name):
     sql = """select seek, priority, sequence from task_seek where task_name = '%s'"""
     conn = service_platform_pool.connection()
@@ -100,36 +109,40 @@ def get_seek(task_name):
     cursor.close()
     conn.close()
     logger.info('timestramp, priority :  %s ' % str(result))
-    if not result or len(result)==0:
+    if not result or len(result) == 0:
         return get_default_timestramp(), PRIORITY, 0
 
     return result
+
 
 def update_seek(task_name, seek, priority=3, sequence=0):
     sql = """replace into task_seek (task_name, seek, priority, sequence) values('%s','%s', %d, %d);"""
     execute_sql(sql % (task_name, seek, priority, sequence), commit=True)
 
+
 def get_all_tables():
     sql = """select table_name from information_schema.tables where table_schema = 'ServicePlatform';"""
     return execute_sql(sql)
+
 
 def create_table(table_name):
     conn = service_platform_pool.connection()
     cursor = conn.cursor()
     tab_args = table_name.split('_')
-    if tab_args[0]=='detail':
+    if tab_args[0] == 'detail':
         sql_file = LOAD_FILES[tab_args[1]]
-    elif tab_args[0]=='list':
+    elif tab_args[0] == 'list':
         sql_file = LOAD_FILES['list']
-    elif tab_args[0]=='images':
-        if tab_args[1]=='hotel':
+    elif tab_args[0] == 'images':
+        if tab_args[1] == 'hotel':
             sql_file = LOAD_FILES['images_hotel']
-        elif tab_args[2]=='daodao':
+        elif tab_args[2] == 'daodao':
             sql_file = LOAD_FILES['images_daodao']
 
     cursor.execute(sql_file % table_name)
     cursor.close()
     conn.close()
+
 
 def monitoring_hotel_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
@@ -143,17 +156,19 @@ def monitoring_hotel_list2detail():
             if tab_args[0] != 'list': continue
             if tab_args[1] != 'hotel': continue
             if tab_args[2] not in HOTEL_SOURCE: continue
-            if tab_args[3] == 'test':continue
+            if tab_args[3] == 'test': continue
 
             timestamp, priority, sequence = get_seek(table_name)
 
-            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name":table_name}).count(), sum_or_set=False)
+            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+                                   collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_hotel_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
+            timestamp, success_count = send_hotel_detail_task(
+                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('sequence  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
@@ -164,6 +179,7 @@ def monitoring_hotel_list2detail():
         send_email(EMAIL_TITLE,
                    '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
                    SEND_TO)
+
 
 def monitoring_hotel_detail2ImgOrComment():
     sql = """select source, source_id, city_id, img_items, id from %s where id >= %d order by id limit 5000"""
@@ -184,8 +200,9 @@ def monitoring_hotel_detail2ImgOrComment():
             if table_dict.get(images_table_name, True):
                 create_table(images_table_name)
 
-            sequence, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, sequence)), table_name,
-                                                       priority, is_poi_task=False)
+            sequence, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, sequence)),
+                                                      table_name,
+                                                      priority, is_poi_task=False)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if sequence is not None:
                 update_seek(table_name, timestamp, priority, sequence)
@@ -196,6 +213,7 @@ def monitoring_hotel_detail2ImgOrComment():
         send_email(EMAIL_TITLE,
                    '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
                    SEND_TO)
+
 
 def monitoring_poi_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
@@ -212,7 +230,8 @@ def monitoring_poi_list2detail():
 
             timestamp, priority, sequence = get_seek(table_name)
 
-            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List', collections.find({"task_name": table_name}).count(), sum_or_set=False)
+            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+                                   collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
@@ -230,6 +249,7 @@ def monitoring_poi_list2detail():
         send_email(EMAIL_TITLE,
                    '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
                    SEND_TO)
+
 
 def monitoring_poi_detail2imgOrComment():
     sql = """select source, id, city_id, imgurl, utime from %s where utime >= '%s' order by utime limit 5000"""
@@ -250,7 +270,8 @@ def monitoring_poi_detail2imgOrComment():
             if table_dict.get(images_table_name, True):
                 create_table(images_table_name)
 
-            timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name,
+            timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)),
+                                                       table_name,
                                                        priority, is_poi_task=True)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
@@ -262,6 +283,7 @@ def monitoring_poi_detail2imgOrComment():
         send_email(EMAIL_TITLE,
                    '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
                    SEND_TO)
+
 
 def monitoring_qyer_list2detail():
     sql = """select source, source_id, city_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
@@ -279,13 +301,14 @@ def monitoring_qyer_list2detail():
             timestamp, priority, sequence = get_seek(table_name)
 
             update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-                                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
+                                   collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_qyer_detail_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
+            timestamp, success_count = send_qyer_detail_task(
+                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
@@ -297,9 +320,13 @@ def monitoring_qyer_list2detail():
                    '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
                    SEND_TO)
 
+
 def monitoring_zombies_task():
     try:
-        cursor = collections.find({'running': 1, 'utime': {'$lt': datetime.datetime.now()-datetime.timedelta(hours=1)}}, {'_id': 1}).limit(1000)
+        cursor = collections.find(
+            {'running': 1, 'utime': {'$lt': datetime.datetime.now() - datetime.timedelta(hours=1)}}, {'_id': 1},
+            hint=[('running', 1), ('utime', -1)]).limit(
+            5000)
         id_list = [id_dict['_id'] for id_dict in cursor]
         result = collections.update({
             '_id': {
@@ -312,19 +339,22 @@ def monitoring_zombies_task():
                 'running': 0
             }
         }, multi=True)
-        logger.info('monitoring_zombies_task  --  filter:  %s, count: %d, result: %s' % (str(cursor._Cursor__spec), len(id_list), str(result)))
+        logger.info('monitoring_zombies_task  --  filter:  %s, count: %d, result: %s' % (
+            str(cursor._Cursor__spec), len(id_list), str(result)))
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
                    '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
                    SEND_TO)
 
+
 def monitoring_supplement_field():
     try:
         table_name = 'supplement_field'
         sql = """select table_name, type, source, sid, other_info, status, utime from %s where status = 0 and utime >= '%s' order by utime"""
         timestamp, _v, _seq = get_seek(table_name)
-        timestamp, success_count = qyer_supplement_map_info(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)))
+        timestamp, success_count = qyer_supplement_map_info(
+            execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)))
         logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
         if timestamp is not None:
             update_seek(table_name, timestamp)
@@ -333,6 +363,7 @@ def monitoring_supplement_field():
         send_email(EMAIL_TITLE,
                    '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
                    SEND_TO)
+
 
 if __name__ == '__main__':
     # get_default_timestramp()
