@@ -8,6 +8,7 @@
 from proj.celery import app
 
 from proj.hotel_list_task import hotel_list_task
+from proj.my_lib.BaseTask import TaskResponse
 
 if __name__ == '__main__':
     # hotel_list_task('booking', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
@@ -122,7 +123,8 @@ if __name__ == '__main__':
     #     suggest='''SantAlbino|桑塔比诺，托斯卡纳大区，意大利|city|33376|santalbino|33376|santalbino|桑塔比诺|8|0||3600''',
     #     task_name="list_hotel_test_test",
     #     retry_count=2,
-    #     max_retry_times=6
+    #     max_retry_times=6,
+    #     task_response=TaskResponse()
     # ))
 
     # print(hotel_list_task(

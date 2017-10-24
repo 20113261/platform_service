@@ -7,7 +7,8 @@
 # @Software: PyCharm
 from __future__ import print_function
 import time
-from proj.my_lib.logger import get_logger
+import os
+from proj.my_lib.logger import get_logger, func_time_logger
 from ks3.connection import Connection
 
 logger = get_logger('ks_uploader')
@@ -18,6 +19,7 @@ sk = 'o4D5wjs6r02dxLDLyLbTTUenTvpmKgrBItra6qgb'
 connection = Connection(ak, sk, host='kss.ksyun.com')
 
 
+@func_time_logger
 def upload_ks_file_stream(bucket_name, upload_key, file_obj, content_type='image/jpeg'):
     start = time.time()
     bucket = connection.get_bucket(bucket_name)
@@ -44,6 +46,32 @@ def upload_ks_file_stream(bucket_name, upload_key, file_obj, content_type='image
     else:
         logger.debug("[Failed][upload file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, upload_key,
                                                                                        time.time() - start))
+        return False
+
+
+@func_time_logger
+def download(bucket_name, file_name, file_path):
+    start = time.time()
+    bucket = connection.get_bucket(bucket_name)
+    obj = bucket.get_key(file_name)
+
+    status = -1
+    retry_times = 3
+    while status == -1 and retry_times >= 0:
+        retry_times -= 1
+        try:
+            obj.get_contents_to_filename(os.path.join(file_path, file_name))
+            status = 0
+        except Exception as exc:
+            logger.exception(msg="[download file error]", exc_info=exc)
+            status = -1
+    if status == 0:
+        logger.debug("[Succeed][download file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, file_name,
+                                                                                          time.time() - start))
+        return True
+    else:
+        logger.debug("[Failed][download file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, file_name,
+                                                                                         time.time() - start))
         return False
 
 
