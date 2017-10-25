@@ -19,13 +19,15 @@ def qyer_supplement_map_info(tasks):
     data = []
     utime = None
     success_count = 0
+    _count = 0
     for table_name, type, source, sid, other_info, status, utime in tasks:
-        if source!='qyer':continue
+        # if source!='qyer':continue
+        _count += 1
         task_info = {
             'worker': 'proj.supplement_mapinfo_task.supplement_map_info',
             'queue': 'supplement_field',
             'routing_key': 'supplement_field',
-            'task_name': 'supplement_qyer_map_info',
+            'task_name': 'supplement_field',
             'args': {
                 'table_name': table_name,
                 'source': source,
@@ -41,11 +43,11 @@ def qyer_supplement_map_info(tasks):
         task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
         data.append(task_info)
 
-        try:
+        if _count % 10000 == 0:
+            print _count
             success_count += hourong_patch(data)
             data = []
-        except DuplicateKeyError as exc:
-            print traceback.format_exc(exc)
+
     else:
         if len(data)>0:
             success_count += hourong_patch(data)
