@@ -32,3 +32,21 @@ db_config = dict(
     database='base_data'
 )
 base_data_pool = init_pool(**db_config)
+
+# spider db devdb pool
+db_config = dict(
+    user='writer',
+    password='miaoji1109',
+    host='10.10.154.38',
+    database='devdb'
+)
+spider_db_devdb_pool = init_pool(**db_config)
+
+# spider data poi pool
+db_config = dict(
+    user='mioji_admin',
+    password='mioji1109',
+    host='10.10.228.253',
+    database='poi'
+)
+spider_data_poi_pool = init_pool(**db_config)
