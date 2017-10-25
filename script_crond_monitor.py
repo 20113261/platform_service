@@ -24,7 +24,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from script.download_img import download_pic
 
 schedule = BlockingScheduler()
-schedule.add_job(download_pic, 'cron', second='*/40', id='download_pic')
+schedule.add_job(download_pic, 'cron', second='*/30', id='download_pic')
 
 if __name__ == '__main__':
     schedule.start()
