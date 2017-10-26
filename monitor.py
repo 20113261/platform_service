@@ -160,8 +160,8 @@ def monitoring_hotel_list2detail():
 
             timestamp, priority, sequence = get_seek(table_name)
 
-            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-                                   collections.find({"task_name": table_name}).count(), sum_or_set=False)
+            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
@@ -230,8 +230,8 @@ def monitoring_poi_list2detail():
 
             timestamp, priority, sequence = get_seek(table_name)
 
-            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-                                   collections.find({"task_name": table_name}).count(), sum_or_set=False)
+            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
@@ -300,8 +300,8 @@ def monitoring_qyer_list2detail():
 
             timestamp, priority, sequence = get_seek(table_name)
 
-            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-                                   collections.find({"task_name": table_name}).count(), sum_or_set=False)
+            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
