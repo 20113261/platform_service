@@ -334,8 +334,6 @@ def monitoring_zombies_task():
             }
         }, {
             '$set': {
-                'finished': 0,
-                'used_times': 0,
                 'running': 0
             }
         }, multi=True)
