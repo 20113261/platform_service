@@ -326,7 +326,7 @@ def monitoring_zombies_task():
         cursor = collections.find(
             {'running': 1, 'utime': {'$lt': datetime.datetime.now() - datetime.timedelta(hours=1)}}, {'_id': 1},
             hint=[('running', 1), ('utime', -1)]).limit(
-            5000)
+            10000)
         id_list = [id_dict['_id'] for id_dict in cursor]
         result = collections.update({
             '_id': {

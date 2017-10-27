@@ -6,6 +6,7 @@ import random
 import time
 import traceback
 import pymysql
+import urlparse
 from StringIO import StringIO
 
 import MySQLdb
