@@ -36,6 +36,8 @@ def upload_ks_file_stream(bucket_name, upload_key, file_obj, content_type='image
         'x-application-context': 'application'
     }
     while status != 200 and retry_times >= 0:
+        # 恢复 file seek
+        file_obj.seek(0)
         retry_times -= 1
         try:
             res = key.set_contents_from_file(file_obj, policy='public-read-write', headers=headers)
@@ -45,6 +47,7 @@ def upload_ks_file_stream(bucket_name, upload_key, file_obj, content_type='image
                     status = res.status
                     logger.debug("[hash check ok][etag: {}][hash: {}]".format(uploaded_key.etag, hash_check))
                 else:
+                    status = -1
                     logger.debug("[hash check error][etag: {}][hash: {}]".format(uploaded_key.etag, hash_check))
             else:
                 status = res.status
