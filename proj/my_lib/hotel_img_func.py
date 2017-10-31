@@ -35,6 +35,7 @@ class PicRelation(Base):
     size = Column(String(40))
     flag = Column(String(10))
     file_md5 = Column(String(32), primary_key=True)
+    img_p_hash = Column(String(32))
 
 
 class PoiRelation(Base):
@@ -49,6 +50,7 @@ class PoiRelation(Base):
     pic_md5 = Column(String(64), primary_key=True)
     use = Column(String(10))
     part = Column(String(32))
+    img_p_hash = Column(String(32))
     date = Column(TIMESTAMP, default=datetime.datetime.now)
 
 
@@ -92,7 +94,7 @@ def get_file_md5(f_name):
 @func_time_logger
 def hotel_make_kw(args, table_name):
     relation = PicRelation()
-    relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5, _temp = args
+    relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5, _temp, relation.img_p_hash = args
     relation.hotel_id = ''
     relation.status = -1
     relation.update_date = datetime.datetime.now()
@@ -105,7 +107,7 @@ def hotel_make_kw(args, table_name):
 @func_time_logger
 def poi_make_kw(args, table_name):
     relation = PoiRelation()
-    relation.source, relation.sid, relation.url, relation.file_name, relation.part, relation.pic_size, relation.use, relation.pic_md5, relation.bucket_name = args
+    relation.source, relation.sid, relation.url, relation.file_name, relation.part, relation.pic_size, relation.use, relation.pic_md5, relation.bucket_name, relation.img_p_hash = args
     relation.date = datetime.datetime.now()
     relation.url_md5 = relation.file_name.split('.')[0]
     sql = SQL_POI.format(table_name=table_name)

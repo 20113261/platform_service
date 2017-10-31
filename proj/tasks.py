@@ -43,6 +43,7 @@ from .my_lib.get_rate_limit import get_rate_limit
 from .my_lib.Common.Browser import MySession
 from proj.my_lib.ks_upload_file_stream import upload_ks_file_stream
 from proj.my_lib.logger import func_time_logger
+from proj.my_lib.Common.img_hash import img_p_hash
 
 platforms.C_FORCE_ROOT = True
 
@@ -345,6 +346,9 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
                 os.makedirs(file_path)
             temp_file = file_path + '/' + file_name
 
+            # get img p hash
+            _p_hash = img_p_hash(StringIO(page.content))
+
             # save file stream
             r2 = True
             if bucket_name != 'mioji-wanle':
@@ -383,6 +387,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             use_flag,  # poi use , hotel flag
             file_md5,  # file_md5
             bucket_name,  # poi rest attr shop
+            _p_hash,  # img phash for check duplicate
         )
 
         try:
