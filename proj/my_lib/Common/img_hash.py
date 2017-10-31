@@ -13,7 +13,7 @@ logger = get_logger("img_hash")
 
 
 @func_time_logger
-def img_p_hash(f_obj):
+def _img_p_hash(f_obj):
     f_obj.seek(0)
     try:
         img_obj = Image.open(f_obj)
@@ -28,6 +28,16 @@ def img_p_hash(f_obj):
         return None
     f_obj.seek(0)
     return _hash
+
+
+def img_p_hash(f_obj):
+    _retry_times = 4
+    while _retry_times:
+        _retry_times -= 1
+        _res = _img_p_hash(f_obj)
+        if _res:
+            return _res
+    return None
 
 
 if __name__ == '__main__':
