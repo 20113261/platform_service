@@ -22,7 +22,7 @@ logger = get_logger("pic_detect_download")
 
 PARENT_PATH = "/data/image/formatted_image"
 
-SCAN_FILTER = 3000
+SCAN_FILTER = 6000
 EACH_TIMES_PER_TASK = 1000
 MAX_PIC_PER_VIEW = 10000
 
@@ -110,7 +110,7 @@ FROM pic_detect_task WHERE status=0 ORDER BY `city_grade`,`city_id`,`poi_id` LIM
 
         pool.apply_async(download_and_prepare_data,
                          (file_name, parent_path, city_id, poi_id, task_id))
-    pool.join()
+    pool.join(timeout=60)
     cursor.close()
     conn.close()
     insert_all_data()
