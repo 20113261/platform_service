@@ -10,16 +10,18 @@ import gevent.monkey
 gevent.monkey.patch_all()
 import gevent.pool
 import time
+import random
 
 pool = gevent.pool.Pool(size=10)
 
 
 def hello_world():
-    time.sleep(10)
-    print("Hello World")
+    t = random.randint(1, 10)
+    time.sleep(t)
+    print("Hello World, {}".format(t))
 
 
 if __name__ == '__main__':
     for i in range(10):
         pool.apply_async(hello_world, ())
-    pool.join(timeout=2)
+    pool.join(timeout=5)
