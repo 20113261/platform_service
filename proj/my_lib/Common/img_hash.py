@@ -36,7 +36,7 @@ def img_p_hash(f_obj):
         _retry_times -= 1
         _res = _img_p_hash(f_obj)
         if _res:
-            return _res
+            return str(_res)
     return None
 
 
