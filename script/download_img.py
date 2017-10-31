@@ -110,7 +110,7 @@ FROM pic_detect_task WHERE status=0 ORDER BY `city_grade`,`city_id`,`poi_id` LIM
 
         pool.apply_async(download_and_prepare_data,
                          (file_name, parent_path, city_id, poi_id, task_id))
-    pool.join(timeout=60)
+    pool.join(timeout=75)
     cursor.close()
     conn.close()
     insert_all_data()
