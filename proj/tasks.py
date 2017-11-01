@@ -44,6 +44,9 @@ from .my_lib.Common.Browser import MySession
 from proj.my_lib.ks_upload_file_stream import upload_ks_file_stream
 from proj.my_lib.logger import func_time_logger
 from proj.my_lib.Common.img_hash import img_p_hash
+from proj.my_lib.ks_upload_file_stream import download_content
+from proj.mysql_pool import service_platform_pool, base_data_final_pool
+from proj.my_lib.Common.Utils import retry
 
 platforms.C_FORCE_ROOT = True
 
@@ -387,7 +390,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             use_flag,  # poi use , hotel flag
             file_md5,  # file_md5
             bucket_name,  # poi rest attr shop
-            _p_hash,  # img phash for check duplicate
+            json.dumps({"p_hash": _p_hash}),  # img phash for check duplicate
         )
 
         try:
@@ -421,6 +424,73 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         # raise Exception("Img Has Been Filtered")
 
     return flag, h, w, task_response.error_code, bucket_name, file_name, kwargs['task_name']
+
+
+@retry(times=4)
+def update_p_hash(_p_hash, _file_name, _type='hotel'):
+    conn = base_data_final_pool.connection()
+    cursor = conn.cursor()
+    if _type == 'hotel':
+        update_sql = '''UPDATE hotel_images
+SET img_p_hash = %s
+WHERE pic_md5 = %s;'''
+    else:
+        update_sql = '''UPDATE poi_images
+SET img_p_hash = %s
+WHERE url_md5 = %s;'''
+    cursor.execute(update_sql, (_p_hash, _file_name))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+@retry(times=4)
+def insert_error_f_md5_file(file_name, error_md5, file_md5):
+    conn = service_platform_pool.connection()
+    cursor = conn.cursor()
+    insert_sql = '''INSERT IGNORE INTO error_f_md5_file (file_name, file_md5, error_md5) VALUES (%s, %s, %s);'''
+    cursor.execute(insert_sql, (file_name, file_md5, error_md5))
+    cursor.close()
+    conn.close()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='13/s')
+def p_hash_calculate(self, source, _type, bucket_name, file_name, file_md5, **kwargs):
+    task_response = kwargs['task_response']
+    task_response.source = source.title()
+    task_response.type = 'PHashCalc'
+
+    content = download_content(bucket_name, file_name)
+    if content:
+        # get img content
+        _f_obj = StringIO(content)
+
+        # get img file md5
+        _checked_file_md5 = get_stream_md5(_f_obj)
+        if file_md5 != _checked_file_md5:
+            try:
+                insert_error_f_md5_file(file_name, _checked_file_md5, file_md5)
+            except Exception as exc:
+                task_response.error_code = 33
+                logger.exception(msg="[insert db error]", exc_info=exc)
+                raise exc
+
+        try:
+            _p_hash = img_p_hash(_f_obj)
+        except Exception as exc:
+            task_response.error_code = 22
+            logger.exception(msg="[get p hash error]", exc_info=exc)
+            raise exc
+
+        try:
+            update_p_hash(_p_hash, file_name, _type=_type)
+        except Exception as exc:
+            task_response.error_code = 33
+            logger.exception(msg="[insert db error]", exc_info=exc)
+            raise exc
+    else:
+        task_response.error_code = 22
+        raise Exception("Error")
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')

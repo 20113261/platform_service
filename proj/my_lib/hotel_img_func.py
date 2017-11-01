@@ -18,8 +18,8 @@ Base = declarative_base()
 engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/ServicePlatform?charset=utf8',
                        encoding="utf-8", pool_size=20, pool_recycle=3600, echo=False)
 DBSession = sessionmaker(bind=engine)
-SQL_HOTEL = 'replace into {table_name} (source, source_id, pic_url, pic_md5, part, hotel_id, status, update_date, size, flag, file_md5, `img_p_hash`) values (:source, :source_id, :pic_url, :pic_md5, :part, :hotel_id, :status, :update_date, :size, :flag, :file_md5, :img_p_hash)'
-SQL_POI = 'replace into {table_name} (file_name, source, sid, url, pic_size, bucket_name, url_md5, pic_md5, `use`, part, `date`, `img_p_hash`) values (:file_name, :source, :sid, :url, :pic_size, :bucket_name, :url_md5, :pic_md5, :use, :part, :date, :img_p_hash)'
+SQL_HOTEL = 'replace into {table_name} (source, source_id, pic_url, pic_md5, part, hotel_id, status, update_date, size, flag, file_md5, `info`) values (:source, :source_id, :pic_url, :pic_md5, :part, :hotel_id, :status, :update_date, :size, :flag, :file_md5, :info)'
+SQL_POI = 'replace into {table_name} (file_name, source, sid, url, pic_size, bucket_name, url_md5, pic_md5, `use`, part, `date`, `info`) values (:file_name, :source, :sid, :url, :pic_size, :bucket_name, :url_md5, :pic_md5, :use, :part, :date, :info)'
 
 
 class PicRelation(Base):
@@ -35,7 +35,7 @@ class PicRelation(Base):
     size = Column(String(40))
     flag = Column(String(10))
     file_md5 = Column(String(32), primary_key=True)
-    img_p_hash = Column(String(32))
+    info = Column(Text())
 
 
 class PoiRelation(Base):
@@ -50,7 +50,7 @@ class PoiRelation(Base):
     pic_md5 = Column(String(64), primary_key=True)
     use = Column(String(10))
     part = Column(String(32))
-    img_p_hash = Column(String(32))
+    info = Column(Text(32))
     date = Column(TIMESTAMP, default=datetime.datetime.now)
 
 
@@ -77,9 +77,11 @@ __sql_dict = {
 
 
 def get_stream_md5(stream):
+    stream.seek(0)
     hash_md5 = hashlib.md5()
     for chunk in iter(lambda: stream.read(4096), b""):
         hash_md5.update(chunk)
+    stream.seek(0)
     return hash_md5.hexdigest()
 
 
@@ -94,7 +96,7 @@ def get_file_md5(f_name):
 @func_time_logger
 def hotel_make_kw(args, table_name):
     relation = PicRelation()
-    relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5, _temp, relation.img_p_hash = args
+    relation.source, relation.source_id, relation.pic_url, relation.pic_md5, relation.part, relation.size, relation.flag, relation.file_md5, _temp, relation.info = args
     relation.hotel_id = ''
     relation.status = -1
     relation.update_date = datetime.datetime.now()
@@ -107,7 +109,7 @@ def hotel_make_kw(args, table_name):
 @func_time_logger
 def poi_make_kw(args, table_name):
     relation = PoiRelation()
-    relation.source, relation.sid, relation.url, relation.file_name, relation.part, relation.pic_size, relation.use, relation.pic_md5, relation.bucket_name, relation.img_p_hash = args
+    relation.source, relation.sid, relation.url, relation.file_name, relation.part, relation.pic_size, relation.use, relation.pic_md5, relation.bucket_name, relation.info = args
     relation.date = datetime.datetime.now()
     relation.url_md5 = relation.file_name.split('.')[0]
     sql = SQL_POI.format(table_name=table_name)

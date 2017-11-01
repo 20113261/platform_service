@@ -8,17 +8,18 @@ CREATE TABLE IF NOT EXISTS `%s` (
   `bucket_name` VARCHAR(128)  NOT NULL DEFAULT '',
   `url_md5`     VARCHAR(1024) NOT NULL DEFAULT 'NULL',
   `pic_md5`     VARCHAR(64)   NOT NULL DEFAULT '',
-  `img_p_hash`  VARCHAR(32)   NOT NULL DEFAULT '',
   `use`         VARCHAR(10)   NOT NULL DEFAULT 'NULL',
   `part`        VARCHAR(32)   NOT NULL DEFAULT 'NULL',
   `date`        TIMESTAMP(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  PRIMARY KEY (`id`),
+  `info`        JSON,
   UNIQUE KEY `s_sid_md5` (`source`, `sid`, `pic_md5`),
+  KEY (`id`),
   KEY `file_name` (`file_name`),
   KEY `date` (`date`),
-  KEY `s_sid_index` (`source`, `sid`),
-  KEY `_ix_img_p_hash` (`img_p_hash`),
-  KEY `_ix_s_sid_img_p_hash` (`source`, `sid`, `img_p_hash`)
+  KEY `s_sid_index` (`source`, `sid`)
 )
   ENGINE = InnoDB
-  DEFAULT CHARSET = utf8;
+  AUTO_INCREMENT = 91224071
+  DEFAULT CHARSET = utf8
+  PARTITION BY KEY (`source`, `sid`)
+  PARTITIONS 16;

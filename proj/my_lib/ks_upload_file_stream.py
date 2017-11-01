@@ -90,11 +90,47 @@ def download(bucket_name, file_name, file_path):
         return False
 
 
+@func_time_logger
+def download_content(bucket_name, file_name):
+    start = time.time()
+    bucket = connection.get_bucket(bucket_name)
+    obj = bucket.get_key(file_name)
+
+    status = -1
+    retry_times = 3
+    content = None
+    while status == -1 and retry_times >= 0:
+        retry_times -= 1
+        try:
+            content = obj.get_contents_as_string()
+            status = 0
+        except Exception as exc:
+            logger.exception(msg="[download file error]", exc_info=exc)
+            status = -1
+    if status == 0:
+        logger.debug("[Succeed][download file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, file_name,
+                                                                                          time.time() - start))
+        return content
+    else:
+        logger.debug("[Failed][download file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, file_name,
+                                                                                         time.time() - start))
+        return None
+
+
+# def test_img_p_hash_download():
+#     from proj.my_lib.Common.img_hash import img_p_hash
+#     from StringIO import StringIO
+#
+#     content = download_stream('mioji-hotel', 'a24af36faf3e2f67a0816e8793c89973.jpg')
+#     print(img_p_hash(StringIO(content)))
+
+
 if __name__ == '__main__':
-    f = open('/tmp/1b78877b728d4bd6e8445d2d1102044c.png', 'rb')
-    md5 = get_stream_md5(f)
-    print(md5)
-    f.seek(0)
+    pass
+    # f = open('/tmp/1b78877b728d4bd6e8445d2d1102044c.png', 'rb')
+    # md5 = get_stream_md5(f)
+    # print(md5)
+    # f.seek(0)
     # f = open('/tmp/c0b9378743defc0c81ff308b112542a0.jpg', 'rb')
     # f = StringIO(content)
     # f_hash = file_hash(f)
@@ -103,4 +139,5 @@ if __name__ == '__main__':
 
     # 'Content-Type': 'application/octet-stream'
     # s = StringIO.StringIO(f.read())
-    upload_ks_file_stream('mioji-wanle', 'huantaoyou/hello_world', f, hash_check=md5)
+    # upload_ks_file_stream('mioji-wanle', 'huantaoyou/hello_world', f, hash_check=md5)
+    # test_img_p_hash_download()
