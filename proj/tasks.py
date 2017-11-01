@@ -432,13 +432,13 @@ def update_p_hash(_p_hash, _file_name, _type='hotel'):
     cursor = conn.cursor()
     if _type == 'hotel':
         update_sql = '''UPDATE hotel_images
-SET img_p_hash = %s
+SET info = %s
 WHERE pic_md5 = %s;'''
     else:
         update_sql = '''UPDATE poi_images
-SET img_p_hash = %s
+SET info = %s
 WHERE url_md5 = %s;'''
-    cursor.execute(update_sql, (_p_hash, _file_name))
+    cursor.execute(update_sql, (json.dumps({"p_hash": _p_hash}), _file_name))
     conn.commit()
     cursor.close()
     conn.close()
