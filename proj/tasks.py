@@ -450,6 +450,7 @@ def insert_error_f_md5_file(file_name, error_md5, file_md5):
     cursor = conn.cursor()
     insert_sql = '''INSERT IGNORE INTO error_f_md5_file (file_name, file_md5, error_md5) VALUES (%s, %s, %s);'''
     cursor.execute(insert_sql, (file_name, file_md5, error_md5))
+    conn.commit()
     cursor.close()
     conn.close()
 

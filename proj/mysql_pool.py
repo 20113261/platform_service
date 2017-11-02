@@ -58,3 +58,21 @@ db_config = dict(
     database='poi'
 )
 spider_data_poi_pool = init_pool(**db_config)
+
+# test base data pool
+db_config = dict(
+    user='reader',
+    password='miaoji1109',
+    host='10.10.69.170',
+    database='base_data'
+)
+base_data_test_pool = init_pool(**db_config)
+
+# spider data base data
+db_config = dict(
+    user='mioji_admin',
+    password='mioji1109',
+    host='10.10.228.253',
+    database='base_data'
+)
+spider_data_base_data_pool = init_pool(**db_config)
