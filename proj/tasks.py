@@ -493,6 +493,9 @@ def p_hash_calculate(self, source, _type, bucket_name, file_name, file_md5, **kw
         task_response.error_code = 22
         raise Exception("Error")
 
+    task_response.error_code = 0
+    return file_name, _type, _p_hash
+
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
 def booking_comment(self, target_url, **kwargs):
