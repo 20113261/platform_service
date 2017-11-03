@@ -17,6 +17,11 @@ class TestBrowser(unittest.TestCase):
         except Exception:
             self.fail("Browser raised Exception")
 
+    def test_exc(self):
+        with self.assertRaises(Exception):
+            with MySession() as session:
+                session.get('https://www.google.com/generate_500')
+
 
 if __name__ == '__main__':
     unittest.main()

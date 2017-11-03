@@ -88,7 +88,12 @@ class MySession(requests.Session):
             error = None
             for i in range(4):
                 try:
-                    return super(MySession, self).send(request, **kwargs)
+                    pre_resp = super(MySession, self).send(request, **kwargs)
+                    if pre_resp.status_code == 200:
+                        return pre_resp
+                    else:
+                        e = Exception("[status code not 200][code: {}]".format(pre_resp.status_code))
+                        raise ServiceStandardError(22, "代理异常 from Browser", wrapped_exception=e)
                 except Exception as e:
                     self.change_proxies()
                     logger.exception(msg="[request retry][retry times: {}]".format(i + 1), exc_info=e)
