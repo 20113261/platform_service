@@ -471,6 +471,8 @@ def p_hash_calculate(self, source, _type, bucket_name, file_name, file_md5, **kw
         if file_md5 != _checked_file_md5:
             try:
                 insert_error_f_md5_file(file_name, _checked_file_md5, file_md5)
+                task_response.error_code = 107
+                return file_name, _type, None
             except Exception as exc:
                 task_response.error_code = 33
                 logger.exception(msg="[insert db error]", exc_info=exc)
@@ -478,6 +480,9 @@ def p_hash_calculate(self, source, _type, bucket_name, file_name, file_md5, **kw
 
         try:
             _p_hash = img_p_hash(_f_obj)
+            if not _p_hash:
+                task_response.error_code = 22
+                return file_name, _type, None
         except Exception as exc:
             task_response.error_code = 22
             logger.exception(msg="[get p hash error]", exc_info=exc)
