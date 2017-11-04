@@ -259,10 +259,14 @@ def monitoring_poi_detail2imgOrComment():
         for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
-            if tab_args[0] != 'detail': continue
-            if tab_args[1] not in ('rest', 'attr', 'shop'): continue
-            if tab_args[2] != POI_SOURCE: continue
-            if tab_args[3] == 'test': continue
+            if tab_args[0] != 'detail':
+                continue
+            if tab_args[1] not in ('rest', 'attr', 'shop', 'total'):
+                continue
+            if tab_args[2] != POI_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
 

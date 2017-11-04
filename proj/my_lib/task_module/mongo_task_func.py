@@ -204,7 +204,7 @@ def update_task(task_id, finish_code=0):
                 "finished": 1,
                 'running': 0
             }
-        })
+        }, multi=True)
     else:
         return collections.update({
             'task_token': task_id
@@ -212,7 +212,7 @@ def update_task(task_id, finish_code=0):
             '$set': {
                 'running': 0
             }
-        })
+        }, multi=True)
 
 
 @func_time_logger
