@@ -437,7 +437,7 @@ WHERE pic_md5 = %s;'''
     else:
         update_sql = '''UPDATE poi_images
 SET info = %s
-WHERE url_md5 = %s;'''
+WHERE file_name = %s;'''
     cursor.execute(update_sql, (json.dumps({"p_hash": _p_hash}), _file_name))
     conn.commit()
     cursor.close()
@@ -445,10 +445,13 @@ WHERE url_md5 = %s;'''
 
 
 @retry(times=4)
-def insert_error_f_md5_file(file_name, error_md5, file_md5):
+def insert_error_f_md5_file(file_name, error_md5, file_md5, img_type):
     conn = service_platform_pool.connection()
     cursor = conn.cursor()
-    insert_sql = '''INSERT IGNORE INTO error_f_md5_file (file_name, file_md5, error_md5) VALUES (%s, %s, %s);'''
+    if img_type == 'hotel':
+        insert_sql = '''INSERT IGNORE INTO error_f_md5_file (file_name, file_md5, error_md5) VALUES (%s, %s, %s);'''
+    else:
+        insert_sql = '''INSERT IGNORE INTO error_f_md5_file_poi (file_name, file_md5, error_md5) VALUES (%s, %s, %s);'''
     cursor.execute(insert_sql, (file_name, file_md5, error_md5))
     conn.commit()
     cursor.close()
@@ -470,7 +473,7 @@ def p_hash_calculate(self, source, _type, bucket_name, file_name, file_md5, **kw
         _checked_file_md5 = get_stream_md5(_f_obj)
         if file_md5 != _checked_file_md5:
             try:
-                insert_error_f_md5_file(file_name, _checked_file_md5, file_md5)
+                insert_error_f_md5_file(file_name, _checked_file_md5, file_md5, _type)
                 task_response.error_code = 107
                 return file_name, _type, None
             except Exception as exc:

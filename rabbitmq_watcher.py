@@ -128,7 +128,8 @@ def mongo_task_watcher(*args):
     message_count = int(count)
     max_message_count = int(max_count)
     queue_min_task, insert_task_count, _time = TASK_CONF.get(queue_name, TASK_CONF['default'])
-    if message_count <= queue_min_task and max_message_count <= QUEUE_MAX_COUNT:
+    if message_count <= queue_min_task and max_message_count <= queue_min_task \
+            and message_count <= QUEUE_MAX_COUNT and max_message_count <= QUEUE_MAX_COUNT:
         logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
         insert_task(queue_name, insert_task_count)
     else:
