@@ -455,7 +455,7 @@ def insert_error_f_md5_file(file_name, error_md5, file_md5):
     conn.close()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='60/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='30/s')
 def p_hash_calculate(self, source, _type, bucket_name, file_name, file_md5, **kwargs):
     task_response = kwargs['task_response']
     task_response.source = source.title()
