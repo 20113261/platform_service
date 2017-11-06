@@ -10,9 +10,14 @@ import redis
 from ast import literal_eval
 
 from pymysql.cursors import DictCursor
-from mysql_pool import base_data_final_pool, base_data_test_pool
+from mysql_pool import base_data_final_pool, spider_data_base_data_pool
 from collections import defaultdict
 from proj.my_lib.Common.Utils import retry
+from .celery import app
+from proj.my_lib.BaseTask import BaseTask
+from proj.my_lib.logger import get_logger, func_time_logger
+
+logger = get_logger("hotel_img_merge")
 
 first_img_priority = {
     'booking': 10,
@@ -23,15 +28,35 @@ first_img_priority = {
     'elong': 5
 }
 
+r = redis.Redis(host='10.10.180.145', db=1)
 
-def hotel_img_merge(uid, min_pixels=200000):
+
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='30/s')
+def hotel_img_merge(self, uid, min_pixels=200000, **kwargs):
     return _hotel_img_merge(uid, min_pixels)
 
 
+@func_time_logger
+@retry(times=3, raise_exc=True)
+def update_img(uid, first_img, img_list):
+    conn = spider_data_base_data_pool.connection()
+    cursor = conn.cursor()
+    _sql = '''UPDATE hotel
+SET first_img = %s, img_list = %s
+WHERE uid = %s;'''
+    _res = cursor.execute(_sql, (first_img, img_list, uid))
+    cursor.close()
+    conn.close()
+    logger.debug("[insert db][uid: {}][first_img: {}][img_list: {}]".format(uid, first_img, img_list))
+    return _res
+
+
+@func_time_logger
 @retry(times=3, raise_exc=True)
 def _hotel_img_merge(uid, min_pixels):
+    min_pixels = int(min_pixels)
     # get source sid
-    conn = base_data_test_pool.connection()
+    conn = spider_data_base_data_pool.connection()
     cursor = conn.cursor()
     cursor.execute('''SELECT
   source,
@@ -46,6 +71,7 @@ WHERE uid = %s;''', (uid,))
     conn = base_data_final_pool.connection()
     cursor = conn.cursor(cursor=DictCursor)
     cursor.execute('''SELECT
+  source,
   pic_md5,
   size,
   file_md5,
@@ -60,10 +86,9 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str))
     p_hash_dict = defaultdict(list)
 
     for line in cursor.fetchall():
-        # line['pic_md5']
-        # line['size']
-        # line['file_md5']
-        line['info']
+        # 错误图片，直接过滤
+        if r.get('error_img_{}'.format(line['pic_md5'])) == '1':
+            continue
 
         # get max size
         h, w = literal_eval(line['size'])
@@ -73,6 +98,9 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str))
         if size > max_size:
             max_size = size
             max_size_img = line['pic_md5']
+
+        # todo each source counter add 1
+        logger.debug("[total img][source: {}]".format(line['source']))
 
         # pHash filter
         if not line['info']:
@@ -96,11 +124,14 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str))
         if scale > 2.5:
             continue
 
-        p_hash_dict[p_hash].append((line['pic_md5'], size))
+        p_hash_dict[p_hash].append((line['pic_md5'], size, line['source']))
 
     # 从 pHash 中获取最好的一张图片
     for key_p_hash, images in p_hash_dict.items():
         img = sorted(images, key=lambda x: x[1], reverse=True)
+        # todo each finished counter add 1
+        for i in img:
+            logger.debug("[saved img][source: {}]".format(i[-1]))
         result.add(img[0][0])
 
     cursor.close()
@@ -138,5 +169,7 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str)
             first_img = list(result)[0]
         else:
             first_img = img_list = max_size_img
+
+    update_img(uid, first_img, img_list)
 
     return uid, first_img, img_list

@@ -6,6 +6,12 @@
 # @File    : test_hotel_merge_img.py
 # @Software: PyCharm
 from proj.merge_tasks import hotel_img_merge
+from proj.my_lib.BaseTask import TaskResponse
 
 if __name__ == '__main__':
-    print(hotel_img_merge('ht20076715'))
+    hotel_img_merge(
+        **{
+            'uid': 'ht20076715',
+            'min_pixels': '200000',
+            "task_response": TaskResponse()
+        })

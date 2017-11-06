@@ -375,3 +375,22 @@ if __name__ == '__main__':
     # monitoring_hotel_list2detail()
     # monitoring_hotel_detail2ImgOrComment()
     monitoring_zombies_task()
+#     query_sql = '''SELECT
+#   source,
+#   id,
+#   city_id,
+#   imgurl,
+#   utime
+# FROM detail_attr_daodao_20170929a
+# WHERE source = 'daodao' AND id IN ('1407969',
+#                                    '2349919',
+#                                    '311968',
+#                                    '311974',
+#                                    '317946',
+#                                    '4377562',
+#                                    '550339',
+#                                    '553566');'''
+#     task = execute_sql(query_sql)
+#     send_image_task(task,
+#                     'images_attr_daodao_20170929a',
+#                     11, is_poi_task=True)
