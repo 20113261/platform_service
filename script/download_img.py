@@ -83,12 +83,23 @@ def _download_pic():
     conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', charset='utf8',
                            db='ServicePlatform')
     cursor = conn.cursor()
-    cursor.execute('''SELECT
+    # 优先使用新任务
+    _res = cursor.execute('''SELECT
   id,
   city_id,
   poi_id,
   pic_name
-FROM pic_detect_task WHERE status=0 ORDER BY `city_grade`,`city_id`,`poi_id` LIMIT {};'''.format(MAX_PIC_PER_VIEW))
+FROM pic_detect_task_new WHERE status=0 ORDER BY `city_grade`,`city_id`,`poi_id` LIMIT {};'''.format(MAX_PIC_PER_VIEW))
+
+    if _res == 0:
+        # 新数据没有，则使用旧任务
+        cursor.execute('''SELECT
+          id,
+          city_id,
+          poi_id,
+          pic_name
+        FROM pic_detect_task WHERE status=0 ORDER BY `city_grade`,`city_id`,`poi_id` LIMIT {};'''.format(
+            MAX_PIC_PER_VIEW))
     start = time.time()
     _count = 0
 
