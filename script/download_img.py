@@ -28,12 +28,14 @@ MAX_PIC_PER_VIEW = 10000
 
 update_data_list = []
 task_data_list = []
+is_new_task = True
 
 
 @func_time_logger
 def insert_all_data():
     global update_data_list
     global task_data_list
+    global is_new_task
     # init insert conn and cursor
     task_conn = service_platform_pool.connection()
     task_cursor = task_conn.cursor()
@@ -42,7 +44,10 @@ def insert_all_data():
     data_cursor = data_conn.cursor()
 
     # update task table and insert data table
-    _res = task_cursor.executemany('''UPDATE pic_detect_task SET status=2 WHERE id=%s;''', update_data_list)
+    if is_new_task:
+        _res = task_cursor.executemany('''UPDATE pic_detect_task_new SET status=2 WHERE id=%s;''', update_data_list)
+    else:
+        _res = task_cursor.executemany('''UPDATE pic_detect_task SET status=2 WHERE id=%s;''', update_data_list)
     logger.debug("[update status finished][update task: {}]".format(_res))
     _res = data_cursor.executemany(
         '''INSERT IGNORE INTO PoiPictureInformation (city_id, poi_id, pic_name, is_scaned) VALUES (%s, %s, %s, 0); ''',
@@ -80,10 +85,12 @@ def download_and_prepare_data(file_name, parent_path, city_id, poi_id, task_id):
 def _download_pic():
     global update_data_list
     global task_data_list
+    global is_new_task
     conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', charset='utf8',
                            db='ServicePlatform')
     cursor = conn.cursor()
     # 优先使用新任务
+    is_new_task = True
     _res = cursor.execute('''SELECT
   id,
   city_id,
@@ -92,6 +99,7 @@ def _download_pic():
 FROM pic_detect_task_new WHERE status=0 ORDER BY `city_grade`,`city_id`,`poi_id` LIMIT {};'''.format(MAX_PIC_PER_VIEW))
 
     if _res == 0:
+        is_new_task = False
         # 新数据没有，则使用旧任务
         cursor.execute('''SELECT
           id,
