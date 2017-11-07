@@ -32,13 +32,8 @@ r = redis.Redis(host='10.10.180.145', db=2)
 
 
 @retry(times=3)
-def add_total(_source, _min_pixel, _task_name):
-    r.incr("total_{}_{}_{}".format(_task_name, _min_pixel, _source))
-
-
-@retry(times=3)
-def add_finished(_source, _min_pixel, _task_name):
-    r.incr("finished_{}_{}_{}".format(_task_name, _min_pixel, _source))
+def add_report(_source, _min_pixel, _task_name, report_key):
+    r.incr("{}_{}_{}_{}".format(report_key, _task_name, _min_pixel, _source))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='30/s')
@@ -113,8 +108,7 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str))
             max_size = size
             max_size_img = line['pic_md5']
 
-        # todo each source counter add 1
-        add_total(line['source'], min_pixels, task_name)
+        add_report(line['source'], min_pixels, task_name, "total")
         logger.debug("[total img][source: {}]".format(line['source']))
 
         # pHash filter
@@ -144,9 +138,8 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str))
     # 从 pHash 中获取最好的一张图片
     for key_p_hash, images in p_hash_dict.items():
         img = sorted(images, key=lambda x: x[1], reverse=True)
-        # todo each finished counter add 1
         for i in img:
-            add_finished(i[-1], min_pixels, task_name)
+            add_report(i[-1], min_pixels, task_name, "finished")
             logger.debug("[saved img][source: {}]".format(i[-1]))
         result.add(img[0][0])
 
@@ -184,7 +177,16 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str)
         if result:
             first_img = list(result)[0]
         else:
+            add_report("all", min_pixels, task_name, "all_filter")
             first_img = img_list = max_size_img
+
+    length = len(img_list.split('|'))
+    if 10 >= length > 0:
+        add_report("all", min_pixels, task_name, "0_10")
+    elif 30 >= length > 10:
+        add_report("all", min_pixels, task_name, "10_30")
+    elif length > 30:
+        add_report("all", min_pixels, task_name, "30_max")
 
     update_img(uid, first_img, img_list)
 
