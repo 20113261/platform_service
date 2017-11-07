@@ -33,7 +33,7 @@ r = redis.Redis(host='10.10.180.145', db=2)
 
 @retry(times=3)
 def add_report(_source, _min_pixel, _task_name, report_key):
-    r.incr("{}_{}_{}_{}".format(report_key, _task_name, _min_pixel, _source))
+    r.incr("{}|_|{}|_|{}|_|{}".format(report_key, _task_name, _min_pixel, _source))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='60/s')
