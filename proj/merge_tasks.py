@@ -39,7 +39,12 @@ def add_report(_source, _min_pixel, _task_name, report_key):
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='30/s')
 def hotel_img_merge(self, uid, min_pixels=200000, **kwargs):
     task_name = kwargs['task_name']
-    return _hotel_img_merge(uid, min_pixels, task_name)
+    res = _hotel_img_merge(uid, min_pixels, task_name)
+    task_response = kwargs['task_response']
+    task_response.source = 'Hotel'
+    task_response.type = 'HotelImgMerge'
+    task_response.error_code = 0
+    return res
 
 
 @func_time_logger
