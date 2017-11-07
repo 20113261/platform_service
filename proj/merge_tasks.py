@@ -36,7 +36,7 @@ def add_report(_source, _min_pixel, _task_name, report_key):
     r.incr("{}_{}_{}_{}".format(report_key, _task_name, _min_pixel, _source))
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='30/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='60/s')
 def hotel_img_merge(self, uid, min_pixels=200000, **kwargs):
     task_name = kwargs['task_name']
     res = _hotel_img_merge(uid, min_pixels, task_name)
