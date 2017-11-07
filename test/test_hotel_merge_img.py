@@ -11,7 +11,8 @@ from proj.my_lib.BaseTask import TaskResponse
 if __name__ == '__main__':
     hotel_img_merge(
         **{
-            'uid': 'ht20076715',
+            'uid': 'ht21794341',
             'min_pixels': '200000',
+            "task_name": "test_task",
             "task_response": TaskResponse()
         })

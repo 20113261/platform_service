@@ -28,12 +28,23 @@ first_img_priority = {
     'elong': 5
 }
 
-r = redis.Redis(host='10.10.180.145', db=1)
+r = redis.Redis(host='10.10.180.145', db=2)
+
+
+@retry(times=3)
+def add_total(_source, _min_pixel, _task_name):
+    r.incr("total_{}_{}_{}".format(_task_name, _min_pixel, _source))
+
+
+@retry(times=3)
+def add_finished(_source, _min_pixel, _task_name):
+    r.incr("finished_{}_{}_{}".format(_task_name, _min_pixel, _source))
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='30/s')
 def hotel_img_merge(self, uid, min_pixels=200000, **kwargs):
-    return _hotel_img_merge(uid, min_pixels)
+    task_name = kwargs['task_name']
+    return _hotel_img_merge(uid, min_pixels, task_name)
 
 
 @func_time_logger
@@ -53,7 +64,7 @@ WHERE uid = %s;'''
 
 @func_time_logger
 @retry(times=3, raise_exc=True)
-def _hotel_img_merge(uid, min_pixels):
+def _hotel_img_merge(uid, min_pixels, task_name=None):
     min_pixels = int(min_pixels)
     # get source sid
     conn = spider_data_base_data_pool.connection()
@@ -90,6 +101,9 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str))
         if r.get('error_img_{}'.format(line['pic_md5'])) == '1':
             continue
 
+        if not line['size']:
+            continue
+
         # get max size
         h, w = literal_eval(line['size'])
         h = int(h)
@@ -100,6 +114,7 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str))
             max_size_img = line['pic_md5']
 
         # todo each source counter add 1
+        add_total(line['source'], min_pixels, task_name)
         logger.debug("[total img][source: {}]".format(line['source']))
 
         # pHash filter
@@ -131,6 +146,7 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str))
         img = sorted(images, key=lambda x: x[1], reverse=True)
         # todo each finished counter add 1
         for i in img:
+            add_finished(i[-1], min_pixels, task_name)
             logger.debug("[saved img][source: {}]".format(i[-1]))
         result.add(img[0][0])
 
