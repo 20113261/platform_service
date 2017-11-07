@@ -57,6 +57,7 @@ TASK_CONF = {
     'poi_list': (36000, 40000, 10),
     'supplement_field': (9000, 40000, 10),
     'google_api': (9000, 40000, 10),
+    'merge_task': (10000, 40000, 11)
 }
 
 MAX_RETRY_TIMES_CONF = {
