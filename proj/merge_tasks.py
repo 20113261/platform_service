@@ -37,9 +37,9 @@ def add_report(_source, _min_pixel, _task_name, report_key):
 
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='60/s')
-def hotel_img_merge(self, uid, min_pixels=200000, **kwargs):
+def hotel_img_merge(self, uid, min_pixels=200000, target_table='hotel', **kwargs):
     task_name = kwargs['task_name']
-    res = _hotel_img_merge(uid, min_pixels, task_name)
+    res = _hotel_img_merge(uid, min_pixels, task_name, target_table=target_table)
     task_response = kwargs['task_response']
     task_response.source = 'Hotel'
     task_response.type = 'HotelImgMerge'
@@ -49,12 +49,12 @@ def hotel_img_merge(self, uid, min_pixels=200000, **kwargs):
 
 @func_time_logger
 @retry(times=3, raise_exc=True)
-def update_img(uid, first_img, img_list):
+def update_img(uid, first_img, img_list, target_table):
     conn = spider_data_base_data_pool.connection()
     cursor = conn.cursor()
-    _sql = '''UPDATE hotel
+    _sql = '''UPDATE {}
 SET first_img = %s, img_list = %s
-WHERE uid = %s;'''
+WHERE uid = %s;'''.format(target_table)
     _res = cursor.execute(_sql, (first_img, img_list, uid))
     cursor.close()
     conn.close()
@@ -64,7 +64,7 @@ WHERE uid = %s;'''
 
 @func_time_logger
 @retry(times=3, raise_exc=True)
-def _hotel_img_merge(uid, min_pixels, task_name=None):
+def _hotel_img_merge(uid, min_pixels, task_name, target_table):
     min_pixels = int(min_pixels)
     # get source sid
     conn = spider_data_base_data_pool.connection()
@@ -196,6 +196,6 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str)
     elif length > 30:
         add_report("all", min_pixels, task_name, "30_max")
 
-    update_img(uid, first_img, img_list)
+    update_img(uid, first_img, img_list, target_table)
 
     return uid, first_img, img_list

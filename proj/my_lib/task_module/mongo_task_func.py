@@ -251,5 +251,5 @@ if __name__ == '__main__':
     # for each in get_task_total('poi_detail', used_times=6, limit=30000):
     #     print(each)
     # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
-    for line in get_task_total_simple('supplement_field', debug=True, limit=20):
+    for line in get_task_total_simple('merge_task', debug=True, limit=20):
         pass
