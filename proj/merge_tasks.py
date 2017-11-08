@@ -182,14 +182,17 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str)
         if result:
             first_img = list(result)[0]
         else:
-            add_report("all", min_pixels, task_name, "all_filter")
+            add_report("all", min_pixels, task_name, "all_failed")
             first_img = img_list = max_size_img
 
-    length = len(img_list.split('|'))
-    if 10 >= length > 0:
-        add_report("all", min_pixels, task_name, "0_10")
+    length = len(result)
+
+    if length == 0:
+        add_report("all", min_pixels, task_name, "0")
+    elif 10 >= length > 0:
+        add_report("all", min_pixels, task_name, "1_10")
     elif 30 >= length > 10:
-        add_report("all", min_pixels, task_name, "10_30")
+        add_report("all", min_pixels, task_name, "11_30")
     elif length > 30:
         add_report("all", min_pixels, task_name, "30_max")
 
