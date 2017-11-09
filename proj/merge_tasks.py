@@ -182,7 +182,8 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str)
         if result:
             first_img = list(result)[0]
         else:
-            add_report("all", min_pixels, task_name, "all_failed")
+            if max_size_img != '':
+                add_report("all", min_pixels, task_name, "all_failed")
             first_img = img_list = max_size_img
 
     length = len(result)
