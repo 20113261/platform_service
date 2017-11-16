@@ -10,3 +10,4 @@ from .QyerListSDK import QyerListSDK
 from .HotelImgMergeSDK import HotelImgMergeSDK
 from .HotelListSDK import HotelListSDK
 from .QyerDetailSDK import QyerDetailSDK
+from .PoiDetailSDK import PoiDetailSDK

@@ -39,3 +39,9 @@ def hotel_list_task(self, task, **kwargs):
 def qyer_detail_task(self, task, **kwargs):
     _sdk = QyerDetailSDK(task=task)
     return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
+def poi_detail_task(self, task, **kwargs):
+    _sdk = PoiDetailSDK(task=task)
+    return _sdk.execute()
