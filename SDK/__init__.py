@@ -6,8 +6,9 @@
 # @File    : __init__.py.py
 # @Software: PyCharm
 from .PoiListSDK import PoiListSDK
+from .PoiDetailSDK import PoiDetailSDK
 from .QyerListSDK import QyerListSDK
+from .QyerDetailSDK import QyerDetailSDK
 from .HotelImgMergeSDK import HotelImgMergeSDK
 from .HotelListSDK import HotelListSDK
-from .QyerDetailSDK import QyerDetailSDK
-from .PoiDetailSDK import PoiDetailSDK
+from .HotelDetailSDK import HotelDetailSDK

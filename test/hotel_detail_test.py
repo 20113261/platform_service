@@ -5,7 +5,8 @@
 # @Site    : 
 # @File    : hotel_detail_test.py
 # @Software: PyCharm
-from proj.hotel_tasks import hotel_base_data
+from proj.my_lib.Common.Task import Task
+from proj.total_tasks import hotel_detail_task
 
 if __name__ == '__main__':
     # hotel_base_data(source='booking',
@@ -34,13 +35,14 @@ if __name__ == '__main__':
     #                 retry_count=0,
     #                 max_retry_times=10)
 
-    hotel_base_data(source='hotels',
-                    url='https://zh.hotels.com/ho635577984/',
-                    part='detail_hotel_hotels_20170925d', other_info={
-            'source_id': '635577984',
-            'city_id': 'NULL'
-        },
-                    country_id='NULL',
-                    task_name='detail_hotel_hotels_20170925d',
-                    retry_count=0,
-                    max_retry_times=10)
+    task = Task(_worker='', _task_id='demo', _source='booking', _type='hotel',
+                _task_name='detail_hotel_hotels_20170925d',
+                _used_times=0, max_retry_times=10,
+                kwargs={'source': 'hotels',
+                        'url': 'https://zh.hotels.com/ho635577984/',
+                        'part': 'detail_hotel_hotels_20170925d',
+                        'source_id': '635577984',
+                        'city_id': 'NULL',
+                        'country_id': 'NULL'})
+
+    print(hotel_detail_task(task=task))
