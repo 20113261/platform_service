@@ -110,4 +110,4 @@ class PoiListSDK(BaseSDK):
         else:
             raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
 
-        return self.task.error_code,
+        return self.task.error_code, self.task.kwargs['url']

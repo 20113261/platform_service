@@ -5,14 +5,13 @@
 # @Site    : 
 # @File    : test_hotel_merge_img.py
 # @Software: PyCharm
-from proj.merge_tasks import hotel_img_merge
-from proj.my_lib.Common.TaskResponse import TaskResponse
+from proj.my_lib.Common.Task import Task
+from proj.total_tasks import hotel_img_merge_task
 
 if __name__ == '__main__':
-    hotel_img_merge(
-        **{
-            'uid': 'ht21794341',
-            'min_pixels': '200000',
-            "task_name": "test_task",
-            "task_response": TaskResponse()
-        })
+    task = Task(_worker='', _task_id='demo', _source='qyer', _type='poi_list', _task_name='test_task',
+                _used_times=0, max_retry_times=6,
+                kwargs={'uid': 'ht21794341',
+                        'min_pixels': '200000'})
+
+    hotel_img_merge_task(task=task)

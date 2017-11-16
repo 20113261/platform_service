@@ -3,19 +3,21 @@
 # @Time    : 2017/11/2 上午11:01
 # @Author  : Hou Rong
 # @Site    : 
-# @File    : merge_tasks.py
+# @File    : HotelImgMergeSDK.py
 # @Software: PyCharm
 import json
 import redis
 from ast import literal_eval
 
 from pymysql.cursors import DictCursor
-from mysql_pool import base_data_final_pool, spider_data_base_data_pool
+from proj.mysql_pool import base_data_final_pool, spider_data_base_data_pool
 from collections import defaultdict
 from proj.my_lib.Common.Utils import retry
-from .celery import app
+from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 from proj.my_lib.logger import get_logger, func_time_logger
+from proj.my_lib.Common.BaseSDK import BaseSDK
+from proj.my_lib.ServiceStandardError import ServiceStandardError
 
 logger = get_logger("hotel_img_merge")
 
@@ -34,17 +36,6 @@ r = redis.Redis(host='10.10.180.145', db=2)
 @retry(times=3)
 def add_report(_source, _min_pixel, _task_name, report_key):
     r.incr("{}|_|{}|_|{}|_|{}".format(report_key, _task_name, _min_pixel, _source))
-
-
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='60/s')
-def hotel_img_merge(self, uid, min_pixels=200000, target_table='hotel', **kwargs):
-    task_name = kwargs['task_name']
-    res = _hotel_img_merge(uid, min_pixels, task_name, target_table=target_table)
-    task_response = kwargs['task_response']
-    task_response.source = 'Hotel'
-    task_response.type = 'HotelImgMerge'
-    task_response.error_code = 0
-    return res
 
 
 @func_time_logger
@@ -200,3 +191,12 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str)
     update_img(uid, first_img, img_list, target_table)
 
     return uid, first_img, img_list
+
+
+class HotelImgMergeSDK(BaseSDK):
+    def _execute(self, **kwargs):
+        res = _hotel_img_merge(self.task.kwargs['uid'], self.task.kwargs.get('min_pixels', '200000'),
+                               self.task.task_name,
+                               target_table=self.task.kwargs.get('target_table', 'hotel'))
+        self.task.error_code = 0
+        return res
