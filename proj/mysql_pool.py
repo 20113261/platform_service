@@ -24,6 +24,14 @@ db_config = dict(
 )
 service_platform_pool = init_pool(**db_config)
 
+db_config = dict(
+    user='mioji_admin',
+    password='mioji1109',
+    host='10.10.228.253',
+    database='BaseDataFinal'
+)
+base_data_final_pool = init_pool(**db_config)
+
 # mysql connect pool
 db_config = dict(
     user='mioji_admin',
@@ -32,3 +40,39 @@ db_config = dict(
     database='base_data'
 )
 base_data_pool = init_pool(**db_config)
+
+# spider db devdb pool
+db_config = dict(
+    user='writer',
+    password='miaoji1109',
+    host='10.10.154.38',
+    database='devdb'
+)
+spider_db_devdb_pool = init_pool(**db_config)
+
+# spider data poi pool
+db_config = dict(
+    user='mioji_admin',
+    password='mioji1109',
+    host='10.10.228.253',
+    database='poi'
+)
+spider_data_poi_pool = init_pool(**db_config)
+
+# test base data pool
+db_config = dict(
+    user='reader',
+    password='miaoji1109',
+    host='10.10.69.170',
+    database='base_data'
+)
+base_data_test_pool = init_pool(**db_config)
+
+# spider data base data
+db_config = dict(
+    user='mioji_admin',
+    password='mioji1109',
+    host='10.10.228.253',
+    database='base_data'
+)
+spider_data_base_data_pool = init_pool(**db_config)

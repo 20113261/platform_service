@@ -38,6 +38,7 @@ app = Celery('proj', include=['proj.tasks',
                               'proj.poi_list_task',
                               'proj.qyer_list_task',
                               'proj.supplement_mapinfo_task',
+                              'proj.merge_tasks',
                               ])
 app.config_from_object('proj.config')
 app.conf.update(
@@ -49,6 +50,7 @@ app.conf.update(
         Queue('poi_list', exchange=Exchange('poi_list', type='direct'), routing_key='poi_list'),
         Queue('google_api', exchange=Exchange('google_api', type='direct'), routing_key='google_api'),
         Queue('supplement_field', exchange=Exchange('supplement_field', type='direct'), routing_key='supplement_field'),
+        Queue('merge_task', exchange=Exchange('merge_task', type='direct'), routing_key='merge_task'),
     ),
 
 )

@@ -6,6 +6,7 @@ import random
 import time
 import traceback
 import pymysql
+import urlparse
 from StringIO import StringIO
 
 import MySQLdb
@@ -42,6 +43,10 @@ from .my_lib.get_rate_limit import get_rate_limit
 from .my_lib.Common.Browser import MySession
 from proj.my_lib.ks_upload_file_stream import upload_ks_file_stream
 from proj.my_lib.logger import func_time_logger
+from proj.my_lib.Common.img_hash import img_p_hash
+from proj.my_lib.ks_upload_file_stream import download_content
+from proj.mysql_pool import service_platform_pool, base_data_final_pool
+from proj.my_lib.Common.Utils import retry
 
 platforms.C_FORCE_ROOT = True
 
@@ -344,18 +349,20 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
                 os.makedirs(file_path)
             temp_file = file_path + '/' + file_name
 
+            # get img p hash
+            _p_hash = img_p_hash(StringIO(page.content))
+
             # save file stream
             r2 = True
-            s_f_stream = StringIO(page.content)
             if bucket_name != 'mioji-wanle':
-                r1 = upload_ks_file_stream(bucket_name, file_name, copy.deepcopy(s_f_stream),
-                                           page.headers['Content-Type'])
+                r1 = upload_ks_file_stream(bucket_name, file_name, StringIO(page.content),
+                                           page.headers['Content-Type'], hash_check=file_md5)
             else:
-                r1 = upload_ks_file_stream(bucket_name, 'huantaoyou/' + file_name, copy.deepcopy(s_f_stream),
-                                           page.headers['Content-Type'])
+                r1 = upload_ks_file_stream(bucket_name, 'huantaoyou/' + file_name, StringIO(page.content),
+                                           page.headers['Content-Type'], hash_check=file_md5)
             if bucket_name == 'mioji-attr':
-                r2 = upload_ks_file_stream('mioji-shop', file_name, copy.deepcopy(s_f_stream),
-                                           page.headers['Content-Type'])
+                r2 = upload_ks_file_stream('mioji-shop', file_name, StringIO(page.content),
+                                           page.headers['Content-Type'], hash_check=file_md5)
 
             if not (r1 and r2):
                 task_response.error_code = 108
@@ -383,6 +390,7 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
             use_flag,  # poi use , hotel flag
             file_md5,  # file_md5
             bucket_name,  # poi rest attr shop
+            json.dumps({"p_hash": _p_hash}),  # img phash for check duplicate
         )
 
         try:
@@ -416,6 +424,85 @@ def get_images(self, source, source_id, target_url, part, file_path, desc_path, 
         # raise Exception("Img Has Been Filtered")
 
     return flag, h, w, task_response.error_code, bucket_name, file_name, kwargs['task_name']
+
+
+@retry(times=4)
+def update_p_hash(_p_hash, _file_name, _type='hotel'):
+    conn = base_data_final_pool.connection()
+    cursor = conn.cursor()
+    if _type == 'hotel':
+        update_sql = '''UPDATE hotel_images
+SET info = %s
+WHERE pic_md5 = %s;'''
+    else:
+        update_sql = '''UPDATE poi_images
+SET info = %s
+WHERE file_name = %s;'''
+    cursor.execute(update_sql, (json.dumps({"p_hash": _p_hash}), _file_name))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+@retry(times=4)
+def insert_error_f_md5_file(file_name, error_md5, file_md5, img_type):
+    conn = service_platform_pool.connection()
+    cursor = conn.cursor()
+    if img_type == 'hotel':
+        insert_sql = '''INSERT IGNORE INTO error_f_md5_file (file_name, file_md5, error_md5) VALUES (%s, %s, %s);'''
+    else:
+        insert_sql = '''INSERT IGNORE INTO error_f_md5_file_poi (file_name, file_md5, error_md5) VALUES (%s, %s, %s);'''
+    cursor.execute(insert_sql, (file_name, file_md5, error_md5))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='30/s')
+def p_hash_calculate(self, source, _type, bucket_name, file_name, file_md5, **kwargs):
+    task_response = kwargs['task_response']
+    task_response.source = source.title()
+    task_response.type = 'PHashCalc'
+
+    content = download_content(bucket_name, file_name)
+    if content:
+        # get img content
+        _f_obj = StringIO(content)
+
+        # get img file md5
+        _checked_file_md5 = get_stream_md5(_f_obj)
+        if file_md5 != _checked_file_md5:
+            try:
+                insert_error_f_md5_file(file_name, _checked_file_md5, file_md5, _type)
+                task_response.error_code = 107
+                return file_name, _type, None
+            except Exception as exc:
+                task_response.error_code = 33
+                logger.exception(msg="[insert db error]", exc_info=exc)
+                raise exc
+
+        try:
+            _p_hash = img_p_hash(_f_obj)
+            if not _p_hash:
+                task_response.error_code = 22
+                return file_name, _type, None
+        except Exception as exc:
+            task_response.error_code = 22
+            logger.exception(msg="[get p hash error]", exc_info=exc)
+            raise exc
+
+        try:
+            update_p_hash(_p_hash, file_name, _type=_type)
+        except Exception as exc:
+            task_response.error_code = 33
+            logger.exception(msg="[insert db error]", exc_info=exc)
+            raise exc
+    else:
+        task_response.error_code = 22
+        raise Exception("Error")
+
+    task_response.error_code = 0
+    return file_name, _type, _p_hash
 
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')

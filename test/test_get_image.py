@@ -73,7 +73,7 @@ if __name__ == '__main__':
         **{
             'source': "huantaoyou",
             'new_part': "image_wanle_huantaoyou_20171023a",
-            'target_url': "http://img.huantaoyou.com/CT/AU/439/c3cf851ae0b246f7b8ba49fc08b8a2b7.png",
+            'target_url': "http://img.huantaoyou.com/PUB/TH/TH00194/IM_3469e694e140462c93829c3469a69084.png",
             'desc_path': "/data/nfs/image/img_wanle_huantaoyou_20171023a_filter",
             'is_poi_task': True,
             'source_id': "test",
@@ -83,3 +83,18 @@ if __name__ == '__main__':
             "task_response": TaskResponse()
         }
     )
+
+    # get_images(
+    #     **{
+    #         'source': "ctrip",
+    #         'new_part': "detail_hotel_ctrip_20170929a",
+    #         'target_url': "//dimg04.c-ctrip.com/images/220n0h0000008txhgD341_W_1600_1200_Q70.jpg",
+    #         'desc_path': "/data/nfs/image/img_hotel_ctrip_20170929a_filter",
+    #         'is_poi_task': False,
+    #         'source_id': "7491732",
+    #         'part': "20170929a",
+    #         'file_path': "/data/nfs/image/img_hotel_ctrip_20170929a",
+    #         "task_name": "images_hotel_ctrip_20170929a",
+    #         "task_response": TaskResponse()
+    #     }
+    # )

@@ -30,12 +30,12 @@ schedule = BlockingScheduler()
 import datetime
 
 # schedule.add_job(monitoring_supplement_field, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
-schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50),id='monitoring_hotel_list')
-schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/90', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=150), id='monitoring_hotel_detail')
-schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=25), id='monitoring_poi_list')
-schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/90', id='monitoring_poi_detail')
-schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=2), id='monitoring_qyer_detail')
-schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=7), id='monitoring_supplement_field')
+# schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50),id='monitoring_hotel_list')
+# schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/90', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=150), id='monitoring_hotel_detail')
+# schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=25), id='monitoring_poi_list')
+# schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/90', id='monitoring_poi_detail')
+# schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=2), id='monitoring_qyer_detail')
+# schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=7), id='monitoring_supplement_field')
 schedule.add_job(monitoring_zombies_task, 'cron', second='*/60', id='monitoring_zombies_task')
 
 # stream_handler = logging.StreamHandler()
@@ -57,13 +57,14 @@ TASK_CONF = {
     'poi_list': (36000, 40000, 10),
     'supplement_field': (9000, 40000, 10),
     'google_api': (9000, 40000, 10),
+    'merge_task': (10000, 40000, 11)
 }
 
 MAX_RETRY_TIMES_CONF = {
     'hotel_list_task': 10,
 }
 
-QUEUE_MAX_COUNT = 100000
+QUEUE_MAX_COUNT = 50000
 
 DEFAULT_MAX_RETRY_TIMES = 12
 
@@ -128,7 +129,8 @@ def mongo_task_watcher(*args):
     message_count = int(count)
     max_message_count = int(max_count)
     queue_min_task, insert_task_count, _time = TASK_CONF.get(queue_name, TASK_CONF['default'])
-    if message_count <= queue_min_task and max_message_count <= QUEUE_MAX_COUNT:
+    if message_count <= queue_min_task and max_message_count <= queue_min_task \
+            and message_count <= QUEUE_MAX_COUNT and max_message_count <= QUEUE_MAX_COUNT:
         logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
         insert_task(queue_name, insert_task_count)
     else:

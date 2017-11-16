@@ -160,8 +160,8 @@ def monitoring_hotel_list2detail():
 
             timestamp, priority, sequence = get_seek(table_name)
 
-            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-                                   collections.find({"task_name": table_name}).count(), sum_or_set=False)
+            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
@@ -230,8 +230,8 @@ def monitoring_poi_list2detail():
 
             timestamp, priority, sequence = get_seek(table_name)
 
-            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-                                   collections.find({"task_name": table_name}).count(), sum_or_set=False)
+            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
@@ -259,10 +259,14 @@ def monitoring_poi_detail2imgOrComment():
         for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
-            if tab_args[0] != 'detail': continue
-            if tab_args[1] not in ('rest', 'attr', 'shop'): continue
-            if tab_args[2] != POI_SOURCE: continue
-            if tab_args[3] == 'test': continue
+            if tab_args[0] != 'detail':
+                continue
+            if tab_args[1] not in ('rest', 'attr', 'shop', 'total'):
+                continue
+            if tab_args[2] != POI_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
 
@@ -300,8 +304,8 @@ def monitoring_qyer_list2detail():
 
             timestamp, priority, sequence = get_seek(table_name)
 
-            update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-                                   collections.find({"task_name": table_name}).count(), sum_or_set=False)
+            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
@@ -326,7 +330,7 @@ def monitoring_zombies_task():
         cursor = collections.find(
             {'running': 1, 'utime': {'$lt': datetime.datetime.now() - datetime.timedelta(hours=1)}}, {'_id': 1},
             hint=[('running', 1), ('utime', -1)]).limit(
-            5000)
+            10000)
         id_list = [id_dict['_id'] for id_dict in cursor]
         result = collections.update({
             '_id': {
@@ -334,8 +338,6 @@ def monitoring_zombies_task():
             }
         }, {
             '$set': {
-                'finished': 0,
-                'used_times': 0,
                 'running': 0
             }
         }, multi=True)
@@ -373,3 +375,22 @@ if __name__ == '__main__':
     # monitoring_hotel_list2detail()
     # monitoring_hotel_detail2ImgOrComment()
     monitoring_zombies_task()
+#     query_sql = '''SELECT
+#   source,
+#   id,
+#   city_id,
+#   imgurl,
+#   utime
+# FROM detail_attr_daodao_20170929a
+# WHERE source = 'daodao' AND id IN ('1407969',
+#                                    '2349919',
+#                                    '311968',
+#                                    '311974',
+#                                    '317946',
+#                                    '4377562',
+#                                    '550339',
+#                                    '553566');'''
+#     task = execute_sql(query_sql)
+#     send_image_task(task,
+#                     'images_attr_daodao_20170929a',
+#                     11, is_poi_task=True)

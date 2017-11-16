@@ -13,9 +13,14 @@ class TestBrowser(unittest.TestCase):
     def test_running(self):
         try:
             with MySession() as session:
-                session.get('http://www.baidu.com')
+                resp = session.get('http://www.baidu.com')
         except Exception:
             self.fail("Browser raised Exception")
+
+    def test_exc(self):
+        with self.assertRaises(Exception):
+            with MySession() as session:
+                session.get('https://www.google.com/generate_500')
 
 
 if __name__ == '__main__':

@@ -18,13 +18,18 @@ import requests
 import json
 import redis
 import datetime
+import functools
 # import eventlet.greenpool
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from proj.my_lib.logger import get_logger
 
+logger = get_logger("utils")
+
 ip_save_logger = get_logger("ip_save_logger")
 ip_saver_pool = redis.ConnectionPool(host='10.10.213.148', port=6379, db=0, max_connections=1)
+
+
 # ip_saver_thread_pool = eventlet.greenpool.GreenPool(size=10)
 
 
@@ -56,6 +61,26 @@ def all_chinese(str_or_unicode):
         string = str_or_unicode
 
     return all(map(lambda c: u'\u4e00' <= c <= u'\u9fff', string))
+
+
+def retry(times=3, raise_exc=True):
+    def wrapper(func):
+        @functools.wraps(func)
+        def f(*args, **kwargs):
+            _exc = None
+            for i in range(times):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as exc:
+                    _exc = exc
+                    logger.exception(msg="[retry exception][func: {}][count: {}]".format(func.__name__, i),
+                                     exc_info=exc)
+            if _exc and raise_exc:
+                raise _exc
+
+        return f
+
+    return wrapper
 
 
 def try3times(try_again_times=3, others_exptions=None, final_raise_exception=False):
@@ -139,17 +164,25 @@ class TestUtil(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    pass
     # print(get_md5('abc'))
     # print get_local_ip()
     # print(google_get_map_info('Plaza Soledad, 11, 06001 Badajoz, Spain'))
     # print(google_get_map_info('3355 Las Vegas Blvd S'))
     # unittest.main()
-    p_r_o_x_y = '10.10.233.246:38530'
-    proxies = {
-        'http': 'socks5://' + p_r_o_x_y,
-        'https': 'socks5://' + p_r_o_x_y
-    }
+    # p_r_o_x_y = '10.10.233.246:38530'
+    # proxies = {
+    #     'http': 'socks5://' + p_r_o_x_y,
+    #     'https': 'socks5://' + p_r_o_x_y
+    # }
     # print(get_out_ip_async(proxies))
     # while True:
     #     get_out_ip_async(proxies)
     #     time.sleep(1)
+    #
+    # @retry(times=5)
+    # def exc():
+    #     raise Exception()
+    #
+    # exc()
+    # print("Hello World")

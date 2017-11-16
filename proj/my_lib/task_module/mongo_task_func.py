@@ -47,7 +47,7 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     _id_list = []
     now = datetime.datetime.now()
     try:
-        for each_priority in range(10, MIN_PRIORITY, -1):
+        for each_priority in range(11, MIN_PRIORITY, -1):
             for each_used_times in range(0, used_times + 1):
                 cursor = collections.find(
                     {
@@ -204,7 +204,7 @@ def update_task(task_id, finish_code=0):
                 "finished": 1,
                 'running': 0
             }
-        })
+        }, multi=True)
     else:
         return collections.update({
             'task_token': task_id
@@ -212,7 +212,7 @@ def update_task(task_id, finish_code=0):
             '$set': {
                 'running': 0
             }
-        })
+        }, multi=True)
 
 
 @func_time_logger
@@ -251,5 +251,5 @@ if __name__ == '__main__':
     # for each in get_task_total('poi_detail', used_times=6, limit=30000):
     #     print(each)
     # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
-    for line in get_task_total_simple('supplement_field', debug=True, limit=20):
+    for line in get_task_total_simple('merge_task', debug=True, limit=20):
         pass

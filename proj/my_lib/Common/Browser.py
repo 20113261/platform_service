@@ -62,6 +62,23 @@ class MySession(requests.Session):
         if need_proxies:
             self.change_proxies()
 
+    def request(self, method, url,
+                params=None, data=None, headers=None, cookies=None, files=None,
+                auth=None, timeout=None, allow_redirects=True, proxies=None,
+                hooks=None, stream=None, verify=None, cert=None, json=None):
+        # 请求时对错误的信息进行修改
+
+        # 对 url 进行修改
+        l_url = list(urlparse.urlsplit(url))
+        if l_url[0] == '':
+            l_url[0] = 'http'
+            url = urlparse.urlunsplit(l_url)
+
+        return super(MySession, self).request(method, url,
+                                              params, data, headers, cookies, files,
+                                              auth, timeout, allow_redirects, proxies,
+                                              hooks, stream, verify, cert, json)
+
     def send(self, request, **kwargs):
         if self.auto_update_host:
             if 'Host' not in request.headers:
@@ -71,7 +88,19 @@ class MySession(requests.Session):
             error = None
             for i in range(4):
                 try:
-                    return super(MySession, self).send(request, **kwargs)
+                    pre_resp = super(MySession, self).send(request, **kwargs)
+                    pre_resp.raise_for_status()
+                    return pre_resp
+                except (
+                        requests.exceptions.Timeout,
+                        requests.exceptions.ProxyError,
+                        requests.exceptions.HTTPError,
+                        requests.exceptions.ConnectionError,
+                        requests.exceptions.RequestException
+                ):
+                    self.change_proxies()
+                    logger.exception(msg="[request retry][retry times: {}]".format(i + 1), exc_info=e)
+                    error = e
                 except Exception as e:
                     self.change_proxies()
                     logger.exception(msg="[request retry][retry times: {}]".format(i + 1), exc_info=e)
