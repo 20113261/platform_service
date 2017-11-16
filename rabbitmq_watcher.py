@@ -82,7 +82,7 @@ def insert_task(queue, limit):
             limit=limit,
             used_times=max_retry_times):
         _count += 1
-        
+
         # init new task
         task = Task(_worker=worker, _task_id=task_token, _source=_source, _type=_type, _task_name=task_name,
                     _used_times=used_times, max_retry_times=max_retry_times, kwargs=args)
