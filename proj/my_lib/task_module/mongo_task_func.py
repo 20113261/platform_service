@@ -100,7 +100,8 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
                                 logger.debug(i)
                             _id_list = []
                     _id_list.append(line['_id'])
-                    yield task_token, worker, queue, routing_key, line['args'], line['used_times'], line['task_name']
+                    yield task_token, worker, queue, routing_key, line['args'], line['used_times'], line['task_name'], \
+                                line['source'], line['type']
     except StopException:
         logger.debug("[end of search][queue: {}][num: {}]".format(queue, _total))
     finally:

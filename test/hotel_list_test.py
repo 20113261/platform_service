@@ -8,7 +8,7 @@
 from proj.celery import app
 
 from proj.hotel_list_task import hotel_list_task
-from proj.my_lib.BaseTask import TaskResponse
+from proj.my_lib.Common.TaskResponse import TaskResponse
 
 if __name__ == '__main__':
     # hotel_list_task('booking', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")

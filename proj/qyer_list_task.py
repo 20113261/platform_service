@@ -15,9 +15,10 @@ from proj.my_lib.BaseTask import BaseTask
 from mioji.common.utils import simple_get_socks_proxy
 from mioji import spider_factory
 from proj.mysql_pool import service_platform_pool
+from proj.my_lib.Common.BaseSDK import BaseSDK
+from proj.my_lib.ServiceStandardError import ServiceStandardError
 import mioji.common.logger
 import mioji.common.pool
-import mioji.common
 import mioji.common.pages_store
 from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 
@@ -49,59 +50,49 @@ def hotel_list_database(source, city_id, check_in, city_url, need_cache=True):
     return error_code, spider.result['list']
 
 
+class QyerListSDK(BaseSDK):
+    def _execute(self, **kwargs):
+        city_id = self.task.kwargs['city_id']
+        country_id = self.task.kwargs['country_id']
+        check_in = self.task.kwargs['check_in']
+        city_url = self.task.kwargs['city_url']
+
+        error_code, result = hotel_list_database(source=self.task.source, city_id=city_id,
+                                                 check_in=check_in,
+                                                 city_url=city_url,
+                                                 need_cache=self.task.used_times == 0)
+
+        self.task.error_code = error_code
+
+        sql = SQL.format(self.task.task_name)
+        data = []
+        for item in result:
+            for _type, urls in item.items():
+                for sid, url in urls:
+                    data.append(('qyer', sid, city_id, country_id, url))
+        try:
+            service_platform_conn = service_platform_pool.connection()
+            cursor = service_platform_conn.cursor()
+            cursor.executemany(sql, data)
+            service_platform_conn.commit()
+            cursor.close()
+            service_platform_conn.close()
+        except Exception as e:
+            raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
+
+        if len(data) > 0:
+            self.task.error_code = 0
+        else:
+            raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
+
+        return result, error_code
+
+
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
-def qyer_list_task(self, source, city_id, country_id, check_in, city_url='', **kwargs):
-    task_response = kwargs['task_response']
-    task_response.source = source.title()
-    task_response.type = 'QyerList'
-
-    retry_count = kwargs.get('retry_count', 0)
-    error_code, result = hotel_list_database(source=source, city_id=city_id, check_in=check_in, city_url=city_url,
-                                             need_cache=retry_count == 0)
-
-    task_response.error_code = error_code
-
-    sql = SQL.format(kwargs['task_name'])
-    datas = []
-    for item in result:
-        for typ, urls in item.items():
-            for sid, url in urls:
-                datas.append(('qyer', sid, city_id, country_id, url))
-                # if url.endswith('/'):
-                #     datas.append(('qyer', sid, city_id, country_id, url))
-                # else:
-                #     datas.append(('qyer', sid, city_id, country_id, url))
-
-    try:
-        service_platform_conn = service_platform_pool.connection()
-        cursor = service_platform_conn.cursor()
-        cursor.executemany(sql, datas)
-        service_platform_conn.commit()
-        cursor.close()
-        service_platform_conn.close()
-    except Exception as e:
-        task_response.error_code = 33
-        raise e
-
-    # 由于错误都是 raise 的，
-    # 所以当出现此种情况是，return 的内容均为正确内容
-    # 对于抓取平台来讲，当出现此中情况时，数据均应该入库
-    # 用 res_data 判断，修改 self.error_code 的值
-    if len(datas) > 0:
-        task_response.error_code = 0
-    else:
-        task_response.error_code = 29
-
-    return result, error_code
+def qyer_list_task(self, task, **kwargs):
+    qyer_list_sdk = QyerListSDK(task=task)
+    qyer_list_sdk.execute()
 
 
 if __name__ == '__main__':
-    print qyer_list_task('booking', '51211', '20170801')
-
-    {
-        'source': '',
-        'city_id': '',
-        'country_id': '',
-        'check_in': '',
-        'city_url': '',
-    }
+    print(qyer_list_task('booking', '51211', '20170801'))

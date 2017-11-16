@@ -23,6 +23,7 @@ ps -aux|grep "celery worker"|grep -v grep|awk '{print $2}'|xargs -I each_pid kil
 
 # test socks5 proxy
 curl --socks5 10.10.233.246:36347 http://www.baidu.com
+curl --socks5 10.10.233.246:36347 https://s3.amazonaws.com/expedia-static-feed/United+States+(.com)_Merchant_All.csv.gz
 
 # install centos environment
 pssh -h new_hosts.txt -i 'yum install -y curl-devel gpgme-devel python-devel'

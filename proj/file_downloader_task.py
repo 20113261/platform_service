@@ -69,8 +69,9 @@ def file_downloader(self, url, file_type, file_path, need_filter=False, file_spl
     :param kwargs:
     :return:
     """
-    self.task_source = 'Any'
-    self.task_type = 'FileDownload'
+    task_response = kwargs['task_response']
+    task_response.source = 'Any'
+    task_response.type = 'FileDownload'
     # print '+++++++++++++++++++++++++++++++++++\n', url, '\n+++++++++++++++++++++++++++++++++++'
     with MySession() as session:
         # 将去重放在 Task 中完成，本部分不做去重处理

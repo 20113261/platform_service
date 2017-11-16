@@ -1,14 +1,14 @@
 # coding=utf-8
-import redis
 import time
 import types
+import redis
+from celery.signals import task_prerun
 from celery.task import Task
 from logger import get_logger
-
+from proj.my_lib.Common.TaskResponse import TaskResponse
 from proj.my_lib.Common.Utils import get_local_ip
 from proj.my_lib.task_module.mongo_task_func import update_task as mongo_update_task
 from proj.my_lib.task_module.routine_task_func import insert_failed_task as mongo_insert_failed_task
-from celery.signals import task_prerun
 
 logger = get_logger('BaseTask')
 
@@ -133,12 +133,6 @@ def check_error_code(error_code, retry_count, task_tag, task_source, report_type
 def task_sent_handler(task_id, task, *args, **kwargs):
     kw = kwargs['kwargs']
     kw['task_response'] = TaskResponse()
-
-
-class TaskResponse(object):
-    source = ''
-    type = ''
-    error_code = 103
 
 
 class BaseTask(Task):

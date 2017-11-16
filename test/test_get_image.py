@@ -6,7 +6,7 @@
 # @File    : test_get_image.py
 # @Software: PyCharm
 from proj.tasks import get_images
-from proj.my_lib.BaseTask import TaskResponse
+from proj.my_lib.Common.TaskResponse import TaskResponse
 
 if __name__ == '__main__':
     # get_images(

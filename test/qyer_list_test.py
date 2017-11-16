@@ -5,13 +5,12 @@
 # @Site    : 
 # @File    : qyer_list_test.py
 # @Software: PyCharm
+from proj.my_lib.Common.Task import Task
 from proj.qyer_list_task import qyer_list_task
-from proj.my_lib.BaseTask import TaskResponse
 
 if __name__ == '__main__':
-    # task.content = 'http://place.qyer.com/asilah/'
-    # qyer_list_task('qyer', '10001', '101', '20170925', city_url='http://place.qyer.com/bangkok/',
-    # task_name='list_qyer_total_test')
-
-    qyer_list_task('qyer', 'test', 'test', '20170925', city_url='http://place.qyer.com/st-augustine/',
-                   task_name='list_qyer_total_test', task_response=TaskResponse)
+    task = Task(_worker='', _task_id='demo', _source='qyer', _type='poi_list', _task_name='list_qyer_total_test',
+                _used_times=0, max_retry_times=6,
+                kwargs={'city_id': 'test', 'country_id': 'test', 'check_in': '20170925',
+                        'city_url': 'http://place.qyer.com/st-augustine/'})
+    qyer_list_task(task=task)

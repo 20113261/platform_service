@@ -6,7 +6,7 @@
 # @File    : poi_detail_test.py
 # @Software: PyCharm
 from proj.poi_task import get_lost_poi
-from proj.my_lib.BaseTask import TaskResponse
+from proj.my_lib.Common.TaskResponse import TaskResponse
 
 if __name__ == '__main__':
     res = [

@@ -21,6 +21,7 @@ from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail, \
     monitoring_supplement_field, monitoring_zombies_task
 from proj.config import BROKER_URL
+from proj.my_lib.Common.Task import Task
 
 host, v_host = re.findall("amqp://.+?@(.+?)/(.+)", BROKER_URL)[0]
 TARGET_URL = 'http://{0}:15672/api/queues/{1}'.format(host, v_host)
@@ -76,43 +77,24 @@ def get_max_retry_times(queue_name):
 def insert_task(queue, limit):
     _count = 0
     max_retry_times = get_max_retry_times(queue_name=queue)
-    for task_token, worker, queue, routing_key, args, used_times, task_name in get_task_total_simple(queue=queue,
-                                                                                                     limit=limit,
-                                                                                                     used_times=max_retry_times):
+    for task_token, worker, queue, routing_key, args, used_times, task_name, _source, _type in get_task_total_simple(
+            queue=queue,
+            limit=limit,
+            used_times=max_retry_times):
+
         _count += 1
-        kwargs = {
-            'mongo_task_id': task_token,
-            'retry_count': used_times,
-            'max_retry_times': max_retry_times,
-            'task_name': task_name
-        }
-        kwargs.update(args)
+        # init new task
+        task = Task(_worker=worker, _task_id=task_token, _source=_source, _type=_type, _task_name=task_name,
+                    _used_times=used_times, max_retry_times=max_retry_times, kwargs=args)
+
         app.send_task(
             worker,
             task_id=task_token,
-            kwargs=kwargs,
+            kwargs={'task': task},
             queue=queue,
             routing_key=routing_key
         )
-    emergency_count = _count
-    logger.info("Insert queue: {0} Emergency task count: {1}".format(queue, _count))
-
-    # for task_token, worker, queue, routing_key, args in get_routine_task_total(queue=queue, limit=limit - _count):
-    #     _count += 1
-    #     kwargs = {
-    #         'mongo_task_id': task_token
-    #     }
-    #     kwargs.update(args)
-    #     app.send_task(
-    #         worker,
-    #         task_id=task_token,
-    #         kwargs=kwargs,
-    #         queue=queue,
-    #         routing_key=routing_key
-    #     )
-    #
-    # logger.info("Insert queue: {0} Routine task count: {1}".format(queue, _count - emergency_count))
-    logger.info("Insert queue: {0} Total task count: {1}".format(queue, _count))
+    logger.info("Insert queue: {0} task count: {1}".format(queue, _count))
 
 
 def mongo_task_watcher(*args):
@@ -143,6 +125,3 @@ for queue_name, (_min, _max, seconds) in TASK_CONF.items():
 
 if __name__ == '__main__':
     schedule.start()
-    # insert_task('hotel_detail', 10000)
-    # mongo_task_watcher()
-    # insert_task('hotel_task', 100)

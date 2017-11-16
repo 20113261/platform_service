@@ -6,7 +6,7 @@
 # @File    : test_p_hash_calc.py
 # @Software: PyCharm
 from proj.tasks import p_hash_calculate
-from proj.my_lib.BaseTask import TaskResponse
+from proj.my_lib.Common.TaskResponse import TaskResponse
 
 if __name__ == '__main__':
     # source, bucket_name, file_name, file_md5,

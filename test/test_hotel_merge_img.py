@@ -6,7 +6,7 @@
 # @File    : test_hotel_merge_img.py
 # @Software: PyCharm
 from proj.merge_tasks import hotel_img_merge
-from proj.my_lib.BaseTask import TaskResponse
+from proj.my_lib.Common.TaskResponse import TaskResponse
 
 if __name__ == '__main__':
     hotel_img_merge(

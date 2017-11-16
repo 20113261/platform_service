@@ -9,6 +9,40 @@ import unittest
 
 
 class ServiceStandardError(Exception):
+    TASK_ERROR = 12
+    PROXY_NONE = 21
+    PROXY_INVALID = 22
+    PROXY_FORBIDDEN = 23
+    REQ_ERROR = 2
+    DATA_FORMAT_ERROR = 3
+
+    PARSE_ERROR = 27
+    DATA_NONE = 24
+    UNKNOWN_ERROR = 25
+    EMPTY_TICKET = 29
+
+    STORAGE_ERROR = 31
+    STORAGE_UNKNOWN_ERROR = 32
+    RABBITMQ_ERROR = 33
+    MYSQL_ERROR = 34
+    RABBITMQ_MYSQL_ERROR = 35
+
+    FLIP_WARRING = 36
+
+    API_ERROR = 89
+    API_NOT_ALLOWED = 90
+    API_EMPTY_DATA = 92
+
+    KEY_WORDS_FILTER = 102
+    PAGE_SAVE_ERROR = 104
+
+    IMG_INCOMPLETE = 105
+    IMG_TOO_LARGE = 106
+    IMG_SIZE_FILTER = 107
+    IMG_UPLOAD_ERROR = 108
+
+    TARGET_CLOSED = 109
+
     def __init__(self, error_code=103, msg="未返回错误码", *args, **kwargs):
         self.error_code = error_code
         self.msg = msg
