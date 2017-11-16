@@ -6,26 +6,23 @@
 # @File    : celery_init_task_new.py
 # @Software: PyCharm
 from proj.celery import app
-from proj.hotel_tasks import hotel_base_data
+from proj.daodao_img_rename_tasks import daodao_img_rename_task
+from proj.hotel_static_tasks import hotel_static_base_data
+from proj.hotel_tax_task import hotel_tax_list_task, hotel_tax_detail
 from proj.my_lib.task_module.task_func import get_task_total
+from proj.poi_nearby_city_task import poi_nearby_city_task
 from proj.poi_pic_spider_tasks import google_spider, shutter_spider, flickr_spider
 from proj.qyer_city_query_task import qyer_city_query_task
 from proj.qyer_city_spider import qyer_country_spider
-from proj.suggestion_task import ctrip_suggestion_task
+from proj.qyer_poi_tasks import qyer_poi_task
+from proj.tasks import craw_html
 from proj.tasks import get_comment
+from proj.tasks import get_daodao_image_url
+from proj.tasks import get_hotel_images_info
 from proj.tasks import get_images
+from proj.tasks import get_lost_attr, get_lost_rest_new, get_lost_shop
 from proj.tasks import venere_comment, booking_comment, expedia_comment
 from proj.tripadvisor_city_query_task import tripadvisor_city_query_task
-from proj.hotel_list_task import hotel_list_task
-from proj.tasks import craw_html
-from proj.qyer_poi_tasks import qyer_poi_task
-from proj.tasks import get_lost_attr, get_lost_rest_new, get_lost_shop
-from proj.tasks import get_hotel_images_info
-from proj.poi_nearby_city_task import poi_nearby_city_task
-from proj.tasks import get_daodao_image_url
-from proj.daodao_img_rename_tasks import daodao_img_rename_task
-from proj.hotel_tax_task import hotel_tax_list_task, hotel_tax_detail
-from proj.hotel_static_tasks import hotel_static_base_data
 
 
 def add_target(task_url, miaoji_id, special_str, **kwargs):

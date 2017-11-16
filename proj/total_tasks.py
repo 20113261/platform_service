@@ -6,9 +6,7 @@
 # @File    : total_tasks.py
 # @Software: PyCharm
 from __future__ import absolute_import
-from SDK.PoiListSDK import PoiListSDK
-from SDK.QyerListSDK import QyerListSDK
-from SDK.HotelImgMergeSDK import HotelImgMergeSDK
+from SDK import *
 from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 
@@ -28,4 +26,10 @@ def poi_list_task(self, task, **kwargs):
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='60/s')
 def hotel_img_merge_task(self, task, **kwargs):
     _sdk = HotelImgMergeSDK(task=task)
+    return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='8/s')
+def hotel_list_task(self, task, **kwargs):
+    _sdk = HotelListSDK(task=task)
     return _sdk.execute()

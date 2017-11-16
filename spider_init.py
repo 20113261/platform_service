@@ -1096,7 +1096,7 @@ if __name__ == '__main__':
     #         poi_nearby_city_task.delay(poi_id=mid, poi_city_id=m_city_id, poi_map_info=map_info, task_id='abcd')
     #         _count += 1
     # print _count
-    from proj.hotel_list_task import hotel_list_database, hotel_list_task
+    pass
 
     # res = hotel_list_database('agoda', '10262')
     # print res

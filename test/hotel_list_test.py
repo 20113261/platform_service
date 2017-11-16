@@ -5,10 +5,8 @@
 # @Site    : 
 # @File    : hotel_list_test.py
 # @Software: PyCharm
-from proj.celery import app
-
-from proj.hotel_list_task import hotel_list_task
-from proj.my_lib.Common.TaskResponse import TaskResponse
+from proj.my_lib.Common.Task import Task
+from proj.total_tasks import hotel_list_task
 
 if __name__ == '__main__':
     # hotel_list_task('booking', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
@@ -154,18 +152,16 @@ if __name__ == '__main__':
     #     retry_count=2,
     #     max_retry_times=6
     # ))
+    task = Task(_worker='', _task_id='demo', _source='booking', _type='hotel_list',
+                _task_name='list_hotel_booking_20170929a',
+                _used_times=0, max_retry_times=6,
+                kwargs={'source': 'booking',
+                        'city_id': 'NULL',
+                        'country_id': '205',
+                        'check_in': '20171128',
+                        'part': '20170929a',
+                        'is_new_type': 1,
+                        'suggest_type': 1,
+                        'suggest': '''https://www.booking.com/searchresults.zh-cn.html?label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985:pl:ta:p1:p2:ac:ap1t1:neg:fi:tikwd-11455299683:lp9061505:li:dec:dm&sid=2fabc4030e6b847b9ef3b059e24c6b83&aid=376390&error_url=http://www.booking.com/index.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=8ba5e9abe3eb9fcadf8e837d4d5a2464;sb_price_type=total&;&ss=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne_untouched=%E9%A9%AC%E8%90%A8%E5%A5%A5&dest_id=900048165&dest_type=city&checkin_year=&checkin_month=&checkin_monthday=&checkout_year=&checkout_month=&checkout_monthday=&no_rooms=&group_adults=&group_children=0&from_sf=1ss=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne_untouched=%E9%A9%AC%E8%90%A8%E5%A5%A5&dest_id=900048165&dest_type=city&checkin_year=&checkin_month=&checkin_monthday=&checkout_year=&checkout_month=&checkout_monthday=&no_rooms=&group_adults=&group_children=0&from_sf=1''', })
 
-    print(hotel_list_task(
-        source='booking',
-        city_id='NULL',
-        country_id='205',
-        check_in='20171128',
-        part='20170929a',
-        is_new_type=1,
-        suggest_type=1,
-        suggest='''https://www.booking.com/searchresults.zh-cn.html?label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985:pl:ta:p1:p2:ac:ap1t1:neg:fi:tikwd-11455299683:lp9061505:li:dec:dm&sid=2fabc4030e6b847b9ef3b059e24c6b83&aid=376390&error_url=http://www.booking.com/index.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=8ba5e9abe3eb9fcadf8e837d4d5a2464;sb_price_type=total&;&ss=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne_untouched=%E9%A9%AC%E8%90%A8%E5%A5%A5&dest_id=900048165&dest_type=city&checkin_year=&checkin_month=&checkin_monthday=&checkout_year=&checkout_month=&checkout_monthday=&no_rooms=&group_adults=&group_children=0&from_sf=1ss=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne_untouched=%E9%A9%AC%E8%90%A8%E5%A5%A5&dest_id=900048165&dest_type=city&checkin_year=&checkin_month=&checkin_monthday=&checkout_year=&checkout_month=&checkout_monthday=&no_rooms=&group_adults=&group_children=0&from_sf=1''',
-        task_name="list_hotel_booking_20170929a",
-        retry_count=2,
-        max_retry_times=6,
-        task_response=TaskResponse()
-    ))
+    print(hotel_list_task(task=task))

@@ -1,15 +1,3 @@
-import proj.tasks
-import proj.hotel_tasks
-import proj.poi_pic_spider_tasks
-import proj.qyer_city_spider
-import proj.qyer_poi_tasks
-import proj.tripadvisor_city_query_task
-import proj.qyer_city_query_task
-import proj.tripadvisor_city
-import proj.hotel_list_task
-import proj.qyer_attr_task
-import proj.poi_nearby_city_task
-import proj.daodao_img_rename_tasks
 from proj.celery import app
 
 includes = ['proj.tasks',
