@@ -105,6 +105,10 @@ class BaseSDK(object):
             self.__task_report()
         except ServiceStandardError as exc:
             self.logger.exception(msg="[raise ServiceStandardError]", exc_info=exc)
+            # 如果其中有 wrapped exception 打印
+            wrapped_exception = getattr(exc, 'wrapped_exception', None)
+            if wrapped_exception:
+                logging.exception(msg="[wrapped exception]", exc_info=wrapped_exception)
             # 更新任务中的错误码
             self.task.error_code = exc.error_code
             # 返回任务状态统计

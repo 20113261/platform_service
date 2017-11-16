@@ -51,3 +51,9 @@ def poi_detail_task(self, task, **kwargs):
 def hotel_detail_task(self, task, **kwargs):
     _sdk = HotelDetailSDK(task=task)
     return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='13/s')
+def images_task(self, task, **kwargs):
+    _sdk = ImagesSDK(task=task)
+    return _sdk.execute()

@@ -1,4 +1,4 @@
-from proj.total_tasks import qyer_poi_task
+from proj.total_tasks import qyer_poi_task, get_images
 from proj.celery import app
 from proj.daodao_img_rename_tasks import daodao_img_rename_task
 from proj.hotel_static_tasks import hotel_static_base_data
@@ -12,7 +12,6 @@ from proj.tasks import craw_html
 from proj.tasks import get_comment
 from proj.tasks import get_daodao_image_url
 from proj.tasks import get_hotel_images_info
-from proj.tasks import get_images
 from proj.tasks import get_lost_attr, get_lost_rest_new, get_lost_shop
 from proj.tasks import venere_comment, booking_comment, expedia_comment
 from proj.tripadvisor_city_query_task import tripadvisor_city_query_task

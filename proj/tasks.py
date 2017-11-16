@@ -2,51 +2,45 @@
 from __future__ import absolute_import
 
 import json
+import os
 import random
+import re
 import time
 import traceback
-import pymysql
-import urlparse
 from StringIO import StringIO
 
 import MySQLdb
 import db_localhost
-import os
-import re
+import pymysql
 import requests
-import copy
-from celery.utils.log import logger
 from celery import platforms
-from celery.exceptions import MaxRetriesExceededError
+from celery.utils.log import logger
 from common.common import get_proxy, update_proxy, save_image
 from lxml import html
 from pyquery import PyQuery
 from util.UserAgent import GetUserAgent
-from sqlalchemy import exc
 
+from proj.my_lib.Common.Utils import retry
+from proj.my_lib.Common.img_hash import img_p_hash
 from proj.my_lib.PageSaver import save_task_and_page_content
+from proj.my_lib.ks_upload_file_stream import download_content
+from proj.mysql_pool import service_platform_pool, base_data_final_pool
 from .celery import app
+from .my_lib.BaseTask import BaseTask
+from .my_lib.Common.Browser import MySession
 from .my_lib.attr_parser import insert_db as attr_insert_db
 from .my_lib.attr_parser import parse as attr_parser
+from .my_lib.get_rate_limit import get_rate_limit
 from .my_lib.hotel_comment.booking import parser as booking_comment_parser
 from .my_lib.hotel_comment.expedia import parser as expedia_comment_parser
 from .my_lib.hotel_comment.venere import parser as venere_comment_parser
 from .my_lib.is_complete_scale_ok import is_complete_scale_ok
-from .my_lib.rest_parser import parse as rest_parser
 from .my_lib.rest_parser import insert_db as rest_insert_db
-from .my_lib.shop_parser import parse as shop_parser
+from .my_lib.rest_parser import parse as rest_parser
 from .my_lib.shop_parser import insert_db as shop_insert_db
-from .my_lib.tp_comment_parser import parse, long_comment_parse, insert_db
-from .my_lib.BaseTask import BaseTask
+from .my_lib.shop_parser import parse as shop_parser
 from .my_lib.task_module.task_func import get_task_id, update_task, insert_task
-from .my_lib.get_rate_limit import get_rate_limit
-from .my_lib.Common.Browser import MySession
-from proj.my_lib.ks_upload_file_stream import upload_ks_file_stream
-from proj.my_lib.logger import func_time_logger
-from proj.my_lib.Common.img_hash import img_p_hash
-from proj.my_lib.ks_upload_file_stream import download_content
-from proj.mysql_pool import service_platform_pool, base_data_final_pool
-from proj.my_lib.Common.Utils import retry
+from .my_lib.tp_comment_parser import parse, long_comment_parse, insert_db
 
 platforms.C_FORCE_ROOT = True
 
@@ -291,139 +285,6 @@ def get_lost_rest_no_proxy(self, target_url):
         return result
     except Exception as exc:
         self.retry(exc=traceback.format_exc(exc))
-
-
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='13/s')
-def get_images(self, source, source_id, target_url, part, file_path, desc_path, is_poi_task=True, need_insert_db=True,
-               special_file_name='', **kwargs):
-    task_response = kwargs['task_response']
-    task_response.source = source.title()
-    task_response.type = 'DownloadImages'
-
-    flag = None
-    h = None
-    w = None
-
-    file_name = ''
-
-    if not is_poi_task:
-        bucket_name = 'mioji-hotel'
-    elif 'attr' in desc_path:
-        bucket_name = 'mioji-attr'
-    elif 'rest' in desc_path:
-        bucket_name = 'mioji-rest'
-    elif 'wanle' in desc_path:
-        bucket_name = 'mioji-wanle'
-    else:
-        raise TypeError("Unknown Bucket Name: {}".format(desc_path))
-
-    with MySession(need_cache=True) as session:
-        @func_time_logger
-        def img_file_get():
-            _page = session.get(target_url, timeout=(1200, None))
-            return _page
-
-        page = img_file_get()
-
-        f_stream = StringIO(page.content)
-
-        if f_stream.len > 10485760:
-            # 大于 10MB 的图片信息不入库
-            task_response.error_code = 106
-            raise Exception('Too Large')
-
-        file_md5 = get_stream_md5(f_stream)
-        flag, h, w = is_complete_scale_ok(f_stream)
-
-        try:
-            suffix = target_url.rsplit('.', 1)[1]
-        except IndexError as e:
-            suffix = page.headers['Content-Type'].split('/')[1]
-        file_name = hashlib.md5(target_url).hexdigest() + '.' + suffix
-
-        if flag in [1, 2]:
-            task_response.error_code = 105
-            raise Exception("Image Error with Proxy " + session.p_r_o_x_y)
-        else:
-            if not os.path.exists(file_path):
-                os.makedirs(file_path)
-            temp_file = file_path + '/' + file_name
-
-            # get img p hash
-            _p_hash = img_p_hash(StringIO(page.content))
-
-            # save file stream
-            r2 = True
-            if bucket_name != 'mioji-wanle':
-                r1 = upload_ks_file_stream(bucket_name, file_name, StringIO(page.content),
-                                           page.headers['Content-Type'], hash_check=file_md5)
-            else:
-                r1 = upload_ks_file_stream(bucket_name, 'huantaoyou/' + file_name, StringIO(page.content),
-                                           page.headers['Content-Type'], hash_check=file_md5)
-            if bucket_name == 'mioji-attr':
-                r2 = upload_ks_file_stream('mioji-shop', file_name, StringIO(page.content),
-                                           page.headers['Content-Type'], hash_check=file_md5)
-
-            if not (r1 and r2):
-                task_response.error_code = 108
-                raise Exception("Upload File Error")
-
-                # with open(temp_file, 'wb') as f:
-                #     f.write(page.content)
-
-        use_flag = 1 if flag == 0 else 0
-        size = str((h, w))
-
-        # 更新 file name
-        if special_file_name != '':
-            file_name = special_file_name
-
-        # bucket_name = file_path.split('_')[1] + '_bucket' if is_poi_task else ''
-
-        data = (
-            source,  # source
-            source_id,  # source_id
-            target_url,  # pic_url
-            file_name,  # pic_md5
-            part,  # part
-            size,  # size
-            use_flag,  # poi use , hotel flag
-            file_md5,  # file_md5
-            bucket_name,  # poi rest attr shop
-            json.dumps({"p_hash": _p_hash}),  # img phash for check duplicate
-        )
-
-        try:
-            # 更换优先级顺序，先存文件后入库，发现 5% 的图片有裂图问题，可能由此导致
-
-            # 保存文件提前
-            # if not os.path.exists(desc_path):
-            #     os.makedirs(desc_path)
-            # if not is_poi_task:
-            #     with open(os.path.join(desc_path, file_name), 'wb') as f:
-            #         f.write(page.content)
-            table_name = kwargs.get('task_name')
-            if need_insert_db:
-                if is_poi_task:
-                    poi_make_kw(data, table_name)
-                else:
-                    hotel_make_kw(data, table_name)
-
-            # 设置标识位
-            task_response.error_code = 0
-        except exc.SQLAlchemyError as err:
-            task_response.error_code = 33
-            raise Exception(err)
-        except IOError as err:
-            task_response.error_code = 108
-            raise Exception(err)
-
-    # 被过滤的图片返回错误码不为 0
-    if flag in [3, 4, 5]:
-        task_response.error_code = 107
-        # raise Exception("Img Has Been Filtered")
-
-    return flag, h, w, task_response.error_code, bucket_name, file_name, kwargs['task_name']
 
 
 @retry(times=4)
@@ -698,8 +559,7 @@ def get_images_info(self, path):
 
 import hashlib
 import redis
-import shutil
-from .my_lib.hotel_img_func import hotel_make_kw, poi_make_kw, get_file_md5, get_stream_md5, \
+from .my_lib.hotel_img_func import get_file_md5, get_stream_md5, \
     insert_db_old as hotel_images_info_insert_db
 from pymysql.err import IntegrityError
 

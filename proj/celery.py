@@ -12,7 +12,6 @@ from kombu import Queue, Exchange
 platforms.C_FORCE_ROOT = True
 
 app = Celery('proj', include=['proj.tasks',
-                              'proj.hotel_tasks',
                               'proj.hotel_static_tasks',
                               'proj.poi_pic_spider_tasks',
                               'proj.tripadvisor_city',
@@ -23,12 +22,7 @@ app = Celery('proj', include=['proj.tasks',
                               'proj.tripadvisor_list_tasks',
                               'proj.file_downloader_task',
                               'proj.tripadvisor_website_task',
-                              'proj.hotel_list_routine_tasks',
-                              'proj.hotel_list_rest_tasks',
-                              'proj.hotel_list_view_tasks',
-                              'proj.hotel_routine_tasks',
                               'proj.supplement_mapinfo_task',
-                              'proj.merge_tasks',
                               'proj.total_tasks'
                               ])
 app.config_from_object('proj.config')

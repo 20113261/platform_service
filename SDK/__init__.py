@@ -12,3 +12,4 @@ from .QyerDetailSDK import QyerDetailSDK
 from .HotelImgMergeSDK import HotelImgMergeSDK
 from .HotelListSDK import HotelListSDK
 from .HotelDetailSDK import HotelDetailSDK
+from .ImagesSDK import ImagesSDK

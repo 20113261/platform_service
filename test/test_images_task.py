@@ -3,10 +3,10 @@
 # @Time    : 2017/10/11 上午9:10
 # @Author  : Hou Rong
 # @Site    : 
-# @File    : test_get_image.py
+# @File    : test_images_task.py
 # @Software: PyCharm
-from proj.tasks import get_images
-from proj.my_lib.Common.TaskResponse import TaskResponse
+from proj.my_lib.Common.Task import Task
+from proj.total_tasks import images_task
 
 if __name__ == '__main__':
     # get_images(
@@ -69,20 +69,20 @@ if __name__ == '__main__':
     #     }
     # )
 
-    get_images(
-        **{
-            'source': "huantaoyou",
-            'new_part': "image_wanle_huantaoyou_20171023a",
-            'target_url': "http://img.huantaoyou.com/PUB/TH/TH00194/IM_3469e694e140462c93829c3469a69084.png",
-            'desc_path': "/data/nfs/image/img_wanle_huantaoyou_20171023a_filter",
-            'is_poi_task': True,
-            'source_id': "test",
-            'part': "20171023a",
-            'file_path': "/data/nfs/image/img_wanle_huantaoyou_20171023a",
-            "task_name": "image_wanle_huantaoyou_20171023a",
-            "task_response": TaskResponse()
-        }
-    )
+    # get_images(
+    #     **{
+    #         'source': "huantaoyou",
+    #         'new_part': "image_wanle_huantaoyou_20171023a",
+    #         'target_url': "http://img.huantaoyou.com/PUB/TH/TH00194/IM_3469e694e140462c93829c3469a69084.png",
+    #         'desc_path': "/data/nfs/image/img_wanle_huantaoyou_20171023a_filter",
+    #         'is_poi_task': True,
+    #         'source_id': "test",
+    #         'part': "20171023a",
+    #         'file_path': "/data/nfs/image/img_wanle_huantaoyou_20171023a",
+    #         "task_name": "image_wanle_huantaoyou_20171023a",
+    #         "task_response": TaskResponse()
+    #     }
+    # )
 
     # get_images(
     #     **{
@@ -98,3 +98,16 @@ if __name__ == '__main__':
     #         "task_response": TaskResponse()
     #     }
     # )
+    task = Task(_worker='', _task_id='demo', _source='huantaoyou', _type='images',
+                _task_name='image_wanle_huantaoyou_20171023a',
+                _used_times=0, max_retry_times=6,
+                kwargs={'source': "huantaoyou",
+                        'new_part': "image_wanle_huantaoyou_20171023a",
+                        'target_url': "http://img.huantaoyou.com/PUB/TH/TH00194/IM_3469e694e140462c93829c3469a69084.png",
+                        'is_poi_task': True,
+                        'source_id': "test",
+                        'part': "20171023a",
+                        'bucket_name': 'mioji-wanle',
+                        'file_prefix': 'anc'
+                        })
+    images_task(task=task)

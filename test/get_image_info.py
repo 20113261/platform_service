@@ -5,7 +5,7 @@
 # @Site    : 
 # @File    : get_image_info.py
 # @Software: PyCharm
-from proj.tasks import get_images
+from proj.total_tasks import images_task
 
 # if __name__ == '__main__':
 get_images(
