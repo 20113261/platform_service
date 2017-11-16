@@ -6,7 +6,7 @@
 # @File    : qyer_list_test.py
 # @Software: PyCharm
 from proj.my_lib.Common.Task import Task
-from proj.qyer_list_task import qyer_list_task
+from proj.total_tasks import qyer_list_task
 
 if __name__ == '__main__':
     task = Task(_worker='', _task_id='demo', _source='qyer', _type='poi_list', _task_name='list_qyer_total_test',

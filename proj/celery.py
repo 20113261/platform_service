@@ -39,6 +39,7 @@ app = Celery('proj', include=['proj.tasks',
                               'proj.qyer_list_task',
                               'proj.supplement_mapinfo_task',
                               'proj.merge_tasks',
+                              'proj.total_tasks'
                               ])
 app.config_from_object('proj.config')
 app.conf.update(

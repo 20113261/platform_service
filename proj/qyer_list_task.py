@@ -7,20 +7,20 @@ Created on 2017年2月8日
 @author: dujun
 '''
 from __future__ import absolute_import
+
+import mioji.common.logger
+import mioji.common.pages_store
+import mioji.common.pool
 from celery.utils.log import get_task_logger
-from mioji.spider_factory import factory
-from mioji.common.task_info import Task
-from proj.celery import app
-from proj.my_lib.BaseTask import BaseTask
-from mioji.common.utils import simple_get_socks_proxy
 from mioji import spider_factory
-from proj.mysql_pool import service_platform_pool
+from mioji.common.task_info import Task
+from mioji.common.utils import simple_get_socks_proxy
+from mioji.spider_factory import factory
+
+from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.ServiceStandardError import ServiceStandardError
-import mioji.common.logger
-import mioji.common.pool
-import mioji.common.pages_store
-from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
+from proj.mysql_pool import service_platform_pool
 
 mioji.common.pool.pool.set_size(2024)
 logger = get_task_logger(__name__)
@@ -57,7 +57,7 @@ class QyerListSDK(BaseSDK):
         check_in = self.task.kwargs['check_in']
         city_url = self.task.kwargs['city_url']
 
-        error_code, result = hotel_list_database(source=self.task.source, city_id=city_id,
+        error_code, result = hotel_list_database(source=self.task.kwargs['source'], city_id=city_id,
                                                  check_in=check_in,
                                                  city_url=city_url,
                                                  need_cache=self.task.used_times == 0)
@@ -86,13 +86,3 @@ class QyerListSDK(BaseSDK):
             raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
 
         return result, error_code
-
-
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
-def qyer_list_task(self, task, **kwargs):
-    qyer_list_sdk = QyerListSDK(task=task)
-    qyer_list_sdk.execute()
-
-
-if __name__ == '__main__':
-    print(qyer_list_task('booking', '51211', '20170801'))

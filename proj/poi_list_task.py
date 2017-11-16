@@ -7,23 +7,22 @@
 # @Software: PyCharm
 from __future__ import absolute_import
 
-from mioji.spider_factory import factory
-from mioji.common.task_info import Task
-from mioji import spider_factory
-from mioji.common.utils import simple_get_socks_proxy
-import mioji.common.spider
-import mioji.common.pool
-import mioji.common.pages_store
+import traceback
+from urlparse import urljoin
 
-from proj.celery import app
-from proj.my_lib.BaseTask import BaseTask
+import mioji.common.pages_store
+import mioji.common.pool
+import mioji.common.spider
+from mioji import spider_factory
+from mioji.common.task_info import Task
+from mioji.common.utils import simple_get_socks_proxy
+from mioji.spider_factory import factory
+
+from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
+from proj.my_lib.Common.BaseSDK import BaseSDK
+from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.logger import get_logger
 from proj.mysql_pool import service_platform_pool
-from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
-
-from urlparse import urljoin
-import traceback
-import datetime
 
 logger = get_logger("poiDaodao")
 
@@ -76,42 +75,39 @@ def insert(sql, data):
     service_platform_conn.close()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
-def poi_list_task(self, source, url, city_id, country_id, poi_type, **kwargs):
-    task_response = kwargs['task_response']
-    task_response.source = source.title()
-    task_response.type = 'DaodaoListInfo'
+class PoiListSDK(BaseSDK):
+    def _execute(self, **kwargs):
+        sql = SQL.format(table_name=self.task.task_name)
+        poi_type = self.task.kwargs['poi_type']
+        code, result = hotel_list_database(self.task.kwargs['source'], self.task.kwargs['url'],
+                                           type_dict[poi_type],
+                                           spider_name[poi_type],
+                                           need_cache=self.task.used_times == 0)
+        self.logger.info('spider    %s %s' % (str(code), str(result)))
+        self.task.error_code = code
 
-    sql = SQL.format(table_name=kwargs.get('task_name'))
+        data = []
+        try:
+            for one in result:
+                for key, view in one.items():
+                    data.append(
+                        (self.task.kwargs['source'], view['source_id'], self.task.kwargs['city_id'],
+                         self.task.kwargs['country_id'], view['view_url']))
+                    logger.info('%s' % str((self.task.kwargs['source'], view['source_id'], self.task.kwargs['city_id'],
+                                            self.task.kwargs['country_id'], view['view_url'])))
+            logger.info('%s %s' % (sql, str(data)))
+            insert(sql, data)
+        except Exception as e:
+            self.logger.exception(msg="[insert db error]", exc_info=e)
+            raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
 
-    retry_count = kwargs.get('retry_count', 0)
-    code, result = hotel_list_database(source, url, type_dict[poi_type], spider_name[poi_type],
-                                       need_cache=retry_count == 0)
-    logger.info('spider    %s %s' % (str(code), str(result)))
+        # 由于错误都是 raise 的，
+        # 所以当出现此种情况是，return 的内容均为正确内容
+        # 对于抓取平台来讲，当出现此中情况时，数据均应该入库
+        # 用 res_data 判断，修改 self.error_code 的值
+        if len(data) > 0:
+            self.task.error_code = 0
+        else:
+            raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
 
-    task_response.error_code = code
-
-    data = []
-    try:
-        for one in result:
-            for key, view in one.items():
-                data.append(
-                    (source, view['source_id'], city_id, country_id, view['view_url']))
-                logger.info('%s' % str((source, view['source_id'], city_id, country_id, view['view_url'])))
-        logger.info('%s %s' % (sql, str(data)))
-        insert(sql, data)
-    except Exception as e:
-        task_response.error_code = 33
-        logger.error(traceback.format_exc(e))
-        raise e
-
-    # 由于错误都是 raise 的，
-    # 所以当出现此种情况是，return 的内容均为正确内容
-    # 对于抓取平台来讲，当出现此中情况时，数据均应该入库
-    # 用 res_data 判断，修改 self.error_code 的值
-    if len(data) > 0:
-        task_response.error_code = 0
-    else:
-        task_response.error_code = 29
-
-    return task_response.error_code, url
+        return self.task.error_code,
