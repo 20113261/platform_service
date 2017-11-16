@@ -1,3 +1,4 @@
+from proj.total_tasks import qyer_poi_task
 from proj.celery import app
 from proj.daodao_img_rename_tasks import daodao_img_rename_task
 from proj.hotel_static_tasks import hotel_static_base_data
@@ -7,7 +8,6 @@ from proj.poi_nearby_city_task import poi_nearby_city_task
 from proj.poi_pic_spider_tasks import google_spider, shutter_spider, flickr_spider
 from proj.qyer_city_query_task import qyer_city_query_task
 from proj.qyer_city_spider import qyer_country_spider
-from proj.qyer_poi_tasks import qyer_poi_task
 from proj.tasks import craw_html
 from proj.tasks import get_comment
 from proj.tasks import get_daodao_image_url

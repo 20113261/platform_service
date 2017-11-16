@@ -33,3 +33,9 @@ def hotel_img_merge_task(self, task, **kwargs):
 def hotel_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/s')
+def qyer_detail_task(self, task, **kwargs):
+    _sdk = QyerDetailSDK(task=task)
+    return _sdk.execute()
