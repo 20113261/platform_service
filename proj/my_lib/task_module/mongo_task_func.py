@@ -34,9 +34,12 @@ def generate_collection_name(queue, task_name):
 def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     collection_prefix = 'Task_Queue_{}_TaskName_'.format(queue)
     c_list = list(filter(lambda x: str(x).startswith(collection_prefix), db.collection_names()))
+    
+    # todo 先均分任务，之后考虑不同的阀值分配不同的任务
+    each_limit = limit // len(c_list)
     for each_collection_name in c_list:
         for d in _get_task_total_simple(collection_name=each_collection_name, queue=queue, used_times=used_times,
-                                        limit=limit,
+                                        limit=each_limit,
                                         debug=debug):
             yield d
 
