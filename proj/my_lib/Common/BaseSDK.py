@@ -10,6 +10,7 @@ import redis
 import logging
 import pickle
 import base64
+import traceback
 from proj.my_lib.Common.Task import Task
 from proj.my_lib.logger import get_logger
 from proj.my_lib.Common.Utils import get_local_ip
@@ -100,7 +101,7 @@ class BaseSDK(object):
     def execute(self):
         try:
             # 任务真实执行函数
-            self._execute(**self.task.kwargs)
+            res = self._execute(**self.task.kwargs)
             # 返回任务状态统计
             self.__task_report()
         except ServiceStandardError as exc:
@@ -113,9 +114,12 @@ class BaseSDK(object):
             self.task.error_code = exc.error_code
             # 返回任务状态统计
             self.__task_report()
+            res = traceback.format_exc()
         except Exception as exc:
             self.logger.exception(msg="[raise unknown error]", exc_info=exc)
             # 更新任务中的错误码
             self.task.error_code = 25
             # 返回任务状态统计
             self.__task_report()
+            res = traceback.format_exc()
+        return res
