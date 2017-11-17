@@ -9,8 +9,9 @@ import json
 
 
 class Task(object):
-    def __init__(self, _worker, _task_id, _source, _type, _task_name, _used_times, max_retry_times, kwargs):
+    def __init__(self, _queue, _worker, _task_id, _source, _type, _task_name, _used_times, max_retry_times, kwargs):
         # 初始化任务信息
+        self.queue = _queue
         self.worker = _worker
         self.task_id = _task_id
         self.source = _source

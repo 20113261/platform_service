@@ -85,15 +85,18 @@ class BaseSDK(object):
                  self.task.task_name])))
 
         if finished:
-            # todo 根据不同 task_name 分 collection
-            mongo_update_task(self.task.task_id, 1)
+            mongo_update_task(
+                queue=self.task.queue,
+                task_name=self.task.task_name,
+                task_id=self.task.task_id,
+                finish_code=1
+            )
         else:
-            # todo 根据不同 task_name 分 collection
-            mongo_update_task(self.task.task_id)
-
-            # todo 保存任务最终状态
-            # kwargs['local_ip'] = get_local_ip()
-            # kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
+            mongo_update_task(
+                queue=self.task.queue,
+                task_name=self.task.task_name,
+                task_id=self.task.task_id
+            )
 
     def _execute(self, **kwargs):
         pass

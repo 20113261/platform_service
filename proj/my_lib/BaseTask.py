@@ -140,72 +140,73 @@ class BaseTask(Task):
     max_retries = 1
 
     def on_success(self, retval, task_id, args, kwargs):
-        # 获取本批次任务，任务批次
-        task_tag = get_tag(kwargs)
-
-        # 获取当前任务重试次数
-        retry_count = kwargs.get('retry_count', "NULL")
-        max_retry_times = kwargs.get('max_retry_times', "NULL")
-
-        # 增加源以及抓取类型统计
-        task_response = kwargs['task_response']
-        task_source = task_response.source
-        task_type = task_response.type
-        error_code = task_response.error_code
-
-        # task_source = get_source(self)
-        # task_type = get_type(self)
-        # error_code = get_error_code(self)
-        r = redis.Redis(host='10.10.180.145', db=15)
-
-        # 无错误码返回错误为 103
-        if error_code == "NULL":
-            error_code = 103
-
-        error_code = int(error_code)
-
-        # 流程统计入库
-        _key_list = get_report_key(kwargs.get('task_name', ''))
-        if _key_list:
-            _crawl_type, _task_source, _task_tag = _key_list
-            report_type = get_report_type(task_type)
-            check_error_code(
-                error_code=error_code,
-                retry_count=retry_count,
-                task_tag=_task_tag,
-                task_source=_task_source,
-                report_type=report_type,
-                crawl_type=_crawl_type,
-                max_retry_times=max_retry_times
-            )
-
-        if int(error_code) in FINISHED_ERROR_CODE:
-            finished = True
-        else:
-            finished = False
-        r.incr('|_||_|'.join(
-            map(lambda x: str(x),
-                [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
-        logger.debug('|_||_|'.join(
-            map(lambda x: str(x),
-                [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
-
-        if 'mongo_task_id' in kwargs:
-            if finished:
-                mongo_update_task(kwargs['mongo_task_id'], 1)
-            else:
-                mongo_update_task(kwargs['mongo_task_id'])
-
-            # 成功后记录成功内容
-            celery_task_id = task_id
-            task_id = kwargs.get('mongo_task_id', '')
-            kwargs.pop('mongo_task_id', None)
-            kwargs['local_ip'] = get_local_ip()
-            kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
-
-            # 暂时将返回信息保存到旧库中
-            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, retval, task_source, task_type,
-                                     error_code, is_routine_task=True)
+        # # 获取本批次任务，任务批次
+        # task_tag = get_tag(kwargs)
+        #
+        # # 获取当前任务重试次数
+        # retry_count = kwargs.get('retry_count', "NULL")
+        # max_retry_times = kwargs.get('max_retry_times', "NULL")
+        #
+        # # 增加源以及抓取类型统计
+        # task_response = kwargs['task_response']
+        # task_source = task_response.source
+        # task_type = task_response.type
+        # error_code = task_response.error_code
+        #
+        # # task_source = get_source(self)
+        # # task_type = get_type(self)
+        # # error_code = get_error_code(self)
+        # r = redis.Redis(host='10.10.180.145', db=15)
+        #
+        # # 无错误码返回错误为 103
+        # if error_code == "NULL":
+        #     error_code = 103
+        #
+        # error_code = int(error_code)
+        #
+        # # 流程统计入库
+        # _key_list = get_report_key(kwargs.get('task_name', ''))
+        # if _key_list:
+        #     _crawl_type, _task_source, _task_tag = _key_list
+        #     report_type = get_report_type(task_type)
+        #     check_error_code(
+        #         error_code=error_code,
+        #         retry_count=retry_count,
+        #         task_tag=_task_tag,
+        #         task_source=_task_source,
+        #         report_type=report_type,
+        #         crawl_type=_crawl_type,
+        #         max_retry_times=max_retry_times
+        #     )
+        #
+        # if int(error_code) in FINISHED_ERROR_CODE:
+        #     finished = True
+        # else:
+        #     finished = False
+        # r.incr('|_||_|'.join(
+        #     map(lambda x: str(x),
+        #         [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
+        # logger.debug('|_||_|'.join(
+        #     map(lambda x: str(x),
+        #         [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
+        #
+        # if 'mongo_task_id' in kwargs:
+        #     if finished:
+        #         mongo_update_task(kwargs['mongo_task_id'], 1)
+        #     else:
+        #         mongo_update_task(kwargs['mongo_task_id'])
+        #
+        #     # 成功后记录成功内容
+        #     celery_task_id = task_id
+        #     task_id = kwargs.get('mongo_task_id', '')
+        #     kwargs.pop('mongo_task_id', None)
+        #     kwargs['local_ip'] = get_local_ip()
+        #     kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
+        #
+        #     # 暂时将返回信息保存到旧库中
+        #     mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, retval, task_source, task_type,
+        #                              error_code, is_routine_task=True)
+        pass
 
     def on_retry(self, exc, task_id, args, kwargs, einfo):
         # 记录重试任务
@@ -221,83 +222,84 @@ class BaseTask(Task):
         pass
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
-        # 获取本批次任务，任务批次
-        task_response = kwargs['task_response']
-        task_source = task_response.source
-        task_type = task_response.type
-        error_code = task_response.error_code
-
-        # task_source = get_source(self)
-        # task_type = get_type(self)
-        # error_code = get_error_code(self)
-        r = redis.Redis(host='10.10.180.145', db=15)
-        if error_code == 'NULL':
-            error_code = get_error_code(exc)
-
-        # 获取当前任务重试次数
-        retry_count = kwargs.get('retry_count', "NULL")
-        max_retry_times = kwargs.get('max_retry_times', "NULL")
-
-        # 防止抛异常且返回错误码 0 的情况
-        if error_code in (0, '0'):
-            error_code = 27
-
-        # 无错误码返回错误为 103
-        if error_code == "NULL":
-            error_code = 103
-
-        error_code = int(error_code)
-
-        # 更新任务统计
-        start = time.time()
-        r.incr('|_||_|'.join(
-            map(lambda x: str(x),
-                [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
-        logger.debug('|_||_|'.join(
-            map(lambda x: str(x),
-                [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
-
-        logger.debug("[single task report][takes: {}]".format(time.time() - start))
-
-        special_type = False
-        if 'mongo_task_id' in kwargs:
-            # 记录失败任务
-            celery_task_id = task_id
-            task_id = kwargs.get('mongo_task_id', '')
-
-            if int(error_code) in FINISHED_ERROR_CODE:
-                special_type = True
-                mongo_update_task(kwargs['mongo_task_id'], 1)
-            else:
-                mongo_update_task(kwargs['mongo_task_id'])
-
-            kwargs.pop('mongo_task_id', None)
-            kwargs['local_ip'] = get_local_ip()
-            kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
-            einfo_i = str(einfo).find('Retry in')
-            real_einfo = str(einfo)[einfo_i:] if einfo_i > -1 else str(einfo)
-
-            # 暂时将返回错误信息保存到旧库中
-            mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, real_einfo, task_source, task_type,
-                                     error_code, is_routine_task=True)
-
-        # 流程统计入库
-        start = time.time()
-        _key_list = get_report_key(kwargs.get('task_name', ''))
-        if _key_list:
-            _crawl_type, _task_source, _task_tag = _key_list
-            report_type = get_report_type(task_type)
-            check_error_code(
-                error_code=error_code,
-                retry_count=retry_count,
-                task_tag=_task_tag,
-                task_source=_task_source,
-                report_type=report_type,
-                crawl_type=_crawl_type,
-                max_retry_times=max_retry_times,
-                is_special=special_type
-            )
-        logger.debug("[error code check report][takes: {}]".format(time.time() - start))
+        # # 获取本批次任务，任务批次
+        # task_response = kwargs['task_response']
+        # task_source = task_response.source
+        # task_type = task_response.type
+        # error_code = task_response.error_code
+        #
+        # # task_source = get_source(self)
+        # # task_type = get_type(self)
+        # # error_code = get_error_code(self)
+        # r = redis.Redis(host='10.10.180.145', db=15)
+        # if error_code == 'NULL':
+        #     error_code = get_error_code(exc)
+        #
+        # # 获取当前任务重试次数
+        # retry_count = kwargs.get('retry_count', "NULL")
+        # max_retry_times = kwargs.get('max_retry_times', "NULL")
+        #
+        # # 防止抛异常且返回错误码 0 的情况
+        # if error_code in (0, '0'):
+        #     error_code = 27
+        #
+        # # 无错误码返回错误为 103
+        # if error_code == "NULL":
+        #     error_code = 103
+        #
+        # error_code = int(error_code)
+        #
+        # # 更新任务统计
+        # start = time.time()
+        # r.incr('|_||_|'.join(
+        #     map(lambda x: str(x),
+        #         [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
+        # logger.debug('|_||_|'.join(
+        #     map(lambda x: str(x),
+        #         [self.name, get_local_ip(), task_source, task_type, error_code, kwargs.get('task_name', 'NULL')])))
+        #
+        # logger.debug("[single task report][takes: {}]".format(time.time() - start))
+        #
+        # special_type = False
+        # if 'mongo_task_id' in kwargs:
+        #     # 记录失败任务
+        #     celery_task_id = task_id
+        #     task_id = kwargs.get('mongo_task_id', '')
+        #
+        #     if int(error_code) in FINISHED_ERROR_CODE:
+        #         special_type = True
+        #         mongo_update_task(kwargs['mongo_task_id'], 1)
+        #     else:
+        #         mongo_update_task(kwargs['mongo_task_id'])
+        #
+        #     kwargs.pop('mongo_task_id', None)
+        #     kwargs['local_ip'] = get_local_ip()
+        #     kwargs['u-time'] = time.strftime('%Y-%m-%d-%H-%M-%S', time.gmtime())
+        #     einfo_i = str(einfo).find('Retry in')
+        #     real_einfo = str(einfo)[einfo_i:] if einfo_i > -1 else str(einfo)
+        #
+        #     # 暂时将返回错误信息保存到旧库中
+        #     mongo_insert_failed_task(task_id, celery_task_id, args, kwargs, real_einfo, task_source, task_type,
+        #                              error_code, is_routine_task=True)
+        #
+        # # 流程统计入库
+        # start = time.time()
+        # _key_list = get_report_key(kwargs.get('task_name', ''))
+        # if _key_list:
+        #     _crawl_type, _task_source, _task_tag = _key_list
+        #     report_type = get_report_type(task_type)
+        #     check_error_code(
+        #         error_code=error_code,
+        #         retry_count=retry_count,
+        #         task_tag=_task_tag,
+        #         task_source=_task_source,
+        #         report_type=report_type,
+        #         crawl_type=_crawl_type,
+        #         max_retry_times=max_retry_times,
+        #         is_special=special_type
+        #     )
+        # logger.debug("[error code check report][takes: {}]".format(time.time() - start))
+        pass
 
 
 if __name__ == '__main__':
