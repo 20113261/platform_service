@@ -42,7 +42,8 @@ def simple_get_socks_proxy():
 
 
 class MySession(requests.Session):
-    def __init__(self, need_proxies=True, auto_update_host=False, need_cache=False, do_not_delete_cache=False):
+    def __init__(self, need_proxies=True, auto_update_host=False, need_cache=False, do_not_delete_cache=False,
+                 **kwargs):
         self.start = time.time()
         super(MySession, self).__init__()
         headers = {
@@ -55,7 +56,7 @@ class MySession(requests.Session):
         self.md5 = []
         self.md5_resp = {}
         self.need_cache = need_cache
-        self.cache_expire_time = 2592000  # 60 * 60 * 24 * 30
+        self.cache_expire_time = kwargs.get('cache_expire_time', 60 * 60 * 24 * 30)
         self.do_not_delete_cache = do_not_delete_cache
 
         self.p_r_o_x_y = None

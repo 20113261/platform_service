@@ -6,25 +6,31 @@
 # @File    : MongoTaskInsert.py
 # @Software: PyCharm
 import mock
+import copy
 import datetime
 import pymongo
 import logging
+import functools
+import toolbox.Date
 import patched_mongo_insert
 from toolbox.Hash import get_token
-from proj.my_lib.logger import get_logger
+from logger import get_logger
+from toolbox.Date import date_takes
 
-spider_data_base_data_config = {
-    'host': '10.10.228.253',
-    'user': 'mioji_admin',
-    'password': 'mioji1109',
-    'charset': 'utf8',
-    'db': 'base_data'
-}
+# 配置 toolbox 日期格式
+
+toolbox.Date.DATE_FORMAT = "%Y%m%d"
 
 # 当 task 数积攒到每多少时进行一次插入
 # 当程序退出后也会执行一次插入，无论当前 task 积攒为多少
 
 INSERT_WHEN = 2000
+
+
+class TaskType(object):
+    NORMAL = 0
+    LIST_TASK = 1
+    CITY_TASK = 2
 
 
 class Task(object):
@@ -37,6 +43,9 @@ class Task(object):
         self.routine_key = routine_key
         self.queue = queue
 
+        # 任务类型
+        self.task_type = kwargs.get('task_type', TaskType.NORMAL)
+
         self.priority = int(kwargs.get("priority", 3))
         self.finished = 0
         self.used_times = 0
@@ -44,40 +53,86 @@ class Task(object):
         self.utime = datetime.datetime.now()
         self.id = self.get_task_id()
 
-    def get_task_id(self):
-        return get_token(self.args)
+        # 任何任务都获得 list_task_token 默认与 task_token 相同，只有 list 中不同
+        self.list_task_token = self.get_task_id(list_task_token=True)
+        # city task 专属添加值
+        self.date_list = kwargs.get("date_list", None)
+
+    def get_task_id(self, list_task_token=False):
+        if not list_task_token:
+            return get_token(self.args)
+        else:
+            c_args = copy.copy(self.args)
+            if 'check_in' in c_args:
+                dict(c_args).pop('check_in')
+            return get_token(c_args)
 
     def to_dict(self):
-        return {
-            'task_token': self.id,
-            'worker': self.worker,
-            'queue': self.queue,
-            'routing_key': self.routine_key,
-            'task_name': self.task_name,
-            'source': self.source,
-            'type': self.type,
-            'args': self.args,
-            'priority': self.priority,
-            'running': self.running,
-            'used_times': self.used_times,
-            'finished': self.finished,
-            'utime': self.utime
-        }
+        if self.task_type in (TaskType.NORMAL, TaskType.LIST_TASK):
+            task_dict = {
+                'task_token': self.id,
+                'worker': self.worker,
+                'queue': self.queue,
+                'routing_key': self.routine_key,
+                'task_name': self.task_name,
+                'source': self.source,
+                'type': self.type,
+                'args': self.args,
+                'priority': self.priority,
+                'running': self.running,
+                'used_times': self.used_times,
+                'finished': self.finished,
+                'utime': self.utime
+            }
+            if self.task_type == TaskType.LIST_TASK:
+                # 针对列表页 task 添加列表页 task_token
+                task_dict['list_task_token'] = self.list_task_token
+        elif self.task_type == TaskType.CITY_TASK:
+            task_dict = {
+                'list_task_token': self.list_task_token,
+                # 数据新增数目
+                'data_count': [],
+                # 本次任务 成功 / 失败
+                'task_result': [],
+                # 当前使用的时间序列
+                'date_list': self.date_list,
+                # 当前最大使用的日期
+                'date_index': 0,
+                # 其他参数
+                'worker': self.worker,
+                'queue': self.queue,
+                'routing_key': self.routine_key,
+                'task_name': self.task_name,
+                'source': self.source,
+                'type': self.type,
+                'args': self.args,
+                'priority': self.priority,
+                'running': self.running,
+                'used_times': self.used_times,
+                'finished': self.finished,
+                'utime': self.utime
+            }
+        else:
+            raise TypeError("Unknown Type: {}".format(self.task_type))
+
+        return task_dict
 
 
 class TaskList(list):
-    def append_task(self, task: Task):
+    def append_task(self, task):
         self.append(task.to_dict())
 
 
 class InsertTask(object):
     def __init__(self, worker, source, _type, task_name, routine_key, queue, **kwargs):
+        # 任务基本信息
         self.worker = worker
         self.source = source
         self.type = _type
         self.task_name = task_name
         self.routine_key = routine_key
         self.queue = queue
+        self.task_type = kwargs.get('task_type', TaskType.NORMAL)
 
         self.priority = int(kwargs.get("priority", 3))
         self.logger = get_logger("InsertMongoTask")
@@ -96,6 +151,12 @@ class InsertTask(object):
         # 建立所需要的全部索引
         self.create_mongo_indexes()
 
+        # CITY TASK 获取 date_list
+        if self.task_type == TaskType.CITY_TASK:
+            self.date_list = self.generate_list_date()
+        else:
+            self.date_list = None
+
         # 修改 logger 日志打印
         # modify handler's formatter
         datefmt = "%Y-%m-%d %H:%M:%S"
@@ -109,7 +170,10 @@ class InsertTask(object):
         self.logger.info("[init InsertTask]")
 
     def generate_collection_name(self):
-        return "Task_Queue_{}_TaskName_{}".format(self.queue, self.task_name)
+        if self.task_type != TaskType.CITY_TASK:
+            return "Task_Queue_{}_TaskName_{}".format(self.queue, self.task_name)
+        else:
+            return "City_Queue_{}_TaskName_{}".format(self.queue, self.task_name)
 
     def create_mongo_indexes(self):
         collections = self.db[self.collection_name]
@@ -126,10 +190,31 @@ class InsertTask(object):
         collections.create_index([('task_name', 1), ('finished', 1)])
         collections.create_index([('task_name', 1), ('finished', 1), ('used_times', 1)])
         collections.create_index([('task_name', 1), ('list_task_token', 1)])
-        collections.create_index([('task_token', 1)], unique=True)
+        if self.task_type in (TaskType.NORMAL, TaskType.LIST_TASK):
+            collections.create_index([('task_token', 1)], unique=True)
+        elif self.task_type == TaskType.CITY_TASK:
+            collections.create_index([('list_task_token', 1)], unique=True)
         collections.create_index([('utime', 1)])
         collections.create_index([('finished', 1)])
         self.logger.info("[完成索引建立]")
+
+    def generate_list_date(self):
+        collection_name = "CityTaskDate"
+        collections = self.db[collection_name]
+        _res = collections.find_one({
+            'task_name': self.task_name
+        })
+        if not _res:
+            dates = list(date_takes(360, 5, 10))
+            collections.save({
+                'task_name': self.task_name,
+                'dates': dates
+            })
+            self.logger.info("[new date list][task_name: {}][dates: {}]".format(self.task_name, dates))
+        else:
+            self.logger.info(
+                "[date already generate][task_name: {}][dates: {}]".format(_res['task_name'], _res['dates']))
+        return _res['_id']
 
     def mongo_patched_insert(self, data):
         collections = self.db[self.collection_name]
@@ -162,7 +247,7 @@ class InsertTask(object):
         if isinstance(args, dict):
             __t = Task(worker=self.worker, source=self.source, _type=self.type, task_name=self.task_name,
                        routine_key=self.routine_key,
-                       queue=self.queue, _args=args)
+                       queue=self.queue, task_type=self.task_type, date_list=self.date_list, _args=args)
             self.tasks.append_task(__t)
             self.pre_offset += 1
 
@@ -173,6 +258,7 @@ class InsertTask(object):
             raise TypeError('错误的 args 类型 < {0} >'.format(type(args).__name__))
 
     def insert_task(self):
+        # 正常入任务
         for args in self.get_task():
             self._insert_task(args)
 
