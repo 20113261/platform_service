@@ -11,18 +11,19 @@ from kombu import Queue, Exchange
 
 platforms.C_FORCE_ROOT = True
 
-app = Celery('proj', include=['proj.tasks',
-                              'proj.hotel_static_tasks',
-                              'proj.poi_pic_spider_tasks',
-                              'proj.tripadvisor_city',
-                              'proj.poi_nearby_city_task',
-                              'proj.daodao_img_rename_tasks',
-                              'proj.suggestion_task',
-                              'proj.full_website_spider_task',
-                              'proj.tripadvisor_list_tasks',
-                              'proj.file_downloader_task',
-                              'proj.tripadvisor_website_task',
-                              'proj.supplement_mapinfo_task',
+app = Celery('proj', include=[
+                              # 'proj.tasks',
+                              # 'proj.hotel_static_tasks',
+                              # 'proj.poi_pic_spider_tasks',
+                              # 'proj.tripadvisor_city',
+                              # 'proj.poi_nearby_city_task',
+                              # 'proj.daodao_img_rename_tasks',
+                              # 'proj.suggestion_task',
+                              # 'proj.full_website_spider_task',
+                              # 'proj.tripadvisor_list_tasks',
+                              # 'proj.file_downloader_task',
+                              # 'proj.tripadvisor_website_task',
+                              # 'proj.supplement_mapinfo_task',
                               'proj.total_tasks'
                               ])
 app.config_from_object('proj.config')

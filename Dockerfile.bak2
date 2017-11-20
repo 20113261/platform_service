@@ -1,0 +1,10 @@
+FROM centos/python-27-centos7
+RUN pip install pycurl
+
+#COPY . /app
+#WORKDIR /app
+#pip install pycurl
+#RUN pip install pycurl && pip install -r requirements.txt && rm -rf ~/.cache/pip
+
+ENTRYPOINT ["bash"]
+CMD ["docker_start.sh"]
