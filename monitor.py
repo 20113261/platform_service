@@ -20,6 +20,7 @@ from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_de
 from attach_send_task import qyer_supplement_map_info
 from proj.my_lib.logger import get_logger
 from send_email import send_email, SEND_TO, EMAIL_TITLE
+from proj.my_lib.Common.Utils import get_each_task_collection
 
 logger = get_logger('monitor')
 # from sqlalchemy import create_engine
@@ -32,7 +33,8 @@ from proj.mysql_pool import service_platform_pool
 
 task_statistics = redis.Redis(host='10.10.180.145', db=9)
 client = pymongo.MongoClient(host='10.10.231.105')
-collections = client['MongoTask']['Task']
+db = client['MongoTask']
+# collections = client['MongoTask']['Task']
 HOTEL_SOURCE = (
     'agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
     'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton')
@@ -325,7 +327,7 @@ def monitoring_qyer_list2detail():
                    SEND_TO)
 
 
-def monitoring_zombies_task():
+def _monitoring_zombies_task(collections):
     try:
         cursor = collections.find(
             {'running': 1, 'utime': {'$lt': datetime.datetime.now() - datetime.timedelta(hours=1)}}, {'_id': 1},
@@ -348,6 +350,11 @@ def monitoring_zombies_task():
         send_email(EMAIL_TITLE,
                    '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
                    SEND_TO)
+
+
+def monitoring_zombies_task():
+    for collections in get_each_task_collection(db=db):
+        _monitoring_zombies_task(collections=collections)
 
 
 def monitoring_supplement_field():
@@ -375,7 +382,7 @@ if __name__ == '__main__':
     # monitoring_hotel_list2detail()
     # monitoring_hotel_detail2ImgOrComment()
     monitoring_zombies_task()
-#     query_sql = '''SELECT
+# query_sql = '''SELECT
 #   source,
 #   id,
 #   city_id,

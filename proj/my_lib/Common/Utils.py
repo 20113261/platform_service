@@ -149,6 +149,13 @@ def get_out_ip(proxies):
             return False
 
 
+def get_each_task_collection(db):
+    for each_collections in db.collection_names():
+        if str(each_collections).startswith('Task_Queue_'):
+            collections = db[each_collections]
+            yield collections
+
+
 # def get_out_ip_async(proxies):
 #     ip_saver_thread_pool.spawn_n(get_out_ip, proxies)
 
