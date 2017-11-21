@@ -72,6 +72,8 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
                 _used_times=d['used_times'],
                 max_retry_times=6,
                 task_type=task_type,
+                list_task_token=d.get('list_task_token', None),
+                kwargs=d['args'],
             )
             if task_type == TaskType.LIST_TASK:
                 _task.list_task_token = d['list_task_token']

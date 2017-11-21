@@ -22,7 +22,7 @@ class TaskType(object):
 
 class Task(object):
     def __init__(self, _queue, _routine_key, _worker, _task_id, _source, _type, _task_name, _used_times,
-                 max_retry_times, **kwargs):
+                 max_retry_times, task_type, list_task_token, kwargs):
         """
         抓取平台任务对象
         :param _queue:
@@ -34,6 +34,8 @@ class Task(object):
         :param _task_name:
         :param _used_times:
         :param max_retry_times:
+        :param task_type:
+        :param list_task_token:
         :type kwargs: dict
         """
         # 初始化任务信息
@@ -44,8 +46,8 @@ class Task(object):
         self.source = _source
         self.type = _type
         self.task_name = _task_name
-        self.task_type = kwargs.get('task_type', TaskType.NORMAL)
-        self.list_task_token = kwargs.get('list_task_token', None)
+        self.task_type = task_type
+        self.list_task_token = list_task_token
 
         # 初始化任务执行信息
         self.used_times = _used_times,
@@ -71,6 +73,7 @@ class Task(object):
     @error_code.setter
     def error_code(self, val):
         self.__error_code = int(val)
+        self.update_task_status()
 
     def update_task_status(self):
         if self.error_code in self.task_finished_code:
