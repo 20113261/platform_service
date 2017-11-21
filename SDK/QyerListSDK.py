@@ -33,7 +33,7 @@ insert_db = None
 get_proxy = simple_get_socks_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
-SQL = "REPLACE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
+SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
 
 def hotel_list_database(source, city_id, check_in, city_url, need_cache=True):
@@ -69,17 +69,16 @@ class QyerListSDK(BaseSDK):
 
         sql = SQL.format(self.task.task_name)
         data = []
-        for item in result:
-            for _type, urls in item.items():
-                for sid, url in urls:
-                    data.append(('qyer', sid, city_id, country_id, url))
+        for sid, url in result:
+            data.append(('qyer', sid, city_id, country_id, url))
         try:
             service_platform_conn = service_platform_pool.connection()
             cursor = service_platform_conn.cursor()
-            cursor.executemany(sql, data)
+            _res = cursor.executemany(sql, data)
             service_platform_conn.commit()
             cursor.close()
             service_platform_conn.close()
+            self.task.list_task_insert_db_count = _res
         except Exception as e:
             raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
 

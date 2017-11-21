@@ -381,42 +381,45 @@ def get_city_date(task_name, date_index):
 
 
 def city2list():
-    collections = db['City_Queue_poi_list_TaskName_city_total_qyer_20171120a']
-    _count = 0
+    for collection_name in db.collection_names():
+        if not str(collection_name).startswith('City_Queue_'):
+            continue
+        collections = db['City_Queue_poi_list_TaskName_city_total_qyer_20171120a']
+        _count = 0
 
-    # 先获取一条数据，用以初始化入任务模块
-    per_data = collections.find_one()
-    task_name = per_data['task_name']
-    new_task_name = re.sub('city_', 'list_', task_name)
+        # 先获取一条数据，用以初始化入任务模块
+        per_data = collections.find_one()
+        task_name = per_data['task_name']
+        new_task_name = re.sub('city_', 'list_', task_name)
 
-    create_table(new_task_name)
+        create_table(new_task_name)
 
-    with InsertTask(worker=per_data['worker'], queue=per_data['queue'], routine_key=per_data['routing_key'],
-                    task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
-                    priority=per_data['priority'], task_type=TaskType.LIST_TASK) as it:
-        for line in collections.find({}):
-            if int(line['date_index']) == len(line['task_result']):
-                # 发任务数目与任务状态返回相等，代表该任务已经成功完成
-                _count += 1
-                if _count == MAX_CITY_TASK_PER_SEARCH:
-                    # 到达最大城市任务数目后，结束任务分发
-                    break
+        with InsertTask(worker=per_data['worker'], queue=per_data['queue'], routine_key=per_data['routing_key'],
+                        task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
+                        priority=per_data['priority'], task_type=TaskType.LIST_TASK) as it:
+            for line in collections.find({}):
+                if int(line['date_index']) == len(line['task_result']):
+                    # 发任务数目与任务状态返回相等，代表该任务已经成功完成
+                    _count += 1
+                    if _count == MAX_CITY_TASK_PER_SEARCH:
+                        # 到达最大城市任务数目后，结束任务分发
+                        break
 
-                # 基本信息，第几个日期
-                date_index = line['date_index']
+                    # 基本信息，第几个日期
+                    date_index = line['date_index']
 
-                args = line['args']
-                new_date = get_city_date(task_name, date_index)
-                args['check_in'] = new_date
+                    args = line['args']
+                    new_date = get_city_date(task_name, date_index)
+                    args['check_in'] = new_date
 
-                it.insert_task(args=args)
+                    it.insert_task(args=args)
 
-                # 更新任务状态
-                collections.update({
-                    '_id': line['_id']
-                }, {
-                    '$inc': {'date_index': 1}
-                })
+                    # 更新任务状态
+                    collections.update({
+                        '_id': line['_id']
+                    }, {
+                        '$inc': {'date_index': 1}
+                    })
 
 
 class TaskSender(object):

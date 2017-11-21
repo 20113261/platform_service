@@ -64,7 +64,7 @@ class Task(object):
         else:
             c_args = copy.copy(self.args)
             if 'check_in' in c_args:
-                dict(c_args).pop('check_in')
+                c_args.pop('check_in')
             return get_token(c_args)
 
     def to_dict(self):
