@@ -19,7 +19,7 @@ from proj.my_lib.task_module.mongo_task_func import get_task_total_simple
 from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, \
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail, \
-    monitoring_supplement_field, monitoring_zombies_task
+    monitoring_supplement_field, monitoring_zombies_task, city2list
 from proj.config import BROKER_URL
 from proj.my_lib.Common.Task import Task
 
@@ -37,6 +37,7 @@ import datetime
 # schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/90', id='monitoring_poi_detail')
 # schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=2), id='monitoring_qyer_detail')
 # schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=7), id='monitoring_supplement_field')
+schedule.add_job(city2list, 'cron', second='*/60', id='city2list')
 schedule.add_job(monitoring_zombies_task, 'cron', second='*/60', id='monitoring_zombies_task')
 
 # stream_handler = logging.StreamHandler()
@@ -76,11 +77,11 @@ def get_max_retry_times(queue_name):
 
 def insert_task(queue, limit):
     _count = 0
-    max_retry_times = get_max_retry_times(queue_name=queue)
+    # max_retry_times = get_max_retry_times(queue_name=queue)
     for task in get_task_total_simple(
             queue=queue,
             limit=limit,
-            used_times=max_retry_times):
+            used_times=6):
 
         _count += 1
         app.send_task(

@@ -124,5 +124,5 @@ class ImagesSDK(BaseSDK):
         # 被过滤的图片返回错误码不为 0
         if flag in [3, 4, 5]:
             raise ServiceStandardError(ServiceStandardError.IMG_SIZE_FILTER)
-
+        self.task.error_code = 0
         return flag, h, w, self.task.error_code, bucket_name, file_name, self.task.task_name

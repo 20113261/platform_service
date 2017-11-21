@@ -64,7 +64,19 @@ class Task(object):
         self.task_finished_code = [0, ]
 
         # 列表页任务特殊变量
-        self.list_task_insert_db_count = 0
+        self.__list_task_insert_db_count = 0
+
+    @property
+    def list_task_insert_db_count(self):
+        return self.__list_task_insert_db_count
+
+    @list_task_insert_db_count.setter
+    def list_task_insert_db_count(self, val):
+        if not val:
+            res = 0
+        else:
+            res = int(val)
+        self.__list_task_insert_db_count = res
 
     @property
     def error_code(self):

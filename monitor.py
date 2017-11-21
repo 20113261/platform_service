@@ -370,6 +370,7 @@ def monitoring_supplement_field():
 
 
 MAX_CITY_TASK_PER_SEARCH = 20000
+FINISHED_ZERO_COUNT = 4
 
 
 @cachetools.func.ttl_cache(maxsize=256, ttl=600)
@@ -384,7 +385,7 @@ def city2list():
     for collection_name in db.collection_names():
         if not str(collection_name).startswith('City_Queue_'):
             continue
-        collections = db['City_Queue_poi_list_TaskName_city_total_qyer_20171120a']
+        collections = db[collection_name]
         _count = 0
 
         # 先获取一条数据，用以初始化入任务模块
@@ -397,29 +398,35 @@ def city2list():
         with InsertTask(worker=per_data['worker'], queue=per_data['queue'], routine_key=per_data['routing_key'],
                         task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
                         priority=per_data['priority'], task_type=TaskType.LIST_TASK) as it:
-            for line in collections.find({}):
-                if int(line['date_index']) == len(line['task_result']):
+            for line in collections.find({"finished": 0}):
+                if int(line['date_index']) != len(line['task_result']):
                     # 发任务数目与任务状态返回相等，代表该任务已经成功完成
-                    _count += 1
-                    if _count == MAX_CITY_TASK_PER_SEARCH:
-                        # 到达最大城市任务数目后，结束任务分发
-                        break
+                    continue
+                if len(line['task_result']) >= FINISHED_ZERO_COUNT:
+                    if all(map(lambda x: x == 0, line['data_count'][-FINISHED_ZERO_COUNT:])):
+                        # 全部为 0 则表明该城市任务已经积累完成
+                        collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
+                        continue
+                _count += 1
+                if _count == MAX_CITY_TASK_PER_SEARCH:
+                    # 到达最大城市任务数目后，结束任务分发
+                    break
 
-                    # 基本信息，第几个日期
-                    date_index = line['date_index']
+                # 基本信息，第几个日期
+                date_index = line['date_index']
 
-                    args = line['args']
-                    new_date = get_city_date(task_name, date_index)
-                    args['check_in'] = new_date
+                args = line['args']
+                new_date = get_city_date(task_name, date_index)
+                args['check_in'] = new_date
 
-                    it.insert_task(args=args)
+                it.insert_task(args=args)
 
-                    # 更新任务状态
-                    collections.update({
-                        '_id': line['_id']
-                    }, {
-                        '$inc': {'date_index': 1}
-                    })
+                # 更新任务状态
+                collections.update({
+                    '_id': line['_id']
+                }, {
+                    '$inc': {'date_index': 1}
+                })
 
 
 class TaskSender(object):
