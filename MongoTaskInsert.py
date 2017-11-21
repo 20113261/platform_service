@@ -14,7 +14,7 @@ import functools
 import toolbox.Date
 import patched_mongo_insert
 from toolbox.Hash import get_token
-from logger import get_logger
+from proj.my_lib.logger import get_logger
 from toolbox.Date import date_takes
 
 # 配置 toolbox 日期格式
@@ -223,15 +223,16 @@ class InsertTask(object):
             return result
 
     def insert_mongo(self):
-        res = self.mongo_patched_insert(self.tasks)
-        self.logger.info("[update offset][offset: {}][pre offset: {}]".format(self.offset, self.pre_offset))
-        self.offset = self.pre_offset
-        self.logger.info("[insert info][ offset: {} ][ {} ]".format(self.offset, res))
-        self.logger.info('[ 本次准备入库任务数：{0} ][ 实际入库数：{1} ][ 库中已有任务：{2} ][ 已完成总数：{3} ]'.format(
-            self.tasks.__len__(), res['n'], res.get('err', 0), self.offset))
+        if len(self.tasks) > 0:
+            res = self.mongo_patched_insert(self.tasks)
+            self.logger.info("[update offset][offset: {}][pre offset: {}]".format(self.offset, self.pre_offset))
+            self.offset = self.pre_offset
+            self.logger.info("[insert info][ offset: {} ][ {} ]".format(self.offset, res))
+            self.logger.info('[ 本次准备入库任务数：{0} ][ 实际入库数：{1} ][ 库中已有任务：{2} ][ 已完成总数：{3} ]'.format(
+                self.tasks.__len__(), res['n'], res.get('err', 0), self.offset))
 
-        # 入库完成，清空任务列表
-        self.tasks = TaskList()
+            # 入库完成，清空任务列表
+            self.tasks = TaskList()
 
     def insert_stat(self):
         """
@@ -243,7 +244,7 @@ class InsertTask(object):
     def get_task(self):
         yield
 
-    def _insert_task(self, args):
+    def insert_task(self, args):
         if isinstance(args, dict):
             __t = Task(worker=self.worker, source=self.source, _type=self.type, task_name=self.task_name,
                        routine_key=self.routine_key,
@@ -256,11 +257,6 @@ class InsertTask(object):
                 self.insert_mongo()
         else:
             raise TypeError('错误的 args 类型 < {0} >'.format(type(args).__name__))
-
-    def insert_task(self):
-        # 正常入任务
-        for args in self.get_task():
-            self._insert_task(args)
 
     def __enter__(self):
         return self

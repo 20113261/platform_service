@@ -48,7 +48,7 @@ class BaseSDK(object):
         :param kwargs:
         """
         self.task = task
-        self.logger = get_logger(__name__)
+        self.logger = get_logger(self.__class__.__name__)
 
         # modify handler's formatter
         datefmt = "%Y-%m-%d %H:%M:%S"

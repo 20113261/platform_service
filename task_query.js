@@ -2355,3 +2355,14 @@ var per_task = {
     "insert_data": "",
 };
 
+
+db.City_Queue_poi_list_TaskName_city_total_qyer_20171120a.update({}, {$set: {date_index: 0}}, false, true);
+
+db.Task.update({task_name: "merge_hotel_image_20171107"}, {
+    $set: {
+
+        'finished': 0,
+        'used_times': 0,
+        'running': 0
+    }
+}, false, true);

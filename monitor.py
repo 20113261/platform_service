@@ -5,7 +5,7 @@
 # @Site    :
 # @File    : hotel_list_routine_tasks.py
 # @Software: PyCharm
-
+import re
 import datetime
 import time
 import traceback
@@ -15,26 +15,21 @@ import pymysql
 import pymongo
 import os
 import sys
-
+import cachetools.func
 from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task
 from attach_send_task import qyer_supplement_map_info
 from proj.my_lib.logger import get_logger
 from send_email import send_email, SEND_TO, EMAIL_TITLE
-from proj.my_lib.Common.Utils import get_each_task_collection
+from proj.my_lib.Common.Utils import get_each_task_collection, generate_collection_name
+from proj.mysql_pool import service_platform_pool
+from toolbox.Hash import get_token
+from MongoTaskInsert import InsertTask, TaskType
 
 logger = get_logger('monitor')
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-# engine = create_engine('mysql+pymysql://mioji_admin:mioji1109@10.10.228.253:3306/ServicePlatform?charset=utf8',
-#                        encoding="utf-8", pool_size=100, pool_recycle=3600, echo=False)
-# DBSession = sessionmaker(bind=engine)
-# session = DBSession()
-from proj.mysql_pool import service_platform_pool
 
 task_statistics = redis.Redis(host='10.10.180.145', db=9)
 client = pymongo.MongoClient(host='10.10.231.105')
 db = client['MongoTask']
-# collections = client['MongoTask']['Task']
 HOTEL_SOURCE = (
     'agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
     'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton')
@@ -374,14 +369,67 @@ def monitoring_supplement_field():
                    SEND_TO)
 
 
+MAX_CITY_TASK_PER_SEARCH = 20000
+
+
+@cachetools.func.ttl_cache(maxsize=256, ttl=600)
+def get_city_date(task_name, date_index):
+    date_index = int(date_index)
+    city_collections = db['CityTaskDate']
+    _res = city_collections.find_one({'task_name': task_name})
+    return _res['dates'][date_index]
+
+
+def city2list():
+    collections = db['City_Queue_poi_list_TaskName_city_total_qyer_20171120a']
+    _count = 0
+
+    # 先获取一条数据，用以初始化入任务模块
+    per_data = collections.find_one()
+    task_name = per_data['task_name']
+    new_task_name = re.sub('city_', 'list_', task_name)
+    with InsertTask(worker=per_data['worker'], queue=per_data['queue'], routine_key=per_data['routing_key'],
+                    task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
+                    priority=per_data['priority'], task_type=TaskType.LIST_TASK) as it:
+        for line in collections.find({}):
+            if int(line['date_index']) == len(line['task_result']):
+                # 发任务数目与任务状态返回相等，代表该任务已经成功完成
+                _count += 1
+                if _count == MAX_CITY_TASK_PER_SEARCH:
+                    # 到达最大城市任务数目后，结束任务分发
+                    break
+
+                # 基本信息，第几个日期
+                date_index = line['date_index']
+
+                args = line['args']
+                new_date = get_city_date(task_name, date_index)
+                args['check_in'] = new_date
+
+                it.insert_task(args=args)
+
+                # 更新任务状态
+                collections.update({
+                    '_id': line['_id']
+                }, {
+                    '$inc': {'date_index': 1}
+                })
+
+
+class TaskSender(object):
+    def __init__(self):
+        pass
+
+
 if __name__ == '__main__':
+    city2list()
     # get_default_timestramp()
     # get_seek('hotel_list2detail_test')
     # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
     # test_timstramp()
     # monitoring_hotel_list2detail()
     # monitoring_hotel_detail2ImgOrComment()
-    monitoring_zombies_task()
+    # monitoring_zombies_task()
 # query_sql = '''SELECT
 #   source,
 #   id,

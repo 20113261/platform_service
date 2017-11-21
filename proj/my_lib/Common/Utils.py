@@ -19,6 +19,9 @@ import json
 import redis
 import datetime
 import functools
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 # import eventlet.greenpool
 from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
@@ -154,6 +157,26 @@ def get_each_task_collection(db):
         if str(each_collections).startswith('Task_Queue_'):
             collections = db[each_collections]
             yield collections
+
+
+def generate_collection_name(queue, task_name):
+    return "Task_Queue_{}_TaskName_{}".format(queue, task_name)
+
+
+def next_value(values):
+    """
+    利用二次回归获取下一次的值
+    :param values: y 值的列表
+    :return:
+    """
+    y_train = [[v] for v in values]
+    x_train = [[i] for i in range(len(y_train))]
+    quadratic_farrier = PolynomialFeatures(degree=2)
+    x_train_quadratic = quadratic_farrier.fit_transform(x_train)
+    regress_quadratic = LinearRegression()
+    regress_quadratic.fit(x_train_quadratic, y_train)
+    _next_val = regress_quadratic.predict(quadratic_farrier.transform([[len(y_train)]]))[0][0]
+    return _next_val
 
 
 # def get_out_ip_async(proxies):
