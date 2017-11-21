@@ -2368,3 +2368,12 @@ db.Task_Queue_poi_list_TaskName_list_total_qyer_20171120a.update({task_name: "li
         'running': 0
     }
 }, false, true);
+
+db.Task_Queue_file_downloader_TaskName_google_drive_task_20171121.update({}, {
+    $set: {
+
+        'finished': 0,
+        'used_times': 0,
+        'running': 0
+    }
+}, false, true);
