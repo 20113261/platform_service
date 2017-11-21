@@ -63,7 +63,7 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
 
             _task = Task(
                 _queue=d['queue'],
-                _routine_key=d['routine_key'],
+                _routine_key=d['routing_key'],
                 _worker=d['worker'],
                 _task_id=d['task_token'],
                 _source=d['source'],
