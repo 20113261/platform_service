@@ -61,5 +61,5 @@ def images_task(self, task, **kwargs):
 
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='13/s')
 def crawl_json(self, task, **kwargs):
-    _sdk = ImagesSDK(task=task)
+    _sdk = CrawlJson(task=task)
     return _sdk.execute()
