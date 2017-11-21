@@ -54,7 +54,7 @@ class BaseSDK(object):
         self.task = task
 
         # 为任务设置 finished code
-        self.finished_error_code = kwargs.get("finished_error_code", DEFAULT_FINISHED_ERROR_CODE)
+        self.finished_error_code = self.get_task_finished_code()
         self.task.task_finished_code = self.finished_error_code
 
         self.logger = get_logger(self.__class__.__name__)
@@ -70,6 +70,9 @@ class BaseSDK(object):
             each_handler.setFormatter(formtter)
 
         self.logger.info("[init SDK]")
+
+    def get_task_finished_code(self):
+        return DEFAULT_FINISHED_ERROR_CODE
 
     def on_success(self, ret_val):
         pass
