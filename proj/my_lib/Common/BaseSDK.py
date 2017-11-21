@@ -6,16 +6,19 @@
 # @File    : BaseSDK.py
 # @Software: PyCharm
 import json
+import re
 import redis
 import logging
 import pickle
 import base64
 import traceback
-from proj.my_lib.Common.Task import Task
+import pymongo
+from proj.my_lib.Common.Task import Task, TaskType, TaskStatus
 from proj.my_lib.logger import get_logger
 from proj.my_lib.Common.Utils import get_local_ip
 from proj.my_lib.task_module.mongo_task_func import update_task as mongo_update_task
 from proj.my_lib.ServiceStandardError import ServiceStandardError
+from proj.my_lib.task_module.mongo_task_func import update_city_list_task
 
 FAILED_TASK_BLACK_LIST = {'proj.full_website_spider_task.full_site_spider'}
 
@@ -47,7 +50,13 @@ class BaseSDK(object):
         :param args:
         :param kwargs:
         """
+        # 初始化任务
         self.task = task
+
+        # 为任务设置 finished code
+        self.finished_error_code = kwargs.get("finished_error_code", DEFAULT_FINISHED_ERROR_CODE)
+        self.task.task_finished_code = self.finished_error_code
+
         self.logger = get_logger(self.__class__.__name__)
 
         # modify handler's formatter
@@ -60,7 +69,6 @@ class BaseSDK(object):
         for each_handler in self.logger.handlers:
             each_handler.setFormatter(formtter)
 
-        self.finished_error_code = kwargs.get("finished_error_code", DEFAULT_FINISHED_ERROR_CODE)
         self.logger.info("[init SDK]")
 
     def on_success(self, ret_val):
@@ -128,7 +136,35 @@ class BaseSDK(object):
             # 返回任务状态统计
             self.__task_report()
             res = traceback.format_exc()
+
+        # 当列表页任务时候，添加列表页城市相关信息
+        if self.task.task_type == TaskType.LIST_TASK:
+            self.update_city_list_info()
         return res
 
+    def generate_city_collection_name(self):
+        return 'City_Queue_{}_TaskName_{}'.format(self.task.queue, re.sub('list_', 'city_', self.task.task_name))
+
     def update_city_list_info(self):
-        self.task.list
+        city_collection_name = self.generate_city_collection_name()
+
+        task_result = False
+        if self.task.status == TaskStatus.FINISHED:
+            task_result = True
+
+        if task_result:
+            # 正确后更新
+            update_city_list_task(
+                city_collection_name=city_collection_name,
+                list_task_token=self.task.list_task_token,
+                data_count=self.task.list_task_insert_db_count,
+                task_result=task_result
+            )
+        elif self.task.used_times == self.task.max_retry_times:
+            # 最大次数重试后更新
+            update_city_list_task(
+                city_collection_name=city_collection_name,
+                list_task_token=self.task.list_task_token,
+                data_count=self.task.list_task_insert_db_count,
+                task_result=task_result
+            )

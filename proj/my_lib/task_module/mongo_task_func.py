@@ -196,6 +196,32 @@ def update_task(queue, task_name, task_id, finish_code=0):
         }, multi=True)
 
 
+@func_time_logger
+def update_city_list_task(city_collection_name, list_task_token, data_count, task_result):
+    """
+    通过列表页城市反馈信息更新城市页任务
+    :param city_collection_name:
+    :param list_task_token:
+    :param data_count:
+    :param task_result:
+    :return:
+    """
+    # type: (str, str, int, bool) -> bool
+    city_collections = db[city_collection_name]
+    _res = city_collections.find_and_modify(
+        query={
+            'list_task_token': list_task_token
+        },
+        update={
+            '$push': {
+                'data_count': data_count,
+                'task_result': task_result
+            }
+        }
+    )
+    return bool(_res)
+
+
 if __name__ == '__main__':
     # for line in get_task_total(10):
     #     print line
@@ -213,5 +239,8 @@ if __name__ == '__main__':
     # for each in get_task_total('poi_detail', used_times=6, limit=30000):
     #     print(each)
     # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
-    for line in get_task_total_simple('merge_task', debug=True, limit=20):
-        pass
+    # for line in get_task_total_simple('merge_task', debug=True, limit=20):
+    #     pass
+
+    update_city_list_task("City_Queue_poi_list_TaskName_city_total_qyer_20171120a", "e50ff0261cbd53c8d3e6872a71aa3a97",
+                          500, True)

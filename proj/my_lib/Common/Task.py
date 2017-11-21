@@ -8,6 +8,12 @@
 import json
 
 
+class TaskStatus(object):
+    READY = 0
+    FINISHED = 1
+    FAILED = 2
+
+
 class TaskType(object):
     NORMAL = 0
     LIST_TASK = 1
@@ -51,6 +57,13 @@ class Task(object):
         # 初始化请求参数
         self.kwargs = kwargs
 
+        # 初始化任务状态
+        self.status = TaskStatus.READY
+        self.task_finished_code = [0, ]
+
+        # 列表页任务特殊变量
+        self.list_task_insert_db_count = 0
+
     @property
     def error_code(self):
         return self.__error_code
@@ -58,6 +71,12 @@ class Task(object):
     @error_code.setter
     def error_code(self, val):
         self.__error_code = int(val)
+
+    def update_task_status(self):
+        if self.error_code in self.task_finished_code:
+            self.status = TaskStatus.FINISHED
+        else:
+            self.status = TaskStatus.FAILED
 
     def __str__(self):
         return json.dumps(self.__dict__, ensure_ascii=False)

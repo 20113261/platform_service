@@ -387,10 +387,10 @@ def city2list():
     # 先获取一条数据，用以初始化入任务模块
     per_data = collections.find_one()
     task_name = per_data['task_name']
-
-    create_table(task_name)
-
     new_task_name = re.sub('city_', 'list_', task_name)
+
+    create_table(new_task_name)
+
     with InsertTask(worker=per_data['worker'], queue=per_data['queue'], routine_key=per_data['routing_key'],
                     task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
                     priority=per_data['priority'], task_type=TaskType.LIST_TASK) as it:
