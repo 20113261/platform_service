@@ -131,4 +131,4 @@ class BaseSDK(object):
         return res
 
     def update_city_list_info(self):
-        pass
+        self.task.list

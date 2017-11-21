@@ -77,23 +77,18 @@ def get_max_retry_times(queue_name):
 def insert_task(queue, limit):
     _count = 0
     max_retry_times = get_max_retry_times(queue_name=queue)
-    for task_token, worker, queue, routing_key, args, used_times, task_name, _source, _type in get_task_total_simple(
+    for task in get_task_total_simple(
             queue=queue,
             limit=limit,
             used_times=max_retry_times):
+
         _count += 1
-
-        # init new task
-        task = Task(_queue=queue, _worker=worker, _task_id=task_token, _source=_source, _type=_type,
-                    _task_name=task_name,
-                    _used_times=used_times, max_retry_times=max_retry_times, kwargs=args)
-
         app.send_task(
-            worker,
-            task_id=task_token,
+            task.worker,
+            task_id=task.task_id,
             kwargs={'task': task},
-            queue=queue,
-            routing_key=routing_key
+            queue=task.queue,
+            routing_key=task.routine_key
         )
     logger.info("Insert queue: {0} task count: {1}".format(queue, _count))
 

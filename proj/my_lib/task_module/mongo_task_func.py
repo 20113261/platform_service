@@ -10,6 +10,7 @@ import datetime
 import time
 from proj.my_lib.logger import get_logger, func_time_logger
 from collections import defaultdict
+from proj.my_lib.Common.Task import Task, TaskType
 
 logger = get_logger("mongo_task_func")
 
@@ -32,20 +33,65 @@ def generate_collection_name(queue, task_name):
 
 @func_time_logger
 def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
+    """
+    简单从 mongodb 中获取任务的方法
+    :type queue: str
+    :type used_times: int
+    :type limit: int
+    :type debug: bool
+    :return: Task
+    """
+    # type:  (str, int, int, bool) -> Task
+
     collection_prefix = 'Task_Queue_{}_TaskName_'.format(queue)
     c_list = list(filter(lambda x: str(x).startswith(collection_prefix), db.collection_names()))
-    
+
     # todo 先均分任务，之后考虑不同的阀值分配不同的任务
     each_limit = limit // len(c_list)
     for each_collection_name in c_list:
         for d in _get_task_total_simple(collection_name=each_collection_name, queue=queue, used_times=used_times,
                                         limit=each_limit,
                                         debug=debug):
-            yield d
+            # _queue, _worker, _task_id, _source, _type, _task_name, _used_times, max_retry_times,
+            t_list = d['task_name'].split('_')
+            if not t_list:
+                continue
+            if t_list[0] == 'list':
+                task_type = TaskType.LIST_TASK
+            else:
+                task_type = TaskType.NORMAL
+
+            _task = Task(
+                _queue=d['queue'],
+                _routine_key=d['routine_key'],
+                _worker=d['worker'],
+                _task_id=d['task_token'],
+                _source=d['source'],
+                _type=d['type'],
+                _task_name=d['task_name'],
+                _used_times=d['used_times'],
+                max_retry_times=6,
+                task_type=task_type,
+            )
+            if task_type == TaskType.LIST_TASK:
+                _task.list_task_token = d['list_task_token']
+
+            yield _task
 
 
 @func_time_logger
 def _get_task_total_simple(collection_name, queue, used_times=6, limit=10000, debug=False):
+    """
+    自任务简单逻辑
+    :param collection_name:
+    :param queue:
+    :param used_times:
+    :param limit:
+    :param debug:
+    :return:
+    """
+    # type: (str, str, int, int, bool) -> dict
+
     collections = db[collection_name]
     _count = limit
     _total = defaultdict(int)
@@ -76,9 +122,6 @@ def _get_task_total_simple(collection_name, queue, used_times=6, limit=10000, de
 
                     if _count == 0:
                         raise StopException()
-                    task_token = line['task_token']
-                    worker = line['worker']
-                    routing_key = line['routing_key']
 
                     if not debug:
                         if len(_id_list) == EACH_UPDATE:
@@ -105,8 +148,7 @@ def _get_task_total_simple(collection_name, queue, used_times=6, limit=10000, de
                                 logger.debug(i)
                             _id_list = []
                     _id_list.append(line['_id'])
-                    yield task_token, worker, queue, routing_key, line['args'], line['used_times'], line['task_name'], \
-                          line['source'], line['type']
+                    yield line
     except StopException:
         logger.debug("[end of search][queue: {}][num: {}]".format(queue, _total))
     finally:
