@@ -2358,7 +2358,7 @@ var per_task = {
 
 db.City_Queue_poi_list_TaskName_city_total_qyer_20171120a.update({}, {$set: {date_index: 0}}, false, true);
 
-db.Task.update({task_name: "merge_hotel_image_20171107"}, {
+db.Task_Queue_poi_list_TaskName_list_total_qyer_20171120a.update({task_name: "list_total_qyer_20171120a"}, {
     $set: {
 
         'finished': 0,

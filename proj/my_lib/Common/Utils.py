@@ -179,6 +179,18 @@ def next_value(values):
     return _next_val
 
 
+def get_full_stack():
+    exc = sys.exc_info()[0]
+    stack = traceback.extract_stack()[:-1]
+    if exc is not None:
+        del stack[-1]
+    trc = 'Traceback (most recent call last):\n'
+    stack_str = trc + ''.join(traceback.format_list(stack))
+    if exc is not None:
+        stack_str += '  ' + traceback.format_exc().lstrip(trc)
+    return stack_str
+
+
 # def get_out_ip_async(proxies):
 #     ip_saver_thread_pool.spawn_n(get_out_ip, proxies)
 

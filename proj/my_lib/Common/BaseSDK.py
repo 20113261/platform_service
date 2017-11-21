@@ -25,7 +25,7 @@ FAILED_TASK_BLACK_LIST = {'proj.full_website_spider_task.full_site_spider'}
 # 109 对方停业，入库过滤
 # 29 对方的确无相关数据
 
-FINISHED_ERROR_CODE = [0, 29, 106, 107, 109]
+DEFAULT_FINISHED_ERROR_CODE = [0, 29, 106, 107, 109]
 
 KnownTaskType = {
     "HotelList": "List",
@@ -59,6 +59,8 @@ class BaseSDK(object):
         formtter = logging.Formatter(file_log_format, datefmt)
         for each_handler in self.logger.handlers:
             each_handler.setFormatter(formtter)
+
+        self.finished_error_code = kwargs.get("finished_error_code", DEFAULT_FINISHED_ERROR_CODE)
         self.logger.info("[init SDK]")
 
     def on_success(self, ret_val):
@@ -69,7 +71,7 @@ class BaseSDK(object):
 
     def __task_report(self):
         r = redis.Redis(host='10.10.180.145', db=15)
-        if self.task.error_code in FINISHED_ERROR_CODE:
+        if self.task.error_code in self.finished_error_code:
             finished = True
         else:
             finished = False
@@ -112,7 +114,8 @@ class BaseSDK(object):
             # 如果其中有 wrapped exception 打印
             wrapped_exception = getattr(exc, 'wrapped_exception', None)
             if wrapped_exception:
-                logging.exception(msg="[wrapped exception]", exc_info=wrapped_exception)
+                self.logger.error("[wrapped exception][error_code: {}][traceback: {}]".format(exc.error_code,
+                                                                                              exc.wrapped_exception_info))
             # 更新任务中的错误码
             self.task.error_code = exc.error_code
             # 返回任务状态统计
@@ -126,3 +129,6 @@ class BaseSDK(object):
             self.__task_report()
             res = traceback.format_exc()
         return res
+
+    def update_city_list_info(self):
+        pass

@@ -6,6 +6,7 @@
 # @File    : ServiceStandardError.py
 # @Software: PyCharm
 import unittest
+from proj.my_lib.Common.Utils import get_full_stack
 
 
 class ServiceStandardError(Exception):
@@ -49,6 +50,10 @@ class ServiceStandardError(Exception):
 
         if 'wrapped_exception' in kwargs:
             self.wrapped_exception = kwargs['wrapped_exception']
+            try:
+                self.wrapped_exception_info = get_full_stack()
+            except Exception:
+                self.wrapped_exception_info = None
 
 
 class TypeCheckError(ServiceStandardError):

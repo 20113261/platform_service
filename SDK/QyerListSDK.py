@@ -52,6 +52,9 @@ def hotel_list_database(source, city_id, check_in, city_url, need_cache=True):
 
 class QyerListSDK(BaseSDK):
     def _execute(self, **kwargs):
+        # 穷游数据特殊，29 不可以定为完成
+        self.finished_error_code = [0, 106, 107, 109]
+
         city_id = self.task.kwargs['city_id']
         country_id = self.task.kwargs['country_id']
         check_in = self.task.kwargs['check_in']
