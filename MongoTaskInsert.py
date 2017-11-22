@@ -184,6 +184,7 @@ class InsertTask(object):
         collections.create_index([('queue', 1), ('finished', 1), ('used_times', 1), ('priority', 1)])
         collections.create_index(
             [('queue', 1), ('finished', 1), ('used_times', 1), ('priority', 1), ('running', 1)])
+        collections.create_index([('running', 1)])
         collections.create_index([('running', 1), ('utime', 1)])
         collections.create_index([('running', 1), ('utime', -1)])
         collections.create_index([('task_name', 1)])

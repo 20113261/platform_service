@@ -19,12 +19,10 @@ from proj.my_lib.task_module.mongo_task_func import get_task_total_simple
 from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, \
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail, \
-    monitoring_supplement_field, monitoring_zombies_task, city2list
+    monitoring_supplement_field, monitoring_zombies_task_by_hour, city2list, monitoring_zombies_task_total
 from proj.config import BROKER_URL
 from proj.my_lib.Common.Task import Task
-
-host, v_host = re.findall("amqp://.+?@(.+?)/(.+)", BROKER_URL)[0]
-TARGET_URL = 'http://{0}:15672/api/queues/{1}'.format(host, v_host)
+from rabbitmq_func import detect_msg_num
 
 schedule = BlockingScheduler()
 
@@ -38,7 +36,8 @@ import datetime
 # schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=2), id='monitoring_qyer_detail')
 # schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=7), id='monitoring_supplement_field')
 schedule.add_job(city2list, 'cron', second='*/60', id='city2list')
-schedule.add_job(monitoring_zombies_task, 'cron', second='*/60', id='monitoring_zombies_task')
+schedule.add_job(monitoring_zombies_task_by_hour, 'cron', second='*/60', id='monitoring_zombies_task_by_hour')
+schedule.add_job(monitoring_zombies_task_total, 'cron', second='*/60', id='monitoring_zombies_task_total')
 
 # stream_handler = logging.StreamHandler()
 # logger = logging.getLogger('rabbitmq_watcher')
@@ -82,7 +81,6 @@ def insert_task(queue, limit):
             queue=queue,
             limit=limit,
             used_times=6):
-
         _count += 1
         app.send_task(
             task.worker,
@@ -97,16 +95,9 @@ def insert_task(queue, limit):
 def mongo_task_watcher(*args):
     logger.info('Start Searching Queue Info')
     queue_name = args[0]
-    target_url = TARGET_URL + '/' + queue_name
-    logger.info(target_url)
-    page = requests.get(target_url, auth=HTTPBasicAuth('hourong', '1220'))
-    content = page.text
-    j_data = json.loads(content)
-    # each = list(filter(lambda x: queue_name == x['name'], j_data))[0]
-    count = j_data.get('messages_ready')
-    max_count = j_data.get('messages_unacknowledged')
-    message_count = int(count)
-    max_message_count = int(max_count)
+
+    idle_seconds, message_count, max_message_count = detect_msg_num(queue_name=queue_name)
+
     queue_min_task, insert_task_count, _time = TASK_CONF.get(queue_name, TASK_CONF['default'])
     if message_count <= queue_min_task and max_message_count <= queue_min_task \
             and message_count <= QUEUE_MAX_COUNT and max_message_count <= QUEUE_MAX_COUNT:

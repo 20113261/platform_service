@@ -24,6 +24,7 @@ from proj.my_lib.Common.Utils import get_each_task_collection, generate_collecti
 from proj.mysql_pool import service_platform_pool
 from toolbox.Hash import get_token
 from MongoTaskInsert import InsertTask, TaskType
+from rabbitmq_func import detect_msg_num
 
 logger = get_logger('monitor')
 
@@ -322,7 +323,7 @@ def monitoring_qyer_list2detail():
                    SEND_TO)
 
 
-def _monitoring_zombies_task(collections):
+def _monitoring_zombies_task_by_hour(collections):
     try:
         cursor = collections.find(
             {'running': 1, 'utime': {'$lt': datetime.datetime.now() - datetime.timedelta(hours=1)}}, {'_id': 1},
@@ -347,9 +348,49 @@ def _monitoring_zombies_task(collections):
                    SEND_TO)
 
 
-def monitoring_zombies_task():
+def monitoring_zombies_task_by_hour():
     for collections in get_each_task_collection(db=db):
-        _monitoring_zombies_task(collections=collections)
+        _monitoring_zombies_task_by_hour(collections=collections)
+
+
+def _monitoring_zombies_task_total(collections):
+    try:
+        cursor = collections.find(
+            {'running': 1}, {'_id': 1},
+            hint=[('running', 1)]).limit(10000)
+        id_list = [id_dict['_id'] for id_dict in cursor]
+        result = collections.update({
+            '_id': {
+                '$in': id_list
+            }
+        }, {
+            '$set': {
+                'running': 0
+            }
+        }, multi=True)
+        logger.info('monitoring_zombies_task  --  filter:  %s, count: %d, result: %s' % (
+            str(cursor._Cursor__spec), len(id_list), str(result)))
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
+
+
+def monitoring_zombies_task_total():
+    for collections in get_each_task_collection(db=db):
+        _res = re.findall("Task_Queue_(.+)_TaskName", collections.name)
+        if not _res:
+            continue
+        if not _res[0]:
+            continue
+        queue_name = _res[0]
+
+        idle_seconds, msg_num, max_msg_num = detect_msg_num(queue_name=queue_name)
+
+        if idle_seconds < 120:
+            continue
+        _monitoring_zombies_task_total(collections=collections)
 
 
 def monitoring_supplement_field():
@@ -435,7 +476,9 @@ class TaskSender(object):
 
 
 if __name__ == '__main__':
-    city2list()
+    pass
+    # monitoring_zombies_task_total()
+    # city2list()
     # get_default_timestramp()
     # get_seek('hotel_list2detail_test')
     # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
