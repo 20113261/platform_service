@@ -468,7 +468,7 @@ def city2list():
                         collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
                         continue
 
-                if all(map(lambda x: x == 0, line['data_count'][-FINISHED_ZERO_COUNT:])):
+                if all(map(lambda x: x == 0, list(filter(lambda x: x[-1], line['data_count']))[-FINISHED_ZERO_COUNT:])):
                     # 全部为 0 则表明该城市任务已经积累完成
                     collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
                     continue

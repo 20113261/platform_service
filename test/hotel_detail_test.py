@@ -7,6 +7,7 @@
 # @Software: PyCharm
 from proj.my_lib.Common.Task import Task
 from proj.total_tasks import hotel_detail_task
+from MongoTaskInsert import TaskType
 
 if __name__ == '__main__':
     # hotel_base_data(source='booking',
@@ -35,14 +36,25 @@ if __name__ == '__main__':
     #                 retry_count=0,
     #                 max_retry_times=10)
 
-    task = Task(_worker='', _task_id='demo', _source='booking', _type='hotel',
-                _task_name='detail_hotel_hotels_20170925d',
+    # task = Task(_worker='', _task_id='demo', _source='booking', _type='hotel',
+    #             _task_name='detail_hotel_hotels_20170925d',
+    #             _used_times=0, max_retry_times=10,
+    #             kwargs={'source': 'hotels',
+    #                     'url': 'https://zh.hotels.com/ho635577984/',
+    #                     'part': 'detail_hotel_hotels_20170925d',
+    #                     'source_id': '635577984',
+    #                     'city_id': 'NULL',
+    #                     'country_id': 'NULL'})
+
+    task = Task(_worker='', _queue='hotel_detail', _routine_key='hotel_detail', _task_id='demo', _source='hotels',
+                _type='hotel',
+                _task_name='detail_hotel_hotels_20170928d',
                 _used_times=0, max_retry_times=10,
                 kwargs={'source': 'hotels',
-                        'url': 'https://zh.hotels.com/ho635577984/',
-                        'part': 'detail_hotel_hotels_20170925d',
-                        'source_id': '635577984',
+                        'url': 'http://zh.hotels.com/ho691218/?pa=6&tab=description&ZSX=0&SYE=3&q-room-0-children=0&q-room-0-adults=2',
+                        'part': 'detail_hotel_hotels_20170928d',
+                        'source_id': '691218',
                         'city_id': 'NULL',
-                        'country_id': 'NULL'})
+                        'country_id': 'NULL'}, task_type=TaskType.NORMAL, list_task_token=None)
 
     print(hotel_detail_task(task=task))
