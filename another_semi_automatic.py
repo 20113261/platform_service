@@ -314,6 +314,7 @@ def prepare_data_qyer_list_QyerSuggestCityUrl(part, priority=3, cities=[]):
 
 
 if __name__ == '__main__':
+    pass
     # prepare_data_daodao_list_hotel_suggestions_city()
     # prepare_data_daodao_list_ota_location()
     # prepare_data_daodao_list_SuggestName()
