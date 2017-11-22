@@ -208,7 +208,7 @@ def update_city_list_task(city_collection_name, list_task_token, data_count, tas
     :param task_result:
     :return:
     """
-    # type: (str, str, int, bool) -> bool
+    # type: (str, str, tuple(str, int, int, bool), bool) -> bool
     city_collections = db[city_collection_name]
     _res = city_collections.find_and_modify(
         query={
