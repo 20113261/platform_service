@@ -163,7 +163,7 @@ class BaseSDK(object):
                 data_count=self.task.list_task_insert_db_count,
                 task_result=task_result
             )
-        elif self.task.used_times == self.task.max_retry_times:
+        elif self.task.used_times >= self.task.max_retry_times:
             # 最大次数重试后更新
             update_city_list_task(
                 city_collection_name=city_collection_name,

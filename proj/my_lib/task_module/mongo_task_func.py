@@ -70,7 +70,7 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
                 _type=d['type'],
                 _task_name=d['task_name'],
                 _used_times=d['used_times'],
-                max_retry_times=6,
+                max_retry_times=used_times,
                 task_type=task_type,
                 list_task_token=d.get('list_task_token', None),
                 kwargs=d['args'],
