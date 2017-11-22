@@ -34,7 +34,7 @@ schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/90', ne
 schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=25), id='monitoring_poi_list')
 schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/90', id='monitoring_poi_detail')
 schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/45', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=2), id='monitoring_qyer_detail')
-# schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=7), id='monitoring_supplement_field')
+schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=7), id='monitoring_supplement_field')
 
 schedule.add_job(city2list, 'cron', second='*/60', id='city2list')
 schedule.add_job(monitoring_zombies_task_by_hour, 'cron', second='*/60', id='monitoring_zombies_task_by_hour')

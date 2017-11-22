@@ -399,9 +399,9 @@ def monitoring_supplement_field():
         table_name = 'supplement_field'
         sql = """select table_name, type, source, sid, other_info, status, utime from %s where status = 0 and utime >= '%s' order by utime"""
         timestamp, _v, _seq = get_seek(table_name)
-        timestamp, success_count = qyer_supplement_map_info(
+        timestamp = qyer_supplement_map_info(
             execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)))
-        logger.info('supplement_field timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+        logger.info('supplement_field timestamp  :  %s' % (timestamp,))
         if timestamp is not None:
             update_seek(table_name, timestamp)
     except Exception as e:
