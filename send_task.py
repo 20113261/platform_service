@@ -16,6 +16,8 @@ import hashlib
 import sys
 import pymysql
 import mock
+from MongoTaskInsert import InsertTask, TaskType
+
 import proj.my_lib.my_mongo_insert
 from pymongo.errors import DuplicateKeyError
 from send_email import send_email, SEND_TO, EMAIL_TITLE
@@ -62,213 +64,109 @@ def get_country_id(tasks):
 
 
 def send_hotel_detail_task(tasks, task_tag, priority):
-    data = []
-    _count = 0
     timestamp = None
-    success_count = 0
-    for source, source_id, city_id, hotel_url, timestamp in tasks:
-        _count += 1
-        task_info = {
-            'worker': 'proj.hotel_tasks.hotel_base_data',
-            'queue': 'hotel_detail',
-            'routing_key': 'hotel_detail',
-            'task_name': task_tag,
-            'args': {
-                'source': source,
-                'other_info': {
-                    'source_id': source_id,
-                    'city_id': 'NULL'
-                },
-                'country_id': 'NULL',
-                'part': task_tag
-            },
-            'priority': priority,
-            'finished': 0,
-            'used_times': 0,
-            'running': 0,
-            'utime': datetime.datetime.now()
-        }
-        task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
-        task_info['args']['url'] = hotel_url
+    if not tasks:
+        return timestamp
 
-        data.append(task_info)
-
-        if _count % 10000 == 0:
-            print(_count)
-            success_count = hourong_patch(data)
-            data = []
-
-    else:
-        print(_count)
-        if len(data) > 0:
-            success_count += hourong_patch(data)
-
-    if success_count == -1:
-        timestamp = None
-    return timestamp, success_count
+    source = tasks[0][0]
+    with InsertTask(worker='proj.total_tasks.poi_detail_task', queue='hotel_detail', routine_key='hotel_detail',
+                    task_name=task_tag, source=source.title(), _type='Hotel',
+                    priority=priority) as it:
+        for source, source_id, city_id, hotel_url, timestamp in tasks:
+            it.insert_task({
+                'source': 'hotels',
+                'url': hotel_url,
+                'part': task_tag,
+                'source_id': source_id,
+                'city_id': 'NULL',
+                'country_id': 'NULL'
+            })
+        return timestamp
 
 
 def send_poi_detail_task(tasks, task_tag, priority):
-    data = []
-    _count = 0
     utime = None
-    success_count = 0
     typ1, typ2, source, tag = task_tag.split('_')
-    for source, source_id, city_id, hotel_url, utime in tasks:
-        _count += 1
-        task_info = {
-            'worker': 'proj.poi_task.get_lost_poi',
-            'queue': 'poi_detail',
-            'routing_key': 'poi_detail',
-            'task_name': task_tag,
-            'args': {
+    with InsertTask(worker='proj.total_tasks.poi_detail_task', queue='poi_detail', routine_key='poi_detail',
+                    task_name=task_tag, source='Daodao', _type='DaodaoDetail',
+                    priority=priority) as it:
+        for source, source_id, city_id, hotel_url, utime in tasks:
+            it.insert_task({
                 'target_url': hotel_url,
                 'city_id': 'NULL',
                 'poi_type': typ2,
                 'country_id': 'NULL',
                 'part': task_tag
-            },
-            'priority': priority,
-            'finished': 0,
-            'used_times': 0,
-            'running': 0,
-            'utime': datetime.datetime.now()
-        }
-        task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
+            })
 
-        data.append(task_info)
-
-        if _count % 10000 == 0:
-            print(_count)
-            success_count += hourong_patch(data)
-            data = []
-
-    else:
-        print(_count)
-        if len(data) > 0:
-            success_count += hourong_patch(data)
-
-    if success_count == -1:
-        utime = None
-
-    return utime, success_count
+    return utime
 
 
 def send_qyer_detail_task(tasks, task_tag, priority):
-    data = []
-    _count = 0
     utime = None
-    success_count = 0
-    for source, source_id, city_id, hotel_url, utime in tasks:
-        _count += 1
-        task_info = {
-            'worker': 'proj.qyer_poi_tasks.qyer_poi_task',
-            'queue': 'poi_detail',
-            'routing_key': 'poi_detail',
-            'task_name': task_tag,
-            'args': {
-                'target_url': hotel_url,
+    with InsertTask(worker='proj.total_tasks.qyer_detail_task', queue='poi_detail', routine_key='poi_detail',
+                    task_name=task_tag, source='Qyer', _type='QyerDetail',
+                    priority=priority) as it:
+        for source, source_id, city_id, qyer_url, utime in tasks:
+            it.insert_task({
+                'target_url': qyer_url,
                 'city_id': 'NULL',
                 'part': task_tag
-            },
-            'priority': priority,
-            'finished': 0,
-            'used_times': 0,
-            'running': 0,
-            'utime': datetime.datetime.now()
-        }
-        task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
+            })
 
-        data.append(task_info)
-
-        if _count % 10000 == 0:
-            print(_count)
-            success_count += hourong_patch(data)
-            data = []
-
-    else:
-        print(_count)
-        if len(data) > 0:
-            success_count += hourong_patch(data)
-
-    if success_count == -1:
-        utime = None
-
-    return utime, success_count
+    return utime
 
 
 def send_image_task(tasks, task_tag, priority, is_poi_task):
     _count = 0
-    data = []
     md5_data = []
     conn = pymysql.connect(host='10.10.228.253', user='mioji_admin', password='mioji1109', charset='utf8',
                            db='ServicePlatform')
     cursor = conn.cursor()
     update_time = None
-    success_count = 0
-    for source, source_id, city_id, img_items, update_time in tasks:
-        if img_items is None:
-            continue
-        for url in img_items.split('|'):
-            if not url:
+    if not tasks:
+        return update_time
+
+    source = tasks[0][0]
+    suffix = task_tag.split('_', 1)[1]
+    with InsertTask(worker='proj.total_tasks.images_task', queue='poi_detail', routine_key='poi_detail',
+                    task_name='images_' + suffix, source=source.title, _type='DownloadImages',
+                    priority=priority) as it:
+        for source, source_id, city_id, img_items, update_time in tasks:
+            if img_items is None:
                 continue
-            md5 = hashlib.md5(source + str(source_id) + url).hexdigest()
-            if redis_md5.get(md5):
-                continue
-            redis_md5.set(md5, 1)
-            md5_data.append((md5, datetime.datetime.now()))
-            _count += 1
-            suffix = task_tag.split('_', 1)[1]
-            file_path = ''.join(['/data/nfs/image/', 'img_', suffix])
-            desc_path = ''.join(['/data/nfs/image/', 'img_', suffix, '_filter'])
-            task_info = {
-                'worker': 'proj.tasks.get_images',
-                'queue': 'file_downloader',
-                'routing_key': 'file_downloader',
-                'task_name': 'images_' + suffix,
-                'args': {
+            for url in img_items.split('|'):
+                if not url:
+                    continue
+                md5 = hashlib.md5(source + str(source_id) + url).hexdigest()
+                if redis_md5.get(md5):
+                    continue
+                redis_md5.set(md5, 1)
+                md5_data.append((md5, datetime.datetime.now()))
+                _count += 1
+
+                it.insert_task({
                     'source': source,
-                    'source_id': source_id,
+                    'new_part': task_tag,
                     'target_url': url,
-                    'part': task_tag.split('_')[-1],
-                    'file_path': file_path,
-                    'desc_path': desc_path,
                     'is_poi_task': is_poi_task,
-                    'new_part': task_tag
-                },
-                'priority': priority,
-                'finished': 0,
-                'used_times': 0,
-                'running': 0,
-                'utime': datetime.datetime.now()
-            }
+                    'source_id': "test",
+                    'part': task_tag.split('_')[-1],
+                    'bucket_name': "mioji-wanle",
+                    'file_prefix': ""
+                })
 
-            task_info['task_token'] = hashlib.md5(json.dumps(task_info['args'], sort_keys=True).encode()).hexdigest()
-
-            data.append(task_info)
-            if _count % 5000 == 0:
-                logger.debug("insert task : {}".format(_count))
-                success_count += hourong_patch(data)
-                data = []
-
+                if _count % 5000 == 0:
+                    cursor.executemany('insert ignore into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
+                    conn.commit()
+                    md5_data = []
+        else:
+            if len(md5_data) > 0:
                 cursor.executemany('insert ignore into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
                 conn.commit()
-                md5_data = []
-
-    else:
-        logger.debug("[insert task][total: {}]".format(_count))
-        if len(data) > 0:
-            success_count += hourong_patch(data)
-        if len(md5_data) > 0:
-            cursor.executemany('insert ignore into crawled_url(md5, update_time) values(%s, %s)', args=md5_data)
-            conn.commit()
-            cursor.close()
-            conn.close()
-
-    if success_count == -1:
-        update_time = None
-
-    return update_time, success_count
+                cursor.close()
+                conn.close()
+    return update_time
 
 
 # def insert_test():

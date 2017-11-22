@@ -151,10 +151,14 @@ def monitoring_hotel_list2detail():
         for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
-            if tab_args[0] != 'list': continue
-            if tab_args[1] != 'hotel': continue
-            if tab_args[2] not in HOTEL_SOURCE: continue
-            if tab_args[3] == 'test': continue
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'hotel':
+                continue
+            if tab_args[2] not in HOTEL_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
 
@@ -165,13 +169,11 @@ def monitoring_hotel_list2detail():
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_hotel_detail_task(
+            timestamp = send_hotel_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
-            logger.info('sequence  :  %s, success_count  :  %s' % (timestamp, success_count))
+            logger.info('sequence  :  %s' % (timestamp,))
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
-            if success_count > 0:
-                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
@@ -187,10 +189,14 @@ def monitoring_hotel_detail2ImgOrComment():
         for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
-            if tab_args[0] != 'detail': continue
-            if tab_args[1] != 'hotel': continue
-            if tab_args[2] not in HOTEL_SOURCE: continue
-            if tab_args[3] in ('test', '20170928d', '20170926a'): continue
+            if tab_args[0] != 'detail':
+                continue
+            if tab_args[1] != 'hotel':
+                continue
+            if tab_args[2] not in HOTEL_SOURCE:
+                continue
+            if tab_args[3] in ('test', '20170928d', '20170926a'):
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
 
@@ -198,14 +204,12 @@ def monitoring_hotel_detail2ImgOrComment():
             if table_dict.get(images_table_name, True):
                 create_table(images_table_name)
 
-            sequence, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, sequence)),
-                                                      table_name,
-                                                      priority, is_poi_task=False)
-            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+            sequence = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, sequence)),
+                                       table_name,
+                                       priority, is_poi_task=False)
+            logger.info('timestamp  :  %s' % (timestamp,))
             if sequence is not None:
                 update_seek(table_name, timestamp, priority, sequence)
-            if success_count > 0:
-                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
@@ -221,27 +225,27 @@ def monitoring_poi_list2detail():
         for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
-            if tab_args[0] != 'list': continue
-            if tab_args[1] not in ('rest', 'attr', 'shop'): continue
-            if tab_args[2] != POI_SOURCE: continue
-            if tab_args[3] == 'test': continue
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] not in ('rest', 'attr', 'shop'):
+                continue
+            if tab_args[2] != POI_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
-
-            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_poi_detail_task(
+            timestamp = send_poi_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
-            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+            logger.info('timestamp  :  %s' % (timestamp,))
+
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
-            if success_count > 0:
-                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
@@ -272,14 +276,12 @@ def monitoring_poi_detail2imgOrComment():
             if table_dict.get(images_table_name, True):
                 create_table(images_table_name)
 
-            timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)),
-                                                       table_name,
-                                                       priority, is_poi_task=True)
-            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+            timestamp = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)),
+                                        table_name,
+                                        priority, is_poi_task=True)
+            logger.info('timestamp  :  %s' % (timestamp))
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
-            if success_count > 0:
-                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
@@ -295,27 +297,26 @@ def monitoring_qyer_list2detail():
         for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
-            if tab_args[0] != 'list': continue
-            if tab_args[1] != 'total': continue
-            if tab_args[2] != QYER_SOURCE: continue
-            if tab_args[3] == 'test': continue
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'total':
+                continue
+            if tab_args[2] != QYER_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
-
-            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_qyer_detail_task(
+            timestamp = send_qyer_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
-            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+            logger.info('timestamp  :  %s' % (timestamp))
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
-            if success_count > 0:
-                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,

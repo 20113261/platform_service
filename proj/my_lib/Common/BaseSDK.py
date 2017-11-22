@@ -38,6 +38,7 @@ KnownTaskType = {
     "DaodaoDetail": "Detail",
     "QyerList": "List",
     "Qyerinfo": "Detail",
+    "QyerDetail": "Detail",
     "Default": "Unknown"
 }
 
