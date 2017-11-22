@@ -159,6 +159,12 @@ class BaseSDK(object):
         update_city_list_task(
             city_collection_name=city_collection_name,
             list_task_token=self.task.list_task_token,
-            data_count=(self.task.task_id, self.task.list_task_insert_db_count, self.task.used_times, task_result),
+            data_count=(
+                self.task.task_id,
+                self.task.get_data_per_times,
+                self.task.list_task_insert_db_count,
+                self.task.used_times,
+                task_result
+            ),
             task_result=task_result
         )

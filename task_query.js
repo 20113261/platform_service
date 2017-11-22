@@ -2392,3 +2392,12 @@ db.Task_Queue_poi_list_TaskName_list_total_qyer_20171120a.update({'finished': 0}
         'used_times': 0
     }
 }, false, true);
+
+
+db.Task_Queue_poi_list_TaskName_list_total_qyer_20171120a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
