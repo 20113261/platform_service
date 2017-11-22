@@ -129,7 +129,7 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
 
     source = tasks[0][0]
     suffix = task_tag.split('_', 1)[1]
-    with InsertTask(worker='proj.total_tasks.images_task', queue='poi_detail', routine_key='poi_detail',
+    with InsertTask(worker='proj.total_tasks.images_task', queue='file_downloader', routine_key='file_downloader',
                     task_name='images_' + suffix, source=source.title, _type='DownloadImages',
                     priority=priority) as it:
         for source, source_id, city_id, img_items, update_time in tasks:
