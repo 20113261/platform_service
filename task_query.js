@@ -2380,6 +2380,7 @@ db.Task_Queue_file_downloader_TaskName_google_drive_task_20171121.update({}, {
 
 db.City_Queue_poi_list_TaskName_city_total_qyer_20171120a.update({}, {
     $set: {
+        'finished': 0,
         'data_count': [],
         'task_result': [],
         'date_index': 0
