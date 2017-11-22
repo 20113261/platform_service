@@ -161,7 +161,7 @@ class BaseSDK(object):
             list_task_token=self.task.list_task_token,
             data_count=(
                 self.task.task_id,
-                self.task.kwargs['check_in'],
+                self.task.kwargs['date_index'],
                 self.task.get_data_per_times,
                 self.task.list_task_insert_db_count,
                 self.task.used_times,
