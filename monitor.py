@@ -410,7 +410,7 @@ def monitoring_supplement_field():
                    SEND_TO)
 
 
-MAX_CITY_TASK_PER_SEARCH = 20000
+MAX_CITY_TASK_PER_SEARCH = 10000
 FINISHED_ZERO_COUNT = 4
 
 
@@ -440,14 +440,38 @@ def city2list():
                         task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
                         priority=per_data['priority'], task_type=TaskType.LIST_TASK) as it:
             for line in collections.find({"finished": 0}):
-                if int(line['date_index']) != len(line['task_result']):
-                    # 发任务数目与任务状态返回相等，代表该任务已经成功完成
+                if int(line['date_index']) != len(set(list(map(lambda x: x[0], line['data_count'])))):
+                    # 发任务数目与返回的全量任务 id 数目相同时，代表之前发的任务已经完成
                     continue
-                if len(line['task_result']) >= FINISHED_ZERO_COUNT:
-                    if all(map(lambda x: x == 0, line['data_count'][-FINISHED_ZERO_COUNT:])):
-                        # 全部为 0 则表明该城市任务已经积累完成
+
+                if len(set(list(map(lambda x: x[0], line['data_count'])))) >= FINISHED_ZERO_COUNT:
+                    # 最大请求次数，可任务任务完成
+                    collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
+
+                # 如果正常返回的数据中连续 FINISHED_ZERO_COUNT 次为 0 ，认为任务完成，并修改状态位置
+                if len(filter(lambda x: x[-1], line['data_count'])) > FINISHED_ZERO_COUNT:
+                    if all(
+                            map(
+                                lambda x: int(x[3]) == 0,
+                                list(
+                                    sorted(
+                                        filter(
+                                            lambda x: x[-1],
+                                            line['data_count']
+                                        ),
+                                        key=lambda x: x[1]
+                                    )
+                                )[-FINISHED_ZERO_COUNT:]
+                            )
+                    ):
                         collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
                         continue
+
+                if all(map(lambda x: x == 0, line['data_count'][-FINISHED_ZERO_COUNT:])):
+                    # 全部为 0 则表明该城市任务已经积累完成
+                    collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
+                    continue
+
                 _count += 1
                 if _count == MAX_CITY_TASK_PER_SEARCH:
                     # 到达最大城市任务数目后，结束任务分发
@@ -459,6 +483,7 @@ def city2list():
                 args = line['args']
                 new_date = get_city_date(task_name, date_index)
                 args['check_in'] = new_date
+                args['date_index'] = date_index
 
                 it.insert_task(args=args)
 
@@ -476,7 +501,7 @@ class TaskSender(object):
 
 
 if __name__ == '__main__':
-    pass
+    city2list()
     # monitoring_zombies_task_total()
     # city2list()
     # get_default_timestramp()
