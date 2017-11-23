@@ -134,7 +134,7 @@ def create_table(table_name):
     elif tab_args[0] == 'images':
         if tab_args[1] == 'hotel':
             sql_file = LOAD_FILES['images_hotel']
-        elif tab_args[2] == 'daodao':
+        elif tab_args[2] in ('daodao', 'qyer'):
             sql_file = LOAD_FILES['images_daodao']
 
     cursor.execute(sql_file % table_name)
@@ -254,7 +254,6 @@ def monitoring_poi_list2detail():
 
 
 def monitoring_poi_detail2imgOrComment():
-    sql = """select source, id, city_id, imgurl, utime from %s where utime >= '%s' order by utime limit 5000"""
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
@@ -265,10 +264,15 @@ def monitoring_poi_detail2imgOrComment():
                 continue
             if tab_args[1] not in ('rest', 'attr', 'shop', 'total'):
                 continue
-            if tab_args[2] != POI_SOURCE:
+            if tab_args[2] not in (POI_SOURCE, QYER_SOURCE):
                 continue
             if tab_args[3] == 'test':
                 continue
+
+            if tab_args[2] == POI_SOURCE:
+                sql = """select source, id, city_id, imgurl, utime from %s where utime >= '%s' order by utime limit 5000"""
+            else:
+                sql = """select source, id, city_id, imgurl, insert_time from %s where insert_time >= '%s' order by insert_time limit 5000"""
 
             timestamp, priority, sequence = get_seek(table_name)
 
