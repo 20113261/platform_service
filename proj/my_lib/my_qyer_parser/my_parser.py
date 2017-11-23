@@ -15,26 +15,48 @@ sys.setdefaultencoding('utf8')
 from proj.my_lib import db_localhost
 from data_obj import Qyer, DBSession
 from proj.my_lib.Common.Browser import MySession
-from proj.my_lib.Common.Utils import try3times
+from proj.my_lib.Common.Utils import retry
+from lxml import html as HTML
+import re
+import json
 
 comment_counts_url = 'http://place.qyer.com/poi.php?action=starlevel'
 comment_url = 'http://place.qyer.com/poi.php?action=comment&page=1&order=5&poiid=57110&starLevel=all&_=1494983732352'
 
 
-@try3times()
+@retry(times=10, raise_exc=False)
 def parse_comment_counts(poi_id):
     with MySession(need_proxies=True, need_cache=True) as session:
         start_level = session.post(comment_counts_url, data={'poiid': poi_id})
-        return json.loads(start_level.text).get('data', {}).get('all', -1)
+        comment_counts = json.loads(start_level.text).get('data', {}).get('all', -1)
+    if int(comment_counts) == -1:
+        raise Exception()
+    return comment_counts
 
 
-@try3times(try_again_times=15)
+@retry(times=10,raise_exc=False)
 def parse_image_urls(target_url):
     with MySession(need_proxies=True, need_cache=True) as session:
         image_page = session.get(target_url + '/photo').content.decode('utf8')
         page = pyquery.PyQuery(image_page)
-        ul = page('.pla_photolist.clearfix li')
-        return '|'.join(li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items())
+    content = HTML.tostring(page[0])
+    counts = re.search(r'var data = (.*)(?=;)', content).group(1)
+    counts = json.loads(counts)
+    beentocounts = counts.get('counts', {}).get('beentocounts', None)
+    ul = page('.pla_photolist.clearfix li')
+    img_list = [li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()]
+
+    page_count = page[0].xpath('//h2[@class="pla_bigtit fontYaHei"]/text()')[0]
+    page_count = re.search(u'[0-9]+',page_count).group()
+    pages = int(page_count) / 30
+
+    for page in range(int(pages)+2):
+        with MySession(need_proxies=True, need_cache=True) as img_session:
+            image_page = img_session.get(target_url + '/photo/page{0}'.format(page)).content.decode('utf8')
+            page = pyquery.PyQuery(image_page)
+            ul = page('.pla_photolist.clearfix li')
+            img_list.extend([li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()])
+    return '|'.join(img_list),beentocounts
 
 
 # def parse_comment(qyer):
@@ -157,10 +179,13 @@ def page_parser(content, target_url):
 
     try:
         # qyer.commentcounts = re.findall(r'(\d+)', doc('.summery').text())[0]
-        qyer.commentcounts = int(parse_comment_counts(qyer.id))
-        if qyer.commentcounts == 0:
-            qyer.commentcounts = None
+        comment_counts = parse_comment_counts(qyer.id)
+        if comment_counts:
+            qyer.commentcounts = int(comment_counts)
+        else:
+            qyer.commentcounts = -1
     except Exception as e:
+        qyer.commentcounts = -1
         print(traceback.format_exc(e))
 
     # try:
@@ -171,7 +196,7 @@ def page_parser(content, target_url):
     qyer.url = target_url
 
     try:
-        qyer.imgurl = parse_image_urls(target_url)
+        qyer.imgurl,qyer.beentocounts = parse_image_urls(target_url)
     except Exception as e:
         print(traceback.format_exc(e))
 
@@ -185,6 +210,10 @@ if __name__ == '__main__':
     target_url = 'http://place.qyer.com/poi/V2AJZVFlBzNTYVI2/'
     # target_url = 'http://place.qyer.com/poi/V2cJYFFvBzdTYQ/'
     target_url = 'http://place.qyer.com/poi/V2cJa1FkBzNTbA/'
+    target_url = 'http://place.qyer.com/poi/V2cJYFFhBzJTZQ/'
+    target_url = 'http://place.qyer.com/poi/V2cJYFFhBz5TZA/'
+    target_url = 'http://place.qyer.com/poi/V2AJYVFmBzRTZg/'
+    target_url = 'http://place.qyer.com/poi/V2YJY1FjBz5TZFI9/'
     page = requests.get(target_url)
     page.encoding = 'utf8'
     content = page.text
