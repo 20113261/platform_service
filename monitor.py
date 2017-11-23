@@ -451,8 +451,8 @@ def city2list():
                     # 当前已完成任务数目大于城市最大任务数目，可认为任务完成
                     collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
 
-                # 如果正常返回的数据中连续 FINISHED_ZERO_COUNT 次为 0 ，认为任务完成，并修改状态位置
                 if len(filter(lambda x: x[-1], line['data_count'])) > FINISHED_ZERO_COUNT:
+                    # 如果正常返回的数据中连续 FINISHED_ZERO_COUNT 次为 0 ，认为任务完成，并修改状态位置
                     if all(
                             map(
                                 lambda x: int(x[3]) == 0,
@@ -467,13 +467,14 @@ def city2list():
                                 )[-FINISHED_ZERO_COUNT:]
                             )
                     ):
+                        # 全部为 0 则表明该城市任务已经积累完成
                         collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
                         continue
-
-                if all(map(lambda x: x == 0, list(filter(lambda x: x[-1], line['data_count']))[-FINISHED_ZERO_COUNT:])):
-                    # 全部为 0 则表明该城市任务已经积累完成
-                    collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
-                    continue
+                # if all(map(lambda x: x[3] == 0,
+                #            list(filter(lambda x: x[-1], line['data_count']))[-FINISHED_ZERO_COUNT:])):
+                #     # 全部为 0 则表明该城市任务已经积累完成
+                #     collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
+                #     continue
 
                 _count += 1
                 if _count == MAX_CITY_TASK_PER_SEARCH:

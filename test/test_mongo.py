@@ -36,8 +36,8 @@ from collections import defaultdict
 
 count_dict = defaultdict(int)
 for line in collections.find({}):
-    print(int(line['date_index']) + 1, len(set(list(map(lambda x: x[0], line['data_count'])))))
-    count_dict[int(line['date_index']) + 1 == len(set(list(map(lambda x: x[0], line['data_count']))))] += 1
+    print(int(line['date_index']), len(set(list(map(lambda x: x[0], line['data_count'])))))
+    count_dict[int(line['date_index']) == len(set(list(map(lambda x: x[0], line['data_count']))))] += 1
     # print(len(set(list(map(lambda x: x[0], line['data_count'])))))
     # print(all(map(lambda x: x == 0, list(filter(lambda x: x[-1], line['data_count']))[-FINISHED_ZERO_COUNT:])))
     # print(line['data_count'])
