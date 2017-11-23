@@ -442,8 +442,8 @@ def city2list():
                         task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
                         priority=per_data['priority'], task_type=TaskType.LIST_TASK) as it:
             for line in collections.find({"finished": 0}):
-                if int(line['date_index']) <= len(set(list(map(lambda x: x[0], line['data_count'])))):
-                    # 当前日期数目如果与已回来的任务数目相同，或者小于的话，则应该推进任务分发
+                if int(line['date_index']) > len(set(list(map(lambda x: x[0], line['data_count'])))):
+                    # 当前日期数目如果与已回来的任务数目相同，或者小于的话，则应该推进任务分发，否则为任务还没有完成，需要等待任务完成后再分发
                     # 发任务数目与返回的全量任务 id 数目相同时，代表之前发的任务已经完成
                     continue
 
