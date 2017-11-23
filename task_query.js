@@ -2510,3 +2510,9 @@ db.City_Queue_hotel_list_TaskName_city_hotel_agoda_20171122a.update({}, {
     }
 }, false, true);
 
+db.Task_Queue_hotel_detail_TaskName_detail_hotel_agoda_20171122a.remove({});
+db.Task_Queue_hotel_detail_TaskName_detail_hotel_booking_20171122a.remove({});
+db.Task_Queue_hotel_detail_TaskName_detail_hotel_ctrip_20171122a.remove({});
+db.Task_Queue_hotel_detail_TaskName_detail_hotel_hotels_20171122a.remove({});
+db.Task_Queue_hotel_detail_TaskName_detail_hotel_expedia_20171122a.remove({});
+db.Task_Queue_hotel_detail_TaskName_detail_hotel_elong_20171122a.remove({});

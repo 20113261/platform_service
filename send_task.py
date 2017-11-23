@@ -72,7 +72,7 @@ def send_hotel_detail_task(tasks, task_tag, priority):
         return timestamp
 
     source = tasks[0][0]
-    with InsertTask(worker='proj.total_tasks.poi_detail_task', queue='hotel_detail', routine_key='hotel_detail',
+    with InsertTask(worker='proj.total_tasks.hotel_detail_task', queue='hotel_detail', routine_key='hotel_detail',
                     task_name=task_tag, source=source.title(), _type='Hotel',
                     priority=priority) as it:
         for source, source_id, city_id, hotel_url, timestamp in tasks:
