@@ -28,7 +28,7 @@ FAILED_TASK_BLACK_LIST = {'proj.full_website_spider_task.full_site_spider'}
 # 109 对方停业，入库过滤
 # 29 对方的确无相关数据
 
-DEFAULT_FINISHED_ERROR_CODE = [0, 29, 106, 107, 109]
+DEFAULT_FINISHED_ERROR_CODE = [0, 106, 107, 109]
 
 KnownTaskType = {
     "HotelList": "List",
