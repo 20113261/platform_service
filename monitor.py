@@ -264,7 +264,7 @@ def monitoring_poi_detail2imgOrComment():
                 continue
             if tab_args[1] not in ('rest', 'attr', 'shop', 'total'):
                 continue
-            if tab_args[2] not in (POI_SOURCE, QYER_SOURCE):
+            if tab_args[2] not in (POI_SOURCE, ):
                 continue
             if tab_args[3] == 'test':
                 continue
@@ -509,7 +509,8 @@ class TaskSender(object):
 
 
 if __name__ == '__main__':
-    city2list()
+    # city2list()
+    monitoring_poi_detail2imgOrComment()
     # monitoring_zombies_task_total()
     # city2list()
     # get_default_timestramp()
