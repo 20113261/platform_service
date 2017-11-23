@@ -153,23 +153,23 @@ if __name__ == '__main__':
     #     max_retry_times=6
     # ))
     pass
-    # task = Task(_worker='', _task_id='demo', _source='booking', _type='hotel_list',
-    #             _task_name='list_hotel_booking_20170929a',
-    #             _used_times=0, max_retry_times=6,
-    #             kwargs={
-    #                 "url": "http://www.booking.com\n/hotel/ph/tg-hometel.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBA-gBAZICAXmoAgQ;sid=3b827f3aa2e3fca0a95ec0d56605f64a;checkin=2018-01-08;checkout=2018-01-11;ucfs=1;soh=1;srpvid=511e686ec99000f9;srepoch=1511448670;highlighted_blocks=;all_sr_blocks=;room1=A%2CA;soldout=0%2C0;hpos=10;hapos=520;dest_type=region;dest_id=5374;srfid=0a39626563bec2b30fbbedccb1438d4e5f55493fX520;from=searchresults;soldout_clicked=1\n;highlight_room=#no_availability_msg",
-    #                 "country_id": "NULL", "source": "booking", "part": "detail_hotel_booking_20171122a",
-    #                 "city_id": "NULL", "source_id": "1878253"},
-    #             # kwargs={
-    #             #     'source': 'hotels',
-    #             #     'city_id': 'NULL',
-    #             #     'country_id': '205',
-    #             #     'check_in': '20171128',
-    #             #     'part': '20170929a',
-    #             #     'is_new_type': 1,
-    #             #     'suggest_type': 1,
-    #             #     'suggest': '''https://www.hotels.cn/search.do?resolved-location=CITY%3A1638661%3AUNKNOWN%3AUNKNOWN&destination-id=1638661&q-destination=%E9%A9%AC%E5%B8%8C%E5%B2%9B,%20%E5%A1%9E%E8%88%8C%E5%B0%94&q-check-in=2018-01-08&q-check-out=2018-01-11&q-rooms=1&q-room-0-adults=2&q-room-0-children=0'''
-    #             # },
-    #             _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
-    #
-    # print(hotel_list_task(task=task))
+    task = Task(_worker='', _task_id='demo', _source='booking', _type='hotel_list',
+                _task_name='list_hotel_booking_20170929a',
+                _used_times=0, max_retry_times=6,
+                # kwargs={
+                #     'source': 'hotels',
+                #     'city_id': 'NULL',
+                #     'country_id': '205',
+                #     'check_in': '20171128',
+                #     'part': '20170929a',
+                #     'is_new_type': 1,
+                #     'suggest_type': 1,
+                #     'suggest': '''https://www.hotels.cn/search.do?resolved-location=CITY%3A1638661%3AUNKNOWN%3AUNKNOWN&destination-id=1638661&q-destination=%E9%A9%AC%E5%B8%8C%E5%B2%9B,%20%E5%A1%9E%E8%88%8C%E5%B0%94&q-check-in=2018-01-08&q-check-out=2018-01-11&q-rooms=1&q-room-0-adults=2&q-room-0-children=0'''
+                # },
+                kwargs={"suggest_type": 2, "check_in": "20171203", "city_id": "20371",
+                        "suggest": "{u'name': u'\\u5bbf\\u52a1', u'redirectPage': u'DEFAULT_PAGE', u'longitude': 123.89309, u'caption': u\"\\u5bbf\\u52a1, \\u83f2\\u5f8b\\u5bbe (Fi<span class='highlighted'>lip\\xedny</span>)\", u'destinationId': u'987200', u'latitude': 10.309726, u'landmarkCityDestinationId': None, u'type': u'CITY', u'geoId': u'1000000000000000800'}",
+                        "country_id": "107", "source": "hotels", "part": "20171122a", "is_new_type": 1,
+                        "date_index": 0},
+                _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
+
+    print(hotel_list_task(task=task))
