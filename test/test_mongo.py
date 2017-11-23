@@ -32,11 +32,17 @@ collections = client['MongoTask']['City_Queue_poi_list_TaskName_city_total_qyer_
 
 FINISHED_ZERO_COUNT = 4
 
-_count = 0
+from collections import defaultdict
+
+count_dict = defaultdict(int)
 for line in collections.find({}):
-    print(len(set(list(map(lambda x: x[0], line['data_count'])))))
-    print(all(map(lambda x: x == 0, list(filter(lambda x: x[-1], line['data_count']))[-FINISHED_ZERO_COUNT:])))
-    print(line['data_count'])
-    _count += 1
-    if _count == 10:
-        break
+    print(int(line['date_index']) + 1, len(set(list(map(lambda x: x[0], line['data_count'])))))
+    count_dict[int(line['date_index']) + 1 == len(set(list(map(lambda x: x[0], line['data_count']))))] += 1
+    # print(len(set(list(map(lambda x: x[0], line['data_count'])))))
+    # print(all(map(lambda x: x == 0, list(filter(lambda x: x[-1], line['data_count']))[-FINISHED_ZERO_COUNT:])))
+    # print(line['data_count'])
+    # _count += 1
+    # if _count == 10:
+    #     break
+
+    print(count_dict)
