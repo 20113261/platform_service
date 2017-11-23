@@ -69,10 +69,11 @@ def insert(sql, data):
     # TODO 连接池处理未指定
     service_platform_conn = service_platform_pool.connection()
     cursor = service_platform_conn.cursor()
-    cursor.executemany(sql, data)
+    _res = cursor.executemany(sql, data)
     service_platform_conn.commit()
     cursor.close()
     service_platform_conn.close()
+    return _res
 
 
 class PoiListSDK(BaseSDK):
@@ -96,7 +97,9 @@ class PoiListSDK(BaseSDK):
                     logger.info('%s' % str((self.task.kwargs['source'], view['source_id'], self.task.kwargs['city_id'],
                                             self.task.kwargs['country_id'], view['view_url'])))
             logger.info('%s %s' % (sql, str(data)))
-            insert(sql, data)
+            res = insert(sql, data)
+            self.task.list_task_insert_db_count = res
+            self.task.get_data_per_times = len(data)
         except Exception as e:
             self.logger.exception(msg="[insert db error]", exc_info=e)
             raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)

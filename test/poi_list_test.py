@@ -28,5 +28,5 @@ if __name__ == '__main__':
                     'poi_type': 'attr',
                     'check_in': '20171203',
                     'date_index': 0
-                })
+                }, _routine_key='list_task', _queue='list_task', list_task_token='demo', task_type=0)
     poi_list_task(task=task)
