@@ -99,7 +99,7 @@ class MySession(requests.Session):
                         requests.exceptions.HTTPError,
                         requests.exceptions.ConnectionError,
                         requests.exceptions.RequestException
-                ):
+                ) as e:
                     self.change_proxies()
                     logger.exception(msg="[request retry][retry times: {}]".format(i + 1), exc_info=e)
                     error = e
@@ -113,7 +113,7 @@ class MySession(requests.Session):
             # get cache key
             req = {}
             for k, v in request.__dict__.items():
-                if k in ['method', 'url', 'params', 'data', 'auth', 'json']:
+                if k in ['method', 'url', 'params', 'data', 'auth', 'json', 'body']:
                     req[k] = v
 
             # get cache

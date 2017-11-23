@@ -34,7 +34,7 @@ def parse_comment_counts(poi_id):
     return comment_counts
 
 
-@retry(times=10,raise_exc=False)
+@retry(times=10, raise_exc=False)
 def parse_image_urls(target_url):
     with MySession(need_proxies=True, need_cache=True) as session:
         image_page = session.get(target_url + '/photo').content.decode('utf8')
@@ -47,16 +47,16 @@ def parse_image_urls(target_url):
     img_list = [li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()]
 
     page_count = page[0].xpath('//h2[@class="pla_bigtit fontYaHei"]/text()')[0]
-    page_count = re.search(u'[0-9]+',page_count).group()
+    page_count = re.search(u'[0-9]+', page_count).group()
     pages = int(page_count) / 30
 
-    for page in range(int(pages)+2):
+    for page in range(int(pages) + 2):
         with MySession(need_proxies=True, need_cache=True) as img_session:
             image_page = img_session.get(target_url + '/photo/page{0}'.format(page)).content.decode('utf8')
             page = pyquery.PyQuery(image_page)
             ul = page('.pla_photolist.clearfix li')
             img_list.extend([li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()])
-    return '|'.join(img_list),beentocounts
+    return '|'.join(img_list), beentocounts
 
 
 # def parse_comment(qyer):
@@ -196,7 +196,7 @@ def page_parser(content, target_url):
     qyer.url = target_url
 
     try:
-        qyer.imgurl,qyer.beentocounts = parse_image_urls(target_url)
+        qyer.imgurl, qyer.beentocounts = parse_image_urls(target_url)
     except Exception as e:
         print(traceback.format_exc(e))
 
@@ -207,23 +207,25 @@ def page_parser(content, target_url):
 if __name__ == '__main__':
     import requests
 
-    target_url = 'http://place.qyer.com/poi/V2AJZVFlBzNTYVI2/'
-    # target_url = 'http://place.qyer.com/poi/V2cJYFFvBzdTYQ/'
-    target_url = 'http://place.qyer.com/poi/V2cJa1FkBzNTbA/'
-    target_url = 'http://place.qyer.com/poi/V2cJYFFhBzJTZQ/'
-    target_url = 'http://place.qyer.com/poi/V2cJYFFhBz5TZA/'
-    target_url = 'http://place.qyer.com/poi/V2AJYVFmBzRTZg/'
-    target_url = 'http://place.qyer.com/poi/V2YJY1FjBz5TZFI9/'
-    page = requests.get(target_url)
-    page.encoding = 'utf8'
-    content = page.text
-    # with open('content.txt','w+') as temp:
-    #     temp.write(content)
-    result = page_parser(content, target_url)
-    for k, v in result.__dict__.items():
-        print('%s : %s' % (k, v))
+    print(parse_comment_counts("200832"))
 
-    print(len(result.__dict__.keys()))
+    # target_url = 'http://place.qyer.com/poi/V2AJZVFlBzNTYVI2/'
+    # # target_url = 'http://place.qyer.com/poi/V2cJYFFvBzdTYQ/'
+    # target_url = 'http://place.qyer.com/poi/V2cJa1FkBzNTbA/'
+    # target_url = 'http://place.qyer.com/poi/V2cJYFFhBzJTZQ/'
+    # target_url = 'http://place.qyer.com/poi/V2cJYFFhBz5TZA/'
+    # target_url = 'http://place.qyer.com/poi/V2AJYVFmBzRTZg/'
+    # target_url = 'http://place.qyer.com/poi/V2YJY1FjBz5TZFI9/'
+    # page = requests.get(target_url)
+    # page.encoding = 'utf8'
+    # content = page.text
+    # # with open('content.txt','w+') as temp:
+    # #     temp.write(content)
+    # result = page_parser(content, target_url)
+    # for k, v in result.__dict__.items():
+    #     print('%s : %s' % (k, v))
+    #
+    # print(len(result.__dict__.keys()))
     # try:
     #     session = DBSession()
     #     session.merge(result)

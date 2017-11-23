@@ -319,6 +319,7 @@ def monitoring_qyer_list2detail():
             timestamp = send_qyer_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s' % (timestamp))
+
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
     except Exception as e:
@@ -510,7 +511,8 @@ class TaskSender(object):
 
 if __name__ == '__main__':
     # city2list()
-    monitoring_poi_detail2imgOrComment()
+    # monitoring_poi_detail2imgOrComment()
+    monitoring_qyer_list2detail()
     # monitoring_zombies_task_total()
     # city2list()
     # get_default_timestramp()
