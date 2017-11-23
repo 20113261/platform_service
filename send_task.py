@@ -24,6 +24,7 @@ from send_email import send_email, SEND_TO, EMAIL_TITLE
 from proj.my_lib.logger import get_logger
 
 from warnings import filterwarnings
+
 filterwarnings('ignore', category=pymysql.err.Warning)
 logger = get_logger("send_task")
 
@@ -76,7 +77,7 @@ def send_hotel_detail_task(tasks, task_tag, priority):
                     priority=priority) as it:
         for source, source_id, city_id, hotel_url, timestamp in tasks:
             it.insert_task({
-                'source': 'hotels',
+                'source': source,
                 'url': hotel_url,
                 'part': task_tag,
                 'source_id': source_id,

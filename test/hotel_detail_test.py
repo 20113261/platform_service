@@ -50,11 +50,14 @@ if __name__ == '__main__':
                 _type='hotel',
                 _task_name='detail_hotel_hotels_20170928d',
                 _used_times=0, max_retry_times=10,
-                kwargs={'source': 'hotels',
-                        'url': 'http://zh.hotels.com/ho691218/?pa=6&tab=description&ZSX=0&SYE=3&q-room-0-children=0&q-room-0-adults=2',
-                        'part': 'detail_hotel_hotels_20170928d',
-                        'source_id': '691218',
-                        'city_id': 'NULL',
-                        'country_id': 'NULL'}, task_type=TaskType.NORMAL, list_task_token=None)
+                kwargs={
+                    'source': 'hotels',
+                    'url': 'http://zh.hotels.com/ho691218/?pa=6&tab=description&ZSX=0&SYE=3&q-room-0-children=0&q-room-0-adults=2',
+                    'part': 'detail_hotel_hotels_20170928d',
+                    'source_id': '691218',
+                    'city_id': 'NULL',
+                    'country_id': 'NULL'
+                },
+                task_type=TaskType.NORMAL, list_task_token=None)
 
     print(hotel_detail_task(task=task))
