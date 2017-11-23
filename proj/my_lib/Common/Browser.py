@@ -74,6 +74,7 @@ class MySession(requests.Session):
         if l_url[0] == '':
             l_url[0] = 'http'
             url = urlparse.urlunsplit(l_url)
+        url = url.replace('\n', '')
 
         return super(MySession, self).request(method, url,
                                               params, data, headers, cookies, files,

@@ -2424,7 +2424,6 @@ db.City_Queue_hotel_list_TaskName_city_hotel_hotels_20171122a.update({}, {
 }, false, true);
 
 
-
 db.Task_Queue_hotel_list_TaskName_list_hotel_booking_20171122a.update({}, {
     $set: {
         'finished': 0,
@@ -2507,6 +2506,15 @@ db.City_Queue_hotel_list_TaskName_city_hotel_agoda_20171122a.update({}, {
         'data_count': [],
         'task_result': [],
         'date_index': 0
+    }
+}, false, true);
+
+
+db.Task_Queue_poi_list_TaskName_list_total_qyer_20171120a.update({"list_task_token": "8d29d81b940c52bca6f42638fc46a72f"}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
     }
 }, false, true);
 
