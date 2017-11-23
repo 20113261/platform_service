@@ -65,6 +65,8 @@ class Task(object):
             c_args = copy.copy(self.args)
             if 'check_in' in c_args:
                 c_args.pop('check_in')
+            if 'date_index' in c_args:
+                c_args.pop('date_index')
             return get_token(c_args)
 
     def to_dict(self):

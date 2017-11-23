@@ -65,6 +65,7 @@ class Task(object):
 
         # 列表页任务特殊变量
         self.__list_task_insert_db_count = 0
+        self.__get_data_per_times = 0
 
     @property
     def list_task_insert_db_count(self):
@@ -77,6 +78,18 @@ class Task(object):
         else:
             res = int(val)
         self.__list_task_insert_db_count = res
+
+    @property
+    def get_data_per_times(self):
+        return self.__get_data_per_times
+
+    @get_data_per_times.setter
+    def get_data_per_times(self, val):
+        if not val:
+            res = 0
+        else:
+            res = int(val)
+        self.__get_data_per_times = res
 
     @property
     def error_code(self):

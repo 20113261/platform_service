@@ -14,3 +14,4 @@ from .HotelListSDK import HotelListSDK
 from .HotelDetailSDK import HotelDetailSDK
 from .ImagesSDK import ImagesSDK
 from .CrawlJson import CrawlJson
+from .SupplementTask import SupplementDaodaoImg, SupplementMapInfo

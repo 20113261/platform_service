@@ -2356,7 +2356,7 @@ var per_task = {
 };
 
 
-db.City_Queue_poi_list_TaskName_city_total_qyer_20171120a.update({}, {$set: {date_index: 0}}, false, true);
+db.City_Queue_poi_list_TaskName_city_total_qyer_20171120a.update({}, {$set: {finished: 0}}, false, true);
 
 db.City_Queue_poi_list_TaskName_city_total_qyer_20171120a.update({}, {$set: {date_index: 0}}, false, true);
 
@@ -2375,5 +2375,30 @@ db.Task_Queue_file_downloader_TaskName_google_drive_task_20171121.update({}, {
         'finished': 0,
         'used_times': 0,
         'running': 0
+    }
+}, false, true);
+
+db.City_Queue_poi_list_TaskName_city_total_qyer_20171120a.update({}, {
+    $set: {
+        'finished': 0,
+        'data_count': [],
+        'task_result': [],
+        'date_index': 0
+    }
+}, false, true);
+
+db.Task_Queue_poi_list_TaskName_list_total_qyer_20171120a.update({'finished': 0}, {
+    $set: {
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+
+
+db.Task_Queue_poi_list_TaskName_list_total_qyer_20171120a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
     }
 }, false, true);

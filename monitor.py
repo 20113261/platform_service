@@ -151,10 +151,14 @@ def monitoring_hotel_list2detail():
         for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
-            if tab_args[0] != 'list': continue
-            if tab_args[1] != 'hotel': continue
-            if tab_args[2] not in HOTEL_SOURCE: continue
-            if tab_args[3] == 'test': continue
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'hotel':
+                continue
+            if tab_args[2] not in HOTEL_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
 
@@ -165,13 +169,11 @@ def monitoring_hotel_list2detail():
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_hotel_detail_task(
+            timestamp = send_hotel_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
-            logger.info('sequence  :  %s, success_count  :  %s' % (timestamp, success_count))
+            logger.info('sequence  :  %s' % (timestamp,))
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
-            if success_count > 0:
-                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
@@ -187,10 +189,14 @@ def monitoring_hotel_detail2ImgOrComment():
         for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
-            if tab_args[0] != 'detail': continue
-            if tab_args[1] != 'hotel': continue
-            if tab_args[2] not in HOTEL_SOURCE: continue
-            if tab_args[3] in ('test', '20170928d', '20170926a'): continue
+            if tab_args[0] != 'detail':
+                continue
+            if tab_args[1] != 'hotel':
+                continue
+            if tab_args[2] not in HOTEL_SOURCE:
+                continue
+            if tab_args[3] in ('test', '20170928d', '20170926a'):
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
 
@@ -198,14 +204,12 @@ def monitoring_hotel_detail2ImgOrComment():
             if table_dict.get(images_table_name, True):
                 create_table(images_table_name)
 
-            sequence, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, sequence)),
-                                                      table_name,
-                                                      priority, is_poi_task=False)
-            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+            sequence = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, sequence)),
+                                       table_name,
+                                       priority, is_poi_task=False)
+            logger.info('timestamp  :  %s' % (timestamp,))
             if sequence is not None:
                 update_seek(table_name, timestamp, priority, sequence)
-            if success_count > 0:
-                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
@@ -221,27 +225,27 @@ def monitoring_poi_list2detail():
         for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
-            if tab_args[0] != 'list': continue
-            if tab_args[1] not in ('rest', 'attr', 'shop'): continue
-            if tab_args[2] != POI_SOURCE: continue
-            if tab_args[3] == 'test': continue
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] not in ('rest', 'attr', 'shop'):
+                continue
+            if tab_args[2] != POI_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
-
-            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_poi_detail_task(
+            timestamp = send_poi_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
-            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+            logger.info('timestamp  :  %s' % (timestamp,))
+
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
-            if success_count > 0:
-                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
@@ -272,14 +276,12 @@ def monitoring_poi_detail2imgOrComment():
             if table_dict.get(images_table_name, True):
                 create_table(images_table_name)
 
-            timestamp, success_count = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)),
-                                                       table_name,
-                                                       priority, is_poi_task=True)
-            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+            timestamp = send_image_task(execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)),
+                                        table_name,
+                                        priority, is_poi_task=True)
+            logger.info('timestamp  :  %s' % (timestamp))
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
-            if success_count > 0:
-                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Images', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
@@ -295,27 +297,26 @@ def monitoring_qyer_list2detail():
         for table_name in table_dict.keys():
 
             tab_args = table_name.split('_')
-            if tab_args[0] != 'list': continue
-            if tab_args[1] != 'total': continue
-            if tab_args[2] != QYER_SOURCE: continue
-            if tab_args[3] == 'test': continue
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'total':
+                continue
+            if tab_args[2] != QYER_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
-
-            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
-            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
             detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
             if table_dict.get(detail_table_name, True):
                 create_table(detail_table_name)
 
-            timestamp, success_count = send_qyer_detail_task(
+            timestamp = send_qyer_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
-            logger.info('timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+            logger.info('timestamp  :  %s' % (timestamp))
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
-            if success_count > 0:
-                update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'Detail', success_count)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
@@ -398,9 +399,9 @@ def monitoring_supplement_field():
         table_name = 'supplement_field'
         sql = """select table_name, type, source, sid, other_info, status, utime from %s where status = 0 and utime >= '%s' order by utime"""
         timestamp, _v, _seq = get_seek(table_name)
-        timestamp, success_count = qyer_supplement_map_info(
+        timestamp = qyer_supplement_map_info(
             execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)))
-        logger.info('supplement_field timestamp  :  %s, success_count  :  %s' % (timestamp, success_count))
+        logger.info('supplement_field timestamp  :  %s' % (timestamp,))
         if timestamp is not None:
             update_seek(table_name, timestamp)
     except Exception as e:
@@ -410,7 +411,8 @@ def monitoring_supplement_field():
                    SEND_TO)
 
 
-MAX_CITY_TASK_PER_SEARCH = 20000
+MAX_CITY_TASK_PER_SEARCH = 10000
+MAX_TASK_PER_CITY = 70
 FINISHED_ZERO_COUNT = 4
 
 
@@ -440,14 +442,39 @@ def city2list():
                         task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
                         priority=per_data['priority'], task_type=TaskType.LIST_TASK) as it:
             for line in collections.find({"finished": 0}):
-                if int(line['date_index']) != len(line['task_result']):
-                    # 发任务数目与任务状态返回相等，代表该任务已经成功完成
+                if int(line['date_index']) > len(set(list(map(lambda x: x[0], line['data_count'])))):
+                    # 当前日期数目如果与已回来的任务数目相同，或者小于的话，则应该推进任务分发，否则为任务还没有完成，需要等待任务完成后再分发
+                    # 发任务数目与返回的全量任务 id 数目相同时，代表之前发的任务已经完成
                     continue
-                if len(line['task_result']) >= FINISHED_ZERO_COUNT:
-                    if all(map(lambda x: x == 0, line['data_count'][-FINISHED_ZERO_COUNT:])):
-                        # 全部为 0 则表明该城市任务已经积累完成
+
+                if len(set(list(map(lambda x: x[0], line['data_count'])))) >= MAX_TASK_PER_CITY:
+                    # 当前已完成任务数目大于城市最大任务数目，可认为任务完成
+                    collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
+
+                # 如果正常返回的数据中连续 FINISHED_ZERO_COUNT 次为 0 ，认为任务完成，并修改状态位置
+                if len(filter(lambda x: x[-1], line['data_count'])) > FINISHED_ZERO_COUNT:
+                    if all(
+                            map(
+                                lambda x: int(x[3]) == 0,
+                                list(
+                                    sorted(
+                                        filter(
+                                            lambda x: x[-1],
+                                            line['data_count']
+                                        ),
+                                        key=lambda x: x[1]
+                                    )
+                                )[-FINISHED_ZERO_COUNT:]
+                            )
+                    ):
                         collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
                         continue
+
+                if all(map(lambda x: x == 0, list(filter(lambda x: x[-1], line['data_count']))[-FINISHED_ZERO_COUNT:])):
+                    # 全部为 0 则表明该城市任务已经积累完成
+                    collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
+                    continue
+
                 _count += 1
                 if _count == MAX_CITY_TASK_PER_SEARCH:
                     # 到达最大城市任务数目后，结束任务分发
@@ -459,6 +486,7 @@ def city2list():
                 args = line['args']
                 new_date = get_city_date(task_name, date_index)
                 args['check_in'] = new_date
+                args['date_index'] = date_index
 
                 it.insert_task(args=args)
 
@@ -476,7 +504,7 @@ class TaskSender(object):
 
 
 if __name__ == '__main__':
-    pass
+    city2list()
     # monitoring_zombies_task_total()
     # city2list()
     # get_default_timestramp()

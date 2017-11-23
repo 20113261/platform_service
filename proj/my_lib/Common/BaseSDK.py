@@ -38,6 +38,7 @@ KnownTaskType = {
     "DaodaoDetail": "Detail",
     "QyerList": "List",
     "Qyerinfo": "Detail",
+    "QyerDetail": "Detail",
     "Default": "Unknown"
 }
 
@@ -155,19 +156,17 @@ class BaseSDK(object):
         if self.task.status == TaskStatus.FINISHED:
             task_result = True
 
-        if task_result:
-            # 正确后更新
-            update_city_list_task(
-                city_collection_name=city_collection_name,
-                list_task_token=self.task.list_task_token,
-                data_count=self.task.list_task_insert_db_count,
-                task_result=task_result
-            )
-        elif self.task.used_times >= self.task.max_retry_times:
-            # 最大次数重试后更新
-            update_city_list_task(
-                city_collection_name=city_collection_name,
-                list_task_token=self.task.list_task_token,
-                data_count=self.task.list_task_insert_db_count,
-                task_result=task_result
-            )
+        # 更新城市列表任务返回结果
+        update_city_list_task(
+            city_collection_name=city_collection_name,
+            list_task_token=self.task.list_task_token,
+            data_count=(
+                self.task.task_id,
+                self.task.kwargs['date_index'],
+                self.task.get_data_per_times,
+                self.task.list_task_insert_db_count,
+                self.task.used_times,
+                task_result
+            ),
+            task_result=task_result
+        )
