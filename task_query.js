@@ -2356,7 +2356,7 @@ var per_task = {
 };
 
 
-db.City_Queue_poi_list_TaskName_city_total_qyer_20171120a.update({}, {$set: {date_index: 0}}, false, true);
+db.City_Queue_poi_list_TaskName_city_total_qyer_20171120a.update({}, {$set: {finished: 0}}, false, true);
 
 db.City_Queue_poi_list_TaskName_city_total_qyer_20171120a.update({}, {$set: {date_index: 0}}, false, true);
 

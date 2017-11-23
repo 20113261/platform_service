@@ -412,6 +412,7 @@ def monitoring_supplement_field():
 
 
 MAX_CITY_TASK_PER_SEARCH = 10000
+MAX_TASK_PER_CITY = 70
 FINISHED_ZERO_COUNT = 4
 
 
@@ -445,8 +446,8 @@ def city2list():
                     # 发任务数目与返回的全量任务 id 数目相同时，代表之前发的任务已经完成
                     continue
 
-                if len(set(list(map(lambda x: x[0], line['data_count'])))) >= FINISHED_ZERO_COUNT:
-                    # 最大请求次数，可任务任务完成
+                if len(set(list(map(lambda x: x[0], line['data_count'])))) >= MAX_TASK_PER_CITY:
+                    # 当前已完成任务数目大于城市最大任务数目，可认为任务完成
                     collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
 
                 # 如果正常返回的数据中连续 FINISHED_ZERO_COUNT 次为 0 ，认为任务完成，并修改状态位置
