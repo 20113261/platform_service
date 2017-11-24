@@ -44,6 +44,7 @@ def parse_image_urls(target_url):
     counts = json.loads(counts)
     beentocounts = counts.get('counts', {}).get('beentocounts', None)
     plantocounts = counts.get('counts',{}).get('plantocounts',None)
+
     ul = page('.pla_photolist.clearfix li')
     img_list = [li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()]
 
@@ -57,11 +58,8 @@ def parse_image_urls(target_url):
             page = pyquery.PyQuery(image_page)
             ul = page('.pla_photolist.clearfix li')
             img_list.extend([li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()])
-<<<<<<< HEAD
+
     return '|'.join(img_list),beentocounts,plantocounts
-=======
-    return '|'.join(img_list), beentocounts
->>>>>>> 24482cba4347272f2917bcd45a8ce9a7b3784957
 
 
 # def parse_comment(qyer):
@@ -201,11 +199,7 @@ def page_parser(content, target_url):
     qyer.url = target_url
 
     try:
-<<<<<<< HEAD
         qyer.imgurl,qyer.beentocounts,qyer.plantocounts = parse_image_urls(target_url)
-=======
-        qyer.imgurl, qyer.beentocounts = parse_image_urls(target_url)
->>>>>>> 24482cba4347272f2917bcd45a8ce9a7b3784957
     except Exception as e:
         print(traceback.format_exc(e))
 
@@ -216,7 +210,6 @@ def page_parser(content, target_url):
 if __name__ == '__main__':
     import requests
 
-<<<<<<< HEAD
     target_url = 'http://place.qyer.com/poi/V2AJZVFlBzNTYVI2/'
     # target_url = 'http://place.qyer.com/poi/V2cJYFFvBzdTYQ/'
     target_url = 'http://place.qyer.com/poi/V2cJa1FkBzNTbA/'
@@ -236,7 +229,6 @@ if __name__ == '__main__':
         print('%s : %s' % (k, v))
 
     print(len(result.__dict__.keys()))
-=======
     print(parse_comment_counts("200832"))
 
     # target_url = 'http://place.qyer.com/poi/V2AJZVFlBzNTYVI2/'
@@ -256,7 +248,7 @@ if __name__ == '__main__':
     #     print('%s : %s' % (k, v))
     #
     # print(len(result.__dict__.keys()))
->>>>>>> 24482cba4347272f2917bcd45a8ce9a7b3784957
+
     # try:
     #     session = DBSession()
     #     session.merge(result)
