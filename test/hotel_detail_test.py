@@ -50,11 +50,18 @@ if __name__ == '__main__':
                 _type='hotel',
                 _task_name='detail_hotel_hotels_20170928d',
                 _used_times=0, max_retry_times=10,
-                kwargs={'source': 'hotels',
-                        'url': 'http://zh.hotels.com/ho691218/?pa=6&tab=description&ZSX=0&SYE=3&q-room-0-children=0&q-room-0-adults=2',
-                        'part': 'detail_hotel_hotels_20170928d',
-                        'source_id': '691218',
-                        'city_id': 'NULL',
-                        'country_id': 'NULL'}, task_type=TaskType.NORMAL, list_task_token=None)
+                # kwargs={
+                #     'source': 'hotels',
+                #     'url': 'http://zh.hotels.com/ho691218/?pa=6&tab=description&ZSX=0&SYE=3&q-room-0-children=0&q-room-0-adults=2',
+                #     'part': 'detail_hotel_hotels_20170928d',
+                #     'source_id': '691218',
+                #     'city_id': 'NULL',
+                #     'country_id': 'NULL'
+                # },
+                kwargs={
+                    "url": "http://www.booking.com\n/hotel/ph/tg-hometel.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBA-gBAZICAXmoAgQ;sid=3b827f3aa2e3fca0a95ec0d56605f64a;checkin=2018-01-08;checkout=2018-01-11;ucfs=1;soh=1;srpvid=511e686ec99000f9;srepoch=1511448670;highlighted_blocks=;all_sr_blocks=;room1=A%2CA;soldout=0%2C0;hpos=10;hapos=520;dest_type=region;dest_id=5374;srfid=0a39626563bec2b30fbbedccb1438d4e5f55493fX520;from=searchresults;soldout_clicked=1\n;highlight_room=#no_availability_msg",
+                    "country_id": "NULL", "source": "booking", "part": "detail_hotel_booking_20171122a",
+                    "city_id": "NULL", "source_id": "1878253"},
+                task_type=TaskType.NORMAL, list_task_token=None)
 
     print(hotel_detail_task(task=task))

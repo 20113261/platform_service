@@ -152,16 +152,24 @@ if __name__ == '__main__':
     #     retry_count=2,
     #     max_retry_times=6
     # ))
+    pass
     task = Task(_worker='', _task_id='demo', _source='booking', _type='hotel_list',
                 _task_name='list_hotel_booking_20170929a',
                 _used_times=0, max_retry_times=6,
-                kwargs={'source': 'booking',
-                        'city_id': 'NULL',
-                        'country_id': '205',
-                        'check_in': '20171128',
-                        'part': '20170929a',
-                        'is_new_type': 1,
-                        'suggest_type': 1,
-                        'suggest': '''https://www.booking.com/searchresults.zh-cn.html?label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985:pl:ta:p1:p2:ac:ap1t1:neg:fi:tikwd-11455299683:lp9061505:li:dec:dm&sid=2fabc4030e6b847b9ef3b059e24c6b83&aid=376390&error_url=http://www.booking.com/index.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19kZYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC6gCBA;sid=8ba5e9abe3eb9fcadf8e837d4d5a2464;sb_price_type=total&;&ss=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne_untouched=%E9%A9%AC%E8%90%A8%E5%A5%A5&dest_id=900048165&dest_type=city&checkin_year=&checkin_month=&checkin_monthday=&checkout_year=&checkout_month=&checkout_monthday=&no_rooms=&group_adults=&group_children=0&from_sf=1ss=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne=%E9%A9%AC%E8%90%A8%E5%A5%A5&ssne_untouched=%E9%A9%AC%E8%90%A8%E5%A5%A5&dest_id=900048165&dest_type=city&checkin_year=&checkin_month=&checkin_monthday=&checkout_year=&checkout_month=&checkout_monthday=&no_rooms=&group_adults=&group_children=0&from_sf=1''', })
+                # kwargs={
+                #     'source': 'hotels',
+                #     'city_id': 'NULL',
+                #     'country_id': '205',
+                #     'check_in': '20171128',
+                #     'part': '20170929a',
+                #     'is_new_type': 1,
+                #     'suggest_type': 1,
+                #     'suggest': '''https://www.hotels.cn/search.do?resolved-location=CITY%3A1638661%3AUNKNOWN%3AUNKNOWN&destination-id=1638661&q-destination=%E9%A9%AC%E5%B8%8C%E5%B2%9B,%20%E5%A1%9E%E8%88%8C%E5%B0%94&q-check-in=2018-01-08&q-check-out=2018-01-11&q-rooms=1&q-room-0-adults=2&q-room-0-children=0'''
+                # },
+                kwargs={"suggest_type": 2, "check_in": "20171203", "city_id": "20371",
+                        "suggest": "{u'name': u'\\u5bbf\\u52a1', u'redirectPage': u'DEFAULT_PAGE', u'longitude': 123.89309, u'caption': u\"\\u5bbf\\u52a1, \\u83f2\\u5f8b\\u5bbe (Fi<span class='highlighted'>lip\\xedny</span>)\", u'destinationId': u'987200', u'latitude': 10.309726, u'landmarkCityDestinationId': None, u'type': u'CITY', u'geoId': u'1000000000000000800'}",
+                        "country_id": "107", "source": "hotels", "part": "20171122a", "is_new_type": 1,
+                        "date_index": 0},
+                _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
 
     print(hotel_list_task(task=task))

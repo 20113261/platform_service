@@ -134,7 +134,7 @@ def create_table(table_name):
     elif tab_args[0] == 'images':
         if tab_args[1] == 'hotel':
             sql_file = LOAD_FILES['images_hotel']
-        elif tab_args[2] == 'daodao':
+        elif tab_args[2] in ('daodao', 'qyer'):
             sql_file = LOAD_FILES['images_daodao']
 
     cursor.execute(sql_file % table_name)
@@ -254,7 +254,6 @@ def monitoring_poi_list2detail():
 
 
 def monitoring_poi_detail2imgOrComment():
-    sql = """select source, id, city_id, imgurl, utime from %s where utime >= '%s' order by utime limit 5000"""
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
@@ -265,10 +264,15 @@ def monitoring_poi_detail2imgOrComment():
                 continue
             if tab_args[1] not in ('rest', 'attr', 'shop', 'total'):
                 continue
-            if tab_args[2] != POI_SOURCE:
+            if tab_args[2] not in (POI_SOURCE, ):
                 continue
             if tab_args[3] == 'test':
                 continue
+
+            if tab_args[2] == POI_SOURCE:
+                sql = """select source, id, city_id, imgurl, utime from %s where utime >= '%s' order by utime limit 5000"""
+            else:
+                sql = """select source, id, city_id, imgurl, insert_time from %s where insert_time >= '%s' order by insert_time limit 5000"""
 
             timestamp, priority, sequence = get_seek(table_name)
 
@@ -315,6 +319,7 @@ def monitoring_qyer_list2detail():
             timestamp = send_qyer_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s' % (timestamp))
+
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
     except Exception as e:
@@ -451,8 +456,8 @@ def city2list():
                     # 当前已完成任务数目大于城市最大任务数目，可认为任务完成
                     collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
 
-                # 如果正常返回的数据中连续 FINISHED_ZERO_COUNT 次为 0 ，认为任务完成，并修改状态位置
                 if len(filter(lambda x: x[-1], line['data_count'])) > FINISHED_ZERO_COUNT:
+                    # 如果正常返回的数据中连续 FINISHED_ZERO_COUNT 次为 0 ，认为任务完成，并修改状态位置
                     if all(
                             map(
                                 lambda x: int(x[3]) == 0,
@@ -467,13 +472,14 @@ def city2list():
                                 )[-FINISHED_ZERO_COUNT:]
                             )
                     ):
+                        # 全部为 0 则表明该城市任务已经积累完成
                         collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
                         continue
-
-                if all(map(lambda x: x == 0, list(filter(lambda x: x[-1], line['data_count']))[-FINISHED_ZERO_COUNT:])):
-                    # 全部为 0 则表明该城市任务已经积累完成
-                    collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
-                    continue
+                # if all(map(lambda x: x[3] == 0,
+                #            list(filter(lambda x: x[-1], line['data_count']))[-FINISHED_ZERO_COUNT:])):
+                #     # 全部为 0 则表明该城市任务已经积累完成
+                #     collections.update({'list_task_token': line['list_task_token']}, {"$set": {"finished": 1}})
+                #     continue
 
                 _count += 1
                 if _count == MAX_CITY_TASK_PER_SEARCH:
@@ -504,7 +510,9 @@ class TaskSender(object):
 
 
 if __name__ == '__main__':
-    city2list()
+    # city2list()
+    # monitoring_poi_detail2imgOrComment()
+    monitoring_qyer_list2detail()
     # monitoring_zombies_task_total()
     # city2list()
     # get_default_timestramp()

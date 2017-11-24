@@ -117,10 +117,12 @@ class HotelListSDK(BaseSDK):
                 cursor = service_platform_conn.cursor()
                 sql = "REPLACE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)".format(
                     self.task.task_name)
-                cursor.executemany(sql, res_data)
+                _res = cursor.executemany(sql, res_data)
                 service_platform_conn.commit()
                 cursor.close()
                 service_platform_conn.close()
+                self.task.list_task_insert_db_count = _res
+                self.task.get_data_per_times = len(res_data)
             except Exception as e:
                 self.logger.exception(msg="[mysql error]", exc_info=e)
                 raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)

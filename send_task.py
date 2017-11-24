@@ -23,6 +23,9 @@ from pymongo.errors import DuplicateKeyError
 from send_email import send_email, SEND_TO, EMAIL_TITLE
 from proj.my_lib.logger import get_logger
 
+from warnings import filterwarnings
+
+filterwarnings('ignore', category=pymysql.err.Warning)
 logger = get_logger("send_task")
 
 client = pymongo.MongoClient(host='10.10.231.105')
@@ -69,12 +72,12 @@ def send_hotel_detail_task(tasks, task_tag, priority):
         return timestamp
 
     source = tasks[0][0]
-    with InsertTask(worker='proj.total_tasks.poi_detail_task', queue='hotel_detail', routine_key='hotel_detail',
+    with InsertTask(worker='proj.total_tasks.hotel_detail_task', queue='hotel_detail', routine_key='hotel_detail',
                     task_name=task_tag, source=source.title(), _type='Hotel',
                     priority=priority) as it:
         for source, source_id, city_id, hotel_url, timestamp in tasks:
             it.insert_task({
-                'source': 'hotels',
+                'source': source,
                 'url': hotel_url,
                 'part': task_tag,
                 'source_id': source_id,
@@ -130,7 +133,7 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
     source = tasks[0][0]
     suffix = task_tag.split('_', 1)[1]
     with InsertTask(worker='proj.total_tasks.images_task', queue='file_downloader', routine_key='file_downloader',
-                    task_name='images_' + suffix, source=source.title, _type='DownloadImages',
+                    task_name='images_' + suffix, source=source.title(), _type='DownloadImages',
                     priority=priority) as it:
         for source, source_id, city_id, img_items, update_time in tasks:
             if img_items is None:
