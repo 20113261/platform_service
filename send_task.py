@@ -142,8 +142,8 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
                 if not url:
                     continue
                 md5 = hashlib.md5(source + str(source_id) + url).hexdigest()
-                
-                if '20171122a' not in task_tag or '20171120a' not in task_tag:
+
+                if '20171122a' not in task_tag and '20171120a' not in task_tag:
                     if redis_md5.get(md5):
                         continue
 
@@ -153,6 +153,8 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
                 bucket_name = "mioji-{}".format(task_tag.split('_')[1])
                 if bucket_name == 'mioji-wanle':
                     file_prefix = "huantaoyou"
+                else:
+                    file_prefix = ""
 
                 it.insert_task({
                     'source': source,

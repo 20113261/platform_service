@@ -512,7 +512,8 @@ class TaskSender(object):
 if __name__ == '__main__':
     # city2list()
     # monitoring_poi_detail2imgOrComment()
-    monitoring_qyer_list2detail()
+    monitoring_hotel_detail2ImgOrComment()
+    # monitoring_qyer_list2detail()
     # monitoring_zombies_task_total()
     # city2list()
     # get_default_timestramp()
