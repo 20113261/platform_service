@@ -264,7 +264,7 @@ def monitoring_poi_detail2imgOrComment():
                 continue
             if tab_args[1] not in ('rest', 'attr', 'shop', 'total'):
                 continue
-            if tab_args[2] not in (POI_SOURCE, ):
+            if tab_args[2] not in (POI_SOURCE, QYER_SOURCE):
                 continue
             if tab_args[3] == 'test':
                 continue
@@ -273,6 +273,10 @@ def monitoring_poi_detail2imgOrComment():
                 sql = """select source, id, city_id, imgurl, utime from %s where utime >= '%s' order by utime limit 5000"""
             else:
                 sql = """select source, id, city_id, imgurl, insert_time from %s where insert_time >= '%s' order by insert_time limit 5000"""
+
+            if not tab_args[-1] >= '20171120a':
+                # 过滤旧的图片任务
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
 
