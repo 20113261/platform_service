@@ -150,7 +150,12 @@ def send_image_task(tasks, task_tag, priority, is_poi_task):
                 redis_md5.set(md5, 1)
                 md5_data.append((md5, datetime.datetime.now()))
                 _count += 1
-                bucket_name = "mioji-{}".format(task_tag.split('_')[1])
+                task_type = task_tag.split('_')[1]
+                if task_type == 'total':
+                    bucket_name = 'mioji-attr'
+                else:
+                    bucket_name = "mioji-{}".format(task_type)
+
                 if bucket_name == 'mioji-wanle':
                     file_prefix = "huantaoyou"
                 else:

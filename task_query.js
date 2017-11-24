@@ -2518,6 +2518,50 @@ db.Task_Queue_poi_list_TaskName_list_total_qyer_20171120a.update({"list_task_tok
     }
 }, false, true);
 
+db.Task_Queue_file_downloader_TaskName_images_hotel_booking_20171122a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+db.Task_Queue_file_downloader_TaskName_images_hotel_agoda_20171122a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+db.Task_Queue_file_downloader_TaskName_images_hotel_ctrip_20171122a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+db.Task_Queue_file_downloader_TaskName_images_hotel_hotels_20171122a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+db.Task_Queue_file_downloader_TaskName_images_hotel_expedia_20171122a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+
+db.Task_Queue_file_downloader_TaskName_images_attr_daodao_20171122a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+
 db.Task_Queue_hotel_detail_TaskName_detail_hotel_agoda_20171122a.remove({});
 db.Task_Queue_hotel_detail_TaskName_detail_hotel_booking_20171122a.remove({});
 db.Task_Queue_hotel_detail_TaskName_detail_hotel_ctrip_20171122a.remove({});
