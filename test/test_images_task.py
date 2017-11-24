@@ -99,12 +99,17 @@ if __name__ == '__main__':
     #     }
     # )
     task = Task(_worker='', _task_id='demo', _source='huantaoyou', _type='images',
-                _task_name='image_wanle_huantaoyou_20171023a',
+                _task_name='images_hotel_expedia_20171122a',
                 _used_times=0, max_retry_times=6,
-                kwargs={"source": "daodao", "new_part": "detail_attr_daodao_20171122a",
-                        "target_url": "https://ccm.ddcdn.com/ext/photo-s/0f/dd/44/61/peaceful-time.jpg",
-                        "source_id": "test", "bucket_name": "mioji-attr", "is_poi_task": True, "part": "20171122a",
-                        "file_prefix": ""}, _queue='file_downloader', _routine_key='file_downloader',
+                # kwargs={"source": "daodao", "new_part": "detail_attr_daodao_20171122a",
+                #         "target_url": "https://ccm.ddcdn.com/ext/photo-s/0f/dd/44/61/peaceful-time.jpg",
+                #         "source_id": "test", "bucket_name": "mioji-attr", "is_poi_task": True, "part": "20171122a",
+                #         "file_prefix": ""},
+                kwargs={"source": "expedia", "new_part": "detail_hotel_expedia_20171122a",
+                        "target_url": "https://images.trvl-media.com/hotels/3000000/2370000/2363200/2363105/ca9a724e_z.jpg",
+                        "source_id": "2363105", "bucket_name": "mioji-hotel", "is_poi_task": False, "part": "20171122a",
+                        "file_prefix": ""},
+                _queue='file_downloader', _routine_key='file_downloader',
                 list_task_token='', task_type=0
                 )
     # kwargs={'source': "huantaoyou",

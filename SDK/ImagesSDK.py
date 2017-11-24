@@ -98,7 +98,7 @@ class ImagesSDK(BaseSDK):
                 source_id,  # source_id
                 target_url,  # pic_url
                 file_name,  # pic_md5
-                self.task.task_name,  # part
+                self.task.task_name[-9:],  # part
                 size,  # size
                 use_flag,  # poi use , hotel flag
                 file_md5,  # file_md5
