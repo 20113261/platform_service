@@ -43,6 +43,7 @@ def parse_image_urls(target_url):
     counts = re.search(r'var data = (.*)(?=;)', content).group(1)
     counts = json.loads(counts)
     beentocounts = counts.get('counts', {}).get('beentocounts', None)
+    plantocounts = counts.get('counts',{}).get('plantocounts',None)
     ul = page('.pla_photolist.clearfix li')
     img_list = [li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()]
 
@@ -56,7 +57,7 @@ def parse_image_urls(target_url):
             page = pyquery.PyQuery(image_page)
             ul = page('.pla_photolist.clearfix li')
             img_list.extend([li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()])
-    return '|'.join(img_list),beentocounts
+    return '|'.join(img_list),beentocounts,plantocounts
 
 
 # def parse_comment(qyer):
@@ -196,7 +197,7 @@ def page_parser(content, target_url):
     qyer.url = target_url
 
     try:
-        qyer.imgurl,qyer.beentocounts = parse_image_urls(target_url)
+        qyer.imgurl,qyer.beentocounts,qyer.plantocounts = parse_image_urls(target_url)
     except Exception as e:
         print(traceback.format_exc(e))
 
@@ -214,6 +215,8 @@ if __name__ == '__main__':
     target_url = 'http://place.qyer.com/poi/V2cJYFFhBz5TZA/'
     target_url = 'http://place.qyer.com/poi/V2AJYVFmBzRTZg/'
     target_url = 'http://place.qyer.com/poi/V2YJY1FjBz5TZFI9/'
+    target_url = 'http://place.qyer.com/poi/V2UJY1FnBzZTZFI5/'
+    target_url = 'http://place.qyer.com/poi/V2wJYVFuBzFTZQ/'
     page = requests.get(target_url)
     page.encoding = 'utf8'
     content = page.text
