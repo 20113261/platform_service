@@ -2568,3 +2568,5 @@ db.Task_Queue_hotel_detail_TaskName_detail_hotel_ctrip_20171122a.remove({});
 db.Task_Queue_hotel_detail_TaskName_detail_hotel_hotels_20171122a.remove({});
 db.Task_Queue_hotel_detail_TaskName_detail_hotel_expedia_20171122a.remove({});
 db.Task_Queue_hotel_detail_TaskName_detail_hotel_elong_20171122a.remove({});
+
+

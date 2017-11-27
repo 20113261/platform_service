@@ -115,7 +115,7 @@ class HotelListSDK(BaseSDK):
             try:
                 service_platform_conn = service_platform_pool.connection()
                 cursor = service_platform_conn.cursor()
-                sql = "REPLACE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)".format(
+                sql = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)".format(
                     self.task.task_name)
                 _res = cursor.executemany(sql, res_data)
                 service_platform_conn.commit()
