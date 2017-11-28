@@ -109,7 +109,10 @@ def agoda_parser(content, url, other_info):
         try:
             hotel.grade = root.find_class('review-score-value')[0].text
         except:
-            hotel.grade = -1
+            try:
+                hotel.grade = page_params['masterRoomInfo'][0]['demographics']['grades'][0]['score']
+            except Exception as e:
+                hotel.grade = -1
     print 'grade=>%s' % hotel.grade
 
     try:
@@ -120,29 +123,37 @@ def agoda_parser(content, url, other_info):
                 'utf8').strip()
             hotel.review_num = review_num_pat.findall(review_num)[0]
         except:
-            hotel.review_num = -1
+            try:
+                hotel.review_num = page_params['masterRoomInfo'][0]['demographics']['count']
+            except:
+                hotel.review_num = -1
 
     print 'hotel.review_num=>%s' % hotel.review_num
 
     try:
         hotel.img_items = '|'.join(filter(lambda x: 'hotel' in x,
                                           map(lambda x: 'http:' + x['Location'].split('?')[0],
-                                              page_params['mosaicInitData']['images'])))
+                                              page_params['mosaicInitData']['images']))).encode('utf-8')
     except:
         try:
-            img_json = images_url_pat.findall(content)[0]
-            location_pat = re.compile(r'"Location":"(.*?)",', re.S)
-            img_list = location_pat.findall(img_json)
-            hotel.img_items = '|'.join(
-                map(lambda x: 'http:' + x, img_list))
+            img_lists = []
+            for img in page_params['masterRoomInfo']:
+                img_lists.extend(img['images'])
+            hotel.img_items = '|'.join(map(lambda x: urljoin('http:', x), img_lists)).encode('utf-8')
         except:
             try:
                 img_list = '|'.join(
                     [image for images in page_params['roomGridData']['masterRooms'] for image in images['images']])
                 hotel.img_items = img_list
             except:
-                hotel.img_items = 'NULL'
-
+                try:
+                    img_json = images_url_pat.findall(content)[0]
+                    location_pat = re.compile(r'"Location":"(.*?)",', re.S)
+                    img_list = location_pat.findall(img_json)
+                    hotel.img_items = '|'.join(
+                        map(lambda x: 'http:' + x, img_list))
+                except Exception as e:
+                    hotel.img_items = 'NULL'
     print 'img_items=>%s' % hotel.img_items
 
     try:
@@ -150,40 +161,24 @@ def agoda_parser(content, url, other_info):
     except:
         pass
 
-    # try:
-    #     headers = {
-    #         'User-agent': GetUserAgent()
-    #     }
-    #     url_about = 'https://www.agoda.com/NewSite/zh-cn/Hotel/AboutHotel?hotelId={0}&languageId=8&hasBcomChildPolicy=False'.format(
-    #         other_info['source_id'])
-    #     page_about = requests.get(url=url_about, headers=headers)
-    #     page_about.encoding = 'utf8'
-    #     about_content = page_about.text
-    #
-    #     about_root = HTML.fromstring(about_content)
-    # except Exception, e:
-    #     about_root = HTML.fromstring('')
-
     try:
-        # hotel.service = '|'.join(about_root.xpath('//span[@data-selenium="available-feature"]/text()')).encode(
-        #     'utf8').strip()
         service_url = "https://www.agoda.com/api/zh-cn/Hotel/AboutHotel?hotelId={0}".format(page_params['hotelId'])
         json_data = json.loads(requests.get(service_url).content)
         hotel.service = '|'.join(
             [feature['Name'] for features in json_data['FeatureGroups'] for feature in features['Feature'] if
-             feature['Available']])
+             feature['Available']]).encode('utf-8')
 
     except:
         try:
             hotel.service = '|'.join(
-                [service['text'] for services in page_params['featuresYouLove']['features'] for service in services])
+                [service['text'].strip() for services in page_params['featuresYouLove']['features'] for service in services])
         except:
             # hotel.service = '|'.join()
             hotel.service = 'NULL'
     print 'hotel.service=>%s' % hotel.service
 
     try:
-        hotel.description = json_data['HotelDesc']['Overview'].strip().replace('<BR>','')
+        hotel.description = json_data['HotelDesc']['Overview'].strip().replace('<BR>','').encode('utf-8')
     except:
         hotel.description = 'NULL'
     print 'hotel.description=>%s' % hotel.description
@@ -212,9 +207,8 @@ def agoda_parser(content, url, other_info):
             hotel.check_out_time = in_and_out.get("CheckInAndOutTime", {}).get("CheckOutTime", {}).get("Until", {}).get("Description")
         except:
             pass
-
-
-
+    print "hotel.check_in_time:",hotel.check_in_time
+    print "hotel.check_out_time:",hotel.check_out_time
     #从酒店页面获取城市信息
     try:
         country_id = page_params['hotelSearchCriteria']['countryId']
@@ -226,7 +220,8 @@ def agoda_parser(content, url, other_info):
 
     hotel.others_info = json.dumps({'country_id':country_id,'country_name':country_name,'city_name':city_name,'city_id':city_id})
     hotel.source_city_id = city_id
-
+    hotel.country = page_params['hotelInfo'].get('address',{}).get('countryName','')
+    hotel.city = page_params['hotelInfo'].get('address',{}).get('cityName','')
     print "hotel.others_info:",hotel.others_info
     print "hotel.source_city_id:",hotel.source_city_id
     hotel.accepted_cards = 'NULL'
@@ -291,11 +286,14 @@ if __name__ == '__main__':
     #url = 'https://www.agoda.com/zh-cn/puesta-del-sol-apartment/hotel/all/asilah-ma.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=a00c61b5-db95-40f9-b5c3-a385219f7e7a'
     #url = 'https://www.agoda.com/zh-cn/ana-o-tai/hotel/all/hanga-roa-cl.html?checkin=2017-12-15&los=1&adults=2&rooms=1&cid=-1&searchrequestid=1b174d8d-2aef-4fea-836d-fb7a5e70e234'
     #url = 'https://www.agoda.com/zh-cn/cabanas-teo/hotel/all/isla-de-pascua-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=5460efbf-de01-4b89-99c8-11e1adc2f066'
-    #url = 'https://www.agoda.com/zh-cn/cabanas-aorangi/hotel/all/isla-de-pascua-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
-    # url = 'https://www.agoda.com/zh-cn/hare-vivanka/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
-    # url = 'https://www.agoda.com/zh-cn/cabana-meme/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
-    # url = 'https://www.agoda.com/zh-cn/hotel-alagare/hotel/lausanne-ch.html?checkin=2017-12-07&los=1&adults=2&rooms=1&cid=-1&searchrequestid=9127dc90-fd5e-4cbb-aa22-4cf62afbdecd'
-    url = 'https://www.agoda.com/zh-cn/grand-hyatt-new-york-hotel/hotel/new-york-ny-us.html?checkin=2017-12-20&los=1&adults=2&rooms=1&cid=-1&searchrequestid=7e5812dd-d6a4-4ca3-90a1-60437e475f93'
+    url = 's23'
+    #url = 'https://www.agoda.com/zh-cn/hare-vivanka/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
+    #url = 'https://www.agoda.com/zh-cn/cabana-meme/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
+    #url = 'https://www.agoda.com/zh-cn/hotel-alagare/hotel/lausanne-ch.html?checkin=2017-12-07&los=1&adults=2&rooms=1&cid=-1&searchrequestid=9127dc90-fd5e-4cbb-aa22-4cf62afbdecd'
+    #url = 'https://www.agoda.com/zh-cn/grand-hyatt-new-york-hotel/hotel/new-york-ny-us.html?checkin=2017-12-20&los=1&adults=2&rooms=1&cid=-1&searchrequestid=7e5812dd-d6a4-4ca3-90a1-60437e475f93'
+    url = 'https://www.agoda.com/zh-cn/hotel-the-celestine-tokyo-shiba/hotel/tokyo-jp.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=b0293d9f-56be-46ad-998e-3a14b8601594&isMRS=1'
+    url = 'https://www.agoda.com/zh-cn/royal-park-hotel-the-shiodome-tokyo/hotel/tokyo-jp.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=35cdc5b6-2e05-4924-b71e-479692ddb593&isMRS=1'
+    url = 'https://www.agoda.com/zh-cn/conrad-macao-cotai-central/hotel/macau-mo.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=5bd92238-b4f5-4d41-a958-051575b96f71&dodhotel=1&isMRS=0'
     page = requests.get(url=url, headers=headers)
     page.encoding = 'utf8'
     content = page.text
