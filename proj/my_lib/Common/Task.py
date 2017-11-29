@@ -22,7 +22,7 @@ class TaskType(object):
 
 class Task(object):
     def __init__(self, _queue, _routine_key, _worker, _task_id, _source, _type, _task_name, _used_times,
-                 max_retry_times, task_type, list_task_token, kwargs):
+                 max_retry_times, task_type, list_task_token, kwargs, collection='Unknown' ):
         """
         抓取平台任务对象
         :param _queue:
@@ -36,6 +36,7 @@ class Task(object):
         :param max_retry_times:
         :param task_type:
         :param list_task_token:
+        :param collection:
         :type kwargs: dict
         """
         # 初始化任务信息
@@ -66,6 +67,9 @@ class Task(object):
         # 列表页任务特殊变量
         self.__list_task_insert_db_count = 0
         self.__get_data_per_times = 0
+
+        # 任务 collection 信息
+        self.collection = collection
 
     @property
     def list_task_insert_db_count(self):

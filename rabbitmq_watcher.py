@@ -85,7 +85,7 @@ def insert_task(queue, limit):
         _count += 1
         app.send_task(
             task.worker,
-            task_id=task.task_id,
+            task_id="[collection: {}][tid: {}]".format(task.collection, task.task_id),
             kwargs={'task': task},
             queue=task.queue,
             routing_key=task.routine_key
