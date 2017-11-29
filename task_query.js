@@ -2570,3 +2570,19 @@ db.Task_Queue_hotel_detail_TaskName_detail_hotel_expedia_20171122a.remove({});
 db.Task_Queue_hotel_detail_TaskName_detail_hotel_elong_20171122a.remove({});
 
 
+db.Task_Queue_hotel_detail_TaskName_detail_hotel_elong_20171127a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+
+db.Task_Queue_hotel_detail_TaskName_detail_hotel_agoda_20171127a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+
