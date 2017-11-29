@@ -34,11 +34,13 @@ def expedia_parser(content, url, other_info):
         print str(e)
 
     try:
-        source_city_id = re.findall(r'cityRegionId: \'(\d+)\',', content)[0]
+        source_city_id = re.findall(r"cityRegionId: '(\d+)',", content)[0]
+        if str(source_city_id) == '0':
+            source_city_id_str = re.search(r'backToSearchParams:(.*)(?=,)',content).group(1)
+            source_city_id = json.loads(source_city_id_str.strip()).get('regionId','NULL')
         hotel.source_city_id = source_city_id.encode('utf8')
     except Exception as e:
         print e
-
     print 'source_city_id=>%s' % hotel.source_city_id
 
 
@@ -358,8 +360,12 @@ if __name__ == '__main__':
     # url = 'https://www.expedia.com.hk/cn/Wagga-Wagga-Hotels-International-Hotel-Wagga-Wagga.h8966967.Hotel-Information?chkin=2017%2F9%2F25&chkout=2017%2F9%2F26&rm1=a2&regionId=181592&hwrqCacheKey=cf20f4e6-25d7-4183-99d0-954735abcb77HWRQ1506309449240&vip=false&c=297cd267-27af-484b-9117-f3f38e35362c&&exp_dp=729.14&exp_ts=1506309449666&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
     # url = 'https://www.expedia.com.hk/Hotels-Sahara-Motel.h13279481.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Mauritius-Island-Hotels-Ocean-Villas.h1466602.Hotel-Information?chkin=2017%2F11%2F25&chkout=2017%2F11%2F26&rm1=a2&regionId=6051080&sort=recommended&hwrqCacheKey=58665cc7-0e73-4f2d-89da-6cf5f79637efHWRQ1506387257474&vip=false&c=251228bc-5980-49ea-ac6d-87d847977318&'
-    # url = 'https://www.expedia.com.hk/Hotels-Saint-Georges-Hotel.h1.Hotel-Information?chkin=2017%2F11%2F7&chkout=2017%2F11%2F8&rm1=a2&regionId=178279&sort=recommended&hwrqCacheKey=3a7247f4-a225-4f75-afd4-8fd3463f2d85HWRQ1506618956146&vip=false&c=c6d00f50-8b75-4eec-b23c-f9c20f690aa8&'
-    # url = 'https://www.expedia.cn/cn/Lansing-Hotels-The-English-Inn.h36874.Hotel-Information?chkin=2017%2F10%2F19&chkout=2017%2F10%2F20&rm1=a2&regionId=100011&hwrqCacheKey=9cbe2ff3-4cb7-497c-95dc-6dbde2ac34beHWRQ1508384715126&vip=false&c=f41b55eb-3095-45d6-ba58-ef205e58f100&&exp_dp=762.15&exp_ts=1508384715401&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
+    url = 'https://www.expedia.com.hk/Hotels-Saint-Georges-Hotel.h1.Hotel-Information?chkin=2017%2F11%2F7&chkout=2017%2F11%2F8&rm1=a2&regionId=178279&sort=recommended&hwrqCacheKey=3a7247f4-a225-4f75-afd4-8fd3463f2d85HWRQ1506618956146&vip=false&c=c6d00f50-8b75-4eec-b23c-f9c20f690aa8&'
+    url = 'https://www.expedia.cn/cn/Lansing-Hotels-The-English-Inn.h36874.Hotel-Information?chkin=2017%2F10%2F19&chkout=2017%2F10%2F20&rm1=a2&regionId=100011&hwrqCacheKey=9cbe2ff3-4cb7-497c-95dc-6dbde2ac34beHWRQ1508384715126&vip=false&c=f41b55eb-3095-45d6-ba58-ef205e58f100&&exp_dp=762.15&exp_ts=1508384715401&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
+    url = 'https://www.expedia.com.hk/cn/Salvador-Hotels-Lindo-Village-Em-Itacimirim.h20176166.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=601935&sort=recommended&hwrqCacheKey=aecb76ac-5c80-4031-9121-0e14a862cfc7HWRQ1511793011756&vip=false&c=660706b3-a71d-4608-b43d-6658fab0907a&'
+    url = 'https://www.expedia.com.hk/cn/Phetchabun-Hotels-Tonkaew-Khaokho-Resort.h20575001.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=6131746&sort=recommended&hwrqCacheKey=48693fa5-54ea-4f8d-acff-2658de10c675HWRQ1511793063089&vip=false&c=c0e12fca-078e-43e3-9525-b63c505c4be6&'
+    url = 'https://www.expedia.com.hk/Khao-Kho-Hotels-Raiphuduen-Resort.h20574520.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=6131746&sort=recommended&hwrqCacheKey=48693fa5-54ea-4f8d-acff-2658de10c675HWRQ1511793063089&vip=false&c=c0e12fca-078e-43e3-9525-b63c505c4be6&'
+    url = 'https://www.expedia.com.hk/Hotels-Upscale-3BR-Pad-In-Plateau-Montreal-By-Host-Kick.h20193722.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=178288&sort=recommended&hwrqCacheKey=1b19fce7-f3f9-4a70-8b4d-bfedd0cb3969HWRQ1511802368580&vip=false&c=8978761e-8607-49e8-bc1f-e8a4dbf8c462&'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'
