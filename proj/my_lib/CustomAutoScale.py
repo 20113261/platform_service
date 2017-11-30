@@ -22,13 +22,14 @@ class CustomAutoScale(Autoscaler):
         worker_name = self.worker.hostname
         memory_obj = psutil.virtual_memory()
         memory_percent = memory_obj.percent
+        total_load_average = os.getloadavg()
         load_average = os.getloadavg()[0]
         load_percent = load_average / 4.0
         procs = self.processes
 
         calc_percent = memory_percent * load_percent
 
-        if calc_percent < 85.0:
+        if calc_percent < 85.0 and not all(map(lambda x: x >= 3.7, total_load_average)) and memory_percent <= 95:
             cur = min(self.qty, self.max_concurrency)
             if cur > procs:
                 up_process = (cur - procs)
@@ -58,7 +59,7 @@ class CustomAutoScale(Autoscaler):
         #     logger.debug("[worker_name: {}][memory_percent: {}][current: {}][scale down: {}]".
         #                  format(worker_name, memory_percent, self.processes, 1))
         #     return True
-        elif calc_percent < 90.0:
+        elif calc_percent < 90.0 and not all(map(lambda x: x >= 3.7, total_load_average)) and memory_percent <= 95:
             logger.debug(
                 "[worker_name: {}][memory_percent: {}][load_average: {}][current: {}][scale: {}]".format(worker_name,
                                                                                                          memory_percent,
