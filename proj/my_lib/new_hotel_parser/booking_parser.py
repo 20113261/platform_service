@@ -372,7 +372,7 @@ def booking_parser(content, url, other_info):
                         hotel.is_wifi_free = 'No'
                     elif '免费' in service_temp:
                         hotel.is_wifi_free = 'Yes'
-                hotel.service += service_temp
+                hotel.service += service_temp.encode('utf-8')
             except:
                 '''There is a pit, I step on, the next person to continue'''
                 continue
@@ -401,7 +401,7 @@ def booking_parser(content, url, other_info):
                         hotel.is_wifi_free = 'No'
                     elif '免费' in temp:
                         hotel.is_wifi_free = 'Yes'
-                service += temp
+                service += temp.encode('utf-8')
             hotel.service = service[:-1]
         except Exception as e:
             hotel.service = 'NULL'
@@ -518,8 +518,9 @@ if __name__ == '__main__':
     url = 'https://www.booking.com/hotel/ec/iguana-crossing-boutique.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=4a276ca86d3797ed736f2d6001496e2f;dest_id=722;dest_type=region;dist=0;hapos=9;hpos=9;room1=A%2CA;sb_price_type=total;srepoch=1506333740;srfid=1dc4de7f7618b923f33a72e5cd5d959ad27f62e5X9;srpvid=f06a4695a2200507;type=total;ucfs=1&#hotelTmpl'
     # url = 'http://www.booking.com/hotel/fr/ibis-cdg-paris-nord-2.zh-cn.html'
     from proj.my_lib.Common.Browser import MySession
-
+    url = 'https://www.booking.com/hotel/fr/mattle.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNYBHIFdXNfY2GIAQGYATLCAQNhYm7IAQzYAQPoAQGSAgF5qAIE;sid=c475c497528f36b236ee530edb71bb6a;all_sr_blocks=24239201_89341537_0_2_0;bshb=2;checkin=2017-12-15;checkout=2017-12-16;dest_id=-1456928;dest_type=city;dist=0;dotd_fb=1;group_adults=2;hapos=1;highlighted_blocks=24239201_89341537_0_2_0;hpos=1;room1=A%2CA;sb_price_type=total;srepoch=1512100793;srfid=148ffde1200dcb2f7dffa4b7b7586b050a6af7f4X1;srpvid=4f041c1bc7720018;type=total;ucfs=1&#hotelTmpl'
     # url = 'https://www.booking.com/hotel/fj/nanuya-island-resort.zh-cn.html?label=gen173nr-1FCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBAegBAfgBC5ICAXmoAgQ;sid=4a276ca86d3797ed736f2d6001496e2f;dest_id=4853;dest_type=region;dist=0;group_adults=3;group_children=0;hapos=1;hpos=1;room1=A%2CA;sb_price_type=total;srepoch=1506333732;srfid=452f34ec0e2eeb2f13d876a3d651ba87b1a3b91fX1;srpvid=2a1b469190400118;type=total;ucfs=1&#hotelTmpl'
+    url = 'https://www.booking.com/hotel/fr/minerve.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNYBHIFdXNfY2GIAQGYATLCAQNhYm7IAQzYAQPoAQGSAgF5qAIE;sid=c475c497528f36b236ee530edb71bb6a;all_sr_blocks=38107304_101309992_0_2_0;bshb=2;checkin=2017-12-15;checkout=2017-12-16;dest_id=-1456928;dest_type=city;dist=0;group_adults=2;hapos=4;highlighted_blocks=38107304_101309992_0_2_0;hpos=4;room1=A%2CA;sb_price_type=total;srepoch=1512100793;srfid=148ffde1200dcb2f7dffa4b7b7586b050a6af7f4X4;srpvid=4f041c1bc7720018;type=total;ucfs=1&#hotelTmpl'
     content = requests.get(url).text
     # print(list(collections.find({'source_id': '482499'}))[0]['task_id'])
     result = booking_parser(content, url, other_info)
