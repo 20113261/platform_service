@@ -124,19 +124,20 @@ def elong_parser(content, url, other_info):
     # print hotel.star
     # 解析酒店评分
     try:
-        # tp = root.xpath('//div[@class="pertxt_num"]/text()')[0].encode('utf-8')
-        tp = root.xpath('//div[contains(@class, "pertxt_num")]/text()')[0].encode('utf-8')
-        # t_grade = grade_pat.findall(tp)[0]
-        # print 't_grade', t_grade
-        hotel.grade = float(tp)  # float(t_grade) * 0.05
+        grade = page_js.eval('window.newDetailController').get('scoreInfo', {}).get('comment_score', '')
+        hotel.grade = grade
+
     except:
         try:
             grade = root.xpath('//div[@id="hover-hrela"]/p[1]')
             hotel.grade = float(re.search(r'[0-9\.]+', grade[0].text).group(0))
         except:
             try:
-                grade = page_js.eval('window.newDetailController').get('scoreInfo',{}).get('comment_score','')
-                hotel.grade = grade
+                # tp = root.xpath('//div[@class="pertxt_num"]/text()')[0].encode('utf-8')
+                tp = root.xpath('//div[contains(@class, "pertxt_num")]/text()')[0].encode('utf-8')
+                # t_grade = grade_pat.findall(tp)[0]
+                # print 't_grade', t_grade
+                hotel.grade = float(tp)  # float(t_grade) * 0.05
             except Exception as e:
                 hotel.grade = 'NULL'
     print 'grade=>%s' % hotel.grade
@@ -144,15 +145,15 @@ def elong_parser(content, url, other_info):
 
     # 解析酒店评论数
     try:
-        # review_num_str = root.find_class('hrela_comt_total')[0]. \
-        #     xpath('a/text()')[0].encode('utf-8').strip()
-        # print review_num_str
-        review_num_str = root.find_class('fl sum-txt')[0].text_content().strip().encode('utf-8')
-        hotel.review_num = int(grade_pat.findall(review_num_str)[0])
+        review_num_str = page_js.eval('window.newDetailController').get('scoreInfo', {}).get('comment_count', '')
+        hotel.review_num = review_num_str
     except Exception as e:
         try:
-            review_num_str = page_js.eval('window.newDetailController').get('scoreInfo',{}).get('comment_count','')
-            hotel.review_num = review_num_str
+            # review_num_str = root.find_class('hrela_comt_total')[0]. \
+            #     xpath('a/text()')[0].encode('utf-8').strip()
+            # print review_num_str
+            review_num_str = root.find_class('fl sum-txt')[0].text_content().strip().encode('utf-8')
+            hotel.review_num = int(grade_pat.findall(review_num_str)[0])
         except Exception as e:
             hotel.review_num = -1
 
@@ -169,6 +170,8 @@ def elong_parser(content, url, other_info):
             if len(b_text):
                 description += b_text[0].strip().decode('utf-8') + ':' + p_text[1].strip().decode('utf-8') + '|'
         hotel.description = description[:-1].encode('utf-8')
+        if hotel.description == '':
+            hotel.description = p_tags[0].text_content().strip().encode('utf-8')
     except Exception as e:
         hotel.description = 'NULL'
 
@@ -200,18 +203,15 @@ def elong_parser(content, url, other_info):
         for each in service_list:
             service += each.encode('utf-8').strip() + '|'
             if '卡' in each:
-                accept_card.append(each)
+                accept_card.append(each.strip())
         hotel.service = service[:-1]
-        if not accept_card:
-            hotel.accepted_cards = '|'.join(accept_card)
-        if hotel.service == '':
-            hotel.service = 'NULL'
     except Exception, e:
         hotel.service = 'NULL'
+    if accept_card:
+        hotel.accepted_cards = '|'.join(accept_card).encode('utf-8')
     print 'hotel.service=>%s' % hotel.service
+    print 'hotel.accept_cards=>%s' % hotel.accepted_cards
     # print hotel.service
-
-
     first_img = None
     try:
         pattern_img = root.xpath('//div[@class="newdetaiL-img imgMore"]/@style')[0]
@@ -273,10 +273,13 @@ def elong_parser(content, url, other_info):
         base_url = page_js.eval('window.newDetailController').get('BaseUrl')
         base_url = urljoin(base_url,'ihotel_848_470_all/')
         if not img_items:
-            img_list = page_js.eval('window.newDetailController').get('HotelImageTagList',{}).get("urlList",{}).get('1',{}).get('tagUrlList',{})
-            img_list = img_list.values()
-        img_list = [base_url+img for img in img_list]
-        hotel.img_items = '|'.join(img_list).encode('utf-8')
+            keys = page_js.eval('window.newDetailController').get('HotelImageTagList',{}).get("urlList",{}).keys()
+            img_lists =[]
+            for key in keys:
+                img_list = page_js.eval('window.newDetailController').get('HotelImageTagList',{}).get("urlList",{}).get(key,{}).get('tagUrlList',{})
+                img_lists.extend(img_list.values())
+        img_lists = [base_url+img for img in img_lists]
+        hotel.img_items = '|'.join(img_lists).encode('utf-8')
     except Exception as e:
         hotel.img_items = 'NULL'
 
@@ -378,7 +381,13 @@ if __name__ == '__main__':
     #url = 'http://ihotel.elong.com/589177/'
     #url = 'http://ihotel.elong.com/31131/'
     #url = 'http://ihotel.elong.com/308868/'
-
+    url = 'http://ihotel.elong.com/765629/'
+    url = 'http://ihotel.elong.com/611803/'
+    url = 'http://ihotel.elong.com/133277/'
+    url = 'http://ihotel.elong.com/72746/'
+    url = 'http://ihotel.elong.com/302895/'
+    url = 'http://ihotel.elong.com/592426/'
+    url = 'http://ihotel.elong.com/590800/'
     other_info = {u'source_id': u'670847', u'city_id': u'20236'}
 
     page = requests.get(url)
