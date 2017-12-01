@@ -7,6 +7,7 @@
 # @Software: PyCharm
 import psutil
 import os
+import gc
 from celery.worker.autoscale import Autoscaler
 from proj.my_lib.logger import get_logger
 from time import sleep
@@ -68,6 +69,7 @@ class CustomAutoScale(Autoscaler):
                                                                                                          0))
             return False
         else:
+            gc.collect()
             if self.processes > self.min_concurrency:
                 down_process = 1
                 self.scale_down(down_process)
