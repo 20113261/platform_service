@@ -2599,7 +2599,7 @@ db.Task_Queue_poi_detail_TaskName_detail_total_qyer_20171120a.update({}, {
         'finished': 0,
         'running': 0,
         'used_times': 0,
-        'priority': 4
+        // 'priority': 4
     }
 }, false, true);
 
