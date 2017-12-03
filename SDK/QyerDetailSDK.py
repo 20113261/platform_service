@@ -32,7 +32,16 @@ class QyerDetailSDK(BaseSDK):
             map_info = result.map_info
             address = result.address
 
-            if not key_is_legal(map_info) or map_info == "0.000000,0.000000":
+            map_info_is_legal = True
+            try:
+                lon, lat = map_info.split(',')
+                if float(lon) == 0.0 and float(lat) == 0.0:
+                    map_info_is_legal = False
+            except Exception as e:
+                map_info_is_legal = False
+                logger.exception(msg="[map info is not legal]", exc_info=e)
+
+            if not key_is_legal(map_info) or not map_info_is_legal:
                 if not key_is_legal(address):
                     raise TypeCheckError(
                         'Error map_info and address NULL        with parser %ss    url %s' % (

@@ -43,14 +43,19 @@ def parse_image_urls(target_url):
     counts = re.search(r'var data = (.*)(?=;)', content).group(1)
     counts = json.loads(counts)
     beentocounts = counts.get('counts', {}).get('beentocounts', None)
-    plantocounts = counts.get('counts',{}).get('plantocounts',None)
+    plantocounts = counts.get('counts', {}).get('plantocounts', None)
 
     ul = page('.pla_photolist.clearfix li')
     img_list = [li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()]
 
-    page_count = page[0].xpath('//h2[@class="pla_bigtit fontYaHei"]/text()')[0]
-    page_count = re.search(u'[0-9]+', page_count).group()
-    pages = int(page_count) / 30
+    try:
+        # 当有翻页时正常执行后面
+        page_count = page[0].xpath('//h2[@class="pla_bigtit fontYaHei"]/text()')[0]
+        page_count = re.search(u'[0-9]+', page_count).group()
+        pages = int(page_count) / 30
+    except Exception:
+        # 当无翻页时直接返回
+        return '|'.join(img_list), beentocounts, plantocounts
 
     for page in range(int(pages) + 2):
         with MySession(need_proxies=True, need_cache=True) as img_session:
@@ -59,7 +64,7 @@ def parse_image_urls(target_url):
             ul = page('.pla_photolist.clearfix li')
             img_list.extend([li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()])
 
-    return '|'.join(img_list),beentocounts,plantocounts
+    return '|'.join(img_list), beentocounts, plantocounts
 
 
 # def parse_comment(qyer):
@@ -199,7 +204,7 @@ def page_parser(content, target_url):
     qyer.url = target_url
 
     try:
-        qyer.imgurl,qyer.beentocounts,qyer.plantocounts = parse_image_urls(target_url)
+        qyer.imgurl, qyer.beentocounts, qyer.plantocounts = parse_image_urls(target_url)
     except Exception as e:
         print(traceback.format_exc(e))
 
@@ -208,28 +213,28 @@ def page_parser(content, target_url):
 
 
 if __name__ == '__main__':
-    import requests
-
-    target_url = 'http://place.qyer.com/poi/V2AJZVFlBzNTYVI2/'
-    # target_url = 'http://place.qyer.com/poi/V2cJYFFvBzdTYQ/'
-    target_url = 'http://place.qyer.com/poi/V2cJa1FkBzNTbA/'
-    target_url = 'http://place.qyer.com/poi/V2cJYFFhBzJTZQ/'
-    target_url = 'http://place.qyer.com/poi/V2cJYFFhBz5TZA/'
-    target_url = 'http://place.qyer.com/poi/V2AJYVFmBzRTZg/'
-    target_url = 'http://place.qyer.com/poi/V2YJY1FjBz5TZFI9/'
-    target_url = 'http://place.qyer.com/poi/V2UJY1FnBzZTZFI5/'
-    target_url = 'http://place.qyer.com/poi/V2wJYVFuBzFTZQ/'
-    page = requests.get(target_url)
-    page.encoding = 'utf8'
-    content = page.text
-    # with open('content.txt','w+') as temp:
-    #     temp.write(content)
-    result = page_parser(content, target_url)
-    for k, v in result.__dict__.items():
-        print('%s : %s' % (k, v))
-
-    print(len(result.__dict__.keys()))
-    print(parse_comment_counts("200832"))
+    # import requests
+    #
+    # target_url = 'http://place.qyer.com/poi/V2AJZVFlBzNTYVI2/'
+    # # target_url = 'http://place.qyer.com/poi/V2cJYFFvBzdTYQ/'
+    # target_url = 'http://place.qyer.com/poi/V2cJa1FkBzNTbA/'
+    # target_url = 'http://place.qyer.com/poi/V2cJYFFhBzJTZQ/'
+    # target_url = 'http://place.qyer.com/poi/V2cJYFFhBz5TZA/'
+    # target_url = 'http://place.qyer.com/poi/V2AJYVFmBzRTZg/'
+    # target_url = 'http://place.qyer.com/poi/V2YJY1FjBz5TZFI9/'
+    # target_url = 'http://place.qyer.com/poi/V2UJY1FnBzZTZFI5/'
+    # target_url = 'http://place.qyer.com/poi/V2wJYVFuBzFTZQ/'
+    # page = requests.get(target_url)
+    # page.encoding = 'utf8'
+    # content = page.text
+    # # with open('content.txt','w+') as temp:
+    # #     temp.write(content)
+    # result = page_parser(content, target_url)
+    # for k, v in result.__dict__.items():
+    #     print('%s : %s' % (k, v))
+    #
+    # print(len(result.__dict__.keys()))
+    # print(parse_comment_counts("200832"))
 
     # target_url = 'http://place.qyer.com/poi/V2AJZVFlBzNTYVI2/'
     # # target_url = 'http://place.qyer.com/poi/V2cJYFFvBzdTYQ/'
@@ -258,3 +263,5 @@ if __name__ == '__main__':
     #     session.commit()
     # finally:
     #     session.close()
+
+    print(parse_image_urls('http://place.qyer.com/poi/V2UJYlFiBzRTZFI_Cm4'))
