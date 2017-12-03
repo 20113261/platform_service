@@ -2594,6 +2594,15 @@ db.Task_Queue_hotel_detail_TaskName_detail_hotel_booking_20171127a.update({}, {
     }
 }, false, true);
 
+db.Task_Queue_poi_detail_TaskName_detail_total_qyer_20171120a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0,
+        'priority': 4
+    }
+}, false, true);
+
 
 db.Task_Queue_hotel_detail_TaskName_detail_hotel_agoda_20171127a.update({}, {
     $set: {
