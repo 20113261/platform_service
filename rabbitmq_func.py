@@ -31,7 +31,10 @@ def detect_msg_num(queue_name):
     utc_now_time = datetime.datetime.utcnow()
 
     # 当前等待时间
-    idle_time = datetime.datetime.strptime(j_data["idle_since"], "%Y-%m-%d %H:%M:%S")
+    if 'idle_since' in j_data:
+        idle_time = datetime.datetime.strptime(j_data["idle_since"], "%Y-%m-%d %H:%M:%S")
+    else:
+        idle_time = utc_now_time
 
     idle_seconds = (utc_now_time - idle_time).seconds
 
