@@ -29,8 +29,8 @@ def parse_comment_counts(poi_id):
     with MySession(need_proxies=True, need_cache=True) as session:
         start_level = session.post(comment_counts_url, data={'poiid': poi_id})
         comment_counts = json.loads(start_level.text).get('data', {}).get('all', -1)
-    if int(comment_counts) == -1:
-        raise Exception()
+        if int(comment_counts) == -1:
+            raise Exception()
     return comment_counts
 
 
@@ -39,30 +39,31 @@ def parse_image_urls(target_url):
     with MySession(need_proxies=True, need_cache=True) as session:
         image_page = session.get(target_url + '/photo').content.decode('utf8')
         page = pyquery.PyQuery(image_page)
-    content = HTML.tostring(page[0])
-    counts = re.search(r'var data = (.*)(?=;)', content).group(1)
-    counts = json.loads(counts)
-    beentocounts = counts.get('counts', {}).get('beentocounts', None)
-    plantocounts = counts.get('counts', {}).get('plantocounts', None)
 
-    ul = page('.pla_photolist.clearfix li')
-    img_list = [li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()]
+        content = HTML.tostring(page[0])
+        counts = re.search(r'var data = (.*)(?=;)', content).group(1)
+        counts = json.loads(counts)
+        beentocounts = counts.get('counts', {}).get('beentocounts', -1)
+        plantocounts = counts.get('counts', {}).get('plantocounts', -1)
 
-    try:
-        # 当有翻页时正常执行后面
-        page_count = page[0].xpath('//h2[@class="pla_bigtit fontYaHei"]/text()')[0]
-        page_count = re.search(u'[0-9]+', page_count).group()
-        pages = int(page_count) / 30
-    except Exception:
-        # 当无翻页时直接返回
-        return '|'.join(img_list), beentocounts, plantocounts
+        ul = page('.pla_photolist.clearfix li')
+        img_list = [li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()]
 
-    for page in range(int(pages) + 2):
-        with MySession(need_proxies=True, need_cache=True) as img_session:
-            image_page = img_session.get(target_url + '/photo/page{0}'.format(page)).content.decode('utf8')
-            page = pyquery.PyQuery(image_page)
-            ul = page('.pla_photolist.clearfix li')
-            img_list.extend([li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()])
+        try:
+            # 当有翻页时正常执行后面
+            page_count = page[0].xpath('//h2[@class="pla_bigtit fontYaHei"]/text()')[0]
+            page_count = re.search(u'[0-9]+', page_count).group()
+            pages = int(page_count) / 30
+        except Exception:
+            # 当无翻页时直接返回
+            return '|'.join(img_list), beentocounts, plantocounts
+
+        for page in range(int(pages) + 2):
+            with MySession(need_proxies=True, need_cache=True) as img_session:
+                image_page = img_session.get(target_url + '/photo/page{0}'.format(page)).content.decode('utf8')
+                page = pyquery.PyQuery(image_page)
+                ul = page('.pla_photolist.clearfix li')
+                img_list.extend([li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()])
 
     return '|'.join(img_list), beentocounts, plantocounts
 
