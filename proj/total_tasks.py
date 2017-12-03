@@ -35,7 +35,7 @@ def hotel_list_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='30/m')
 def qyer_detail_task(self, task, **kwargs):
     _sdk = QyerDetailSDK(task=task)
     return _sdk.execute()
