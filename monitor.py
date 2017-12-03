@@ -234,6 +234,9 @@ def monitoring_poi_list2detail():
                 continue
             if tab_args[3] == 'test':
                 continue
+            if '_bak' in table_name:
+                # 备份表不进入发任务
+                continue
 
             timestamp, priority, sequence = get_seek(table_name)
 
