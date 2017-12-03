@@ -275,7 +275,7 @@ def monitoring_poi_detail2imgOrComment():
             else:
                 sql = """select source, id, city_id, imgurl, insert_time from %s where insert_time >= '%s' order by insert_time limit 5000"""
 
-            if not tab_args[-1] >= '20171120a':
+            if not tab_args[-1] >= '20171120a' and 'total_qyer_20171120a' not in table_name:
                 # 过滤旧的图片任务
                 continue
 
