@@ -2612,3 +2612,10 @@ db.Task_Queue_hotel_detail_TaskName_detail_hotel_agoda_20171127a.update({}, {
     }
 }, false, true);
 
+db.Task_Queue_poi_detail_TaskName_detail_total_qyer_20171201a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
