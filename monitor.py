@@ -6,6 +6,7 @@
 # @File    : hotel_list_routine_tasks.py
 # @Software: PyCharm
 import re
+import copy
 import datetime
 import time
 import traceback
@@ -440,8 +441,13 @@ def city2list():
         collections = db[collection_name]
         _count = 0
 
-        # 先获取一条数据，用以初始化入任务模块
-        per_data = collections.find_one()
+        # 先获取一条数据，用以初始化入任务模块，可能这条数据有问题
+        for each in collections.find({}):
+            if 'task_name' in each:
+                per_data = copy.deepcopy(each)
+                break
+
+        # per_data = collections.find_one()
         task_name = per_data['task_name']
         new_task_name = re.sub('city_', 'list_', task_name)
 
@@ -451,6 +457,9 @@ def city2list():
                         task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
                         priority=per_data['priority'], task_type=TaskType.LIST_TASK) as it:
             for line in collections.find({"finished": 0}):
+                # 由于上方使用取多个，找 task_name 的方法来实现，这里会判断 task_name 是否在此当中
+                if 'task_name' not in line:
+                    continue
                 if int(line['date_index']) > len(set(list(map(lambda x: x[0], line['data_count'])))):
                     # 当前日期数目如果与已回来的任务数目相同，或者小于的话，则应该推进任务分发，否则为任务还没有完成，需要等待任务完成后再分发
                     # 发任务数目与返回的全量任务 id 数目相同时，代表之前发的任务已经完成
@@ -514,8 +523,8 @@ class TaskSender(object):
 
 
 if __name__ == '__main__':
-    # city2list()
-    monitoring_poi_detail2imgOrComment()
+    city2list()
+    # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
     # monitoring_qyer_list2detail()
     # monitoring_zombies_task_total()
