@@ -58,9 +58,17 @@ class ImagesSDK(BaseSDK):
 
             try:
                 suffix = target_url.rsplit('.', 1)[1]
+                # 对于 qyer 的图片特殊处理，无文件后缀
+                if len(suffix) > 16:
+                    suffix = ''
             except IndexError as e:
                 suffix = page.headers['Content-Type'].split('/')[1]
-            file_name = hashlib.md5(target_url).hexdigest() + '.' + suffix
+
+            # 无文件后缀名图片直接 md5
+            if suffix:
+                file_name = hashlib.md5(target_url).hexdigest() + '.' + suffix
+            else:
+                file_name = hashlib.md5(target_url).hexdigest()
 
             if flag in [1, 2]:
                 raise ServiceStandardError(error_code=ServiceStandardError.IMG_INCOMPLETE)
