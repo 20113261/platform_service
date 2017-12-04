@@ -42,7 +42,7 @@ class ImagesSDK(BaseSDK):
         with MySession(need_cache=True) as session:
             @func_time_logger
             def img_file_get():
-                _page = session.get(target_url, timeout=(1200, None))
+                _page = session.get(target_url, timeout=(3600, None))
                 return _page
 
             page = img_file_get()
