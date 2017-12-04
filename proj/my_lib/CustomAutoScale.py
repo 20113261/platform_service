@@ -30,7 +30,8 @@ class CustomAutoScale(Autoscaler):
 
         calc_percent = memory_percent * load_percent
 
-        if calc_percent < 85.0 and not all(map(lambda x: x >= 3.7, total_load_average)) and memory_percent <= 95:
+        if calc_percent < 85.0:
+            # if calc_percent < 85.0 and not all(map(lambda x: x >= 3.7, total_load_average)) and memory_percent <= 95:
             cur = min(self.qty, self.max_concurrency)
             if cur > procs:
                 up_process = (cur - procs)
@@ -60,7 +61,8 @@ class CustomAutoScale(Autoscaler):
         #     logger.debug("[worker_name: {}][memory_percent: {}][current: {}][scale down: {}]".
         #                  format(worker_name, memory_percent, self.processes, 1))
         #     return True
-        elif calc_percent < 90.0 and not all(map(lambda x: x >= 3.7, total_load_average)) and memory_percent <= 95:
+        elif calc_percent < 90.0:
+            # elif calc_percent < 90.0 and not all(map(lambda x: x >= 3.7, total_load_average)) and memory_percent <= 95:
             logger.debug(
                 "[worker_name: {}][memory_percent: {}][load_average: {}][current: {}][scale: {}]".format(worker_name,
                                                                                                          memory_percent,
@@ -69,7 +71,7 @@ class CustomAutoScale(Autoscaler):
                                                                                                          0))
             return False
         else:
-            gc.collect()
+            # gc.collect()
             if self.processes > self.min_concurrency:
                 down_process = 1
                 self.scale_down(down_process)
