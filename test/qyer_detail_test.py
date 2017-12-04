@@ -18,7 +18,8 @@ if __name__ == '__main__':
                 # kwargs={"city_id": "NULL", "part": "detail_total_qyer_20171120a",
                 #         "target_url": "http://place.qyer.com/poi/V2wJZ1FgBzNTbA/"},
                 kwargs={"city_id": "NULL", "part": "detail_total_qyer_20171201a",
-                        "target_url": "http://place.qyer.com/poi/V2UJYVFjBzFTZlI9/"},
+                        "target_url": "http://place.qyer.com/poi/V20JalFgBzZTZA/"},
+                # "target_url": "http://place.qyer.com/poi/V2UJYVFjBzFTZlI9/"},
                 _queue='poi_detail', _routine_key='poi_detail', task_type=0, list_task_token=''
                 )
     qyer_detail_task(task=task)

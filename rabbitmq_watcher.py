@@ -102,8 +102,6 @@ def insert_task(queue, limit):
 def mongo_task_watcher(*args):
     logger.info('Start Searching Queue Info')
     queue_name = args[0]
-    if queue_name != 'poi_detail':
-        return
 
     idle_seconds, message_count, max_message_count = detect_msg_num(queue_name=queue_name)
 
