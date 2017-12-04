@@ -58,6 +58,8 @@ def parse_image_urls(target_url):
             # 当无翻页时直接返回
             return '|'.join(img_list), beentocounts, plantocounts
 
+        if pages >= 3:
+            pages = 4
         for page in range(int(pages) + 2):
             with MySession(need_proxies=True, need_cache=True) as img_session:
                 image_page = img_session.get(target_url + '/photo/page{0}'.format(page)).content.decode('utf8')
@@ -246,6 +248,7 @@ if __name__ == '__main__':
     # target_url = 'http://place.qyer.com/poi/V2YJY1FjBz5TZFI9/'
     import requests
     target_url = 'http://place.qyer.com/poi/V2UJYVFjBzFTZlI9/'
+    target_url = 'http://place.qyer.com/poi/V2UJYVFkBzBTbFI9CmU/'
     page = requests.get(target_url)
     page.encoding = 'utf8'
     content = page.text
