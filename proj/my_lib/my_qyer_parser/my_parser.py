@@ -244,16 +244,18 @@ if __name__ == '__main__':
     # target_url = 'http://place.qyer.com/poi/V2cJYFFhBz5TZA/'
     # target_url = 'http://place.qyer.com/poi/V2AJYVFmBzRTZg/'
     # target_url = 'http://place.qyer.com/poi/V2YJY1FjBz5TZFI9/'
-    # page = requests.get(target_url)
-    # page.encoding = 'utf8'
-    # content = page.text
+    import requests
+    target_url = 'http://place.qyer.com/poi/V2UJYVFjBzFTZlI9/'
+    page = requests.get(target_url)
+    page.encoding = 'utf8'
+    content = page.text
     # # with open('content.txt','w+') as temp:
     # #     temp.write(content)
-    # result = page_parser(content, target_url)
-    # for k, v in result.__dict__.items():
-    #     print('%s : %s' % (k, v))
-    #
-    # print(len(result.__dict__.keys()))
+    result = page_parser(content, target_url)
+    for k, v in result.__dict__.items():
+        print('%s : %s' % (k, v))
+
+    print(len(result.__dict__.keys()))
 
     # try:
     #     session = DBSession()
@@ -265,4 +267,4 @@ if __name__ == '__main__':
     # finally:
     #     session.close()
 
-    print(parse_image_urls('http://place.qyer.com/poi/V2UJYlFiBzRTZFI_Cm4'))
+    # print(parse_image_urls('http://place.qyer.com/poi/V2UJYlFiBzRTZFI_Cm4'))

@@ -12,19 +12,31 @@ from proj.my_lib.logger import get_logger
 from proj.my_lib.my_qyer_parser.data_obj import DBSession
 from proj.my_lib.my_qyer_parser.my_parser import page_parser
 from proj.my_lib.new_hotel_parser.data_obj import text_2_sql
+from proj.my_lib.Common.Utils import retry
 
 logger = get_logger("QyerPoiDetail")
 
 
 class QyerDetailSDK(BaseSDK):
+    @retry(times=3)
     def _execute(self, **kwargs):
-        with MySession(need_cache=True) as session:
+        with MySession(need_cache=True, need_proxies=True) as session:
             city_id = self.task.kwargs['city_id']
             target_url = self.task.kwargs['target_url']
-
-            page = session.get(target_url, timeout=240)
+            headers = {
+                'Host': 'place.qyer.com'
+            }
+            page = session.get(
+                target_url,
+                headers=headers,
+                timeout=240
+            )
             page.encoding = 'utf8'
             content = page.text
+
+            if '请输入验证码' in content:
+                raise Exception("请输入验证码")
+
             result = page_parser(content=content, target_url=target_url)
             result.city_id = city_id
             name = result.name
