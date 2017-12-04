@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `%s` (
   `url` varchar(512) DEFAULT NULL,
   `phone` varchar(64) DEFAULT NULL,
   `site` varchar(256) DEFAULT NULL,
-  `imgurl` TEXT,
+  `imgurl` mediumtext,
   `commenturl` varchar(512) DEFAULT NULL,
   `introduction` text,
   `opentime` varchar(1000) DEFAULT NULL,
