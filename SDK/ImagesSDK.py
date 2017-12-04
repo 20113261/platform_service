@@ -34,10 +34,10 @@ class ImagesSDK(BaseSDK):
         special_file_name = self.task.kwargs.get('special_file_name', '')
 
         # /album/user/2225/43/Q0tXRx4EY00/index/980x576
-        if target_url.startswith('http://pic.qyer.com'):
+        if 'qyer.com' in target_url and source == 'qyer':
             if target_url.endswith('/index'):
                 target_url += '/980x576'
-            if target_url.endswith('/index/'):
+            elif target_url.endswith('/index/'):
                 target_url += '980x576'
 
         flag = None
