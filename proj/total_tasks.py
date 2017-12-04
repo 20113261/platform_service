@@ -11,7 +11,7 @@ from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/m')
 def qyer_list_task(self, task, **kwargs):
     _sdk = QyerListSDK(task=task)
     return _sdk.execute()
