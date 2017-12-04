@@ -33,6 +33,13 @@ class ImagesSDK(BaseSDK):
         need_insert_db = self.task.kwargs.get('need_insert_db', True)
         special_file_name = self.task.kwargs.get('special_file_name', '')
 
+        # /album/user/2225/43/Q0tXRx4EY00/index/980x576
+        if target_url.startswith('http://pic.qyer.com'):
+            if target_url.endswith('/index'):
+                target_url += '/980x576'
+            if target_url.endswith('/index/'):
+                target_url += '980x576'
+
         flag = None
         h = None
         w = None
