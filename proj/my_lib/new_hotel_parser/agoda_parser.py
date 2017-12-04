@@ -131,6 +131,12 @@ def agoda_parser(content, url, other_info):
     print 'hotel.review_num=>%s' % hotel.review_num
 
     try:
+        first_img = page_params.get("mosaicInitData",{}).get('images',[])[0].get('Location','NULL')
+        first_img = urljoin('http:',first_img)
+    except Exception as e:
+        first_img = 'NULL'
+
+    try:
         hotel.img_items = '|'.join(filter(lambda x: 'hotel' in x,
                                           map(lambda x: 'http:' + x['Location'].split('?')[0],
                                               page_params['mosaicInitData']['images']))).encode('utf-8')
@@ -218,7 +224,7 @@ def agoda_parser(content, url, other_info):
     except Exception as e:
         print e
 
-    hotel.others_info = json.dumps({'country_id':country_id,'country_name':country_name,'city_name':city_name,'city_id':city_id})
+    hotel.others_info = json.dumps({'country_id':country_id,'country_name':country_name,'city_name':city_name,'city_id':city_id,'first_img':first_img})
     hotel.source_city_id = city_id
     hotel.country = page_params['hotelInfo'].get('address',{}).get('countryName','')
     hotel.city = page_params['hotelInfo'].get('address',{}).get('cityName','')
