@@ -47,6 +47,7 @@ def update_img(uid, first_img, img_list, target_table):
 SET first_img = %s, img_list = %s
 WHERE uid = %s;'''.format(target_table)
     _res = cursor.execute(_sql, (first_img, img_list, uid))
+    conn.commit()
     cursor.close()
     conn.close()
     logger.debug("[insert db][uid: {}][first_img: {}][img_list: {}]".format(uid, first_img, img_list))
