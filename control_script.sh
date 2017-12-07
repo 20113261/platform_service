@@ -25,6 +25,8 @@ ps -aux|grep "celery worker"|grep -v grep|awk '{print $2}'|xargs -I each_pid kil
 curl --socks5 10.10.233.246:36347 http://www.baidu.com
 curl --socks5 10.10.233.246:36347 https://s3.amazonaws.com/expedia-static-feed/United+States+(.com)_Merchant_All.csv.gz
 
+curl --socks5 10.10.233.246:36347 http://pic.qyer.com/album/user/2225/43/Q0tXRx4EY00/index
+
 # install centos environment
 pssh -h new_hosts.txt -i 'yum install -y curl-devel gpgme-devel python-devel'
 

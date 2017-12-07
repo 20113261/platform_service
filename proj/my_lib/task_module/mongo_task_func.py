@@ -46,12 +46,13 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     collection_prefix = 'Task_Queue_{}_TaskName_'.format(queue)
     c_list = list(filter(lambda x: str(x).startswith(collection_prefix), db.collection_names()))
 
-    per_limit = limit // len(c_list)
+    # 防止过度均分，选取 2000 为最小分配值
+    per_limit = min(limit // len(c_list), 2000)
     c_list = list(map(lambda x: (x, per_limit), c_list))
 
-    if queue == 'file_downloader':
-        c_list.append(('Task_Queue_file_downloader_TaskName_images_total_qyer_20171201a', 2000))
-        c_list.append(('Task_Queue_file_downloader_TaskName_images_total_qyer_20171120a', 2000))
+    # if queue == 'file_downloader':
+    #     c_list.append(('Task_Queue_file_downloader_TaskName_images_total_qyer_20171201a', 2000))
+    #     c_list.append(('Task_Queue_file_downloader_TaskName_images_total_qyer_20171120a', 2000))
     # todo 先均分任务，之后考虑不同的阀值分配不同的任务
     for each_collection_name, each_limit in c_list:
         for d in _get_task_total_simple(collection_name=each_collection_name, queue=queue, used_times=used_times,

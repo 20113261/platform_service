@@ -35,11 +35,13 @@ WHERE source = 'qyer' AND length(file_name) > 32;''')
         _count += 1
         # parent_path = os.path.join(PARENT_PATH, "###".join([source, sid]))
         new_file_name = file_name.split('.')[0]
-        parent_path = os.path.join(PARENT_PATH, new_file_name)
+        # parent_path = os.path.join(PARENT_PATH, new_file_name)
 
-        if not os.path.exists(parent_path):
-            os.makedirs(parent_path)
-        pool.apply_async(download, ("mioji-attr", file_name, parent_path))
+        if not os.path.exists(PARENT_PATH):
+            os.makedirs(PARENT_PATH)
+        # download("mioji-attr", file_name, PARENT_PATH, new_file_name)
+
+        pool.apply_async(download, ("mioji-attr", file_name, PARENT_PATH, new_file_name))
     pool.join()
     cursor.close()
     conn.close()

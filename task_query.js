@@ -2619,3 +2619,18 @@ db.Task_Queue_poi_detail_TaskName_detail_total_qyer_20171201a.update({}, {
         'used_times': 0
     }
 }, false, true);
+
+
+db.Task_Queue_poi_detail_TaskName_detail_total_qyer_20171201a.update({finished: 0}, {
+    $set: {
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+
+db.Task_Queue_poi_detail_TaskName_detail_total_qyer_20171120a.update({finished: 0}, {
+    $set: {
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);

@@ -65,28 +65,36 @@ def upload_ks_file_stream(bucket_name, upload_key, file_obj, content_type='image
 
 
 @func_time_logger
-def download(bucket_name, file_name, file_path):
+def download(bucket_name, file_name, file_path, new_file_name=''):
     start = time.time()
     bucket = connection.get_bucket(bucket_name)
     obj = bucket.get_key(file_name)
+    if new_file_name == '':
+        new_file_name = file_name
 
     status = -1
     retry_times = 3
     while status == -1 and retry_times >= 0:
         retry_times -= 1
         try:
-            obj.get_contents_to_filename(os.path.join(file_path, file_name))
+            obj.get_contents_to_filename(os.path.join(file_path, new_file_name))
             status = 0
         except Exception as exc:
             logger.exception(msg="[download file error]", exc_info=exc)
             status = -1
     if status == 0:
-        logger.debug("[Succeed][download file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, file_name,
-                                                                                          time.time() - start))
+        logger.debug(
+            "[Succeed][download file][bucket: {0}][key: {1}][new_file_name: {2}][takes: {3}]".format(bucket_name,
+                                                                                                     file_name,
+                                                                                                     new_file_name,
+                                                                                                     time.time() - start))
         return True
     else:
-        logger.debug("[Failed][download file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, file_name,
-                                                                                         time.time() - start))
+        logger.debug(
+            "[Failed][download file][bucket: {0}][key: {1}][new_file_name: {2}][takes: {3}]".format(bucket_name,
+                                                                                                    file_name,
+                                                                                                    new_file_name,
+                                                                                                    time.time() - start))
         return False
 
 

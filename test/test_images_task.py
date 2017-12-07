@@ -107,7 +107,7 @@ if __name__ == '__main__':
                 #         "source_id": "test", "bucket_name": "mioji-attr", "is_poi_task": True, "part": "20171122a",
                 #         "file_prefix": ""},
                 kwargs={"source": "qyer", "new_part": "detail_total_qyer_20171201a",
-                        "target_url": "http://pic.qyer.com/album/user/2225/43/Q0tXRx4EY00/index",
+                        "target_url": "http://pic1.qyer.com/album/user/2484/54/Q01dRh8DYU4/index",
                         "source_id": "200846", "bucket_name": "mioji-attr", "is_poi_task": True, "part": "20171201a",
                         "file_prefix": ""},
                 _queue='file_downloader', _routine_key='file_downloader',
