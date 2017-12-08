@@ -47,7 +47,7 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     c_list = list(filter(lambda x: str(x).startswith(collection_prefix), db.collection_names()))
 
     # 防止过度均分，选取 2000 为最小分配值
-    per_limit = min(limit // len(c_list), 2000)
+    per_limit = max(limit // len(c_list), 2000)
     c_list = list(map(lambda x: (x, per_limit), c_list))
 
     # if queue == 'file_downloader':
