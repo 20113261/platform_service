@@ -81,6 +81,7 @@ class QyerListSDK(BaseSDK):
         )
 
         collections.save({
+            'collections': self.task.collection,
             'task_id': self.task.task_id,
             'used_times': self.task.used_times,
             'total_num': types_result_num,
