@@ -8,6 +8,8 @@ Created on 2017年2月8日
 '''
 from __future__ import absolute_import
 
+import datetime
+import pymongo
 import mioji.common.logger
 import mioji.common.pages_store
 import mioji.common.pool
@@ -35,10 +37,17 @@ debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
+client = pymongo.MongoClient(host='10.10.213.148')
+collections = client['data_result']['qyer']
 
-def hotel_list_database(source, city_id, check_in, city_url, need_cache=True):
+
+def qyer_list_to_database(tid, used_times, source, city_id, check_in, city_url, need_cache=True):
     task = Task()
     task.content = city_url
+    task.ticket_info = {
+        'tid': tid,
+        'used_times': used_times
+    }
     spider = factory.get_spider_by_old_source('qyerList')
     spider.task = task
     if need_cache:
@@ -47,7 +56,7 @@ def hotel_list_database(source, city_id, check_in, city_url, need_cache=True):
         error_code = spider.crawl(required=['list'], cache_config=none_cache_config)
     print(error_code)
     logger.info(str(spider.result['list']) + '  --  ' + task.content)
-    return error_code, spider.result['list']
+    return error_code, spider.result['list'], spider.page_store_key_list, spider.types_result_num
 
 
 class QyerListSDK(BaseSDK):
@@ -61,16 +70,30 @@ class QyerListSDK(BaseSDK):
         check_in = self.task.kwargs['check_in']
         city_url = self.task.kwargs['city_url']
 
-        error_code, result = hotel_list_database(source=self.task.kwargs['source'], city_id=city_id,
-                                                 check_in=check_in,
-                                                 city_url=city_url,
-                                                 need_cache=self.task.used_times == 0)
+        error_code, result, page_store_key, types_result_num = qyer_list_to_database(
+            tid=self.task.task_id,
+            used_times=self.task.used_times,
+            source=self.task.kwargs['source'],
+            city_id=city_id,
+            check_in=check_in,
+            city_url=city_url,
+            need_cache=self.task.used_times == 0
+        )
+
+        collections.save({
+            'task_id': self.task.task_id,
+            'used_times': self.task.used_times,
+            'total_num': types_result_num,
+            'stored_page_keys': page_store_key,
+            'result': result,
+            'insert_time': datetime.datetime.now()
+        })
 
         self.task.error_code = error_code
 
         sql = SQL.format(self.task.task_name)
         data = []
-        for sid, url in result:
+        for sid, url, page_id in result:
             data.append(('qyer', sid, city_id, country_id, url))
         try:
             service_platform_conn = service_platform_pool.connection()
