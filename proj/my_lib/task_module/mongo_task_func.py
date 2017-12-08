@@ -46,6 +46,9 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     collection_prefix = 'Task_Queue_{}_TaskName_'.format(queue)
     c_list = list(filter(lambda x: str(x).startswith(collection_prefix), db.collection_names()))
 
+    if queue == 'poi_list':
+        c_list = list(filter(lambda x: str(x).split('_')[-1] >= "20171208b", c_list))
+
     # 防止过度均分，选取 2000 为最小分配值
     per_limit = max(limit // len(c_list), 2000)
     c_list = list(map(lambda x: (x, per_limit), c_list))
