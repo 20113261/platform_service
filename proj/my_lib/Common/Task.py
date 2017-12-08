@@ -22,7 +22,7 @@ class TaskType(object):
 
 class Task(object):
     def __init__(self, _queue, _routine_key, _worker, _task_id, _source, _type, _task_name, _used_times,
-                 max_retry_times, task_type, list_task_token, kwargs, collection='Unknown' ):
+                 max_retry_times, task_type, list_task_token, kwargs, collection='Unknown'):
         """
         抓取平台任务对象
         :param _queue:
