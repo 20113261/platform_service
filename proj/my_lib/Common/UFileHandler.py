@@ -35,8 +35,11 @@ else:
     logger.debug("[no ucloud machine][use public ip]")
 config.set_default(connection_timeout=60)
 
-public_key = 'vCuKhG6UcHvB1UswK/q5zjMMHxt7PjKIu3/6q1JtxiZHtAuv'
-private_key = 'fdfbdf9cb0ebfeed522f664efc44f752694b15f6'
+# public_key = 'vCuKhG6UcHvB1UswK/q5zjMMHxt7PjKIu3/6q1JtxiZHtAuv'
+# private_key = 'fdfbdf9cb0ebfeed522f664efc44f752694b15f6'
+public_key = 'M7jIsudUE4Nvn6zQGjNMWxReCrSpc8HcWdBztizB38qvbXkS'
+private_key = '3fe4dbb2f16a86a8a58c6c9aac061d83c43ff468'
+
 put_handler = putufile.PutUFile(public_key, private_key)
 bucket_name = "verify-case"
 
@@ -85,7 +88,7 @@ def delete_ufile(key):
         return True
     else:
         logger.debug("[Failed][delete file][bucket: {0}][key: {1}][status: {3}][takes: {2}]".
-                     format(bucket_name, key,time.time() - start, status))
+                     format(bucket_name, key, time.time() - start, status))
         return False
 
 
@@ -145,8 +148,18 @@ def upload_stream(key, data):
 
 
 if __name__ == '__main__':
-    # print(upload_stream('test', json.dumps({'status': 'OK', 'data': 'Hello World', 'test': '中文测试'})))
+    print(
+        upload_stream('test',
+                      json.dumps(
+                          {
+                              'status': 'OK',
+                              'data': 'Hello World',
+                              'test': '中文测试',
+                              'new_test': "123"
+                          }
+                      )))
     # print(has_file('service_platform_cdfdb55def0b654eadba37812bfc66bd'))
+    print(get_ufile_and_info('test'))
     pass
     # print(delete_ufile('test'))
     # print(get_ufile('test'))
