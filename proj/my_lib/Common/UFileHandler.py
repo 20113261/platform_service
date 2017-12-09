@@ -84,8 +84,8 @@ def delete_ufile(key):
                                                                                         time.time() - start))
         return True
     else:
-        logger.debug("[Failed][delete file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, key,
-                                                                                       time.time() - start))
+        logger.debug("[Failed][delete file][bucket: {0}][key: {1}][status: {3}][takes: {2}]".
+                     format(bucket_name, key,time.time() - start, status))
         return False
 
 
@@ -115,8 +115,8 @@ def get_ufile_and_info(key):
         file_info.content_type = resp.headers['Content-Type']
         return resp.content, file_info
     else:
-        logger.debug("[Failed][download file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, key,
-                                                                                         time.time() - start))
+        logger.debug("[Failed][download file][bucket: {0}][key: {1}][status: {3}][takes: {2}]".
+                     format(bucket_name, key, time.time() - start, status))
         return None
 
 
@@ -139,8 +139,8 @@ def upload_stream(key, data):
                                                                                         time.time() - start))
         return True
     else:
-        logger.debug("[Failed][upload file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, key,
-                                                                                       time.time() - start))
+        logger.debug("[Failed][upload file][bucket: {0}][key: {1}][status: {3}][takes: {2}]".
+                     format(bucket_name, key, time.time() - start, status))
         return False
 
 
