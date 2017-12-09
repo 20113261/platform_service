@@ -55,15 +55,19 @@ class QyerDetailSDK(BaseSDK):
 
             if not key_is_legal(map_info) or not map_info_is_legal:
                 if not key_is_legal(address):
-                    raise TypeCheckError(
-                        'Error map_info and address NULL        with parser %ss    url %s' % (
-                            page_parser.func_name, target_url))
+                    # todo 临时注释
+                    pass
+                    # raise TypeCheckError(
+                    #     'Error map_info and address NULL        with parser %ss    url %s' % (
+                    #         page_parser.func_name, target_url))
                 google_map_info = google_get_map_info(address)
                 if not key_is_legal(google_map_info):
-                    raise TypeCheckError(
-                        'Error google_map_info  NULL  with [parser: {}][url: {}][address: {}][map_info: {}]'.format(
-                            page_parser.func_name, target_url, address, map_info)
-                    )
+                    # todo 临时注释
+                    pass
+                    # raise TypeCheckError(
+                    #     'Error google_map_info  NULL  with [parser: {}][url: {}][address: {}][map_info: {}]'.format(
+                    #         page_parser.func_name, target_url, address, map_info)
+                    # )
                 result.map_info = google_map_info
             if key_is_legal(name) or key_is_legal(name_en):
                 logger.info(name + '  ----------  ' + name_en)
