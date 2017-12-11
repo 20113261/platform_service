@@ -18,6 +18,7 @@ from lxml import html
 import json
 import pymongo
 from urlparse import urljoin
+
 mongo_config = {
     'host': '10.10.213.148'
 }
@@ -28,13 +29,12 @@ search_url = 'https://www.baidu.com/s'
 headers = {
     'Host': 'www.baidu.com',
     'is_referer': 'https://www.baidu.com/',
-    'is_xhr': 1,
+    'is_xhr': '1',
     'Referer': 'https://www.baidu.com/',
 }
 
 
 class BaiDuSearchSDK(BaseSDK):
-
     @retry(times=5)
     def _execute(self, **kwargs):
         with MySession(need_cache=True, need_proxies=True) as session:
@@ -58,7 +58,7 @@ class BaiDuSearchSDK(BaseSDK):
                 city_url = []
                 city_list = root.xpath('//a[contains(text(),"place.qyer.com")]/text()')
                 for city in city_list:
-                    url_str = urljoin('http:',city)
+                    url_str = urljoin('http:', city)
                     url_str = url_str.strip('.').strip('')
                     if not city_url or url_str not in city_url:
                         city_url.append(url_str)
@@ -68,5 +68,5 @@ class BaiDuSearchSDK(BaseSDK):
                 db.BaiDuSuggest.save(page_info)
             except Exception as e:
                 raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
-        self.finished_error_code = 0
+        self.task.error_code = 0
         return page_info
