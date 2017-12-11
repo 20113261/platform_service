@@ -15,3 +15,4 @@ from .HotelDetailSDK import HotelDetailSDK
 from .ImagesSDK import ImagesSDK
 from .CrawlJson import CrawlJson
 from .SupplementTask import SupplementDaodaoImg, SupplementMapInfo
+from .QyerCitySDK import QyerCitySDK
