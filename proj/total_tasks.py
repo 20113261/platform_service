@@ -75,3 +75,9 @@ def supplement_map_info(self, task, **kwargs):
 def supplement_daodao_img(self, task, **kwargs):
     _sdk = SupplementDaodaoImg(task=task)
     return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+def qyer_city_task(self, task, **kwargs):
+    _sdk = QyerCitySDK(task=task)
+    return _sdk.execute()
