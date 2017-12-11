@@ -27,8 +27,9 @@ headers = {
     "Referer": "http://www.qyer.com/",
     "Host": "www.qyer.com",
 }
-class QyerCitySDK(BaseSDK):
 
+
+class QyerCitySDK(BaseSDK):
     @retry(times=5)
     def _execute(self, **kwargs):
         with MySession(need_cache=True, need_proxies=True) as session:
@@ -40,7 +41,7 @@ class QyerCitySDK(BaseSDK):
             )
             city_count = 0
             try:
-                json_data = json.loads(page)
+                json_data = json.loads(page.content)
                 client = pymongo.MongoClient(**mongo_config)
                 db = client['SuggestName']
 
