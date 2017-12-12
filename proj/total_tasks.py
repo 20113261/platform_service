@@ -87,3 +87,9 @@ def qyer_city_task(self, task, **kwargs):
 def baidu_search_task(self, task, **kwargs):
     _sdk = BaiDuSearchSDK(task=task)
     return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
+def ks_move_task(self, task, **kwargs):
+    _sdk = KsMoveSDK(task=task)
+    return _sdk.execute()
