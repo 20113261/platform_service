@@ -112,7 +112,16 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str))
         if not line['info']:
             continue
         else:
-            p_hash = json.loads(line['info'])['p_hash']
+            j_data = json.loads(line['info'])
+
+            if 'down_reason' in j_data:
+                # 数据被手工过滤
+                add_report("filter_with_down_reason", min_pixels, task_name, "filter_with_down_reason")
+                continue
+            if 'p_hash' not in j_data:
+                continue
+            else:
+                p_hash = j_data['p_hash']
 
         # 过滤规则
         # pixel
