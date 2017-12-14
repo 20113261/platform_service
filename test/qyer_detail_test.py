@@ -9,7 +9,7 @@ from proj.my_lib.Common.Task import Task
 from proj.total_tasks import qyer_detail_task
 
 if __name__ == '__main__':
-    task = Task(_worker='proj.total_tasks.qyer_detail_task', _task_id='0f17cdb11fd6a7978a98cd93f3e5ecc1',
+    task = Task(_worker='proj.total_tasks.qyer_detail_task', _task_id='67ddbf776475e3528a757a414621f66c',
                 _source='Qyer',
                 _type='poi_detail',
                 _task_name='detail_total_qyer_20171209a',
@@ -18,7 +18,7 @@ if __name__ == '__main__':
                 # kwargs={"city_id": "NULL", "part": "detail_total_qyer_20171120a",
                 #         "target_url": "http://place.qyer.com/poi/V2wJZ1FgBzNTbA/"},
                 kwargs={"city_id": "NULL", "part": "detail_total_qyer_20171209a",
-                        "target_url": "http://place.qyer.com/poi/V2wJZlFvBz5TbA/"},
+                        "target_url": "http://place.qyer.com/poi/V2UJYVFjBzRTYVI6/"},
                 # "target_url": "http://place.qyer.com/poi/V2UJYVFjBzFTZlI9/"},
                 _queue='poi_detail', _routine_key='poi_detail', task_type=0, list_task_token=''
                 )

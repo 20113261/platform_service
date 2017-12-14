@@ -69,12 +69,14 @@ class QyerDetailSDK(BaseSDK):
                     #         page_parser.func_name, target_url, address, map_info)
                     # )
                 result.map_info = google_map_info
-            if key_is_legal(name) or key_is_legal(name_en):
+
+            if key_is_legal(name) or key_is_legal(name_en) or map_info_is_legal or key_is_legal(result.introduction):
                 logger.info(name + '  ----------  ' + name_en)
             else:
-                raise TypeCheckError(
-                    'Error name and name_en Both NULL        with parser %s    url %s' % (
-                        page_parser.func_name, target_url))
+                # raise TypeCheckError(
+                #     'Error name and name_en Both NULL        with parser %s    url %s' % (
+                #         page_parser.func_name, target_url))
+                raise TypeCheckError("All Available Key is Null")
 
         sql_result = result.__dict__
         sql_key = sql_result.keys()
