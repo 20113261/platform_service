@@ -7,6 +7,7 @@ import datetime
 import json
 import types
 
+
 class Column(object):
     def __init__(self, typ, default):
         self._typ = typ
@@ -20,35 +21,43 @@ class Column(object):
         return str(self._default)
 
 
-
 class BaseType(object):
     def __str__(self):
         return self.__class__.__name__
+
 
 class BaseLenType(BaseType):
     def __init__(self, length):
         if type(length) is not int:
             raise TypeError('%s must be int' % str(length))
 
+
 class String(BaseLenType):
     def type(self, value):
-        return isinstance(value,types.StringTypes) or type(value) is int or type(value) is float
+        return isinstance(value, (types.StringTypes, int, float))
+        # return isinstance(value, types.StringTypes) or type(value) is int or type(value) is float
+
 
 class Integer(BaseType):
     def type(self, value):
-        return type(value) is int
+        # return type(value) is int
+        return isinstance(value, types.IntType)
+
 
 class Datetime(BaseType):
     def type(self, value):
         return isinstance(value, datetime.datetime)
 
+
 class Text(BaseType):
     def type(self, value):
-        return type(value) is str
+        # return type(value) is str
+        return isinstance(value, (types.StringTypes, int, float))
 
 class Map(BaseType):
     def type(self, value):
         return isinstance(value, Coordinate)
+
 
 class JSON(BaseType):
     def type(self, value):
