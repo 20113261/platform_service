@@ -18,11 +18,11 @@ if __name__ == '__main__':
     # }
 
     args = {
-        "check_in": "20171223",
+        "check_in": "20180128",
         "city_id": "20645",
         "country_id": "133",
         "source": "qyer",
-        "city_url": "http://place.qyer.com/munduk/",
+        "city_url": "http://place.qyer.com/albania/",
         "date_index": 0
     }
 
