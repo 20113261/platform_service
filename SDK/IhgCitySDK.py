@@ -6,6 +6,7 @@ from proj.my_lib.logger import get_logger
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.ServiceStandardError import ServiceStandardError
+from proj.my_lib.Common.Task import Task
 import json
 config = {
     'host': '10.10.213.148',
@@ -22,6 +23,7 @@ headers = {
     'accept-encoding': 'gzip, deflate, br',
     'accept': '*/*',
     'accept-language': 'zh-CN,zh;q=0.9',
+    'Cookie': 'BlueStripe.PVN=395100000ac4; akamaiCountryCode=CN; akamaiLatitude=39.90; akamaiLongitude=116.41; akamaiIsWirelessDevice=false; akamaiIsTablet=false; akaas_RBF=2147483647~rv=23~id=f3c71118b90bf1b2adecc54ddea6fdd6; X-IHG-TrueClient_IP=61.148.245.93; X-IHG-GAPI-SRV=sjcd1plapiwb014'
 }
 search_url = "https://www.ihg.com/guestapi/v1/ihg/cn/zh/web/suggestions"
 
@@ -31,29 +33,38 @@ class IhgCitySDK(BaseSDK):
         with MySession(need_proxies=True,need_cache=True,auto_update_host=True) as session:
             keyword = self.task.kwargs['keyword']
             suggest = {}
-            response = session.get(
-                url=search_url,
-                headers =headers,
-                params ={
-                    'country': 'cn',
-                    'language': 'zh',
-                    'brand': 'ihg',
-                    'query': keyword
-                }
-            )
             try:
+                response = session.get(
+                    url=search_url,
+                    headers=headers,
+                    params={
+                        'country': 'cn',
+                        'language': 'zh',
+                        'brand': 'ihg',
+                        'query': keyword
+                    }
+                )
+
                 json_data = json.loads(response.content)
                 suggest['suggest'] = json_data
                 db = client['SuggestName']
-                db.IngCitySuggest.save(suggest)
-                db.IngCitySuggest.close()
+                db.IhgCitySuggest.save(suggest)
+            except Exception as e:
+                raise ServiceStandardError(ServiceStandardError.REQ_ERROR,wrapped_exception=e)
             except Exception as e:
                 raise ServiceStandardError(ServiceStandardError.MYSQL_ERROR,wrapped_exception=e)
-        self.finished_error_code = 0
-        return json_data['preFilterCount']
-
-
+        self.task.error_code = 0
+        return {'搜索到的suggest数量': json_data['preFilterCount']}
 
 
 if __name__ == "__main__":
-    pass
+    args = {
+        'keyword': 'Seoul'
+    }
+    task = Task(_worker='', _task_id='demo', _source='ihg', _type='poi_list', _task_name='ihg_city_suggest',
+                _used_times=0, max_retry_times=6,
+                kwargs=args, _queue='poi_list',
+                _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
+    ihg = IhgCitySDK(task)
+
+    ihg.execute()
