@@ -54,7 +54,8 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_ty
             task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
 
         task.ticket_info = {
-            "is_new_type": False
+            "is_new_type": False,
+            'is_service_platform': True
         }
     else:
         task.ticket_info = {
@@ -63,7 +64,8 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_ty
             "suggest": suggest,
             "check_in": str(check_in),
             "stay_nights": '1',
-            "occ": '2'
+            "occ": '2',
+            'is_service_platform': True
         }
         task.content = ''
 

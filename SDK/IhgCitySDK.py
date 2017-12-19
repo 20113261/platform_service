@@ -31,7 +31,7 @@ search_url = "https://www.ihg.com/guestapi/v1/ihg/cn/zh/web/suggestions"
 
 class IhgCitySDK(BaseSDK):
     def _execute(self, **kwargs):
-        with MySession(need_proxies=True, need_cache=True, auto_update_host=True) as session:
+        with MySession(need_proxies=True, need_cache=True) as session:
             keyword = self.task.kwargs['keyword']
             suggest = {}
             try:
