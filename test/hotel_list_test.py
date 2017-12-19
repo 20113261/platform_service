@@ -153,8 +153,8 @@ if __name__ == '__main__':
     #     max_retry_times=6
     # ))
     pass
-    task = Task(_worker='', _task_id='demo', _source='booking', _type='hotel_list',
-                _task_name='list_hotel_booking_20170929a',
+    task = Task(_worker='', _task_id='demo', _source='expedia', _type='hotel_list',
+                _task_name='list_hotel_expedia_20171218a',
                 _used_times=0, max_retry_times=6,
                 # kwargs={
                 #     'source': 'hotels',
@@ -166,10 +166,18 @@ if __name__ == '__main__':
                 #     'suggest_type': 1,
                 #     'suggest': '''https://www.hotels.cn/search.do?resolved-location=CITY%3A1638661%3AUNKNOWN%3AUNKNOWN&destination-id=1638661&q-destination=%E9%A9%AC%E5%B8%8C%E5%B2%9B,%20%E5%A1%9E%E8%88%8C%E5%B0%94&q-check-in=2018-01-08&q-check-out=2018-01-11&q-rooms=1&q-room-0-adults=2&q-room-0-children=0'''
                 # },
-                kwargs={"suggest_type": 2, "check_in": "20171203", "city_id": "20371",
-                        "suggest": "{u'name': u'\\u5bbf\\u52a1', u'redirectPage': u'DEFAULT_PAGE', u'longitude': 123.89309, u'caption': u\"\\u5bbf\\u52a1, \\u83f2\\u5f8b\\u5bbe (Fi<span class='highlighted'>lip\\xedny</span>)\", u'destinationId': u'987200', u'latitude': 10.309726, u'landmarkCityDestinationId': None, u'type': u'CITY', u'geoId': u'1000000000000000800'}",
-                        "country_id": "107", "source": "hotels", "part": "20171122a", "is_new_type": 1,
-                        "date_index": 0},
+                kwargs={
+                    "suggest_type": 1,
+                    "check_in": "20171203",
+                    "city_id": "20371",
+                    # "suggest": "{u'name': u'\\u5bbf\\u52a1', u'redirectPage': u'DEFAULT_PAGE', u'longitude': 123.89309, u'caption': u\"\\u5bbf\\u52a1, \\u83f2\\u5f8b\\u5bbe (Fi<span class='highlighted'>lip\\xedny</span>)\", u'destinationId': u'987200', u'latitude': 10.309726, u'landmarkCityDestinationId': None, u'type': u'CITY', u'geoId': u'1000000000000000800'}",
+                    'suggest': 'https://www.expedia.com.hk/Hotel-Search?destination=%E5%85%8B%E6%8B%89%E7%BA%A6%E7%93%A6,+%E7%BD%97%E9%A9%AC%E5%B0%BC%E4%BA%9A+(CRA)&startDate=2018/02/01&endDate=2018/02/02&adults=2&searchPriorityOverride=213',
+                    "country_id": "107",
+                    "source": "expedia",
+                    "part": "20171218a",
+                    "is_new_type": 1,
+                    "date_index": 0
+                },
                 _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
 
     print(hotel_list_task(task=task))

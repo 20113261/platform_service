@@ -58,14 +58,14 @@ def parse_image_urls(target_url):
             # 当无翻页时直接返回
             return '|'.join(img_list), beentocounts, plantocounts
 
-        if pages >= 3:
-            pages = 4
-        for page in range(int(pages) + 2):
-            with MySession(need_proxies=True, need_cache=True) as img_session:
-                image_page = img_session.get(target_url + '/photo/page{0}'.format(page)).content.decode('utf8')
-                page = pyquery.PyQuery(image_page)
-                ul = page('.pla_photolist.clearfix li')
-                img_list.extend([li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()])
+    if pages >= 3:
+        pages = 4
+    for page in range(int(pages) + 2):
+        with MySession(need_proxies=True, need_cache=True) as img_session:
+            image_page = img_session.get(target_url + '/photo/page{0}'.format(page)).content.decode('utf8')
+            page = pyquery.PyQuery(image_page)
+            ul = page('.pla_photolist.clearfix li')
+            img_list.extend([li('._jsbigphotoinfo img').attr('src').rstrip('/180180') for li in ul.items()])
 
     return '|'.join(img_list), beentocounts, plantocounts
 
@@ -246,19 +246,19 @@ if __name__ == '__main__':
     # target_url = 'http://place.qyer.com/poi/V2cJYFFhBz5TZA/'
     # target_url = 'http://place.qyer.com/poi/V2AJYVFmBzRTZg/'
     # target_url = 'http://place.qyer.com/poi/V2YJY1FjBz5TZFI9/'
-    import requests
-    target_url = 'http://place.qyer.com/poi/V2UJYVFjBzFTZlI9/'
-    target_url = 'http://place.qyer.com/poi/V2UJYVFkBzBTbFI9CmU/'
-    page = requests.get(target_url)
-    page.encoding = 'utf8'
-    content = page.text
-    # # with open('content.txt','w+') as temp:
-    # #     temp.write(content)
-    result = page_parser(content, target_url)
-    for k, v in result.__dict__.items():
-        print('%s : %s' % (k, v))
-
-    print(len(result.__dict__.keys()))
+    # import requests
+    # target_url = 'http://place.qyer.com/poi/V2UJYVFjBzFTZlI9/'
+    # target_url = 'http://place.qyer.com/poi/V2UJYVFkBzBTbFI9CmU/'
+    # page = requests.get(target_url)
+    # page.encoding = 'utf8'
+    # content = page.text
+    # # # with open('content.txt','w+') as temp:
+    # # #     temp.write(content)
+    # result = page_parser(content, target_url)
+    # for k, v in result.__dict__.items():
+    #     print('%s : %s' % (k, v))
+    #
+    # print(len(result.__dict__.keys()))
 
     # try:
     #     session = DBSession()
@@ -270,4 +270,4 @@ if __name__ == '__main__':
     # finally:
     #     session.close()
 
-    # print(parse_image_urls('http://place.qyer.com/poi/V2UJYlFiBzRTZFI_Cm4'))
+    print(parse_image_urls('http://place.qyer.com/poi/V2UJYlFvBzZTZlI6/'))

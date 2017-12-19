@@ -92,3 +92,9 @@ def baidu_search_task(self, task, **kwargs):
 def Ing_city_suggest(self,task,**kwargs):
     _sdk = IhgCitySDK(task=task)
     return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
+def ks_move_task(self, task, **kwargs):
+    _sdk = KsMoveSDK(task=task)
+    return _sdk.execute()

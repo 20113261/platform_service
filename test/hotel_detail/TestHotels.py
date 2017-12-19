@@ -20,10 +20,20 @@ def test_hotels_parser(page):
 
 class TestHotels(unittest.TestCase):
     def test_name(self):
-        cases = ['83ba683f30f00298c4808a0b7b79bcc6', '2d46474aa51e51ca70e134e17d9efcbc',
-                 '8d3b32c6f9b824466344e600958c3684', 'a042d06f6147dd44c38fc24e4f0d266e']
-        results = [('NULL', 'Appartement au complexe marina golf'), ('巴達霍斯中心酒店', 'Hotel Badajoz Center'),
-                   ('NULL', 'Isa Lei Glampsite'), ('cApVerb 酒店', 'CapVerb')]
+        cases = [
+            '83ba683f30f00298c4808a0b7b79bcc6',
+            '2d46474aa51e51ca70e134e17d9efcbc',
+            '8d3b32c6f9b824466344e600958c3684',
+            'a042d06f6147dd44c38fc24e4f0d266e',
+            'b355d2d454395cfdeaebc1e61ee64853'
+        ]
+        results = [
+            ('NULL', 'Appartement au complexe marina golf'),
+            (u'巴達霍斯中心酒店', 'Hotel Badajoz Center'),
+            ('NULL', 'Isa Lei Glampsite'),
+            (u'cApVerb 酒店', 'CapVerb'),
+            (u'1-11 度假村', 'One Eleven')
+        ]
         for case, res in zip(cases, results):
             page = download_file(case)
             j_data = json.loads(page)
@@ -31,11 +41,19 @@ class TestHotels(unittest.TestCase):
             self.assertTupleEqual((result.hotel_name, result.hotel_name_en), res)
 
     def test_desc(self):
-        cases = ['83ba683f30f00298c4808a0b7b79bcc6', '2d46474aa51e51ca70e134e17d9efcbc',
-                 '8d3b32c6f9b824466344e600958c3684', 'a042d06f6147dd44c38fc24e4f0d266e']
+        cases = [
+            '83ba683f30f00298c4808a0b7b79bcc6',
+            '2d46474aa51e51ca70e134e17d9efcbc',
+            '8d3b32c6f9b824466344e600958c3684',
+            'a042d06f6147dd44c38fc24e4f0d266e'
+        ]
 
-        results = [u'艾西拉的公寓，設有廚房和露台', u'4 星酒店，設有室外泳池，鄰近巴達霍斯大教堂',
-                   u'海濱酒店，位於馬塔薩瓦島，設有餐廳、酒吧/酒廊', u'基耶斯特的山區公寓，設有露台']
+        results = [
+            u'艾西拉的公寓，設有廚房和露台',
+            u'4 星酒店，設有室外泳池，鄰近巴達霍斯大教堂',
+            u'海濱酒店，位於馬塔薩瓦島，設有餐廳、酒吧/酒廊',
+            u'基耶斯特的山區公寓，設有露台'
+        ]
 
         for case, res in zip(cases, results):
             page = download_file(case)

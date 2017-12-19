@@ -45,13 +45,13 @@ def hotels_parser(content, url, other_info):
         args = re.split('[(（]', name_temp, 2)
         # hotel.hotel_name = name_temp.split('(')[0].strip().encode('utf-8')
         hotel.hotel_name = args[0].strip().encode('utf-8')
-        print ('hotel_name=>%s' % hotel.hotel_name)
+        print('hotel_name=>%s' % hotel.hotel_name)
         try:
             hotel.hotel_name_en = args[-1].rsplit('-', 1)[0].replace(')', '').replace('）', '').strip().encode('utf-8')
             # hotel.hotel_name_en = re.findall('\(([\s\S]+?)\)', name_temp)[0].strip().encode('utf-8')
         except Exception:
             pass
-        print ('hotel_name_en=>%s' % hotel.hotel_name_en)
+        print('hotel_name_en=>%s' % hotel.hotel_name_en)
     except Exception as e:
         print(str(e))
 
@@ -79,9 +79,13 @@ def hotels_parser(content, url, other_info):
         # re.findall('[a-zA-Z ]+',name_temp)
         hotel.hotel_name_en = re.findall('\((.*?)\)', name_temp)[0].encode('utf8')
 
-        # 城市清除
-        if '-' in hotel.hotel_name:
-            hotel.hotel_name = hotel.hotel_name.split('-')[0].strip()
+        try:
+            hotel.hotel_name = name_temp.split('({}'.format(hotel.hotel_name_en))[0].strip()
+        except Exception:
+            pass
+        # # 城市清除
+        # if '-' in hotel.hotel_name:
+        #     hotel.hotel_name = hotel.hotel_name.split('-')[0].strip()
 
     # 城市清除
     if hotel.hotel_name_en in hotel.hotel_name:
@@ -90,6 +94,9 @@ def hotels_parser(content, url, other_info):
 
         if hotel.hotel_name == hotel.hotel_name_en:
             hotel.hotel_name = 'NULL'
+
+    print('hotel_name=>%s' % hotel.hotel_name)
+    print('hotel_name_en=>%s' % hotel.hotel_name_en)
 
     try:
         hotel.address = root.find_class('postal-addr')[0].text_content() \
@@ -173,7 +180,7 @@ def hotels_parser(content, url, other_info):
                         img_url = src[0].strip().encode('utf-8').replace('{size}', 'y')
                     else:
                         img_url = src[0].strip().encode('utf-8').replace('{size}', 'n')
-                if i==0:
+                if i == 0:
                     first_img = img_url
                 hotel.img_items += img_url + '|'
         hotel.img_items = hotel.img_items[:-1]
@@ -299,7 +306,7 @@ def hotels_parser(content, url, other_info):
     hotel.city_id = other_info['city_id']
 
     if first_img:
-        hotel.others_info = json.dumps({'first_img':first_img})
+        hotel.others_info = json.dumps({'first_img': first_img})
 
     return hotel
 
@@ -317,7 +324,9 @@ if __name__ == '__main__':
     # url = 'https://zh.hotels.com/ho536186/'
     from proj.my_lib.Common.Browser import MySession
 
-    url = 'https://zh.hotels.com/ho619519840/'
+    # url = 'https://zh.hotels.com/ho619519840/'
+    # url = 'https://zh.hotels.com/ho416746/'
+    url = 'https://zh.hotels.com/ho416746/'
     with MySession(need_cache=True) as session:
         # page = requests.get(url)
         page = session.get(url=url)

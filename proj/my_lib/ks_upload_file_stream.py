@@ -99,7 +99,7 @@ def download(bucket_name, file_name, file_path, new_file_name=''):
 
 
 @func_time_logger
-def download_content(bucket_name, file_name):
+def download_content(bucket_name, file_name, need_md5=False):
     start = time.time()
     bucket = connection.get_bucket(bucket_name)
     obj = bucket.get_key(file_name)
@@ -111,6 +111,8 @@ def download_content(bucket_name, file_name):
         retry_times -= 1
         try:
             content = obj.get_contents_as_string()
+            if need_md5:
+                md5 = str(obj.etag.replace('"', ''))
             status = 0
         except Exception as exc:
             logger.exception(msg="[download file error]", exc_info=exc)
@@ -118,11 +120,27 @@ def download_content(bucket_name, file_name):
     if status == 0:
         logger.debug("[Succeed][download file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, file_name,
                                                                                           time.time() - start))
-        return content
+        if need_md5:
+            return content, md5
+        else:
+            return content
     else:
         logger.debug("[Failed][download file][bucket: {0}][key: {1}][takes: {2}]".format(bucket_name, file_name,
                                                                                          time.time() - start))
-        return None
+        if need_md5:
+            return None, None
+        else:
+            return None
+
+
+@func_time_logger
+def check_key(bucket_name, file_name):
+    bucket = connection.get_bucket(bucket_name)
+    obj = bucket.get_key(file_name)
+
+    if not obj:
+        pass
+    print("Hello World")
 
 
 # def test_img_p_hash_download():
@@ -134,7 +152,8 @@ def download_content(bucket_name, file_name):
 
 
 if __name__ == '__main__':
-    pass
+    check_key('mioji-shop', '24274ec3d9216ed7dce0f6e70691a44b.jpg')
+    check_key('mioji-shop', '451c4fc0f9653a02596600e5b2d4eaa1')
     # f = open('/tmp/1b78877b728d4bd6e8445d2d1102044c.png', 'rb')
     # md5 = get_stream_md5(f)
     # print(md5)
