@@ -17,8 +17,6 @@ from .CrawlJson import CrawlJson
 from .SupplementTask import SupplementDaodaoImg, SupplementMapInfo
 from .QyerCitySDK import QyerCitySDK
 from .BaiDuSearchSDK import BaiDuSearchSDK
-<<<<<<< HEAD
 from .IhgCitySDK import IhgCitySDK
-=======
 from .KsMoveSDK import KsMoveSDK
->>>>>>> 0d8d85c6bd5787540d00a670664810057683ed35
+
