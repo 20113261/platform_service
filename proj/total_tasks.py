@@ -88,8 +88,9 @@ def baidu_search_task(self, task, **kwargs):
     _sdk = BaiDuSearchSDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True,base=BaseTask,max_retries=3,rate_limit='5/s')
-def Ihg_city_suggest(self,task,**kwargs):
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
+def ihg_city_suggest(self, task, **kwargs):
     _sdk = IhgCitySDK(task=task)
     return _sdk.execute()
 
