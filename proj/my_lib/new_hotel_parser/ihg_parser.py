@@ -6,7 +6,7 @@ from lxml import etree
 from lxml import html as HTML
 from proj.my_lib.models.HotelModel import HotelBase
 
-def ihg_parser(content, url):
+def ihg_parser(content, url, o_info):
     hotel = HotelBase()
     html = etree.HTML(content[0])
     hotel_name = html.xpath('//*[@id="hotelname"]/@value')
