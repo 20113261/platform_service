@@ -34,7 +34,7 @@ client = pymongo.MongoClient(host='10.10.231.105')
 db = client['MongoTask']
 HOTEL_SOURCE = (
     'agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
-    'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton')
+    'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton', 'ihg')
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 PRIORITY = 3
@@ -527,18 +527,19 @@ class TaskSender(object):
 
 if __name__ == '__main__':
     # city2list()
-    monitoring_poi_detail2imgOrComment()
+    # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
-    # monitoring_qyer_list2detail()
-    # monitoring_zombies_task_total()
-    # city2list()
-    # get_default_timestramp()
-    # get_seek('hotel_list2detail_test')
-    # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
-    # test_timstramp()
-    # monitoring_hotel_list2detail()
-    # monitoring_hotel_detail2ImgOrComment()
-    # monitoring_zombies_task()
+    while True:
+        monitoring_qyer_list2detail()
+        # monitoring_zombies_task_total()
+        # city2list()
+        # get_default_timestramp()
+        # get_seek('hotel_list2detail_test')
+        # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
+        # test_timstramp()
+        # monitoring_hotel_list2detail()
+        # monitoring_hotel_detail2ImgOrComment()
+        # monitoring_zombies_task()
 # query_sql = '''SELECT
 #   source,
 #   id,
