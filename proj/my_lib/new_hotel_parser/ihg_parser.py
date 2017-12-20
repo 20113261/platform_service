@@ -1,10 +1,11 @@
-#coding:utf-8
+# coding:utf-8
 import requests
 import re
 import json
 from lxml import etree
 from lxml import html as HTML
 from proj.my_lib.models.HotelModel import HotelBase
+
 
 def ihg_parser(content, url, o_info):
     hotel = HotelBase()
@@ -113,10 +114,13 @@ def ihg_parser(content, url, o_info):
         hotel.check_out_time = check_out_time[0].strip()
         # print hotel.check_out_time
     hotel.hotel_url = url
+    first_img = None
     if hotel.img_items:
         first_img = hotel.img_items.split('|')[0]
-    hotel.others_info = json.dumps({"city": hotel.city, "country": hotel.country, "first_img": first_img, "source_city_id": hotel.source_city_id})
+    hotel.others_info = json.dumps(
+        {"city": hotel.city, "country": hotel.country, "first_img": first_img, "source_city_id": hotel.source_city_id})
     return hotel
+
 
 if __name__ == '__main__':
     url = 'https://www.ihg.com/hotels/cn/zh/brooklyn/bxyev/hoteldetail?qRef=sr&qDest=%E7%BA%BD%E7%BA%A6%E5%9F%8E%2C+NY%2C+%E7%BE%8E%E5%9B%BD&qRpn=2&qChld=0&qAAR=6CBARC&qSrt=sDD&qSHp=1&qSmP=3&qIta=99602392&qGRM=0&qLng=-73.985626&qRdU=1&qRms=1&srb_u=1&qAdlt=1&qPSt=0&qRtP=6CBARC&qCiMy=012018&qCoD=16&qLat=40.757996&qCiD=15&qCoMy=012018&qRmP=3&qRRSrt=rt&qRad=30&qRpp=20&qBrs=6c.hi.ex.rs.ic.cp.in.sb.cw.cv.ul.vn.ki.sp.nd.ct&qWch=0'
