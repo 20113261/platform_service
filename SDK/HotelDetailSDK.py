@@ -36,10 +36,21 @@ class HotelDetailSDK(BaseSDK):
 
             # init session
             start = time.time()
-            if source != 'hilton':
+            if source not in ('hilton', 'ihg'):
                 page = session.get(url, timeout=240)
                 page.encoding = 'utf8'
                 content = page.text
+            elif source == 'ihg':
+                url1, url2 = url.split('#####')
+                page1 = session.get(url1, timeout=240)
+                page1.encoding = 'utf8'
+                content1 = page1.text
+
+                page2 = session.get(url2, timeout=240)
+                page2.encoding = 'utf8'
+                content2 = page2.text
+
+                content = [content1, content2]
             else:
                 session.auto_update_host = False
                 hilton_index = url.find('index.html')
@@ -99,5 +110,3 @@ class HotelDetailSDK(BaseSDK):
             logger.debug("[Insert DB][Takes: {}]".format(time.time() - start))
             self.task.error_code = 0
             return self.task.error_code
-
-
