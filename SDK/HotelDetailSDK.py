@@ -21,7 +21,7 @@ class HotelDetailSDK(BaseSDK):
 
         headers = {}
 
-        with MySession(need_cache=True, do_not_delete_cache=True) as session:
+        with MySession(need_cache=True) as session:
             # hotels
             if source == 'hotels':
                 url = 'https://zh.hotels.com/ho{0}/'.format(source_id)

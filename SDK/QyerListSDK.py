@@ -24,7 +24,7 @@ from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.mysql_pool import service_platform_pool
 
-mioji.common.pool.pool.set_size(2048)
+mioji.common.pool.pool.set_size(128)
 logger = get_task_logger(__name__)
 mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path

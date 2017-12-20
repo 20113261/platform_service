@@ -80,16 +80,24 @@ def ihg_parser(content, url, o_info):
     has_wifi = html2.xpath(u'//h5[text()="上网"]/..//dd/text()')
     if has_wifi:
         hotel.has_wifi = 'Yes'
-        hotel.is_wifi_free = ''
-        for one_wifi in has_wifi:
-            hotel.is_wifi_free += one_wifi
+        # todo 之后确定 free 系列解析方法后删除此部分内容，wifi_info 中存放着需要的信息
+        wifi_info = '|'.join(has_wifi)
+        if any(map(lambda x: x.startswith('免费'), has_wifi)):
+            hotel.is_wifi_free = 'Yes'
+            # hotel.is_wifi_free = ''
+            # for one_wifi in has_wifi:
+            #     hotel.is_wifi_free += one_wifi
     # print hotel.is_wifi_free
     has_parking = html2.xpath(u'//h5[text()="停车"]/..//dd/text()')
     if has_parking:
         hotel.has_parking = 'Yes'
-        hotel.is_parking_free = ''
-        for one_parking in has_parking:
-            hotel.is_parking_free += one_parking
+        parking_info = '|'.join(has_parking)
+        # todo 之后确定 free 系列解析方法后删除此部分内容，parking_info 中存放着需要的信息
+        if any(map(lambda x: x.startswith('免费'), has_parking)):
+            hotel.is_wifi_free = 'Yes'
+        # hotel.is_parking_free = ''
+        # for one_parking in has_parking:
+        #     hotel.is_parking_free += one_parking
     service_rows = html2.xpath('//div[@class="col-md-4 well well-noborder"]')
     hotel.service = ''
     for row in service_rows:
@@ -129,5 +137,5 @@ if __name__ == '__main__':
     content = page.text
     page2 = requests.get(url2)
     content2 = page2.text
-    result = ihg_parser([content, content2], url)
+    result = ihg_parser([content, content2], url, {})
     print '\n'.join(['%s:%s' % item for item in result.__dict__.items()])
