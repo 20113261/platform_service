@@ -5,6 +5,7 @@ import pymongo
 import urllib, pymysql
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.Common.BaseSDK import BaseSDK
+from proj.my_lib.Common.NetworkUtils import google_get_map_info
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.Common.Task import Task
 
@@ -42,13 +43,15 @@ class EuropeStationSDK(BaseSDK):
         for sta in res2:
             station_name = sta[0]
             station_code = sta[1]
+            google_map_info = google_get_map_info('{},{},{}'.format(country_code, city_name, station_name))
             try:
                 collections.save({
                     'city_code': city_code,
                     'city_name': city_name,
                     'country_code': country_code,
                     'station_name': station_name,
-                    'station_code': station_code
+                    'station_code': station_code,
+                    'map_info': google_map_info
                 })
             except Exception:
                 raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR)
