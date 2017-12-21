@@ -18,6 +18,8 @@ from proj.mysql_pool import service_platform_pool
 import mioji.common.logger
 import mioji.common.pool
 import mioji.common.pages_store
+import pymongo
+import datetime
 import mioji.common
 from proj.my_lib.logger import func_time_logger
 from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
@@ -30,6 +32,8 @@ mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path
 mioji.common.pages_store.STORE_TYPE = cache_type
 
+client = pymongo.MongoClient(host='10.10.213.148')
+collections = client['data_result']['HotelList']
 # pymongo client
 
 # client = pymongo.MongoClient(host='10.10.231.105')
@@ -76,7 +80,7 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_ty
     else:
         error_code = spider.crawl(required=['hotel'], cache_config=none_cache_config)
     logger.info(str(task.ticket_info) + '  --  ' + task.content)
-    return error_code, spider.result
+    return error_code, spider.result, spider.page_store_key_list
 
 
 class HotelListSDK(BaseSDK):
@@ -87,15 +91,17 @@ class HotelListSDK(BaseSDK):
 
         @func_time_logger
         def hotel_list_crawl():
-            error_code, result = hotel_list_database(source=source, city_id=city_id,
-                                                     check_in=self.task.kwargs['check_in'],
-                                                     is_new_type=self.task.kwargs.get('is_new_type', False),
-                                                     suggest_type=self.task.kwargs.get('suggest_type', '1'),
-                                                     suggest=self.task.kwargs.get('suggest', ''),
-                                                     need_cache=self.task.used_times == 0)
-            return error_code, result
+            error_code, result, page_store_key = hotel_list_database(source=source, city_id=city_id,
+                                                                     check_in=self.task.kwargs['check_in'],
+                                                                     is_new_type=self.task.kwargs.get('is_new_type',
+                                                                                                      False),
+                                                                     suggest_type=self.task.kwargs.get('suggest_type',
+                                                                                                       '1'),
+                                                                     suggest=self.task.kwargs.get('suggest', ''),
+                                                                     need_cache=self.task.used_times == 0)
+            return error_code, result, page_store_key
 
-        error_code, result = hotel_list_crawl()
+        error_code, result, page_store_key = hotel_list_crawl()
         self.task.error_code = error_code
 
         res_data = []
@@ -111,6 +117,15 @@ class HotelListSDK(BaseSDK):
         else:
             for sid, hotel_url in result['hotel']:
                 res_data.append((source, sid, city_id, country_id, hotel_url))
+
+        collections.save({
+            'collections': self.task.collection,
+            'task_id': self.task.task_id,
+            'used_times': self.task.used_times[0],
+            'stored_page_keys': page_store_key,
+            'result': result,
+            'insert_time': datetime.datetime.now()
+        })
 
         @func_time_logger
         def hotel_list_insert_db():
