@@ -49,7 +49,8 @@ hotel_rooms = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'chil
 hotel_rooms_c = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
 
 
-def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_type='1', suggest='', need_cache=True):
+def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=False, suggest_type='1', suggest='',
+                        need_cache=True):
     task = Task()
     if not is_new_type:
         if source == 'hilton':
@@ -59,7 +60,9 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_ty
 
         task.ticket_info = {
             "is_new_type": False,
-            'is_service_platform': True
+            'is_service_platform': True,
+            'tid': tid,
+            'used_times': used_times
         }
     else:
         task.ticket_info = {
@@ -69,7 +72,9 @@ def hotel_list_database(source, city_id, check_in, is_new_type=False, suggest_ty
             "check_in": str(check_in),
             "stay_nights": '1',
             "occ": '2',
-            'is_service_platform': True
+            'is_service_platform': True,
+            'tid': tid,
+            'used_times': used_times,
         }
         task.content = ''
 
@@ -91,7 +96,10 @@ class HotelListSDK(BaseSDK):
 
         @func_time_logger
         def hotel_list_crawl():
-            error_code, result, page_store_key = hotel_list_database(source=source, city_id=city_id,
+            error_code, result, page_store_key = hotel_list_database(tid=self.task.task_id,
+                                                                     used_times=self.task.used_times,
+                                                                     source=source,
+                                                                     city_id=city_id,
                                                                      check_in=self.task.kwargs['check_in'],
                                                                      is_new_type=self.task.kwargs.get('is_new_type',
                                                                                                       False),
