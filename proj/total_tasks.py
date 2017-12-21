@@ -35,7 +35,7 @@ def hotel_list_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
 def slow_hotel_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
@@ -59,7 +59,7 @@ def hotel_detail_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='10/m')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='20/m')
 def slow_hotel_detail_task(self, task, **kwargs):
     _sdk = HotelDetailSDK(task=task)
     return _sdk.execute()
