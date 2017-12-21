@@ -122,7 +122,11 @@ class BaseSDK(object):
             # 返回任务状态统计
             self.__task_report()
         except ServiceStandardError as exc:
-            self.logger.exception(msg="[raise ServiceStandardError]", exc_info=exc)
+            self.logger.exception(msg="[raise ServiceStandardError][code: {}][msg: {}]".format(
+                exc.error_code,
+                exc.msg
+            ),
+                exc_info=exc)
             # 如果其中有 wrapped exception 打印
             wrapped_exception = getattr(exc, 'wrapped_exception', None)
             if wrapped_exception:
