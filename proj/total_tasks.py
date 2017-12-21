@@ -29,7 +29,7 @@ def hotel_img_merge_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='12/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/s')
 def hotel_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
