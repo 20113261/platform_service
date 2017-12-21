@@ -137,8 +137,10 @@ class HotelListSDK(BaseSDK):
         # 用 res_data 判断，修改 self.error_code 的值
         if len(res_data) > 0:
             self.task.error_code = 0
-        else:
+        elif int(error_code) == 0:
             raise ServiceStandardError(ServiceStandardError.EMPTY_TICKET)
+        else:
+            raise ServiceStandardError(error_code=error_code)
         return res_data, error_code, self.task.error_code, self.task.task_name, self.task.kwargs['suggest']
 
 
