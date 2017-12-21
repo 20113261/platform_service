@@ -29,8 +29,16 @@ schedule = BlockingScheduler()
 hotel_slow_source = {
     'ihg':
         {
-            'proj.total_tasks.hotel_detail_task': 'proj.total_tasks.slow_hotel_detail_task',
-            'proj.total_tasks.hotel_list_task': 'proj.total_tasks.slow_hotel_list_task'
+            'proj.total_tasks.hotel_detail_task': (
+                'proj.total_tasks.slow_hotel_detail_task',
+                'slow_hotel_detail',
+                'slow_hotel_detail'
+            ),
+            'proj.total_tasks.hotel_list_task': (
+                'proj.total_tasks.slow_hotel_list_task',
+                'slow_hotel_list',
+                'slow_hotel_list'
+            )
         }
 
 }
@@ -104,14 +112,24 @@ def insert_task(queue, limit):
             s = task.source.lower()
             change_worker_dict = hotel_slow_source[s]
             if task.worker in change_worker_dict:
-                changed_worker = change_worker_dict[task.worker]
-        app.send_task(
-            task.worker if changed_worker is not None else changed_worker,
-            task_id="[collection: {}][tid: {}]".format(task.collection, task.task_id),
-            kwargs={'task': task},
-            queue=task.queue,
-            routing_key=task.routine_key
-        )
+                changed_worker, changed_queue, changed_routine_key = change_worker_dict[task.worker]
+        if changed_worker is None:
+            app.send_task(
+                task.worker,
+                task_id="[collection: {}][tid: {}]".format(task.collection, task.task_id),
+                kwargs={'task': task},
+                queue=task.queue,
+                routing_key=task.routine_key
+            )
+        else:
+            # 如果需要开启慢任务
+            app.send_task(
+                changed_worker,
+                task_id="[collection: {}][tid: {}]".format(task.collection, task.task_id),
+                kwargs={'task': task},
+                queue=changed_queue,
+                routing_key=changed_routine_key
+            )
     logger.info("Insert queue: {0} task count: {1}".format(queue, _count))
 
 
