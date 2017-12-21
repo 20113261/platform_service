@@ -6,6 +6,7 @@
 # @File    : hotel_list_test.py
 # @Software: PyCharm
 import sys
+
 sys.path.append('/data/lib')
 from proj.my_lib.Common.Task import Task
 from proj.total_tasks import hotel_list_task
@@ -201,14 +202,17 @@ if __name__ == '__main__':
                 # },
                 kwargs={
                     "suggest_type": "1",
-                    "check_in": "20180304",
-                    "city_id": "60181",
+                    "check_in": "20180225",
+                    "city_id": "20288",
                     # "suggest": "{u'name': u'\\u5bbf\\u52a1', u'redirectPage': u'DEFAULT_PAGE', u'longitude': 123.89309, u'caption': u\"\\u5bbf\\u52a1, \\u83f2\\u5f8b\\u5bbe (Fi<span class='highlighted'>lip\\xedny</span>)\", u'destinationId': u'987200', u'latitude': 10.309726, u'landmarkCityDestinationId': None, u'type': u'CITY', u'geoId': u'1000000000000000800'}",
                     # 'suggest': 'https://www.expedia.com.hk/Hotel-Search?destination=%E7%BA%AA%E5%BF%B5%E7%A2%91%E8%B0%B7%EF%BC%88%E5%8F%8A%E9%82%BB%E8%BF%91%E5%9C%B0%E5%8C%BA%EF%BC%89,+%E7%8A%B9%E4%BB%96%E5%B7%9E,+%E7%BE%8E%E5%9B%BD&startDate=2018/02/01&endDate=2018/02/02&adults=2&searchPriorityOverride=213',
-                    'suggest': '''{"hits": 2, "countryCode": "0925", "longitude": -0.12714, "label": "London, United Kingdom", "rank": 10.0, "suggestion": "London, United Kingdom", "destinationType": "CITY", "latitude": 51.506321, "type": "B"}''',
-                    "country_id": "501",
+                    # 'suggest': '''{"hits": 2, "countryCode": "0925", "longitude": -0.12714, "label": "London, United Kingdom", "rank": 10.0, "suggestion": "London, United Kingdom", "destinationType": "CITY", "latitude": 51.506321, "type": "B"}''',
+                    'suggest': '''{"hits": 1, "countryCode": "
+                    0280", "longitude": 100.233333, "label": "Lijiang, CHN", "rank": 1.797943913427927, "suggestion": "Lijiang, CHN", "destinati
+                    onType": "CITY", "latitude": 26.883333, "type": "B"}''',
+                    "country_id": "101",
                     "source": "ihg",
-                    "part": "20171220a",
+                    "part": "20171221a",
                     "is_new_type": 1,
                     "date_index": 38
                 },
