@@ -26,6 +26,15 @@ from rabbitmq_func import detect_msg_num
 
 schedule = BlockingScheduler()
 
+hotel_slow_source = {
+    'ihg':
+        {
+            'proj.total_tasks.hotel_detail_task': 'proj.total_tasks.slow_hotel_detail_task',
+            'proj.total_tasks.hotel_list_task': 'proj.total_tasks.slow_hotel_list_task'
+        }
+
+}
+
 import datetime
 
 # schedule.add_job(monitoring_supplement_field, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
@@ -89,8 +98,15 @@ def insert_task(queue, limit):
             limit=limit,
             used_times=6):
         _count += 1
+        # 初始化需要修改的 worker
+        changed_worker = None
+        if task.source.lower() in hotel_slow_source:
+            s = task.source.lower()
+            change_worker_dict = hotel_slow_source[s]
+            if task.worker in change_worker_dict:
+                changed_worker = change_worker_dict[task.worker]
         app.send_task(
-            task.worker,
+            task.worker if changed_worker is not None else changed_worker,
             task_id="[collection: {}][tid: {}]".format(task.collection, task.task_id),
             kwargs={'task': task},
             queue=task.queue,
