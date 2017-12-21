@@ -11,6 +11,7 @@ import time
 from proj.my_lib.logger import get_logger, func_time_logger
 from collections import defaultdict
 from proj.my_lib.Common.Task import Task, TaskType
+from cachetools.func import ttl_cache
 
 logger = get_logger("mongo_task_func")
 
@@ -89,6 +90,30 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
                 _task.list_task_token = d['list_task_token']
 
             yield _task
+
+
+@func_time_logger
+@ttl_cache(ttl=240)
+def quick_task_slow_task_count(queue, slow_source, used_times=6, limit=30000):
+    """
+
+    :param queue:
+    :param slow_source:
+    :param used_times:
+    :param limit:
+    :return:
+    """
+    # type:  (str, str,int, int) -> dict
+    count_dict = defaultdict(int)
+    slow_source_list = slow_source.split('|')
+    for t in get_task_total_simple(
+            queue=queue,
+            used_times=used_times,
+            limit=limit,
+            debug=True
+    ):
+        count_dict[t.source in slow_source] += 1
+    return count_dict
 
 
 @func_time_logger
@@ -253,6 +278,9 @@ if __name__ == '__main__':
     # {"task_name": "detail_rest_daodao_20170925a", "finished": 1}
     # for line in get_task_total_simple('merge_task', debug=True, limit=20):
     #     pass
-
-    update_city_list_task("City_Queue_poi_list_TaskName_city_total_qyer_20171120a", "e50ff0261cbd53c8d3e6872a71aa3a97",
-                          500, True)
+    #
+    # update_city_list_task("City_Queue_poi_list_TaskName_city_total_qyer_20171120a", "e50ff0261cbd53c8d3e6872a71aa3a97",
+    #                       500, True)
+    print(quick_task_slow_task_count('hotel_list', 'ihg'))
+    print(quick_task_slow_task_count('hotel_list', 'ihg'))
+    print(quick_task_slow_task_count('hotel_list', 'ihg'))

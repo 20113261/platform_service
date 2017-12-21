@@ -15,7 +15,7 @@ from proj.my_lib.logger import get_logger
 from apscheduler.schedulers.blocking import BlockingScheduler
 from requests.auth import HTTPBasicAuth
 from proj.celery import app
-from proj.my_lib.task_module.mongo_task_func import get_task_total_simple
+from proj.my_lib.task_module.mongo_task_func import get_task_total_simple, quick_task_slow_task_count
 from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, \
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail, \
@@ -42,6 +42,7 @@ hotel_slow_source = {
         }
 
 }
+slow_source = 'ihg'
 
 import datetime
 
@@ -139,10 +140,24 @@ def mongo_task_watcher(*args):
 
     idle_seconds, message_count, max_message_count = detect_msg_num(queue_name=queue_name)
 
+    if queue_name == 'hotel_list':
+        slow_idle_seconds, slow_message_count, slow_max_message_count = detect_msg_num(queue_name='slow_hotel_list')
+
+    elif queue_name == 'hotel_detail':
+        slow_idle_seconds, slow_message_count, slow_max_message_count = detect_msg_num(queue_name='slow_hotel_detail')
+    else:
+        slow_idle_seconds, slow_message_count, slow_max_message_count = 0, 0, 0
+
     queue_min_task, insert_task_count, _time = TASK_CONF.get(queue_name, TASK_CONF['default'])
-    if message_count <= queue_min_task and max_message_count <= queue_min_task \
+
+    task_count = quick_task_slow_task_count(queue=queue_name, slow_source=slow_source, limit=insert_task_count)
+
+    if task_count[True] > 0 and message_count <= queue_min_task and max_message_count <= queue_min_task \
             and message_count <= QUEUE_MAX_COUNT and max_message_count <= QUEUE_MAX_COUNT:
         logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
+        insert_task(queue_name, insert_task_count)
+    elif task_count[False] > 0 and slow_message_count <= queue_min_task and slow_max_message_count <= queue_min_task \
+            and slow_message_count <= QUEUE_MAX_COUNT and slow_max_message_count <= QUEUE_MAX_COUNT:
         insert_task(queue_name, insert_task_count)
     else:
         logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
