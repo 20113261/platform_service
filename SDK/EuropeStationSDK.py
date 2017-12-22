@@ -47,6 +47,8 @@ class EuropeStationSDK(BaseSDK):
             google_city_map_info = google_get_map_info('{},{},{}'.format(country_code, city_name, station_name))
             try:
                 collections.save({
+                    'city_id': self.task.kwargs['city_id'],
+                    'country_id': self.task.kwargs['country_id'],
                     'city_code': city_code,
                     'city_name': city_name,
                     'country_code': country_code,
