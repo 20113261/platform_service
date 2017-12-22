@@ -17,7 +17,7 @@ def qyer_list_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
 def poi_list_task(self, task, **kwargs):
     _sdk = PoiListSDK(task=task)
     return _sdk.execute()
@@ -47,7 +47,7 @@ def qyer_detail_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
 def poi_detail_task(self, task, **kwargs):
     _sdk = PoiDetailSDK(task=task)
     return _sdk.execute()
