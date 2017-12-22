@@ -19,4 +19,4 @@ from .QyerCitySDK import QyerCitySDK
 from .BaiDuSearchSDK import BaiDuSearchSDK
 from .IhgCitySDK import IhgCitySDK
 from .KsMoveSDK import KsMoveSDK
-
+from .AccorCitySDK import AccorCitySDK
