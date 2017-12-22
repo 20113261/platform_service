@@ -54,6 +54,7 @@ class EuropeStationSDK(BaseSDK):
                     'station_code': station_code,
                     'map_info': google_map_info,
                     'city_map_info': google_city_map_info,
+                    'todCollectionAvailable': sta[2]
                 })
             except Exception:
                 raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR)
