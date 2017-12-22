@@ -113,7 +113,7 @@ def ks_move_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='25/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='50/m')
 def european_trail_task(self, task, **kwargs):
     _sdk = EuropeStationSDK(task=task)
     return _sdk.execute()
