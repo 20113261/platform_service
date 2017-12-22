@@ -537,7 +537,7 @@ if __name__ == '__main__':
         # get_seek('hotel_list2detail_test')
         # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
         # test_timstramp()
-        # monitoring_hotel_list2detail()
+        monitoring_hotel_list2detail()
         # monitoring_hotel_detail2ImgOrComment()
         # monitoring_zombies_task()
 # query_sql = '''SELECT
