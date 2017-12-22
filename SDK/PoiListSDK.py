@@ -10,6 +10,9 @@ from __future__ import absolute_import
 import traceback
 from urlparse import urljoin
 
+import datetime
+import pymongo
+import json
 import mioji.common.pages_store
 import mioji.common.pool
 import mioji.common.spider
@@ -39,6 +42,8 @@ spider_factory.config_spider(insert_db, None, debug)
 mioji.common.spider.NEED_FLIP_LIMIT = False
 
 mioji.common.logger.logger = logger
+client = pymongo.MongoClient(host='10.10.213.148')
+collections = client['data_result']['daodao']
 
 URL = 'https://www.tripadvisor.cn'
 SQL = """insert ignore into {table_name} (source, source_id, city_id, country_id, hotel_url) values(%s, %s, %s, %s, %s)"""
@@ -59,7 +64,15 @@ def hotel_list_database(source, url, required, old_spider_name, need_cache=True)
             code = spider.crawl(required=[required], cache_config=cache_config)
         else:
             code = spider.crawl(required=[required], cache_config=none_cache_config)
-        return code, spider.result.get(required, {})
+
+        others_info = {
+            'result': spider.result,
+            'save_page': json.dumps(spider.save_page),
+            'view_page_info': spider.view_page_info,
+            'restaurant_page_info': spider.restaurant_page_info
+        }
+
+        return code, spider.result.get(required, {}), others_info, spider.page_store_key_list
     except Exception as e:
         logger.error(traceback.format_exc(e))
         raise e
@@ -80,12 +93,23 @@ class PoiListSDK(BaseSDK):
     def _execute(self, **kwargs):
         sql = SQL.format(table_name=self.task.task_name)
         poi_type = self.task.kwargs['poi_type']
-        code, result = hotel_list_database(self.task.kwargs['source'], self.task.kwargs['url'],
-                                           type_dict[poi_type],
-                                           spider_name[poi_type],
-                                           need_cache=self.task.used_times == 0)
+        code, result, others_info, page_store_key = hotel_list_database(self.task.kwargs['source'],
+                                                                        self.task.kwargs['url'],
+                                                                        type_dict[poi_type],
+                                                                        spider_name[poi_type],
+                                                                        need_cache=self.task.used_times == 0)
         self.logger.info('spider    %s %s' % (str(code), str(result)))
         self.task.error_code = code
+
+        collections.save({
+            'collections': self.task.collection,
+            'task_id': self.task.task_id,
+            'used_times': self.task.used_times[0],
+            'others_info': others_info,
+            'stored_page_keys': page_store_key,
+            'result': result,
+            'insert_time': datetime.datetime.now()
+        })
 
         data = []
         try:

@@ -29,8 +29,14 @@ def hotel_img_merge_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='12/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/s')
 def hotel_list_task(self, task, **kwargs):
+    _sdk = HotelListSDK(task=task)
+    return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+def slow_hotel_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
 
@@ -47,8 +53,14 @@ def poi_detail_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='12/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='16/s')
 def hotel_detail_task(self, task, **kwargs):
+    _sdk = HotelDetailSDK(task=task)
+    return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='20/m')
+def slow_hotel_detail_task(self, task, **kwargs):
     _sdk = HotelDetailSDK(task=task)
     return _sdk.execute()
 
@@ -88,8 +100,9 @@ def baidu_search_task(self, task, **kwargs):
     _sdk = BaiDuSearchSDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True,base=BaseTask,max_retries=3,rate_limit='5/s')
-def Ihg_city_suggest(self,task,**kwargs):
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
+def ihg_city_suggest(self, task, **kwargs):
     _sdk = IhgCitySDK(task=task)
     return _sdk.execute()
 
@@ -99,7 +112,15 @@ def ks_move_task(self, task, **kwargs):
     _sdk = KsMoveSDK(task=task)
     return _sdk.execute()
 
+
 @app.task(bind=True,base=BaseTask,max_retries=3,rate_limit='10/s')
 def Accor_city_suggest(self,task,**kwargs):
     _sdk = AccorCitySDK(task=task)
     return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='50/m')
+def european_trail_task(self, task, **kwargs):
+    _sdk = EuropeStationSDK(task=task)
+    return _sdk.execute()
+

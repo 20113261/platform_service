@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-
 import pymongo
+import pymongo.errors
+import requests.exceptions
 from proj.my_lib.logger import get_logger
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.Common.Task import Task
 import json
+
 config = {
     'host': '10.10.213.148',
 }
@@ -23,14 +25,13 @@ headers = {
     'accept-encoding': 'gzip, deflate, br',
     'accept': '*/*',
     'accept-language': 'zh-CN,zh;q=0.9',
-    'Cookie': 'BlueStripe.PVN=395100000ac4; akamaiCountryCode=CN; akamaiLatitude=39.90; akamaiLongitude=116.41; akamaiIsWirelessDevice=false; akamaiIsTablet=false; akaas_RBF=2147483647~rv=23~id=f3c71118b90bf1b2adecc54ddea6fdd6; X-IHG-TrueClient_IP=61.148.245.93; X-IHG-GAPI-SRV=sjcd1plapiwb014'
 }
 search_url = "https://www.ihg.com/guestapi/v1/ihg/cn/zh/web/suggestions"
 
-class IhgCitySDK(BaseSDK):
 
+class IhgCitySDK(BaseSDK):
     def _execute(self, **kwargs):
-        with MySession(need_proxies=True,need_cache=True,auto_update_host=True) as session:
+        with MySession(need_proxies=True, need_cache=True) as session:
             keyword = self.task.kwargs['keyword']
             suggest = {}
             try:
@@ -49,12 +50,14 @@ class IhgCitySDK(BaseSDK):
                 suggest['suggest'] = json_data
                 db = client['SuggestName']
                 db.IhgCitySuggest.save(suggest)
+                self.task.error_code = 0
+                return {'搜索到的suggest数量': json_data['preFilterCount']}
+            except requests.exceptions.RequestException as e:
+                raise ServiceStandardError(ServiceStandardError.PROXY_INVALID, wrapped_exception=e)
+            except pymongo.errors.PyMongoError as e:
+                raise ServiceStandardError(ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
             except Exception as e:
-                raise ServiceStandardError(ServiceStandardError.REQ_ERROR,wrapped_exception=e)
-            except Exception as e:
-                raise ServiceStandardError(ServiceStandardError.MYSQL_ERROR,wrapped_exception=e)
-        self.task.error_code = 0
-        return {'搜索到的suggest数量': json_data['preFilterCount']}
+                raise ServiceStandardError(ServiceStandardError.UNKNOWN_ERROR, wrapped_exception=e)
 
 
 if __name__ == "__main__":

@@ -2650,8 +2650,17 @@ db.Task_Queue_supplement_field_TaskName_baidu_search_20171211a.update({finished:
     }
 }, false, true);
 
-db.Task_Queue_poi_detail_TaskName_detail_total_qyer_20171214a.update({finished: 0}, {
+db.Task_Queue_hotel_list_TaskName_list_hotel_ihg_20171221a.update({finished: 0}, {
     $set: {
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+
+
+db.Task_Queue_hotel_detail_TaskName_detail_hotel_ihg_20171221a.update({}, {
+    $set: {
+        'finished': 0,
         'running': 0,
         'used_times': 0
     }

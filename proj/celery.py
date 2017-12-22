@@ -12,26 +12,31 @@ from kombu import Queue, Exchange
 platforms.C_FORCE_ROOT = True
 
 app = Celery('proj', include=[
-                              # 'proj.tasks',
-                              # 'proj.hotel_static_tasks',
-                              # 'proj.poi_pic_spider_tasks',
-                              # 'proj.tripadvisor_city',
-                              # 'proj.poi_nearby_city_task',
-                              # 'proj.daodao_img_rename_tasks',
-                              # 'proj.suggestion_task',
-                              # 'proj.full_website_spider_task',
-                              # 'proj.tripadvisor_list_tasks',
-                              # 'proj.file_downloader_task',
-                              # 'proj.tripadvisor_website_task',
-                              # 'proj.supplement_mapinfo_task',
-                              'proj.total_tasks'
-                              ])
+    # 'proj.tasks',
+    # 'proj.hotel_static_tasks',
+    # 'proj.poi_pic_spider_tasks',
+    # 'proj.tripadvisor_city',
+    # 'proj.poi_nearby_city_task',
+    # 'proj.daodao_img_rename_tasks',
+    # 'proj.suggestion_task',
+    # 'proj.full_website_spider_task',
+    # 'proj.tripadvisor_list_tasks',
+    # 'proj.file_downloader_task',
+    # 'proj.tripadvisor_website_task',
+    # 'proj.supplement_mapinfo_task',
+    'proj.total_tasks'
+])
 app.config_from_object('proj.config')
 app.conf.update(
     CELERY_QUEUES=(
         Queue('file_downloader', exchange=Exchange('file_downloader', type='direct'), routing_key='file_downloader'),
         Queue('hotel_detail', exchange=Exchange('hotel_detail', type='direct'), routing_key='hotel_detail'),
+        Queue('slow_hotel_detail', exchange=Exchange('slow_hotel_detail', type='direct'),
+              routing_key='slow_hotel_detail'),
+
         Queue('hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='hotel_list'),
+        Queue('slow_hotel_list', exchange=Exchange('slow_hotel_list', type='direct'), routing_key='slow_hotel_list'),
+
         Queue('poi_detail', exchange=Exchange('poi_detail', type='direct'), routing_key='poi_detail'),
         Queue('poi_list', exchange=Exchange('poi_list', type='direct'), routing_key='poi_list'),
         Queue('google_api', exchange=Exchange('google_api', type='direct'), routing_key='google_api'),
