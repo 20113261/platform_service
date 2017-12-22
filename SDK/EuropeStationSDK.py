@@ -40,6 +40,9 @@ class EuropeStationSDK(BaseSDK):
             rule = '''<station><name>(.*?)</name><code>(.*?)</code><todCollectionAvailable>(.*?)</todCollectionAvailable></station>'''
             res2 = re.findall(rule, res1.content)
 
+        if len(res2) == 0:
+            raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
+
         for sta in res2:
             station_name = sta[0]
             station_code = sta[1]
