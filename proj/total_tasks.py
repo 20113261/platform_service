@@ -113,8 +113,8 @@ def ks_move_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True,base=BaseTask,max_retries=3,rate_limit='10/s')
-def Accor_city_suggest(self,task,**kwargs):
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
+def Accor_city_suggest(self, task, **kwargs):
     _sdk = AccorCitySDK(task=task)
     return _sdk.execute()
 
@@ -123,4 +123,3 @@ def Accor_city_suggest(self,task,**kwargs):
 def european_trail_task(self, task, **kwargs):
     _sdk = EuropeStationSDK(task=task)
     return _sdk.execute()
-
