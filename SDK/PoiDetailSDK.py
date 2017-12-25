@@ -51,29 +51,40 @@ class PoiDetailSDK(BaseSDK):
             sql_key = result.keys()
 
             name = result['name']
-            if name.find('停业') > -1:
-                raise ServiceStandardError(error_code=ServiceStandardError.TARGET_CLOSED)
+            # if name.find('停业') > -1:
+            #     raise ServiceStandardError(error_code=ServiceStandardError.TARGET_CLOSED)
             name_en = result['name_en']
             map_info = result['map_info']
             address = result['address']
 
-            if not key_is_legal(map_info):
+            map_info_is_legal = True
+            try:
+                lon, lat = map_info.split(',')
+                if float(lon) == 0.0 and float(lat) == 0.0:
+                    map_info_is_legal = False
+            except Exception as e:
+                map_info_is_legal = False
+                logger.exception(msg="[map info is not legal]", exc_info=e)
+
+            if not key_is_legal(map_info) or not map_info_is_legal:
                 if not key_is_legal(address):
-                    raise TypeCheckError(
-                        'Error map_info and address NULL        with parser %ss    url %s' % (
-                            parser.func_name, target_url))
+                    pass
+                    # raise TypeCheckError(
+                    #     'Error map_info and address NULL        with parser %ss    url %s' % (
+                    #         parser.func_name, target_url))
                 google_map_info = google_get_map_info(address)
                 if not key_is_legal(google_map_info):
-                    raise TypeCheckError(
-                        'Error google_map_info  NULL  with [parser: {}][url: {}][address: {}][map_info: {}]'.format(
-                            parser.func_name, target_url, address, map_info)
-                    )
+                    pass
+                    # raise TypeCheckError(
+                    #     'Error google_map_info  NULL  with [parser: {}][url: {}][address: {}][map_info: {}]'.format(
+                    #         parser.func_name, target_url, address, map_info)
+                    # )
                 result['map_info'] = google_map_info
-            if key_is_legal(name) or key_is_legal(name_en):
+            if key_is_legal(name) or key_is_legal(name_en) or map_info_is_legal or key_is_legal(result.introduction):
                 logger.info(name + '  ----------  ' + name_en)
             else:
                 raise TypeCheckError(
-                    'Error name and name_en Both NULL        with parser %s    url %s' % (
+                    'Error All Keys is None with parser %s  url %s' % (
                         parser.func_name, target_url))
 
             try:
@@ -87,5 +98,3 @@ class PoiDetailSDK(BaseSDK):
 
             self.task.error_code = 0
             return self.task.error_code
-
-
