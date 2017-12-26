@@ -17,7 +17,7 @@ def qyer_list_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
 def poi_list_task(self, task, **kwargs):
     _sdk = PoiListSDK(task=task)
     return _sdk.execute()
@@ -47,7 +47,7 @@ def qyer_detail_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
 def poi_detail_task(self, task, **kwargs):
     _sdk = PoiDetailSDK(task=task)
     return _sdk.execute()
@@ -113,8 +113,8 @@ def ks_move_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True,base=BaseTask,max_retries=3,rate_limit='10/s')
-def Accor_city_suggest(self,task,**kwargs):
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/s')
+def Accor_city_suggest(self, task, **kwargs):
     _sdk = AccorCitySDK(task=task)
     return _sdk.execute()
 
@@ -123,6 +123,7 @@ def Accor_city_suggest(self,task,**kwargs):
 def european_trail_task(self, task, **kwargs):
     _sdk = EuropeStationSDK(task=task)
     return _sdk.execute()
+<<<<<<< HEAD
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
 def Marriott_city_task(self, task, **kwargs):
@@ -130,3 +131,5 @@ def Marriott_city_task(self, task, **kwargs):
     return _sdk.execute()
 
 
+=======
+>>>>>>> ccd672f112d13a2ee1c7ff624a0402833c3fefa8

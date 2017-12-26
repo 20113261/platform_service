@@ -2,12 +2,15 @@
 # -*- coding:utf-8 -*-
 
 import pymongo
+import pymongo.errors
+import requests
 from proj.my_lib.logger import get_logger
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.Common.Task import Task
 import json
+
 config = {
     'host': '10.10.213.148',
 }
@@ -20,14 +23,14 @@ db = client['SuggestName']
 search_url = "http://book.accorhotels.cn/Intellisense/Search"
 
 headers = {
-    "Cookie": "NSC_10.10.10.244-80=ffffffff090214e145525d5f4f58455e445a4a423660; language=zh-CN",
+    # "Cookie": "NSC_10.10.10.244-80=ffffffff090214e145525d5f4f58455e445a4a423660; language=zh-CN",
     "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
 }
 
-class AccorCitySDK(BaseSDK):
 
+class AccorCitySDK(BaseSDK):
     def _execute(self, **kwargs):
-        with MySession(need_proxies=True,need_cache=True,auto_update_host=True) as session:
+        with MySession(need_proxies=True, need_cache=True, auto_update_host=True) as session:
             keyword = self.task.kwargs['keyword']
             suggest = {}
             try:
@@ -43,12 +46,15 @@ class AccorCitySDK(BaseSDK):
                 suggest['suggest'] = json_data
                 db = client['SuggestName']
                 db.AccorCitySuggest.save(suggest)
+            except requests.exceptions.RequestException as e:
+                raise ServiceStandardError(ServiceStandardError.PROXY_INVALID, wrapped_exception=e)
+            except pymongo.errors.PyMongoError as e:
+                raise ServiceStandardError(ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
             except Exception as e:
-                raise ServiceStandardError(ServiceStandardError.REQ_ERROR,wrapped_exception=e)
-            except Exception as e:
-                raise ServiceStandardError(ServiceStandardError.MYSQL_ERROR,wrapped_exception=e)
+                raise ServiceStandardError(ServiceStandardError.UNKNOWN_ERROR, wrapped_exception=e)
         self.task.error_code = 0
         return {'搜索到的suggest数量': json_data['TotalItemsCount']}
+
 
 if __name__ == "__main__":
     args = {
