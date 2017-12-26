@@ -23,4 +23,4 @@ from .KsMoveSDK import KsMoveSDK
 from .AccorCitySDK import AccorCitySDK
 
 from .EuropeStationSDK import EuropeStationSDK
-
+from .MarriottCitySDK import MarriottCitySDK
