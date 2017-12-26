@@ -169,6 +169,9 @@ class MySession(requests.Session):
         # except Exception:
         #     pass
 
+    def browser_log(self):
+        logger.info(self.__dict__)
+
     def __enter__(self):
         return self
 
@@ -177,9 +180,11 @@ class MySession(requests.Session):
         if not exc_type:
             self.update_proxy(0)
         elif exc_type in (SSLError, ProxyError):
+            self.browser_log()
             self.update_proxy(22)
             raise ServiceStandardError(22, "代理异常 from Browser", wrapped_exception=exc_type)
         elif exc_type in (ConnectionError, ConnectTimeout):
+            self.browser_log()
             self.update_proxy(23)
             raise ServiceStandardError(23, "代理被禁 from Browser", wrapped_exception=exc_type)
 
