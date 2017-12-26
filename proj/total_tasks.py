@@ -123,13 +123,9 @@ def Accor_city_suggest(self, task, **kwargs):
 def european_trail_task(self, task, **kwargs):
     _sdk = EuropeStationSDK(task=task)
     return _sdk.execute()
-<<<<<<< HEAD
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
 def Marriott_city_task(self, task, **kwargs):
     _sdk = MarriottCitySDK(task=task)
     return _sdk.execute()
 
-
-=======
->>>>>>> ccd672f112d13a2ee1c7ff624a0402833c3fefa8
