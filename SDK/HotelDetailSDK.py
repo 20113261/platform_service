@@ -1,14 +1,16 @@
 # coding=utf-8
 import time
-
+import pymongo
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.logger import get_logger
 from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from proj.mysql_pool import service_platform_pool
+from proj.config import MONGO_DATA_HOST
 
 logger = get_logger("HotelDetailSDK")
+client = pymongo.MongoClient(host=MONGO_DATA_HOST)
 
 
 class HotelDetailSDK(BaseSDK):
@@ -53,16 +55,17 @@ class HotelDetailSDK(BaseSDK):
                 content = [content1, content2]
             elif source == 'holiday':
                 url1, url2 = url.split('#####')
-                page1 = session.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y', 'ihg-language': 'zh-CN'}, timeout=240)
+                page1 = session.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y',
+                                                   'ihg-language': 'zh-CN'}, timeout=240)
                 page1.encoding = 'utf8'
                 content1 = page1.text
 
                 page2 = session.get(url1, timeout=240, headers={
-                        'accept': 'application/json, text/plain, */*',
-                        'Content-Type': 'application/json; charset=UTF-8',
-                        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
-                        'ihg-language': 'zh-CN',
-                    })
+                    'accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+                    'ihg-language': 'zh-CN',
+                })
                 page2.encoding = 'utf8'
                 content2 = page2.text
 
@@ -110,6 +113,8 @@ class HotelDetailSDK(BaseSDK):
                                  part=self.task.task_name,
                                  retry_count=self.task.used_times)
             logger.debug("[parse_hotel][func: {}][Takes: {}]".format(parse_hotel.func_name, time.time() - start))
+
+            client['ServicePlatform'][self.task.task_name].save(result.values(backdict=True))
 
             start = time.time()
             try:
