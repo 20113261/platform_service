@@ -194,5 +194,5 @@ for queue_name, (_min, _max, seconds) in TASK_CONF.items():
                      id=queue_name + '_queue')
 
 if __name__ == '__main__':
-    # schedule.start()
-    insert_task('file_downloader', limit=10)
+    schedule.start()
+    # insert_task('file_downloader', limit=10)
