@@ -438,6 +438,16 @@ WHERE (source, source_id) IN ({});'''.format(s_sid_str)
     elif length > 30:
         add_report("all", min_pixels, task_name, "30_max")
 
+    if len(img_list) > 65534:
+        total_length = 0
+        final_img = []
+        for each in img_list.split('|'):
+            total_length += len(each) + 1
+            if total_length > 65534:
+                break
+            final_img.append(each)
+        img_list = '|'.join(final_img)
+
     update_img(uid, first_img, img_list, target_table)
 
     return uid, first_img, img_list
