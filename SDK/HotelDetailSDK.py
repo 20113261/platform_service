@@ -38,7 +38,7 @@ class HotelDetailSDK(BaseSDK):
 
             # init session
             start = time.time()
-            if source not in ('hilton', 'ihg'):
+            if source not in ('hilton', 'ihg', 'holiday'):
                 page = session.get(url, timeout=240)
                 page.encoding = 'utf8'
                 content = page.text
