@@ -36,7 +36,7 @@ class HotelDetailSDK(BaseSDK):
 
             # init session
             start = time.time()
-            if source not in ('hilton', 'ihg'):
+            if source not in ('hilton', 'ihg', 'holiday'):
                 page = session.get(url, timeout=240)
                 page.encoding = 'utf8'
                 content = page.text
@@ -53,16 +53,17 @@ class HotelDetailSDK(BaseSDK):
                 content = [content1, content2]
             elif source == 'holiday':
                 url1, url2 = url.split('#####')
-                page1 = session.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y', 'ihg-language': 'zh-CN'}, timeout=240)
+                page1 = session.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y',
+                                                   'ihg-language': 'zh-CN'}, timeout=240)
                 page1.encoding = 'utf8'
                 content1 = page1.text
 
                 page2 = session.get(url1, timeout=240, headers={
-                        'accept': 'application/json, text/plain, */*',
-                        'Content-Type': 'application/json; charset=UTF-8',
-                        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
-                        'ihg-language': 'zh-CN',
-                    })
+                    'accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+                    'ihg-language': 'zh-CN',
+                })
                 page2.encoding = 'utf8'
                 content2 = page2.text
 
