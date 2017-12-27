@@ -50,6 +50,9 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     if queue == 'poi_list':
         c_list = list(filter(lambda x: str(x).split('_')[-1] >= "20171214a", c_list))
 
+    if queue == 'hotel_list':
+        c_list = list(filter(lambda x: str(x).split('_')[-2] != "ihg" and str(x).split('_')[-1] != "20171212a", c_list))
+
     # 防止过度均分，选取 2000 为最小分配值
     per_limit = max(limit // len(c_list), 2000)
     c_list = list(map(lambda x: (x, per_limit), c_list))
