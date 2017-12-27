@@ -22,6 +22,7 @@ from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from proj.my_lib.Common.Utils import try3times
 from proj.my_lib.ServiceStandardError import ServiceStandardError
+from proj.my_lib.Common.Utils import retry
 
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
@@ -31,14 +32,35 @@ httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
 
-@try3times(try_again_times=3)
-def simple_get_socks_proxy():
-    url = "http://10.10.239.46:8087/proxy?source=ServicePlatform"
-    r = requests.get(url)
-    proxy = r.content
-    if proxy is None:
-        raise Exception("Error Proxy: {}".format(proxy))
-    return proxy
+@retry(times=3)
+def simple_get_socks_proxy(source='platform'):
+    time_st = time.time()
+    logger.info("开始获取代理")
+    msg = {
+        "req": [
+            {
+                "source": source,
+                "type": "platform",
+                "num": 1,
+                "ip_type": "",
+            }
+        ]
+    }
+
+    qid = time.time()
+    ptid = "platform"
+
+    try:
+        get_info = '/?type=px001&qid={0}&query={1}&ptid={2}&tid=tid&ccy=AUD'.format(qid, json.dumps(msg), ptid)
+        logger.info("get proxy info :http://10.10.189.85:48200{0}".format(get_info))
+        p = requests.get("http://10.10.32.22:48200" + get_info).content
+        time_end = time.time() - time_st
+        logger.info("获取到代理，代理信息{0},获取代理耗时{1}".format(p, time_end))
+        logger.info(p)
+        p = json.loads(p)['resp'][0]['ips'][0]['inner_ip']
+        return p
+    except Exception:
+        raise Exception("Error Proxy")
 
 
 class MySession(requests.Session):

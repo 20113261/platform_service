@@ -39,10 +39,36 @@ hotel_slow_source = {
                 'slow_hotel_list',
                 'slow_hotel_list'
             )
+        },
+    'holiday':
+        {
+            'proj.total_tasks.hotel_detail_task': (
+                'proj.total_tasks.slow_hotel_detail_task',
+                'slow_hotel_detail',
+                'slow_hotel_detail'
+            ),
+            'proj.total_tasks.hotel_list_task': (
+                'proj.total_tasks.slow_hotel_list_task',
+                'slow_hotel_list',
+                'slow_hotel_list'
+            )
+        },
+    'accor':
+        {
+            'proj.total_tasks.hotel_detail_task': (
+                'proj.total_tasks.slow_hotel_detail_task',
+                'slow_hotel_detail',
+                'slow_hotel_detail'
+            ),
+            'proj.total_tasks.hotel_list_task': (
+                'proj.total_tasks.slow_hotel_list_task',
+                'slow_hotel_list',
+                'slow_hotel_list'
+            )
         }
-
 }
-slow_source = 'ihg'
+
+slow_source = 'ihg|holiday|accor'
 
 import datetime
 
@@ -168,4 +194,5 @@ for queue_name, (_min, _max, seconds) in TASK_CONF.items():
                      id=queue_name + '_queue')
 
 if __name__ == '__main__':
-    schedule.start()
+    # schedule.start()
+    insert_task('file_downloader', limit=10)

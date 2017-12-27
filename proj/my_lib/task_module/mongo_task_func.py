@@ -284,6 +284,11 @@ if __name__ == '__main__':
     #
     # update_city_list_task("City_Queue_poi_list_TaskName_city_total_qyer_20171120a", "e50ff0261cbd53c8d3e6872a71aa3a97",
     #                       500, True)
-    print(quick_task_slow_task_count('hotel_list', 'ihg'))
-    print(quick_task_slow_task_count('hotel_list', 'ihg'))
-    print(quick_task_slow_task_count('hotel_list', 'ihg'))
+    for line in get_task_total_simple(
+            queue='hotel_list',
+            limit=20,
+            debug=True):
+        print(line)
+        # print(quick_task_slow_task_count('hotel_list', 'ihg'))
+        # print(quick_task_slow_task_count('hotel_list', 'ihg'))
+        # print(quick_task_slow_task_count('hotel_list', 'ihg'))
