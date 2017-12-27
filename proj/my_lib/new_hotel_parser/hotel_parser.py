@@ -12,6 +12,7 @@ import hrs_parser
 import tripadvisor_parser
 import ihg_parser
 import holiday_parser
+import accor_parser
 from proj.my_lib.Common.KeyMatch import key_is_legal
 from proj.my_lib.Common.NetworkUtils import google_get_map_info
 from proj.my_lib.ServiceStandardError import TypeCheckError
@@ -39,7 +40,8 @@ def parse_hotel(content, url, other_info, source, part, retry_count):
         'ctripcn': ctrip_cn_parser.ctrip_cn_parser,
         'hilton': hilton_parser.hilton_parser,
         'ihg': ihg_parser.ihg_parser,
-        'holiday': holiday_parser.holiday_parser
+        'holiday': holiday_parser.holiday_parser,
+        'accor': accor_parser.accor_parser
     }
     if source not in function_dict.keys():
         raise TypeCheckError('Error Parser Source        with source %s   url %s ' % (source, url))
