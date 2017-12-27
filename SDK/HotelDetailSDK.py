@@ -114,7 +114,10 @@ class HotelDetailSDK(BaseSDK):
                                  retry_count=self.task.used_times)
             logger.debug("[parse_hotel][func: {}][Takes: {}]".format(parse_hotel.func_name, time.time() - start))
 
-            client['ServicePlatform'][self.task.task_name].save(result.values(backdict=True))
+            try:
+                client['ServicePlatform'][self.task.task_name].save(result.values(backdict=True))
+            except Exception as exc:
+                raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=exc)
 
             start = time.time()
             try:
