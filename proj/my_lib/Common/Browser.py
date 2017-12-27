@@ -31,6 +31,26 @@ logger = proj.my_lib.logger.get_logger('Browser')
 httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
+source_list = ['elong', 'ryanair', 'ctrip', 'jijitong', 'tongcheng', 'feiquanqiu', 'ceair', 'csair', 'lcair', 'expedia',
+               'smartfares', 'easyjet', 'wego', 'vueling', 'ufeifan', 'youzhan', 'booking', 'hotels', 'biyi',
+               'hotelclub', 'airberlin', 'venere', 'agoda', 'huifee', 'europerail', 'tripsta', 'ebookers', 'mango',
+               'cheapoair', 'airtickets24', 'airkx', 'priceline', 'kopu', 'voyages', 'raileurope', 'ihg', 'marriott',
+               'amoma', 'hrs', 'hoteltravel', 'eurostar', 'bahn', 'sncfen', 'sncffr', 'airchina', 'accor', 'hnair',
+               'britishair', 'airfrance', 'idbus', 'tieyourail', 'megabus', 'refen', 'nationalrail', 'trenitalia',
+               'raileuropecom', 'directbusBus', 'intertrenitalia', 'raileuropeHK', 'cd', 'loco2', 'travelocity',
+               'orbitz', 'eurolines', 'bonellibus', 'studentuniverse', 'cheaptickets', 'lufthansa', 'omega',
+               'travelfusion', 'emirates', 'aeroflot', 'ali', 'onetravel', 'qunar', 'qatar', 'austrianAirlines',
+               'theTrainLine', 'budgetair', 'travelgenio', 'mioji', 'skyscanner', 'hotwire', 'cheapair', 'kempinski',
+               'whghotels', 'starwoodhotels', 'hostelworld', 'expediaApi', 'hotelbedsApi', 'megabusUS', 'greyhound',
+               'megabusUK', 'megabusCA', 'amtrak', 'agodaApi', 'jintongApi', 'kopuApi', 'ctripApi', 'mytrip',
+               'cleartrip', 'zuji', 'gotogate', 'flixbus', 'translink', 'navitime', 'ekikara', 'haoqiaoApi',
+               'travelfusionApi', 'peramatour', 'innstantApi', 'yinlingApi', 'turbojet', 'thailandrail', 'pattayabus',
+               'zailushangApi', 'touricoApi', 'airfranceEN', 'expediaEN', 'airchinaEN', 'ekikaralable', 'viarail',
+               'easybook', 'germanyrailApi', 'gtaApi', 'ctripTW', 'korail', 'edreams', 'raileuropeApi', 'googleflights',
+               'daolvApi', 'meiyaApi', 'fare2goApi', 'tongchengApi', 'biquApi', 'jacApi', 'huizuche', 'huangbaoche',
+               'travelzen', 'pkfare', 'igola', 'mikiApi', 'dotwApi', 'huantaoyou', 'tripadvisor', 'hilton', 'ctripcn',
+               'yundijie', '51book', 'fliggy', 'zuzuche']
+
 
 @retry(times=3)
 def simple_get_socks_proxy(source='platform'):
@@ -39,7 +59,7 @@ def simple_get_socks_proxy(source='platform'):
     msg = {
         "req": [
             {
-                "source": source,
+                "source": random.choice(source_list),
                 "type": "platform",
                 "num": 1,
                 "ip_type": "",
