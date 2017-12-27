@@ -5,6 +5,8 @@
 # @Site    : 
 # @File    : test_hotel_merge_img.py
 # @Software: PyCharm
+import sys
+sys.path.append('/data/lib')
 from proj.my_lib.Common.Task import Task, TaskType
 from proj.total_tasks import hotel_img_merge_task
 
