@@ -155,11 +155,18 @@ class UpdateHotelValidation(object):
         content = 'NULL&{}&{}&'.format(each_data["mid"], each_data["sid"])
         return workload_key, content, workload_source
 
+    @staticmethod
+    def accor(each_data):
+        workload_source = each_data["source"] + "Hotel"
+        workload_key = 'NULL|{}|{}'.format(each_data["sid"], workload_source)
+        content = '{}&{}&'.format(each_data["sid"], each_data["name"])
+        return workload_key, content, workload_source
+
     def _get_content(self, source, line):
         if source in (
                 "ctripcn", "yundijie", "daolvApi", "dotwApi", "expediaApi", "gtaApi", "hotelbedsApi",
                 "innstantApi",
-                "jacApi", "mikiApi", "touricoApi", "accor"):
+                "jacApi", "mikiApi", "touricoApi"):
             each_data = self.default_api_task_key_and_content(line)
             return each_data
         elif source in ("expedia", "cheaptickets", "orbitz", "ebookers", "travelocity"):
@@ -193,6 +200,10 @@ class UpdateHotelValidation(object):
         elif source == "agoda":
             # agoda 专用
             each_data = self.agoda(line)
+            return each_data
+        elif source == "accor":
+            # accor 专用
+            each_data = self.accor(line)
             return each_data
         elif source in (
                 "hoteltravelEN", "hoteltravel", "venere", "venereEN", "agodaApi",
