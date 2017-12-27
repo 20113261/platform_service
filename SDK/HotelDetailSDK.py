@@ -1,6 +1,7 @@
 # coding=utf-8
 import time
 import pymongo
+import pymongo.errors
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.ServiceStandardError import ServiceStandardError
@@ -22,6 +23,7 @@ class HotelDetailSDK(BaseSDK):
         country_id = self.task.kwargs['country_id']
 
         headers = {}
+        data_collections = client['ServicePlatform'][self.task.task_name]
 
         with MySession(need_cache=True) as session:
             # hotels
@@ -115,7 +117,10 @@ class HotelDetailSDK(BaseSDK):
             logger.debug("[parse_hotel][func: {}][Takes: {}]".format(parse_hotel.func_name, time.time() - start))
 
             try:
-                client['ServicePlatform'][self.task.task_name].save(result.values(backdict=True))
+                data_collections.create_index([('source', 1), ('source_id', 1)], unique=True)
+                data_collections.save(result.values(backdict=True))
+            except pymongo.errors.DuplicateKeyError as e:
+                logger.exception("[result already in db]", exc_info=e)
             except Exception as exc:
                 raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=exc)
 
