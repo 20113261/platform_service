@@ -13,5 +13,5 @@ from proj.my_lib.Common.NetworkUtils import google_get_map_info
 if __name__ == '__main__':
     # res = google_get_map_info('Avenida San Martin 249, El Chalten Z9301ABA, Argentina')
     # print(res)
-    print(google_get_map_info('US,CARMEL, CA'))
-    print(google_get_map_info('US,CARMEL, CA,CARMEL, CA'))
+    print(google_get_map_info('US, CARMEL, CA'))
+    print(google_get_map_info('US, CARMEL, CA, CARMEL, CA'))
