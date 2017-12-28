@@ -119,6 +119,7 @@ class HotelDetailSDK(BaseSDK):
         try:
             data_collections = mongo_data_client['ServicePlatform'][self.task.task_name]
             data_collections.create_index([('source', 1), ('source_id', 1)], unique=True, background=True)
+            data_collections.create_index([('location', '2dsphere')])
             tmp_result = deepcopy(result.values(backdict=True))
             lon, lat = str(result.map_info).split(',')
             tmp_result.update(

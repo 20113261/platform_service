@@ -203,11 +203,13 @@ class MySession(requests.Session):
         elif exc_type in (SSLError, ProxyError):
             self.browser_log()
             self.update_proxy(22)
-            raise ServiceStandardError(22, "代理异常 from Browser", wrapped_exception=exc_type)
+            raise ServiceStandardError(22, "代理异常 from Browser [proxy: {}]".format(self.p_r_o_x_y),
+                                       wrapped_exception=exc_type)
         elif exc_type in (ConnectionError, ConnectTimeout):
             self.browser_log()
             self.update_proxy(23)
-            raise ServiceStandardError(23, "代理被禁 from Browser", wrapped_exception=exc_type)
+            raise ServiceStandardError(23, "代理被禁 from Browser [proxy: {}]".format(self.p_r_o_x_y),
+                                       wrapped_exception=exc_type)
 
         if self.need_cache:
             # store page check
