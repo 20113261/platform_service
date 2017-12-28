@@ -8,13 +8,14 @@
 import time
 import requests
 import json
+import random
 from collections import defaultdict
 from proj.my_lib.Common.Utils import retry
 from proj.my_lib.logger import get_logger
 
 logger = get_logger("proxy_pool")
 
-PROXY_NUM_EACH_TIMES = 100
+PROXY_NUM_RANGE = (70, 150)
 
 source_list = ['turbojetsail', 'elongHotel', 'ctripHotel', 'tongchengApiHotel', 'expediaHotel', 'bookingHotel',
                'HotelsHotel', 'biyiHotel', 'HotelclubHotel', 'venereHotel', 'agodaHotel', 'ebookersHotel', 'ihgHotel',
@@ -48,12 +49,15 @@ source_list = ['turbojetsail', 'elongHotel', 'ctripHotel', 'tongchengApiHotel', 
 def simple_get_socks_proxy(source):
     time_st = time.time()
     logger.info("开始获取代理")
+
+    proxy_num = random.randint(*PROXY_NUM_RANGE)
+    logger.info("[get proxy][num: {}]".format(proxy_num))
     msg = {
         "req": [
             {
                 "source": source,
                 "type": "platform",
-                "num": PROXY_NUM_EACH_TIMES,
+                "num": proxy_num,
                 "ip_type": "",
             }
         ]
