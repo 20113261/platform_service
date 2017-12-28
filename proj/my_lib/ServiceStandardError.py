@@ -22,6 +22,7 @@ class ServiceStandardError(Exception):
     UNKNOWN_ERROR = 25
     EMPTY_TICKET = 29
 
+    MONGO_ERROR = 30
     STORAGE_ERROR = 31
     STORAGE_UNKNOWN_ERROR = 32
     RABBITMQ_ERROR = 33
