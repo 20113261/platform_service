@@ -10,10 +10,9 @@ from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.logger import get_logger
 from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from proj.mysql_pool import service_platform_pool
-from proj.config import MONGO_DATA_HOST
+from mongo_pool import mongo_data_client
 
 logger = get_logger("HotelDetailSDK")
-client = pymongo.MongoClient(host=MONGO_DATA_HOST, maxPoolSize=20)
 
 
 class HotelDetailSDK(BaseSDK):
@@ -118,7 +117,7 @@ class HotelDetailSDK(BaseSDK):
             logger.debug("[parse_hotel][func: {}][Takes: {}]".format(parse_hotel.func_name, time.time() - start))
 
         try:
-            data_collections = client['ServicePlatform'][self.task.task_name]
+            data_collections = mongo_data_client['ServicePlatform'][self.task.task_name]
             data_collections.create_index([('source', 1), ('source_id', 1)], unique=True, background=True)
             tmp_result = deepcopy(result.values(backdict=True))
             dict(tmp_result).update(

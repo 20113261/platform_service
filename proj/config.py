@@ -8,6 +8,7 @@ BROKER_URL = 'amqp://hourong:1220@10.10.213.148/celery'
 CELERY_RESULT_BACKEND = 'mongodb://10.10.231.105:27017/'
 
 MONGO_DATA_HOST = '10.10.213.148'
+MONGO_DATA_URL = 'mongodb://root:miaoji1109-=@10.19.2.103:27017/'
 
 CELERY_MONGODB_BACKEND_SETTINGS = {
     'database': 'Backend',

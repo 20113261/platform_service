@@ -21,11 +21,13 @@ import mioji.common.pages_store
 import pymongo
 import datetime
 import mioji.common
+import pymongo.errors
 from proj.my_lib.logger import func_time_logger
 from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj import config
+from mongo_pool import mongo_data_client
 
 mioji.common.pool.pool.set_size(2024)
 logger = get_task_logger('hotel_list')
@@ -96,8 +98,6 @@ class HotelListSDK(BaseSDK):
         city_id = self.task.kwargs['city_id']
         country_id = self.task.kwargs['country_id']
 
-        data_collections = client['ServicePlatform'][self.task.task_name]
-
         @func_time_logger
         def hotel_list_crawl():
             error_code, result, page_store_key = hotel_list_database(tid=self.task.task_id,
@@ -159,6 +159,7 @@ class HotelListSDK(BaseSDK):
         hotel_list_insert_db()
 
         try:
+            data_collections = mongo_data_client['ServicePlatform'][self.task.task_name]
             data = []
             for line in res_data:
                 data.append({
@@ -170,7 +171,9 @@ class HotelListSDK(BaseSDK):
                     'country_id': line[3],
                     'hotel_url': line[4]
                 })
-            data_collections.insert_many(data)
+            data_collections.insert(data, continue_on_error=True)
+        except pymongo.errors.DuplicateKeyError:
+            logger.info("[Duplicate Key]")
         except Exception as exc:
             raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=exc)
 
