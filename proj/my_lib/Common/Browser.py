@@ -23,6 +23,7 @@ from requests.adapters import SSLError, ProxyError
 from proj.my_lib.Common.Utils import try3times
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.Common.Utils import retry
+from proj.my_lib.Common.ProxyPool import ProxyPool
 
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
@@ -58,36 +59,7 @@ source_list = ['turbojetsail', 'elongHotel', 'ctripHotel', 'tongchengApiHotel', 
                'bonellibusbus', 'greyhoundbus', 'flixbusbus', 'navitimebus', 'peramatourbus', 'pattayabusbus',
                'easybookbus', 'huangbaochebaoche', 'huantaoyouwanle']
 
-
-@retry(times=3)
-def simple_get_socks_proxy(source='platform'):
-    time_st = time.time()
-    logger.info("开始获取代理")
-    msg = {
-        "req": [
-            {
-                "source": random.choice(source_list),
-                "type": "platform",
-                "num": 1,
-                "ip_type": "",
-            }
-        ]
-    }
-
-    qid = time.time()
-    ptid = "platform"
-
-    try:
-        get_info = '/?type=px001&qid={0}&query={1}&ptid={2}&tid=tid&ccy=AUD'.format(qid, json.dumps(msg), ptid)
-        logger.info("get proxy info :http://10.10.189.85:48200{0}".format(get_info))
-        p = requests.get("http://10.10.32.22:48200" + get_info).content
-        time_end = time.time() - time_st
-        logger.info("获取到代理，代理信息{0},获取代理耗时{1}".format(p, time_end))
-        logger.info(p)
-        p = json.loads(p)['resp'][0]['ips'][0]['inner_ip']
-        return p
-    except Exception:
-        raise Exception("Error Proxy")
+proxy_pool = ProxyPool()
 
 
 class MySession(requests.Session):
@@ -195,7 +167,7 @@ class MySession(requests.Session):
         return True
 
     def change_proxies(self):
-        self.p_r_o_x_y = simple_get_socks_proxy()
+        self.p_r_o_x_y = proxy_pool.get_proxy(random.choice(source_list))
         proxies = {
             'http': 'socks5://' + self.p_r_o_x_y,
             'https': 'socks5://' + self.p_r_o_x_y
