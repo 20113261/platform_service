@@ -118,7 +118,16 @@ class HotelDetailSDK(BaseSDK):
 
             try:
                 data_collections.create_index([('source', 1), ('source_id', 1)], unique=True)
-                data_collections.save(result.values(backdict=True))
+                tmp_result = result.values(backdict=True)
+                dict(tmp_result).update(
+                    {
+                        'location': {
+                            'type': "Point",
+                            'coordinates': str(result.map_info).split(',')
+                        }
+                    }
+                )
+                data_collections.save(tmp_result)
             except pymongo.errors.DuplicateKeyError as e:
                 logger.exception("[result already in db]", exc_info=e)
             except Exception as exc:
