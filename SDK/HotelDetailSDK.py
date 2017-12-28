@@ -52,8 +52,8 @@ class HotelDetailSDK(BaseSDK):
 
                 content = [content1, content2]
             elif source == 'holiday':
-                url1, url2 = url.split('#####')
-                page1 = session.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y',
+                url2, url1 = url.split('#####')
+                page1 = session.get(url2, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y',
                                                    'ihg-language': 'zh-CN'}, timeout=240)
                 page1.encoding = 'utf8'
                 content1 = page1.text
