@@ -120,7 +120,7 @@ class HotelDetailSDK(BaseSDK):
             data_collections = mongo_data_client['ServicePlatform'][self.task.task_name]
             data_collections.create_index([('source', 1), ('source_id', 1)], unique=True, background=True)
             tmp_result = deepcopy(result.values(backdict=True))
-            dict(tmp_result).update(
+            tmp_result.update(
                 {
                     'location': {
                         'type': "Point",
