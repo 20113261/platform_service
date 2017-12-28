@@ -13,7 +13,7 @@ from proj.mysql_pool import service_platform_pool
 from proj.config import MONGO_DATA_HOST
 
 logger = get_logger("HotelDetailSDK")
-client = pymongo.MongoClient(host=MONGO_DATA_HOST)
+client = pymongo.MongoClient(host=MONGO_DATA_HOST, maxPoolSize=20)
 
 
 class HotelDetailSDK(BaseSDK):

@@ -33,7 +33,7 @@ mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path
 mioji.common.pages_store.STORE_TYPE = cache_type
 
-client = pymongo.MongoClient(host='10.10.213.148')
+client = pymongo.MongoClient(host='10.10.213.148', maxPoolSize=20)
 collections = client['data_result']['HotelList']
 # pymongo client
 
