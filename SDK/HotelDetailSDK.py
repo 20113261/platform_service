@@ -2,6 +2,8 @@
 import time
 import pymongo
 import pymongo.errors
+from copy import deepcopy
+
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.ServiceStandardError import ServiceStandardError
@@ -23,7 +25,6 @@ class HotelDetailSDK(BaseSDK):
         country_id = self.task.kwargs['country_id']
 
         headers = {}
-        data_collections = client['ServicePlatform'][self.task.task_name]
 
         with MySession(need_cache=True) as session:
             # hotels
@@ -116,39 +117,41 @@ class HotelDetailSDK(BaseSDK):
                                  retry_count=self.task.used_times)
             logger.debug("[parse_hotel][func: {}][Takes: {}]".format(parse_hotel.func_name, time.time() - start))
 
-            try:
-                data_collections.create_index([('source', 1), ('source_id', 1)], unique=True)
-                tmp_result = result.values(backdict=True)
-                dict(tmp_result).update(
-                    {
-                        'location': {
-                            'type': "Point",
-                            'coordinates': str(result.map_info).split(',')
-                        }
+        try:
+            data_collections = client['ServicePlatform'][self.task.task_name]
+            data_collections.create_index([('source', 1), ('source_id', 1)], unique=True, background=True)
+            tmp_result = deepcopy(result.values(backdict=True))
+            dict(tmp_result).update(
+                {
+                    'location': {
+                        'type': "Point",
+                        'coordinates': str(result.map_info).split(',')
                     }
-                )
-                data_collections.save(tmp_result)
-            except pymongo.errors.DuplicateKeyError as e:
-                logger.exception("[result already in db]", exc_info=e)
-            except Exception as exc:
-                raise ServiceStandardError(error_code=ServiceStandardError.MONGO_ERROR, wrapped_exception=exc)
+                }
+            )
+            data_collections.save(tmp_result)
+        except pymongo.errors.DuplicateKeyError:
+            # logger.exception("[result already in db]", exc_info=e)
+            logger.warning("[result already in db]")
+        except Exception as exc:
+            raise ServiceStandardError(error_code=ServiceStandardError.MONGO_ERROR, wrapped_exception=exc)
 
-            start = time.time()
-            try:
-                service_platform_conn = service_platform_pool.connection()
-                cursor = service_platform_conn.cursor()
-                sql = result.generation_sql()
-                sql = sql.format(table_name=self.task.task_name)
-                values = result.values()
-                self.logger.info(result.__dict__)
-                cursor.execute(sql, values)
-                service_platform_conn.commit()
-                cursor.close()
-                service_platform_conn.close()
-            except Exception as e:
-                logger.exception(e)
-                raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
+        start = time.time()
+        try:
+            service_platform_conn = service_platform_pool.connection()
+            cursor = service_platform_conn.cursor()
+            sql = result.generation_sql()
+            sql = sql.format(table_name=self.task.task_name)
+            values = result.values()
+            self.logger.info(result.__dict__)
+            cursor.execute(sql, values)
+            service_platform_conn.commit()
+            cursor.close()
+            service_platform_conn.close()
+        except Exception as e:
+            logger.exception(e)
+            raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
 
-            logger.debug("[Insert DB][Takes: {}]".format(time.time() - start))
-            self.task.error_code = 0
-            return self.task.error_code
+        logger.debug("[Insert DB][Takes: {}]".format(time.time() - start))
+        self.task.error_code = 0
+        return self.task.error_code
