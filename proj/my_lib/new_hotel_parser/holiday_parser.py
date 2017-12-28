@@ -95,7 +95,7 @@ def get_all_street(resp):
 def get_all_pics(tree):
     all_pics = tree.xpath("//img[@data-medium-desktop]/@data-desktop")
     distinct = list(set([i.split('?', 1)[0] for i in all_pics if '?' in i]))
-    return '|'.join(['http:' + i + '?hei=512' for i in distinct])
+    return '|'.join(['http:' + i for i in distinct])
 
 
 def judge_xxx_available(tree, *args):
