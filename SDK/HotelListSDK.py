@@ -25,6 +25,7 @@ from proj.my_lib.logger import func_time_logger
 from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.ServiceStandardError import ServiceStandardError
+from proj import config
 
 mioji.common.pool.pool.set_size(2024)
 logger = get_task_logger('hotel_list')
@@ -43,6 +44,7 @@ insert_db = None
 get_proxy = simple_get_socks_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
+client = pymongo.MongoClient(host=config.MONGO_DATA_HOST)
 
 hotel_default = {'check_in': '20170903', 'nights': 1, 'rooms': [{}]}
 hotel_rooms = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
@@ -93,6 +95,8 @@ class HotelListSDK(BaseSDK):
         source = self.task.kwargs['source']
         city_id = self.task.kwargs['city_id']
         country_id = self.task.kwargs['country_id']
+
+        data_collections = client['ServicePlatform'][self.task.task_name]
 
         @func_time_logger
         def hotel_list_crawl():
@@ -153,6 +157,22 @@ class HotelListSDK(BaseSDK):
                 raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
 
         hotel_list_insert_db()
+
+        try:
+            data = []
+            for line in res_data:
+                data.append({
+                    'list_task_token': self.task.list_task_token,
+                    'task_id': self.task.task_id,
+                    'source': line[0],
+                    'source_id': line[1],
+                    'city_id': line[2],
+                    'country_id': line[3],
+                    'hotel_url': line[4]
+                })
+            data_collections.insert_many(data)
+        except Exception as exc:
+            raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=exc)
 
         # 由于错误都是 raise 的，
         # 所以当出现此种情况是，return 的内容均为正确内容
