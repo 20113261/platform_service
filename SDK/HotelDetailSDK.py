@@ -122,11 +122,12 @@ class HotelDetailSDK(BaseSDK):
             data_collections.create_index([('location', '2dsphere')], background=True)
             tmp_result = deepcopy(result.values(backdict=True))
             lon, lat = str(result.map_info).split(',')
+            lon, lat = float(lon), float(lat)
             tmp_result.update(
                 {
                     'location': {
                         'type': "Point",
-                        'coordinates': [float(lon), float(lat)]
+                        'coordinates': [lon, lat]
                     }
                 }
             )
