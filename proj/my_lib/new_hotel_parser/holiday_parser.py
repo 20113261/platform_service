@@ -36,32 +36,37 @@ def holiday_parser(content, url, other_info):
 
     resp = json.loads(content1)['hotelInfo']
     detail['hotel_url'] = url
-    detail['hotel_name'] = resp['profile']['name']
+    detail['hotel_name'] = resp.get('profile', '').get('name', '')
     detail['hotel_name_en'] = detail.get('hotel_name_en', '')
     detail['source'] = 'holiday'
     detail['source_id'] = other_info.get('source_id', '') or hotel_code
     detail['source_city_id'] = other_info.get('source_city_id', '')
-    detail['brand_name'] = resp['brandInfo']['brandName']
-    detail['map_info'] = str(resp['profile']['latitude']) + ',' + str(resp['profile']['longitude'])
+    detail['brand_name'] = resp.get('brandInfo', '').get('brandName', '')
+    detail['map_info'] = str(resp.get('profile', '').get('latitude', '')) + ',' + str(resp.get('profile', '').get('longitude', ''))
     detail['address'] = get_all_street(resp)
-    detail['city'] = resp['address']['city']
-    detail['country'] = resp['address']['country']['name']
+    detail['city'] = resp.get('address', '').get('city', '')
+    detail['country'] = resp.get('address', '').get('country', '').get('name', '')
     detail['city_id'] = other_info.get('city_id', '')
-    detail['postal_code'] = resp['address'].get('zip', '')
+    detail['postal_code'] = resp.get('address', '').get('zip', '')
     detail['star'] = '-1'
-    detail['grade'] = resp['profile']['averageReview']
-    detail['review_num'] = resp['profile']['totalReviews']
-    detail['check_in_time'] = resp['policies']['checkinTime']
-    detail['check_out_time'] = resp['policies']['checkoutTime']
+    detail['grade'] = resp.get('profile', '').get('averageReview', '')
+    detail['review_num'] = resp.get('profile', '').get('totalReviews', '')
+    detail['check_in_time'] = resp.get('policies', '').get('checkinTime', '')
+    detail['check_out_time'] = resp.get('policies', '').get('checkoutTime', '')
+    first_img = resp.get('profile', '')
+    if first_img:
+        first_img = first_img.get('primaryImageUrl', '')
+        if first_img:
+            first_img = first_img.get('originalUrl', '')
     detail['others_info'] = json.dumps({
-        'city': detail['city'],
-        'country': detail['country'],
-        'first_img': resp['profile']['primaryImageUrl']['originalUrl'],
+        'city': detail.get('city', ''),
+        'country': detail.get('country', ''),
+        'first_img': first_img,
         'source_city_id': other_info.get('source_city_id', '')
     })
-    detail['description'] = resp['profile'].get('longDescription') + '\n' + resp['profile'].get('shortDescription')
+    detail['description'] = resp.get('profile', '').get('longDescription', '') + '\n' + resp.get('profile', '').get('shortDescription', '')
     detail['has_wifi'] = 'Yes' if any([u'无线互联网' in ''.join(i.values()) or 'wifi' in ''.join(i.values()) for i in
-                                            resp['facilities']]) else detail.get('has_wifi', 'Null')
+                                            resp.get('facilities', '')]) else detail.get('has_wifi', 'Null')
     detail['service'] = detail.get('service', '') + get_api_server(resp)
 
     tree = fromstring(content2)
@@ -69,7 +74,7 @@ def holiday_parser(content, url, other_info):
     detail['has_wifi'] = 'Yes' if detail['is_wifi_free'] == 'Yes' or detail[
         'is_wifi_free'] == 'No' else detail.get('has_wifi', 'Null')
     detail['is_parking_free'] = judge_xxx_available(tree, '停车', '车场')
-    detail['has_parking'] = 'Null' if detail['is_parking_free'] == 'Null' else 'Yes'
+    detail['has_parking'] = 'Null' if detail.get('is_parking_free', '') == 'Null' else 'Yes'
     detail['img_items'] = get_all_pics(tree)
     detail['service'] = detail.get('service', '') + get_ota_server(tree, '上网', '互联网', '泳', '退房', '餐', '预定',
                                                                    '停车', '健身', '运动', '泳池', '特色', '服务')
@@ -79,9 +84,9 @@ def holiday_parser(content, url, other_info):
 
 
 def get_all_street(resp):
-    country = resp['address']['country']['name']
+    country = resp.get('address', '').get('country', '').get('name', '')
     street = ''
-    for k, v in resp['address'].items():
+    for k, v in resp.get('address', '').items():
         if k.startswith('street') and v:
             street += v
     return country + street
@@ -142,10 +147,10 @@ def get_ota_server(tree, *args):
 
 
 if __name__ == '__main__':
-    url1 = 'https://apis.ihg.com/hotels/v1/profiles/PEGDR/details'
-    url2 = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/PEGDR/hoteldetail'
+    url1 = 'https://apis.ihg.com/hotels/v1/profiles/USTSA/details'
+    url2 = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/ustsa/hoteldetail'
     print 'start 1'
-    content1 = requests.get(url1, headers={'ihg-language': 'zh-CN'}).text
+    content1 = requests.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y', 'ihg-language': 'zh-CN'}).text
     print 'got 1'
     content2 = requests.get(url2, headers={
                         'accept': 'application/json, text/plain, */*',
@@ -161,3 +166,4 @@ if __name__ == '__main__':
     print 'got 3'
     result = holiday_parser((content1, content2, content3), url2, {})
     print '\n'.join(['%s:%s' % item for item in result.__dict__.items()])
+
