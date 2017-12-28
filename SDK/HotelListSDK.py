@@ -160,6 +160,8 @@ class HotelListSDK(BaseSDK):
 
         try:
             data_collections = mongo_data_client['ServicePlatform'][self.task.task_name]
+            data_collections.create_index([('source', 1), ('source_id', 1), ('city_id', 1)], unique=True,
+                                          background=True)
             data = []
             for line in res_data:
                 data.append({
