@@ -147,8 +147,10 @@ def get_ota_server(tree, *args):
 
 
 if __name__ == '__main__':
-    url1 = 'https://apis.ihg.com/hotels/v1/profiles/USTSA/details'
-    url2 = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/ustsa/hoteldetail'
+    url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/empcd/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/EMPCD/details'
+    url2, url1 = url.split('#####')
+    # url1 = 'https://apis.ihg.com/hotels/v1/profiles/EMPCD/details'
+    # url2 = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/empcd/hoteldetail'
     print 'start 1'
     content1 = requests.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y', 'ihg-language': 'zh-CN'}).text
     print 'got 1'
