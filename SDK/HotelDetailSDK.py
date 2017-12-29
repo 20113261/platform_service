@@ -1,6 +1,7 @@
 # coding=utf-8
 import time
 import pymongo
+import requests
 import pymongo.errors
 from copy import deepcopy
 
@@ -40,7 +41,7 @@ class HotelDetailSDK(BaseSDK):
 
             # init session
             start = time.time()
-            if source not in ('hilton', 'ihg', 'holiday'):
+            if source not in ('hilton', 'ihg', 'holiday', 'accor'):
                 page = session.get(url, timeout=240)
                 page.encoding = 'utf8'
                 content = page.text
@@ -76,6 +77,16 @@ class HotelDetailSDK(BaseSDK):
                 content3 = page3.text
 
                 content = (content1, content2, content3)
+            elif source == 'accor':
+                proxy_url = "http://10.10.239.46:8087/proxy?source=pricelineFlight&user=crawler&passwd=spidermiaoji2014"
+                r = requests.get(proxy_url)
+                proxies = {'https': "socks5://" + str(r.text)}
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"
+                }
+                page = requests.get(url, headers=headers, verify=False, proxies=proxies)
+                page.encoding = 'utf8'
+                content = page.text
             else:
                 session.auto_update_host = False
                 hilton_index = url.find('index.html')

@@ -26,7 +26,7 @@ def accor_parser(content, url, other_info):
     postal_code = re.findall('<meta content="(.*?)" property="og:postal-code">', data)[0]
     hotel_name = re.findall('<meta name="twitter:title" content="(.*?)">', data)[0]
     hotel_name_en = "NULL"
-    map_info = re.findall('<meta content="(.*?)" name="geo.position"/>', data)[0]
+    map_info = ",".join(re.findall('<meta content="(.*?)" name="geo.position"/>', data)[0].split(';')[::-1])
     street = re.findall('<span itemprop="streetAddress">(.*?)</span><br>', data)[0]
     location = re.findall('<span itemprop="addressLocality">(.*?)</span><br>', data)[0]
     _country = re.findall('<span itemprop="addressCountry">(.*?)</span>', data)[0]
@@ -87,23 +87,15 @@ def accor_parser(content, url, other_info):
 
 
 if __name__ == '__main__':
-    url = 'https://www.accorhotels.com/zh/hotel-B1X3-%E5%8D%A1%E8%A5%BF%E4%BA%9A%E6%99%AE%E5%90%89%E5%B2%9B%E9%85%92%E5%BA%97/index.shtml'
+    url = 'https://www.accorhotels.com/zh/hotel-A4Z1-%E5%85%A8%E5%AD%A3%E6%9D%AD%E5%B7%9E%E8%A5%BF%E6%B9%96%E5%87%A4%E8%B5%B7%E8%B7%AF%E9%85%92%E5%BA%97/index.shtml'
     other_info = {
         'source_id': '119538',
         'city_id': '10001'
     }
 
-    def simple_get_socks_proxy():
-        url = "http://10.10.239.46:8087/proxy?source=pricelineFlight&user=crawler&passwd=spidermiaoji2014"
-        r = requests.get(url)
-        proxy = r.text
-        return {'https': "socks5://" + str(proxy)}
-
     def get_page(url):
         headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"}
-        proxies = simple_get_socks_proxy()
-        print proxies
-        html = requests.get(url, headers=headers, verify=False, proxies=proxies)
+        html = requests.get(url, headers=headers, verify=False)
         if html.status_code == 200:
             return html.text
 
