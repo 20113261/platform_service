@@ -5,25 +5,30 @@ import json
 import requests
 from lxml.etree import HTML
 from pyquery import PyQuery as pq
+from mioji.common import parser_except
 from proj.my_lib.models.HotelModel import HotelBase
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 
+def get_blank(content):
+    return 'NULL' if content == [] else content[0]
+
+
 def accor_parser(content, url, other_info):
     hotel = HotelBase()
     data = content.decode('utf-8')
+    if '<title>Book a hotel online with Accor Hotels</title>' in data:
+        raise parser_except.ParserException(29, '网站暂时维护中')
     hotel_code = re.findall('https://www.accorhotels.com/zh/hotel-(.*?)-.*?/index.shtml', url)[0].lower()
-
     hotel_url = url
     source = 'accorHotel'
     source_city_id = 'NULL'
-    source_id = other_info['source_id']
-    city_id = other_info['city_id']
     brand_name = "NULL"
-    star = re.findall('<div class="main-rating stars stars--(\d+)"\s*data-halfstars=', data)[0]
-    postal_code = re.findall('<meta content="(.*?)" property="og:postal-code">', data)[0]
+    _star = re.findall('<div class="main-rating stars stars--(\d+)"\s*data-halfstars=', data)
+    star = _star if _star != [] else -1
+    postal_code = get_blank(re.findall('<meta content="(.*?)" property="og:postal-code">', data))
     hotel_name = re.findall('<meta name="twitter:title" content="(.*?)">', data)[0]
     hotel_name_en = "NULL"
     map_info = ",".join(re.findall('<meta content="(.*?)" name="geo.position"/>', data)[0].split(';')[::-1])
@@ -32,12 +37,13 @@ def accor_parser(content, url, other_info):
     _country = re.findall('<span itemprop="addressCountry">(.*?)</span>', data)[0]
     address = _country + location + street
     country = re.findall('<meta content="(.*?)" property="og:country-name">', data)[0]
-    city = re.findall('<meta content="(.*?)" property="og:city">', data)[0]
-    grade = re.findall(
+    city = get_blank(re.findall('<meta content="(.*?)" property="og:city">', data))
+    _grade = re.findall(
         '<span class="rating"><span itemprop="ratingValue">\s*(.*?)</span>/<span itemprop="bestRating">5</span>\s*</span>',
-        data)[0]
-    review = re.findall('<span class="rating-baseline">(.*?)</span>', data)[0]
-    review_num = "".join(re.findall('\d+', review))
+        data)
+    grade = _grade[0] if _grade != [] else -1.0
+    review = get_blank(re.findall('<span class="rating-baseline">(.*?)</span>', data))
+    review_num = "".join(re.findall('\d+', review)) or -1
     has_wifi = 'Yes' if re.findall('<i\s*class="icon icon_wifi"></i>', data) else 'No'
     if has_wifi == 'Yes':
         is_wifi_free = 'Yes' if re.findall('<li\s*class="service-item "\s*data-servicename="wifi">', data) else 'No'
@@ -49,12 +55,18 @@ def accor_parser(content, url, other_info):
                                              data) else 'Yes'
     else:
         is_parking_free = 'NULL'
-    img_items = ",".join(re.findall('www.ahstatic.com/photos/' + hotel_code + '_\w+_\d+_p_2048x1536.jpg', data))
+    img_items = "|".join(re.findall('www.ahstatic.com/photos/' + hotel_code + '_\w+_\d+_p_2048x1536.jpg', data))
+    source_id = other_info['source_id']
+    city_id = other_info['city_id']
+    first_img = None
+    if img_items:
+        first_img = hotel.img_items.split('|')[0]
+    others_info = {"city": city, "country": country, "first_img": first_img, "source_city_id": source_city_id}
     service = pq(data)('div.expandable-content').find('li').text().replace("\t", "").replace("\n", "").replace(" ", "|")
     description = HTML(data).xpath("//p[@itemprop='description']/text()")[0]
     accepted_cards = "NULL"
-    check_in_time = re.findall('<i class="icon icon_times"></i>(.*?)</div>', data)[0]
-    check_out_time = re.findall('<div class="col col-checkout">(.*?)</div>', data)[0]
+    check_in_time = get_blank(re.findall('<i class="icon icon_times"></i>(.*?)</div>', data))
+    check_out_time = get_blank(re.findall('<div class="col col-checkout">(.*?)</div>', data))
 
     hotel.hotel_name = hotel_name
     hotel.hotel_name_en = hotel_name_en
@@ -82,12 +94,12 @@ def accor_parser(content, url, other_info):
     hotel.check_in_time = check_in_time
     hotel.check_out_time = check_out_time
     hotel.hotel_url = hotel_url
-    hotel.others_info = json.dumps(other_info)
+    hotel.others_info = json.dumps(others_info)
     return hotel
 
 
 if __name__ == '__main__':
-    url = 'https://www.accorhotels.com/zh/hotel-A4Z1-%E5%85%A8%E5%AD%A3%E6%9D%AD%E5%B7%9E%E8%A5%BF%E6%B9%96%E5%87%A4%E8%B5%B7%E8%B7%AF%E9%85%92%E5%BA%97/index.shtml'
+    url = 'https://www.accorhotels.com/zh/hotel-8098-%E7%8F%A0%E6%B5%B7%E4%B8%AD%E6%B5%B7%E9%93%82%E5%B0%94%E6%9B%BC%E9%85%92%E5%BA%97/index.shtml'
     other_info = {
         'source_id': '119538',
         'city_id': '10001'
@@ -100,4 +112,6 @@ if __name__ == '__main__':
             return html.text
 
     g = get_page(url)
-    accor_parser(g, url, other_info)
+    result = accor_parser(g, url, other_info)
+    print '\n'.join(['%s:%s' % item for item in result.__dict__.items()])
+
