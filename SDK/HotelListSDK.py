@@ -178,7 +178,7 @@ class HotelListSDK(BaseSDK):
         except pymongo.errors.DuplicateKeyError:
             logger.info("[Duplicate Key]")
         except Exception as exc:
-            raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=exc)
+            raise ServiceStandardError(error_code=ServiceStandardError.MONGO_ERROR, wrapped_exception=exc)
 
         # 由于错误都是 raise 的，
         # 所以当出现此种情况是，return 的内容均为正确内容
