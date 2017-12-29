@@ -163,17 +163,18 @@ class HotelListSDK(BaseSDK):
             data_collections.create_index([('source', 1), ('source_id', 1), ('city_id', 1)], unique=True,
                                           background=True)
             data = []
-            for line in res_data:
-                data.append({
-                    'list_task_token': self.task.list_task_token,
-                    'task_id': self.task.task_id,
-                    'source': line[0],
-                    'source_id': line[1],
-                    'city_id': line[2],
-                    'country_id': line[3],
-                    'hotel_url': line[4]
-                })
-            data_collections.insert(data, continue_on_error=True)
+            if data:
+                for line in res_data:
+                    data.append({
+                        'list_task_token': self.task.list_task_token,
+                        'task_id': self.task.task_id,
+                        'source': line[0],
+                        'source_id': line[1],
+                        'city_id': line[2],
+                        'country_id': line[3],
+                        'hotel_url': line[4]
+                    })
+                data_collections.insert(data, continue_on_error=True)
         except pymongo.errors.DuplicateKeyError:
             logger.info("[Duplicate Key]")
         except Exception as exc:
