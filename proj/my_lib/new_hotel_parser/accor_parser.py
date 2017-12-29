@@ -27,7 +27,7 @@ def accor_parser(content, url, other_info):
     source_city_id = 'NULL'
     brand_name = "NULL"
     _star = re.findall('<div class="main-rating stars stars--(\d+)"\s*data-halfstars=', data)
-    star = _star if _star != [] else -1
+    star = _star[0] if _star != [] else -1
     postal_code = get_blank(re.findall('<meta content="(.*?)" property="og:postal-code">', data))
     hotel_name = re.findall('<meta name="twitter:title" content="(.*?)">', data)[0]
     hotel_name_en = "NULL"
