@@ -60,7 +60,7 @@ def accor_parser(content, url, other_info):
     city_id = other_info['city_id']
     first_img = None
     if img_items:
-        first_img = hotel.img_items.split('|')[0]
+        first_img = img_items.split('|')[0]
     others_info = {"city": city, "country": country, "first_img": first_img, "source_city_id": source_city_id}
     service = pq(data)('div.expandable-content').find('li').text().replace("\t", "").replace("\n", "").replace(" ", "|")
     description = HTML(data).xpath("//p[@itemprop='description']/text()")[0]
