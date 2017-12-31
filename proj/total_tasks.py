@@ -65,7 +65,7 @@ def slow_hotel_detail_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='40/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='5/s')
 def images_task(self, task, **kwargs):
     _sdk = ImagesSDK(task=task)
     return _sdk.execute()
