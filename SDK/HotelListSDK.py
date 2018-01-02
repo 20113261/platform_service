@@ -21,10 +21,13 @@ import mioji.common.pages_store
 import pymongo
 import datetime
 import mioji.common
+import pymongo.errors
 from proj.my_lib.logger import func_time_logger
 from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.ServiceStandardError import ServiceStandardError
+from proj import config
+from mongo_pool import mongo_data_client
 
 mioji.common.pool.pool.set_size(2024)
 logger = get_task_logger('hotel_list')
@@ -32,7 +35,7 @@ mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path
 mioji.common.pages_store.STORE_TYPE = cache_type
 
-client = pymongo.MongoClient(host='10.10.213.148')
+client = pymongo.MongoClient(host='10.10.213.148', maxPoolSize=20)
 collections = client['data_result']['HotelList']
 # pymongo client
 
@@ -43,6 +46,7 @@ insert_db = None
 get_proxy = simple_get_socks_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
+client = pymongo.MongoClient(host=config.MONGO_DATA_HOST)
 
 hotel_default = {'check_in': '20170903', 'nights': 1, 'rooms': [{}]}
 hotel_rooms = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
@@ -153,6 +157,28 @@ class HotelListSDK(BaseSDK):
                 raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
 
         hotel_list_insert_db()
+
+        try:
+            data_collections = mongo_data_client['ServicePlatform'][self.task.task_name]
+            data_collections.create_index([('source', 1), ('source_id', 1), ('city_id', 1)], unique=True,
+                                          background=True)
+            data = []
+            if data:
+                for line in res_data:
+                    data.append({
+                        'list_task_token': self.task.list_task_token,
+                        'task_id': self.task.task_id,
+                        'source': line[0],
+                        'source_id': line[1],
+                        'city_id': line[2],
+                        'country_id': line[3],
+                        'hotel_url': line[4]
+                    })
+                data_collections.insert(data, continue_on_error=True)
+        except pymongo.errors.DuplicateKeyError:
+            logger.info("[Duplicate Key]")
+        except Exception as exc:
+            raise ServiceStandardError(error_code=ServiceStandardError.MONGO_ERROR, wrapped_exception=exc)
 
         # 由于错误都是 raise 的，
         # 所以当出现此种情况是，return 的内容均为正确内容

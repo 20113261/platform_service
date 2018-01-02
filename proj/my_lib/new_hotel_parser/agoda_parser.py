@@ -12,6 +12,7 @@ from util.UserAgent import GetUserAgent
 from proj.my_lib.models.HotelModel import AgodaHotel
 from urlparse import urljoin
 import json
+
 review_num_pat = re.compile(r'(\d+)')
 hotel_id_pat = re.compile(r'hotel_id=(.*?)&', re.S)
 city_en_name_pat = re.compile(r'city_Name=(.*?)&', re.S)
@@ -36,8 +37,6 @@ def agoda_parser(content, url, other_info):
     ph_runtime = execjs.get('PhantomJS')
     page_js = ph_runtime.compile(root.xpath('//script[contains(text(),"propertyPageParams")]/text()')[0])
     page_params = page_js.eval('propertyPageParams')
-    with open('result.txt','w+') as result:
-        result.write(json.dumps(page_params))
     try:
         hotel_name = page_params['hotelInfo']['name']
     except:
@@ -75,7 +74,6 @@ def agoda_parser(content, url, other_info):
     except:
         hotel.address = "NULL"
     print 'hotel.address=>%s' % hotel.address
-
 
     try:
         hotel.star = int(page_params['hotelInfo']['starRating']['icon'].split('-')[-1])
@@ -131,8 +129,8 @@ def agoda_parser(content, url, other_info):
     print 'hotel.review_num=>%s' % hotel.review_num
 
     try:
-        first_img = page_params.get("mosaicInitData",{}).get('images',[])[0].get('Location','NULL')
-        first_img = urljoin('http:',first_img)
+        first_img = page_params.get("mosaicInitData", {}).get('images', [])[0].get('Location', 'NULL')
+        first_img = urljoin('http:', first_img)
     except Exception as e:
         first_img = 'NULL'
 
@@ -177,14 +175,15 @@ def agoda_parser(content, url, other_info):
     except:
         try:
             hotel.service = '|'.join(
-                [service['text'].strip() for services in page_params['featuresYouLove']['features'] for service in services])
+                [service['text'].strip() for services in page_params['featuresYouLove']['features'] for service in
+                 services])
         except:
             # hotel.service = '|'.join()
             hotel.service = 'NULL'
     print 'hotel.service=>%s' % hotel.service
 
     try:
-        hotel.description = json_data['HotelDesc']['Overview'].strip().replace('<BR>','').encode('utf-8')
+        hotel.description = json_data['HotelDesc']['Overview'].strip().replace('<BR>', '').encode('utf-8')
     except:
         hotel.description = 'NULL'
     print 'hotel.description=>%s' % hotel.description
@@ -209,13 +208,15 @@ def agoda_parser(content, url, other_info):
     if hotel.check_in_time is None and hotel.check_out_time is None:
         try:
             in_and_out = json_data.get("CheckInOutInfo", {})
-            hotel.check_in_time = in_and_out.get("CheckInAndOutTime", {}).get("CheckInTime", {}).get("From", {}).get("Description")
-            hotel.check_out_time = in_and_out.get("CheckInAndOutTime", {}).get("CheckOutTime", {}).get("Until", {}).get("Description")
+            hotel.check_in_time = in_and_out.get("CheckInAndOutTime", {}).get("CheckInTime", {}).get("From", {}).get(
+                "Description")
+            hotel.check_out_time = in_and_out.get("CheckInAndOutTime", {}).get("CheckOutTime", {}).get("Until", {}).get(
+                "Description")
         except:
             pass
-    print "hotel.check_in_time:",hotel.check_in_time
-    print "hotel.check_out_time:",hotel.check_out_time
-    #从酒店页面获取城市信息
+    print "hotel.check_in_time:", hotel.check_in_time
+    print "hotel.check_out_time:", hotel.check_out_time
+    # 从酒店页面获取城市信息
     try:
         country_id = page_params['hotelSearchCriteria']['countryId']
         country_name = page_params['hotelInfo']['address']['countryName']
@@ -224,16 +225,18 @@ def agoda_parser(content, url, other_info):
     except Exception as e:
         print e
 
-    hotel.others_info = json.dumps({'country_id':country_id,'country_name':country_name,'city_name':city_name,'city_id':city_id,'first_img':first_img})
+    hotel.others_info = json.dumps(
+        {'country_id': country_id, 'country_name': country_name, 'city_name': city_name, 'city_id': city_id,
+         'first_img': first_img})
     hotel.source_city_id = city_id
-    hotel.country = page_params['hotelInfo'].get('address',{}).get('countryName','')
-    hotel.city = page_params['hotelInfo'].get('address',{}).get('cityName','')
-    print "hotel.others_info:",hotel.others_info
-    print "hotel.source_city_id:",hotel.source_city_id
+    hotel.country = page_params['hotelInfo'].get('address', {}).get('countryName', '')
+    hotel.city = page_params['hotelInfo'].get('address', {}).get('cityName', '')
+    print "hotel.others_info:", hotel.others_info
+    print "hotel.source_city_id:", hotel.source_city_id
     hotel.accepted_cards = 'NULL'
-    print "accepted_cards:",hotel.accepted_cards
-    print "check_in_time：",hotel.check_in_time
-    print "check_out_time:",hotel.check_out_time
+    print "accepted_cards:", hotel.accepted_cards
+    print "check_in_time：", hotel.check_in_time
+    print "check_out_time:", hotel.check_out_time
 
     if '无线网络' in hotel.service:
         hotel.has_wifi = 'Yes'
@@ -283,20 +286,20 @@ if __name__ == '__main__':
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_agoda&id=329cf4fa7c9196ce026aa1053c652c2f'
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_agoda&id=49536fe85753dfd12ea88d0700bda26d'
     # url = 'https://www.agoda.com/zh-cn/wingate-by-wyndham-arlington_2/hotel/all/arlington-tx-us.html?checkin=2017-08-03&los=1&adults=1&rooms=1&cid=-1&searchrequestid=09d590d3-cc17-4046-89a1-112b6ed35266'
-    #url = 'https://www.agoda.com/zh-cn/hotel-las-bovedas/hotel/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
-    #url = 'https://www.agoda.com/zh-cn/estudio-casco-antiguo/hotel/all/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7'
-    #url = 'https://www.agoda.com/zh-cn/ilunion-golf-badajoz-hotel/hotel/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
-    #url = 'https://www.agoda.com/zh-cn/hotel-lisboa/hotel/all/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
+    # url = 'https://www.agoda.com/zh-cn/hotel-las-bovedas/hotel/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
+    # url = 'https://www.agoda.com/zh-cn/estudio-casco-antiguo/hotel/all/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7'
+    # url = 'https://www.agoda.com/zh-cn/ilunion-golf-badajoz-hotel/hotel/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
+    # url = 'https://www.agoda.com/zh-cn/hotel-lisboa/hotel/all/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
     url = 'https://www.agoda.com/zh-cn/oarsman-s-bay-lodge/hotel/yasawa-islands-fj.html?checkin=2017-11-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=b5bd9776-41c6-4fdd-b361-4abcaf8c8703'
-    #url = 'https://www.agoda.com/zh-cn/hotel-huatian-chinagora/hotel/alfortville-fr.html?checkin=2017-12-20&los=1&adults=2&rooms=1&cid=-1&searchrequestid=f53c35ca-007e-4974-af8f-ebfa20c4dfee'
-    #url = 'https://www.agoda.com/zh-cn/puesta-del-sol-apartment/hotel/all/asilah-ma.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=a00c61b5-db95-40f9-b5c3-a385219f7e7a'
-    #url = 'https://www.agoda.com/zh-cn/ana-o-tai/hotel/all/hanga-roa-cl.html?checkin=2017-12-15&los=1&adults=2&rooms=1&cid=-1&searchrequestid=1b174d8d-2aef-4fea-836d-fb7a5e70e234'
-    #url = 'https://www.agoda.com/zh-cn/cabanas-teo/hotel/all/isla-de-pascua-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=5460efbf-de01-4b89-99c8-11e1adc2f066'
+    # url = 'https://www.agoda.com/zh-cn/hotel-huatian-chinagora/hotel/alfortville-fr.html?checkin=2017-12-20&los=1&adults=2&rooms=1&cid=-1&searchrequestid=f53c35ca-007e-4974-af8f-ebfa20c4dfee'
+    # url = 'https://www.agoda.com/zh-cn/puesta-del-sol-apartment/hotel/all/asilah-ma.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=a00c61b5-db95-40f9-b5c3-a385219f7e7a'
+    # url = 'https://www.agoda.com/zh-cn/ana-o-tai/hotel/all/hanga-roa-cl.html?checkin=2017-12-15&los=1&adults=2&rooms=1&cid=-1&searchrequestid=1b174d8d-2aef-4fea-836d-fb7a5e70e234'
+    # url = 'https://www.agoda.com/zh-cn/cabanas-teo/hotel/all/isla-de-pascua-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=5460efbf-de01-4b89-99c8-11e1adc2f066'
     url = 's23'
-    #url = 'https://www.agoda.com/zh-cn/hare-vivanka/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
-    #url = 'https://www.agoda.com/zh-cn/cabana-meme/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
-    #url = 'https://www.agoda.com/zh-cn/hotel-alagare/hotel/lausanne-ch.html?checkin=2017-12-07&los=1&adults=2&rooms=1&cid=-1&searchrequestid=9127dc90-fd5e-4cbb-aa22-4cf62afbdecd'
-    #url = 'https://www.agoda.com/zh-cn/grand-hyatt-new-york-hotel/hotel/new-york-ny-us.html?checkin=2017-12-20&los=1&adults=2&rooms=1&cid=-1&searchrequestid=7e5812dd-d6a4-4ca3-90a1-60437e475f93'
+    # url = 'https://www.agoda.com/zh-cn/hare-vivanka/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
+    # url = 'https://www.agoda.com/zh-cn/cabana-meme/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
+    # url = 'https://www.agoda.com/zh-cn/hotel-alagare/hotel/lausanne-ch.html?checkin=2017-12-07&los=1&adults=2&rooms=1&cid=-1&searchrequestid=9127dc90-fd5e-4cbb-aa22-4cf62afbdecd'
+    # url = 'https://www.agoda.com/zh-cn/grand-hyatt-new-york-hotel/hotel/new-york-ny-us.html?checkin=2017-12-20&los=1&adults=2&rooms=1&cid=-1&searchrequestid=7e5812dd-d6a4-4ca3-90a1-60437e475f93'
     url = 'https://www.agoda.com/zh-cn/hotel-the-celestine-tokyo-shiba/hotel/tokyo-jp.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=b0293d9f-56be-46ad-998e-3a14b8601594&isMRS=1'
     url = 'https://www.agoda.com/zh-cn/royal-park-hotel-the-shiodome-tokyo/hotel/tokyo-jp.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=35cdc5b6-2e05-4924-b71e-479692ddb593&isMRS=1'
     url = 'https://www.agoda.com/zh-cn/conrad-macao-cotai-central/hotel/macau-mo.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=5bd92238-b4f5-4d41-a958-051575b96f71&dodhotel=1&isMRS=0'
@@ -304,6 +307,4 @@ if __name__ == '__main__':
     page.encoding = 'utf8'
     content = page.text
 
-
     result = agoda_parser(content, url, other_info)
-

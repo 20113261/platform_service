@@ -50,6 +50,9 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     if queue == 'poi_list':
         c_list = list(filter(lambda x: str(x).split('_')[-1] >= "20171214a", c_list))
 
+    if queue == 'hotel_list':
+        c_list = list(filter(lambda x: str(x).split('_')[-2] != "ihg" and str(x).split('_')[-1] != "20171212a", c_list))
+
     # 防止过度均分，选取 2000 为最小分配值
     per_limit = max(limit // len(c_list), 2000)
     c_list = list(map(lambda x: (x, per_limit), c_list))
@@ -281,6 +284,11 @@ if __name__ == '__main__':
     #
     # update_city_list_task("City_Queue_poi_list_TaskName_city_total_qyer_20171120a", "e50ff0261cbd53c8d3e6872a71aa3a97",
     #                       500, True)
-    print(quick_task_slow_task_count('hotel_list', 'ihg'))
-    print(quick_task_slow_task_count('hotel_list', 'ihg'))
-    print(quick_task_slow_task_count('hotel_list', 'ihg'))
+    for line in get_task_total_simple(
+            queue='hotel_list',
+            limit=20,
+            debug=True):
+        print(line)
+        # print(quick_task_slow_task_count('hotel_list', 'ihg'))
+        # print(quick_task_slow_task_count('hotel_list', 'ihg'))
+        # print(quick_task_slow_task_count('hotel_list', 'ihg'))

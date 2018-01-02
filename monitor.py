@@ -34,7 +34,7 @@ client = pymongo.MongoClient(host='10.10.231.105')
 db = client['MongoTask']
 HOTEL_SOURCE = (
     'agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
-    'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton', 'ihg')
+    'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton', 'ihg', 'holiday', 'accor')
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 PRIORITY = 3

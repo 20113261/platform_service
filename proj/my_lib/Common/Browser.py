@@ -22,6 +22,8 @@ from requests import ConnectionError, ConnectTimeout
 from requests.adapters import SSLError, ProxyError
 from proj.my_lib.Common.Utils import try3times
 from proj.my_lib.ServiceStandardError import ServiceStandardError
+from proj.my_lib.Common.Utils import retry
+from proj.my_lib.Common.ProxyPool import ProxyPool
 
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
@@ -30,15 +32,34 @@ logger = proj.my_lib.logger.get_logger('Browser')
 httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
+source_list = ['turbojetsail', 'elongHotel', 'ctripHotel', 'tongchengApiHotel', 'expediaHotel', 'bookingHotel',
+               'HotelsHotel', 'biyiHotel', 'HotelclubHotel', 'venereHotel', 'agodaHotel', 'ebookersHotel', 'ihgHotel',
+               'marriottHotel', 'amomaHotel', 'hrsHotel', 'HoteltravelHotel', 'accorHotel', 'travelocityHotel',
+               'orbitzHotel', 'cheapticketsHotel', 'miojiHotel', 'hotwireHotel', 'kempinskiHotel', 'whgHotelsHotel',
+               'starwoodHotelsHotel', 'hostelworldHotel', 'HotelbedsApiHotel', 'haoqiaoApiHotel', 'innstantApiHotel',
+               'touricoApiHotel', 'gtaApiHotel', 'daolvApiHotel', 'jacApiHotel', 'mikiApiHotel', 'dotwApiHotel',
+               'tripadvisorHotel', 'hiltonHotel', 'yundijieHotel', 'elongFlight', 'ryanairFlight', 'ctripFlight',
+               'jijitongFlight', 'tongchengFlight', 'feiquanqiuRoundFlight', 'ceairFlight', 'csairFlight',
+               'expediaMultiFlight', 'smartfaresFlight', 'easyjetFlight', 'wegoFlight', 'vuelingFlight',
+               'ufeifanFlight', 'youzhanHotel', 'airberlinFlight', 'huifeeFlight', 'tripstaFlight', 'ebookersFlight',
+               'mangoFlight', 'cheapoairFlight', 'airtickets24Flight', 'airkxFlight', 'pricelineFlight', 'kopuFlight',
+               'airchinaFlight', 'hnairFlight', 'britishairFlight', 'airfranceRoundFlight', 'travelocityFlight',
+               'orbitzFlight', 'studentuniverseFlight', 'cheapticketsFlight', 'lufthansaFlight', 'omegaFlight',
+               'travelfusionFlight', 'emiratesFlight', 'aeroflotFlight', 'aliFlight', 'onetravelFlight', 'qunarFlight',
+               'qatarFlight', 'austrianAirlinesFlight', 'budgetairFlight', 'travelgenioFlight', 'miojiFlight',
+               'skyscannerFlight', 'cheapairFlight', 'jintongApiFlight', 'mytripFlight', 'cleartripFlight',
+               'zujiFlight', 'gotogateFlight', 'yinlingApiFlight', 'zailushangApiMultiFlight', 'edreamsRoundFlight',
+               'googleflightsFlight', 'meiyaApiFlight', 'fare2goApiFlight', 'biquApiRoundFlight', 'travelzenFlight',
+               'pkfareFlight', 'igolaFlight', '51bookFlight', 'fliggyFlight', 'ctriptrain', 'europerailtrain',
+               'voyagestrain', 'raileuropetrain', 'eurostartrain', 'bahntrain', 'sncfentrain', 'sncffrtrain',
+               'tieyourailtrain', 'refentrain', 'nationalrailtrain', 'trenitaliatrain', 'cdtrain', 'loco2train',
+               'travelfusionApitrain', 'theTrainLinetrain', 'miojitrain', 'amtraktrain', 'thailandrailtrain',
+               'translinktrain', 'ekikaratrain', 'viarailtrain', 'germanyrailApitrain', 'korailtrain', 'ctripCar',
+               'huizucheCar', 'zuzucheCar', 'idbusbus', 'megabusbus', 'directbusBusbus', 'eurolinesbus',
+               'bonellibusbus', 'greyhoundbus', 'flixbusbus', 'navitimebus', 'peramatourbus', 'pattayabusbus',
+               'easybookbus', 'huangbaochebaoche', 'huantaoyouwanle']
 
-@try3times(try_again_times=3)
-def simple_get_socks_proxy():
-    url = "http://10.10.239.46:8087/proxy?source=ServicePlatform"
-    r = requests.get(url)
-    proxy = r.content
-    if proxy is None:
-        raise Exception("Error Proxy: {}".format(proxy))
-    return proxy
+proxy_pool = ProxyPool()
 
 
 class MySession(requests.Session):
@@ -146,7 +167,7 @@ class MySession(requests.Session):
         return True
 
     def change_proxies(self):
-        self.p_r_o_x_y = simple_get_socks_proxy()
+        self.p_r_o_x_y = proxy_pool.get_proxy(random.choice(source_list))
         proxies = {
             'http': 'socks5://' + self.p_r_o_x_y,
             'https': 'socks5://' + self.p_r_o_x_y
@@ -169,6 +190,9 @@ class MySession(requests.Session):
         # except Exception:
         #     pass
 
+    def browser_log(self):
+        logger.info(self.__dict__)
+
     def __enter__(self):
         return self
 
@@ -177,11 +201,15 @@ class MySession(requests.Session):
         if not exc_type:
             self.update_proxy(0)
         elif exc_type in (SSLError, ProxyError):
+            self.browser_log()
             self.update_proxy(22)
-            raise ServiceStandardError(22, "代理异常 from Browser", wrapped_exception=exc_type)
+            raise ServiceStandardError(22, "代理异常 from Browser [proxy: {}]".format(self.p_r_o_x_y),
+                                       wrapped_exception=exc_type)
         elif exc_type in (ConnectionError, ConnectTimeout):
+            self.browser_log()
             self.update_proxy(23)
-            raise ServiceStandardError(23, "代理被禁 from Browser", wrapped_exception=exc_type)
+            raise ServiceStandardError(23, "代理被禁 from Browser [proxy: {}]".format(self.p_r_o_x_y),
+                                       wrapped_exception=exc_type)
 
         if self.need_cache:
             # store page check

@@ -39,10 +39,36 @@ hotel_slow_source = {
                 'slow_hotel_list',
                 'slow_hotel_list'
             )
+        },
+    'holiday':
+        {
+            'proj.total_tasks.hotel_detail_task': (
+                'proj.total_tasks.slow_hotel_detail_task',
+                'slow_hotel_detail',
+                'slow_hotel_detail'
+            ),
+            'proj.total_tasks.hotel_list_task': (
+                'proj.total_tasks.slow_hotel_list_task',
+                'slow_hotel_list',
+                'slow_hotel_list'
+            )
+        },
+    'accor':
+        {
+            'proj.total_tasks.hotel_detail_task': (
+                'proj.total_tasks.slow_hotel_detail_task',
+                'slow_hotel_detail',
+                'slow_hotel_detail'
+            ),
+            'proj.total_tasks.hotel_list_task': (
+                'proj.total_tasks.slow_hotel_list_task',
+                'slow_hotel_list',
+                'slow_hotel_list'
+            )
         }
-
 }
-slow_source = 'ihg'
+
+slow_source = 'ihg|holiday|accor'
 
 import datetime
 
@@ -152,7 +178,12 @@ def mongo_task_watcher(*args):
 
     task_count = quick_task_slow_task_count(queue=queue_name, slow_source=slow_source, limit=insert_task_count)
 
-    if task_count[True] > 0 and message_count <= queue_min_task and max_message_count <= queue_min_task \
+    if (message_count + slow_message_count) > queue_min_task \
+            or (max_message_count + slow_max_message_count) > queue_min_task \
+            or (message_count + slow_message_count) > QUEUE_MAX_COUNT \
+            or (max_message_count + slow_max_message_count) > QUEUE_MAX_COUNT:
+        pass
+    elif task_count[True] > 0 and message_count <= queue_min_task and max_message_count <= queue_min_task \
             and message_count <= QUEUE_MAX_COUNT and max_message_count <= QUEUE_MAX_COUNT:
         logger.warning('Queue {0} insert task, max {1}'.format(queue_name, insert_task_count))
         insert_task(queue_name, insert_task_count)
@@ -169,3 +200,4 @@ for queue_name, (_min, _max, seconds) in TASK_CONF.items():
 
 if __name__ == '__main__':
     schedule.start()
+    # insert_task('file_downloader', limit=10)

@@ -1,5 +1,9 @@
 # coding=utf-8
 import time
+import pymongo
+import requests
+import pymongo.errors
+from copy import deepcopy
 
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.Common.Browser import MySession
@@ -7,6 +11,7 @@ from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.logger import get_logger
 from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from proj.mysql_pool import service_platform_pool
+from mongo_pool import mongo_data_client
 
 logger = get_logger("HotelDetailSDK")
 
@@ -36,7 +41,7 @@ class HotelDetailSDK(BaseSDK):
 
             # init session
             start = time.time()
-            if source not in ('hilton', 'ihg'):
+            if source not in ('hilton', 'ihg', 'holiday', 'accor'):
                 page = session.get(url, timeout=240)
                 page.encoding = 'utf8'
                 content = page.text
@@ -51,6 +56,37 @@ class HotelDetailSDK(BaseSDK):
                 content2 = page2.text
 
                 content = [content1, content2]
+            elif source == 'holiday':
+                url2, url1 = url.split('#####')
+                page1 = session.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y',
+                                                   'ihg-language': 'zh-CN'}, timeout=240)
+                page1.encoding = 'utf8'
+                content1 = page1.text
+
+                page2 = session.get(url2, timeout=240, headers={
+                    'accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json; charset=UTF-8',
+                    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+                    'ihg-language': 'zh-CN',
+                })
+                page2.encoding = 'utf8'
+                content2 = page2.text
+
+                page3 = session.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y'}, timeout=240)
+                page3.encoding = 'utf8'
+                content3 = page3.text
+
+                content = (content1, content2, content3)
+            elif source == 'accor':
+                proxy_url = "http://10.10.239.46:8087/proxy?source=pricelineFlight&user=crawler&passwd=spidermiaoji2014"
+                r = requests.get(proxy_url)
+                proxies = {'https': "socks5://" + str(r.text)}
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"
+                }
+                page = requests.get(url, headers=headers, verify=False, proxies=proxies)
+                page.encoding = 'utf8'
+                content = page.text
             else:
                 session.auto_update_host = False
                 hilton_index = url.find('index.html')
@@ -91,22 +127,44 @@ class HotelDetailSDK(BaseSDK):
                                  retry_count=self.task.used_times)
             logger.debug("[parse_hotel][func: {}][Takes: {}]".format(parse_hotel.func_name, time.time() - start))
 
-            start = time.time()
-            try:
-                service_platform_conn = service_platform_pool.connection()
-                cursor = service_platform_conn.cursor()
-                sql = result.generation_sql()
-                sql = sql.format(table_name=self.task.task_name)
-                values = result.values()
-                self.logger.info(result.__dict__)
-                cursor.execute(sql, values)
-                service_platform_conn.commit()
-                cursor.close()
-                service_platform_conn.close()
-            except Exception as e:
-                logger.exception(e)
-                raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
+        try:
+            data_collections = mongo_data_client['ServicePlatform'][self.task.task_name]
+            data_collections.create_index([('source', 1), ('source_id', 1)], unique=True, background=True)
+            data_collections.create_index([('location', '2dsphere')], background=True)
+            tmp_result = deepcopy(result.values(backdict=True))
+            lon, lat = str(result.map_info).split(',')
+            lon, lat = float(lon), float(lat)
+            tmp_result.update(
+                {
+                    'location': {
+                        'type': "Point",
+                        'coordinates': [lon, lat]
+                    }
+                }
+            )
+            data_collections.save(tmp_result)
+        except pymongo.errors.DuplicateKeyError:
+            # logger.exception("[result already in db]", exc_info=e)
+            logger.warning("[result already in db]")
+        except Exception as exc:
+            raise ServiceStandardError(error_code=ServiceStandardError.MONGO_ERROR, wrapped_exception=exc)
 
-            logger.debug("[Insert DB][Takes: {}]".format(time.time() - start))
-            self.task.error_code = 0
-            return self.task.error_code
+        start = time.time()
+        try:
+            service_platform_conn = service_platform_pool.connection()
+            cursor = service_platform_conn.cursor()
+            sql = result.generation_sql()
+            sql = sql.format(table_name=self.task.task_name)
+            values = result.values()
+            self.logger.info(result.__dict__)
+            cursor.execute(sql, values)
+            service_platform_conn.commit()
+            cursor.close()
+            service_platform_conn.close()
+        except Exception as e:
+            logger.exception(e)
+            raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
+
+        logger.debug("[Insert DB][Takes: {}]".format(time.time() - start))
+        self.task.error_code = 0
+        return self.task.error_code

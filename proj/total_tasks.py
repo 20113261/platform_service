@@ -27,9 +27,12 @@ def poi_list_task(self, task, **kwargs):
 def hotel_img_merge_task(self, task, **kwargs):
     _sdk = HotelImgMergeSDK(task=task)
     return _sdk.execute()
+
 #
 #
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/s')
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def hotel_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
@@ -51,9 +54,9 @@ def qyer_detail_task(self, task, **kwargs):
 def poi_detail_task(self, task, **kwargs):
     _sdk = PoiDetailSDK(task=task)
     return _sdk.execute()
-#
-#
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='16/s')
+
+
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='3/s')
 def hotel_detail_task(self, task, **kwargs):
     _sdk = HotelDetailSDK(task=task)
     return _sdk.execute()
@@ -63,9 +66,11 @@ def hotel_detail_task(self, task, **kwargs):
 def slow_hotel_detail_task(self, task, **kwargs):
     _sdk = HotelDetailSDK(task=task)
     return _sdk.execute()
+
 #
 #
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='40/s')
+
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='5/s')
 def images_task(self, task, **kwargs):
     _sdk = ImagesSDK(task=task)
     return _sdk.execute()

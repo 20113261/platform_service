@@ -40,6 +40,10 @@ class ImagesSDK(BaseSDK):
             elif target_url.endswith('/index/'):
                 target_url += '980x576'
 
+        if 'ahstatic.com' in target_url and source == 'accor':
+            if not target_url.startswith('http://'):
+                target_url = 'http://' + target_url
+
         flag = None
         h = None
         w = None
