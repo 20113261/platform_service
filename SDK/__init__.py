@@ -24,3 +24,5 @@ from .AccorCitySDK import AccorCitySDK
 
 from .EuropeStationSDK import EuropeStationSDK
 from .MarriottCitySDK import MarriottCitySDK
+from .NormalTaskSDK import NormalTaskSDK
+from .SlowTaskSDK import SlowTaskSDK
