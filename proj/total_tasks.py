@@ -118,24 +118,6 @@ def ks_move_task(self, task, **kwargs):
     _sdk = KsMoveSDK(task=task)
     return _sdk.execute()
 
-<<<<<<< HEAD
-
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/s')
-def Accor_city_suggest(self, task, **kwargs):
-    _sdk = AccorCitySDK(task=task)
-    return _sdk.execute()
-
-
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='50/m')
-def european_trail_task(self, task, **kwargs):
-    _sdk = EuropeStationSDK(task=task)
-    return _sdk.execute()
-
-
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
-def Marriott_city_task(self, task, **kwargs):
-    _sdk = MarriottCitySDK(task=task)
-=======
 #
 # @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/s')
 # def Accor_city_suggest(self, task, **kwargs):
@@ -159,10 +141,10 @@ def normal_city_task(self,task,**kwargs):
     _sdk = NormalTaskSDK(task=task)
     return _sdk.execute()
 
+
 @app.task(bind=True,base=BaseTask,max_retries=5,rate_limit='30/m')
 def slow_city_task(self,task,**kwargs):
     _sdk = SlowTaskSDK(task=task)
->>>>>>> 9ebb543af21270ad431d8093ece47e833e12d3e5
     return _sdk.execute()
 
 
