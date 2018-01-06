@@ -39,7 +39,7 @@ spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017')
-collections = client['data_result']['hilton']
+collections = client['data_result']['hilton_20180107']
 
 
 def hilton_to_database(tid, used_times, source, source_id, city_id, check_in, need_cache=True):
