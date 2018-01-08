@@ -26,6 +26,7 @@ from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.logger import get_logger
 from proj.mysql_pool import service_platform_pool
+from proj.my_lib.Common.Browser import proxy_pool
 
 logger = get_logger("poiDaodao")
 
@@ -36,7 +37,8 @@ mioji.common.pages_store.STORE_TYPE = cache_type
 
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
-get_proxy = simple_get_socks_proxy
+# get_proxy = simple_get_socks_proxy
+get_proxy = proxy_pool.get_proxy
 debug = True
 spider_factory.config_spider(insert_db, None, debug)
 mioji.common.spider.NEED_FLIP_LIMIT = False

@@ -28,6 +28,7 @@ from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj import config
 from mongo_pool import mongo_data_client
+from proj.my_lib.Common.Browser import proxy_pool
 
 mioji.common.pool.pool.set_size(2024)
 logger = get_task_logger('hotel_list')
@@ -43,7 +44,8 @@ collections = client['data_result']['HotelList']
 # collections = client['HotelList']['ctrip']
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
-get_proxy = simple_get_socks_proxy
+# get_proxy = simple_get_socks_proxy
+get_proxy = proxy_pool.get_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 client = pymongo.MongoClient(host=config.MONGO_DATA_HOST)
