@@ -44,6 +44,10 @@ class ImagesSDK(BaseSDK):
             if not target_url.startswith('http://'):
                 target_url = 'http://' + target_url
 
+        if source == 'ihg':
+            if target_url.endswith('4x3?fmt=png-alpha'):
+                target_url += '&wid=800&hei=600'
+
         flag = None
         h = None
         w = None
@@ -53,7 +57,7 @@ class ImagesSDK(BaseSDK):
         with MySession(need_cache=True) as session:
             @func_time_logger
             def img_file_get():
-                _page = session.get(target_url, timeout=(3600, 3600))
+                _page = session.get(target_url, timeout=(10800, 10800))
                 return _page
 
             page = img_file_get()
