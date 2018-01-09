@@ -65,7 +65,7 @@ hotel_slow_source = {
                 'slow_hotel_list',
                 'slow_hotel_list'
             )
-        }
+        },
     'marriott':
         {
             'proj.total_tasks.hotel_detail_task': (
