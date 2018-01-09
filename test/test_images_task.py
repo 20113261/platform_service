@@ -5,6 +5,8 @@
 # @Site    : 
 # @File    : test_images_task.py
 # @Software: PyCharm
+import sys
+sys.path.append('/data/lib')
 from proj.my_lib.Common.Task import Task
 from proj.total_tasks import images_task
 
@@ -100,16 +102,22 @@ if __name__ == '__main__':
     # )
     task = Task(_worker='proj.total_tasks.images_task', _task_id='aa045fc98d585748cae78abea2b6ab0e', _source='Qyer',
                 _type='DownloadImages',
-                _task_name='images_total_qyer_20171201a',
+                _task_name='images_hotel_ihg_20171220a',
                 _used_times=0, max_retry_times=6,
                 # kwargs={"source": "daodao", "new_part": "detail_attr_daodao_20171122a",
                 #         "target_url": "https://ccm.ddcdn.com/ext/photo-s/0f/dd/44/61/peaceful-time.jpg",
                 #         "source_id": "test", "bucket_name": "mioji-attr", "is_poi_task": True, "part": "20171122a",
                 #         "file_prefix": ""},
-                kwargs={"source": "qyer", "new_part": "detail_total_qyer_20171201a",
-                        "target_url": "http://pic1.qyer.com/album/user/2484/54/Q01dRh8DYU4/index",
-                        "source_id": "200846", "bucket_name": "mioji-attr", "is_poi_task": True, "part": "20171201a",
-                        "file_prefix": ""},
+                kwargs={
+                    "source": "ihg",
+                    "new_part": "detail_hotel_ihg_20171220a",
+                    "target_url": "https://ihg.scene7.com/is/image/ihg/candlewood-suites-idaho-falls-3053752126-4x3?fmt=png-alpha",
+                    "source_id": "idapd",
+                    "bucket_name": "mioji-hotel",
+                    "is_poi_task": False,
+                    "part": "20171220a",
+                    "file_prefix": ""
+                },
                 _queue='file_downloader', _routine_key='file_downloader',
                 list_task_token='', task_type=0
                 )
