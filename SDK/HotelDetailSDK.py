@@ -101,9 +101,9 @@ class HotelDetailSDK(BaseSDK):
                 page1.encoding = 'utf8'
                 page2.encoding = 'utf8'
                 page3.encoding = 'utf8'
-                content1 = page.text
-                content2 = page.text
-                content3 = page.text
+                content1 = page1.text
+                content2 = page2.text
+                content3 = page3.text
                 content = (content1, content2, content3)
             else:
                 session.auto_update_host = False
