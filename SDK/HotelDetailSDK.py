@@ -95,8 +95,8 @@ class HotelDetailSDK(BaseSDK):
                 }
 
                 page1 = session.get(url, headers=headers, timeout=240)
-                page2 = session.get(url, headers=headers, timeout=240)
-                page3 = session.get(url, headers=headers, timeout=240)
+                page2 = session.get(url2, headers=headers, timeout=240)
+                page3 = session.get(url3, headers=headers, timeout=240)
 
                 page1.encoding = 'utf8'
                 page2.encoding = 'utf8'
