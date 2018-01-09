@@ -51,7 +51,7 @@ def simple_get_socks_proxy(source):
     logger.info("开始获取代理")
 
     proxy_num = random.randint(*PROXY_NUM_RANGE)
-    logger.info("[get proxy][num: {}]".format(proxy_num))
+    logger.info("[get proxy][source: {}][num: {}]".format(source, proxy_num))
     msg = {
         "req": [
             {
@@ -75,8 +75,9 @@ def simple_get_socks_proxy(source):
         logger.info(p)
         ps = json.loads(p)['resp'][0]['ips']
         return ps
-    except Exception:
-        raise Exception("Error Proxy")
+    except Exception as exc:
+        logger.exception(msg="[Error Proxy]", exc_info=exc)
+        # raise Exception("Error Proxy")
 
 
 class ProxyPool(object):
