@@ -95,5 +95,5 @@ if __name__ == '__main__':
     html2 = requests.get(url=url2, headers=headers).content
     html3 = requests.get(url=url3, headers=headers).content
     other_info = None
-    result = wanhao_parser(content=[html, html2, html3], url=url, other_info)
+    result = marriott_parser(content=[html, html2, html3], url=url, other_info=other_info)
     print '\n'.join(['%s:%s' % item for item in result.__dict__.items()])
