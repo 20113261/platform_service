@@ -41,7 +41,7 @@ class HotelDetailSDK(BaseSDK):
 
             # init session
             start = time.time()
-            if source not in ('hilton', 'ihg', 'holiday', 'accor'):
+            if source not in ('hilton', 'ihg', 'holiday', 'accor', 'marriott'):
                 page = session.get(url, timeout=240)
                 page.encoding = 'utf8'
                 content = page.text
@@ -87,6 +87,24 @@ class HotelDetailSDK(BaseSDK):
                 page = requests.get(url, headers=headers, verify=False, proxies=proxies)
                 page.encoding = 'utf8'
                 content = page.text
+            elif source == 'marriott':
+                url2 = url.replace("travel", "hotel-photos")
+                url3 = url.replace("travel/", "maps/travel/")
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:47.0) Gecko/20100101 Firefox/47.0'
+                }
+
+                page1 = session.get(url, headers=headers, timeout=240)
+                page2 = session.get(url, headers=headers, timeout=240)
+                page3 = session.get(url, headers=headers, timeout=240)
+
+                page1.encoding = 'utf8'
+                page2.encoding = 'utf8'
+                page3.encoding = 'utf8'
+                content1 = page.text
+                content2 = page.text
+                content3 = page.text
+                content = (content1, content2, content3)
             else:
                 session.auto_update_host = False
                 hilton_index = url.find('index.html')

@@ -9,7 +9,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 
-def wanhao_parser(content, url):
+def marriott_parser(content, url):
     hotel = HotelBase()
     html_obj = etree.HTML(content[0])
     html2_obj = etree.HTML(content[1])
@@ -17,7 +17,7 @@ def wanhao_parser(content, url):
     hotel_name = html_obj.xpath("//h1[@class='hotel-name']/a/span/text()")
     if hotel_name:
         hotel.hotel_name = hotel_name[0]
-    hotel.source = 'wanhao'
+    hotel.source = 'marriott'
     source_id = html_obj.xpath("//input[@id='hotel-code']/@value")
     if source_id:
         hotel.source_id = source_id[0]
