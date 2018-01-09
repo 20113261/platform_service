@@ -9,7 +9,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 
-def marriott_parser(content, url):
+def marriott_parser(content, url, other_info):
     hotel = HotelBase()
     html_obj = etree.HTML(content[0])
     html2_obj = etree.HTML(content[1])
@@ -94,5 +94,6 @@ if __name__ == '__main__':
     html = requests.get(url=url, headers=headers).content
     html2 = requests.get(url=url2, headers=headers).content
     html3 = requests.get(url=url3, headers=headers).content
-    result = wanhao_parser(content=[html, html2, html3], url=url)
+    other_info = None
+    result = wanhao_parser(content=[html, html2, html3], url=url, other_info)
     print '\n'.join(['%s:%s' % item for item in result.__dict__.items()])
