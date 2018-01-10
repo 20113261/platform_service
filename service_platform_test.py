@@ -149,7 +149,7 @@ def get_task(source):
 FROM ota_location
 WHERE source = '{}'
 ORDER BY rand()
-LIMIT 1;'''.format(source)
+LIMIT 10;'''.format(source)
     return list(fetchall(spider_data_poi_pool, sql=sql, is_dict=True))
 
 
