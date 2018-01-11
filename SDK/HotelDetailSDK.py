@@ -111,31 +111,31 @@ class HotelDetailSDK(BaseSDK):
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:47.0) Gecko/20100101 Firefox/47.0'
                 }
-                # if "https://www.marriott.com" in url:
-                #     page1 = requests.get(url, headers=headers, timeout=240)
-                #     page2 = requests.get(url2, headers=headers, timeout=240)
-                #     page3 = requests.get(url3, headers=headers, timeout=240)
-                #     page4 = requests.get(url4, headers=headers, timeout=240)
-                #
-                #     page1.encoding = 'utf8'
-                #     page2.encoding = 'utf8'
-                #     page3.encoding = 'utf8'
-                #     page4.encoding = 'utf8'
-                #
-                #     content1 = page1.text
-                #     content2 = page2.text
-                #     content3 = page3.text
-                #     content4 = page4.text
-                #     content = (content1, content2, content3, content4)
-                # else:
-                #     url2 = url + "/hotel-overview"
-                #     page1 = requests.get(url, headers=headers, timeout=240)
-                #     page2 = requests.get(url2, headers=headers, timeout=240)
-                #     page1.encoding = 'utf8'
-                #     page2.encoding = 'utf8'
-                #     content1 = page1.text
-                #     content2 = page2.text
-                #     content = (content1, content2)
+                if "https://www.marriott.com" in url:
+                    page1 = requests.get(url, headers=headers, timeout=240)
+                    page2 = requests.get(url2, headers=headers, timeout=240)
+                    page3 = requests.get(url3, headers=headers, timeout=240)
+                    page4 = requests.get(url4, headers=headers, timeout=240)
+
+                    page1.encoding = 'utf8'
+                    page2.encoding = 'utf8'
+                    page3.encoding = 'utf8'
+                    page4.encoding = 'utf8'
+
+                    content1 = page1.text
+                    content2 = page2.text
+                    content3 = page3.text
+                    content4 = page4.text
+                    content = (content1, content2, content3, content4)
+                else:
+                    url2 = url + "/hotel-overview"
+                    page1 = requests.get(url, headers=headers, timeout=240)
+                    page2 = requests.get(url2, headers=headers, timeout=240)
+                    page1.encoding = 'utf8'
+                    page2.encoding = 'utf8'
+                    content1 = page1.text
+                    content2 = page2.text
+                    content = (content1, content2)
             else:
                 session.auto_update_host = False
                 hilton_index = url.find('index.html')
