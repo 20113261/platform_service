@@ -23,7 +23,7 @@ class HotelDetailSDK(BaseSDK):
         source_id = self.task.kwargs['source_id']
         city_id = self.task.kwargs['city_id']
         country_id = self.task.kwargs['country_id']
-
+sssssss
         headers = {}
         other_info = {
             'source_id': source_id,
@@ -94,10 +94,6 @@ class HotelDetailSDK(BaseSDK):
                 url_list = url.split('#####')
                 url = url_list[0]
 
-                other_info = {
-                    'source_id': 'aaaaa',
-                    'city_id': '111111'
-                }
                 for i in url_list:
                     if len(i.split('=')) > 1:
                         key, value = i.split('=')[0], i.split('=')[1]
