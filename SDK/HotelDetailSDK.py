@@ -25,7 +25,10 @@ class HotelDetailSDK(BaseSDK):
         country_id = self.task.kwargs['country_id']
 
         headers = {}
-
+        other_info = {
+            'source_id': source_id,
+            'city_id': city_id
+        }
         with MySession(need_cache=True) as session:
             # hotels
             if source == 'hotels':
@@ -88,23 +91,55 @@ class HotelDetailSDK(BaseSDK):
                 page.encoding = 'utf8'
                 content = page.text
             elif source == 'marriott':
+                url_list = url.split('#####')
+                url = url_list[0]
+
+                other_info = {
+                    'source_id': 'aaaaa',
+                    'city_id': '111111'
+                }
+                for i in url_list:
+                    if len(i.split('=')) > 1:
+                        key, value = i.split('=')[0], i.split('=')[1]
+                        if key == 'longtitude':
+                            other_info['longtitude'] = value
+                        if key == 'latitude':
+                            other_info['latitude'] = value
+                    else:
+                        if url_list.index(i) == 1:
+                            other_info['hotel_name_en'] = i
+
                 url2 = url.replace("travel", "hotel-photos")
                 url3 = url.replace("travel/", "maps/travel/")
+                url4 = url.replace("hotels/", "hotels/fact-sheet/")
                 headers = {
                     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:47.0) Gecko/20100101 Firefox/47.0'
                 }
+                if "https://www.marriott.com" in url:
+                    page1 = requests.get(url, headers=headers, timeout=240)
+                    page2 = requests.get(url2, headers=headers, timeout=240)
+                    page3 = requests.get(url3, headers=headers, timeout=240)
+                    page4 = requests.get(url4, headers=headers, timeout=240)
 
-                page1 = session.get(url, headers=headers, timeout=240)
-                page2 = session.get(url2, headers=headers, timeout=240)
-                page3 = session.get(url3, headers=headers, timeout=240)
+                    page1.encoding = 'utf8'
+                    page2.encoding = 'utf8'
+                    page3.encoding = 'utf8'
+                    page4.encoding = 'utf8'
 
-                page1.encoding = 'utf8'
-                page2.encoding = 'utf8'
-                page3.encoding = 'utf8'
-                content1 = page1.text
-                content2 = page2.text
-                content3 = page3.text
-                content = (content1, content2, content3)
+                    content1 = page1.text
+                    content2 = page2.text
+                    content3 = page3.text
+                    content4 = page4.text
+                    content = (content1, content2, content3, content4)
+                else:
+                    url2 = url + "/hotel-overview"
+                    page1 = requests.get(url, headers=headers, timeout=240)
+                    page2 = requests.get(url2, headers=headers, timeout=240)
+                    page1.encoding = 'utf8'
+                    page2.encoding = 'utf8'
+                    content1 = page1.text
+                    content2 = page2.text
+                    content = (content1, content2)
             else:
                 session.auto_update_host = False
                 hilton_index = url.find('index.html')
@@ -134,10 +169,7 @@ class HotelDetailSDK(BaseSDK):
                 content = [__content, __detail_content, __map_info_content, __desc_content]
             logger.debug("[crawl_data][Takes: {}]".format(time.time() - start))
 
-            other_info = {
-                'source_id': source_id,
-                'city_id': city_id
-            }
+
 
             start = time.time()
             result = parse_hotel(content=content, url=url, other_info=other_info, source=source,
