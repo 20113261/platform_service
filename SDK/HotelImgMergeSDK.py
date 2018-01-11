@@ -166,7 +166,7 @@ class UpdateHotelValidation(object):
         if source in (
                 "ctripcn", "yundijie", "daolvApi", "dotwApi", "expediaApi", "gtaApi", "hotelbedsApi",
                 "innstantApi",
-                "jacApi", "mikiApi", "touricoApi", "holiday"):
+                "jacApi", "mikiApi", "touricoApi", "holiday", "hotelsproApi"):
             each_data = self.default_api_task_key_and_content(line)
             return each_data
         elif source in ("expedia", "cheaptickets", "orbitz", "ebookers", "travelocity"):
@@ -265,7 +265,7 @@ def update_unid_content(data):
     cursor = conn.cursor()
     _sql = '''UPDATE hotel_unid
 SET content = %s
-WHERE source = %s AND sid = %s;'''
+WHERE SOURCE = %s AND sid = %s;'''
     _res = cursor.executemany(_sql, data)
     conn.commit()
     cursor.close()
