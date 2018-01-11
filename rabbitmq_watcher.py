@@ -81,7 +81,7 @@ hotel_slow_source = {
         }
 }
 
-slow_source = 'ihg|holiday|accor'
+slow_source = 'ihg|holiday|accor|marriott'
 
 import datetime
 

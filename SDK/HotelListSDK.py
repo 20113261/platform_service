@@ -36,8 +36,8 @@ mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path
 mioji.common.pages_store.STORE_TYPE = cache_type
 
-client = pymongo.MongoClient(host='10.10.213.148', maxPoolSize=20)
-collections = client['data_result']['HotelList']
+# client = pymongo.MongoClient(host='10.10.213.148', maxPoolSize=20)
+# collections = client['data_result']['HotelList']
 # pymongo client
 
 # client = pymongo.MongoClient(host='10.10.231.105')
@@ -132,14 +132,14 @@ class HotelListSDK(BaseSDK):
             for sid, hotel_url in result['hotel']:
                 res_data.append((source, sid, city_id, country_id, hotel_url))
 
-        collections.save({
-            'collections': self.task.collection,
-            'task_id': self.task.task_id,
-            'used_times': self.task.used_times[0],
-            'stored_page_keys': page_store_key,
-            'result': result,
-            'insert_time': datetime.datetime.now()
-        })
+        # collections.save({
+        #     'collections': self.task.collection,
+        #     'task_id': self.task.task_id,
+        #     'used_times': self.task.used_times[0],
+        #     'stored_page_keys': page_store_key,
+        #     'result': result,
+        #     'insert_time': datetime.datetime.now()
+        # })
 
         @func_time_logger
         def hotel_list_insert_db():
