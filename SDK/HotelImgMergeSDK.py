@@ -166,7 +166,7 @@ class UpdateHotelValidation(object):
         if source in (
                 "ctripcn", "yundijie", "daolvApi", "dotwApi", "expediaApi", "gtaApi", "hotelbedsApi",
                 "innstantApi",
-                "jacApi", "mikiApi", "touricoApi", "holiday", "hotelsproApi"):
+                "jacApi", "mikiApi", "touricoApi", "holiday", "hotelsproApi", "jielvApi"):
             each_data = self.default_api_task_key_and_content(line)
             return each_data
         elif source in ("expedia", "cheaptickets", "orbitz", "ebookers", "travelocity"):
