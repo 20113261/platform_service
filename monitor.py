@@ -425,7 +425,7 @@ def monitoring_supplement_field():
 
 
 MAX_CITY_TASK_PER_SEARCH = 10000
-MAX_TASK_PER_CITY = 70
+MAX_TASK_PER_CITY = 20
 FINISHED_ZERO_COUNT = 4
 
 
