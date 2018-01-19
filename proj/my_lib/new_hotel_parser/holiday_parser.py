@@ -121,7 +121,7 @@ def get_api_server(resp):
     service = '|酒店特色：'
     service += ', '.join([i['name'] for i in resp.get('badges') if i.get('name')]).lstrip().rstrip() + '|' + '酒店设施：'
     service += ', '.join([i['name'] for i in resp.get('facilities') if i.get('name')]).lstrip().rstrip() + '|' + '联系方式：'
-    for i in resp['contact']:
+    for i in resp.get('contact', ''):
         service += '，'.join([k + ':' + v for k, v in i.items() if v]).lstrip().rstrip() + '|'
     service += '酒店可以使用{}'.format(''.join(i['name'] for i in resp['policies'].get('acceptedCurrencies') if i.get('name')).lstrip().rstrip())
     return service + '|'
@@ -147,7 +147,7 @@ def get_ota_server(tree, *args):
 
 
 if __name__ == '__main__':
-    url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/ngbul/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/NGBUL/details'
+    url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/yntai/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/YNTAI/details'
     url2, url1 = url.split('#####')
     # url1 = 'https://apis.ihg.com/hotels/v1/profiles/EMPCD/details'
     # url2 = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/empcd/hoteldetail'
