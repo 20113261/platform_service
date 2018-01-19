@@ -86,7 +86,7 @@ if __name__ == '__main__':
     #
     # print(hotel_detail_task(task=task))
 
-    task = Task(_worker='', _queue='hotel_detail', _routine_key='hotel_detail', _task_id='demo', _source='hotels',
+    task = Task(_worker='', _queue='hotel_detail', _routine_key='hotel_detail', _task_id='demo', _source='holiday',
                 _type='hotel',
                 _task_name='detail_hotel_ctrip_20171127a',
                 _used_times=0, max_retry_times=10,
@@ -96,12 +96,12 @@ if __name__ == '__main__':
                     # "url": "https://www.expedia.com.hk/Bhimtal-Hotels-Emerald-Trail.h4474316.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=6139790&sort=recommended&hwrqCacheKey=b07edfbf-68f1-472b-b58d-d153dc82d7feHWRQ1511794413272&vip=false&c=c8d5ec02-71e2-496b-aa9f-5988e64b7931&",
                     # "url": "https://www.booking.com/hotel/us/new-lakefront-home-4br-47-2b-in-katy-west-houston.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=760b4b8ac503b49f5d89e67ec36a2fa9;aer=1;dest_id=20126498;dest_type=city;dist=0;hapos=90;hpos=15;room1=A%2CA;sb_price_type=total;spdest=ci%2F20126498;spdist=41.0;srepoch=1511794977;srfid=75643f0d9b7ac3fe31b60ecc58ba9f10b377fd16X90;srpvid=fdcc69d0f9a606d5;type=total;ucfs=1&#hotelTmpl",
                     # "url": "https://www.expedia.com.hk/Hotels-Beautiful.h19200665.Hotel-Information",
-                    "url": "http://hotels.ctrip.com/international/10659234.html",
+                    "url": "https://www.ihg.com/holidayinnexpress/hotels/cn/zh/dalpw/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/DALPW/details",
                     "country_id": "NULL",
-                    "source": "ctrip",
-                    "part": "detail_hotel_ctrip_20171127a",
-                    "city_id": "NULL",
-                    "source_id": "10659234"
+                    "source": "holiday",
+                    "part": "detail_hotel_marriott_20170109a",
+                    "city_id": "10011",
+                    "source_id": "BMGCY"
                 },
                 task_type=TaskType.NORMAL, list_task_token=None)
 
