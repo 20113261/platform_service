@@ -22,6 +22,9 @@ from collections import defaultdict
 from logging.handlers import RotatingFileHandler
 
 log_path = "./"
+CASE_NUM = 10
+OLD_SOURCE = ''
+REQUIRED = []
 
 
 class NamedRotatingFileHandler(RotatingFileHandler):
@@ -133,11 +136,11 @@ def hotel_list_database(source, check_in, suggest_type='1', suggest=''):
     task.content = ''
 
     # 初始化 spider
-    spider = factory.get_spider_by_old_source(source + 'ListHotel')
+    spider = factory.get_spider_by_old_source(OLD_SOURCE)
     spider.task = task
 
     # 请求
-    error_code = spider.crawl(required=['hotel'], cache_config=False)
+    error_code = spider.crawl(required=REQUIRED, cache_config=False)
 
     return error_code, spider.result, spider.page_store_key_list
 
@@ -149,7 +152,7 @@ def get_task(source):
 FROM ota_location
 WHERE source = '{}'
 ORDER BY rand()
-LIMIT 10;'''.format(source)
+LIMIT {};'''.format(source, CASE_NUM)
     return list(fetchall(spider_data_poi_pool, sql=sql, is_dict=True))
 
 
@@ -163,23 +166,43 @@ def test_crawl_result(source):
     logger.info("[tasks: {}]".format(tasks))
 
     data = []
+    columns = ['source', 'sid', 'suggest', 'check_in', 'error_code']
     for line in tasks:
         error_code, result, page_store_key_list = hotel_list_database(source=source, check_in=check_in,
                                                                       suggest=line['suggest'])
-        data.append({
+
+        report_data = {}
+        for r in REQUIRED:
+            key = '{}_{}_num'.format(source, r)
+            value = len(result[r])
+
+            report_data[key] = value
+            if key not in columns:
+                columns.append(key)
+
+            key = '{}_{}_result'.format(source, r)
+            value = json.dumps(result[r])
+
+            report_data[key] = value
+            if key not in columns:
+                columns.append(key)
+
+        res = {
             'source': source,
             'sid': line['sid'],
             'suggest': json.dumps(line['suggest']),
             'check_in': check_in,
             'error_code': error_code,
-            'res_num': len(result['hotel']),
-            'result': json.dumps(result)
-        })
+        }
+        res.update(report_data)
+        data.append(res)
 
-    df = pandas.DataFrame(columns=['source', 'sid', 'suggest', 'check_in', 'error_code', 'res_num', 'result'],
+    df = pandas.DataFrame(columns=columns,
                           data=data)
     df.to_excel(datetime.now().strftime('./{}_test_%Y%m%d.xlsx'.format(source)))
 
 
 if __name__ == '__main__':
+    REQUIRED = ['hotel']
+    OLD_SOURCE = 'bookingListHotel'
     test_crawl_result('booking')

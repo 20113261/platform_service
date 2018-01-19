@@ -40,7 +40,7 @@ spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
 client = pymongo.MongoClient(host='10.10.213.148')
-collections = client['data_result']['qyer']
+collections = client['data_result']['qyer_list']
 
 
 def qyer_list_to_database(tid, used_times, source, city_id, check_in, city_url, need_cache=True):
@@ -96,7 +96,7 @@ class QyerListSDK(BaseSDK):
 
         sql = SQL.format(self.task.task_name)
         data = []
-        for sid, url, page_id in result:
+        for sid, url, page_id, branch, tag in result:
             data.append(('qyer', sid, city_id, country_id, url))
         try:
             service_platform_conn = service_platform_pool.connection()

@@ -11,23 +11,29 @@ from SDK.HiltonTaxSDK import HiltonTaxSDK
 from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 
+
 #
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/m')
 def qyer_list_task(self, task, **kwargs):
     _sdk = QyerListSDK(task=task)
     return _sdk.execute()
+
+
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
 def poi_list_task(self, task, **kwargs):
     _sdk = PoiListSDK(task=task)
     return _sdk.execute()
+
+
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='60/s')
 def hotel_img_merge_task(self, task, **kwargs):
     _sdk = HotelImgMergeSDK(task=task)
     return _sdk.execute()
+
 
 #
 #
@@ -37,18 +43,24 @@ def hotel_img_merge_task(self, task, **kwargs):
 def hotel_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
+
+
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
 def slow_hotel_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
+
+
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
 def qyer_detail_task(self, task, **kwargs):
     _sdk = QyerDetailSDK(task=task)
     return _sdk.execute()
+
+
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
@@ -61,12 +73,15 @@ def poi_detail_task(self, task, **kwargs):
 def hotel_detail_task(self, task, **kwargs):
     _sdk = HotelDetailSDK(task=task)
     return _sdk.execute()
+
+
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='20/m')
 def slow_hotel_detail_task(self, task, **kwargs):
     _sdk = HotelDetailSDK(task=task)
     return _sdk.execute()
+
 
 #
 #
@@ -75,24 +90,32 @@ def slow_hotel_detail_task(self, task, **kwargs):
 def images_task(self, task, **kwargs):
     _sdk = ImagesSDK(task=task)
     return _sdk.execute()
+
+
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='13/s')
 def crawl_json(self, task, **kwargs):
     _sdk = CrawlJson(task=task)
     return _sdk.execute()
+
+
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def supplement_map_info(self, task, **kwargs):
     _sdk = SupplementMapInfo(task=task)
     return _sdk.execute()
+
+
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def supplement_daodao_img(self, task, **kwargs):
     _sdk = SupplementDaodaoImg(task=task)
     return _sdk.execute()
+
+
 #
 #
 # @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
@@ -118,6 +141,7 @@ def ks_move_task(self, task, **kwargs):
     _sdk = KsMoveSDK(task=task)
     return _sdk.execute()
 
+
 #
 # @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/s')
 # def Accor_city_suggest(self, task, **kwargs):
@@ -136,14 +160,14 @@ def ks_move_task(self, task, **kwargs):
 #     return _sdk.execute()
 
 
-@app.task(bind=True,base=BaseTask,max_retries=5,rate_limit='10/s')
-def normal_city_task(self,task,**kwargs):
+@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='10/s')
+def normal_city_task(self, task, **kwargs):
     _sdk = NormalTaskSDK(task=task)
     return _sdk.execute()
 
 
-@app.task(bind=True,base=BaseTask,max_retries=5,rate_limit='30/m')
-def slow_city_task(self,task,**kwargs):
+@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='30/m')
+def slow_city_task(self, task, **kwargs):
     _sdk = SlowTaskSDK(task=task)
     return _sdk.execute()
 
@@ -151,4 +175,10 @@ def slow_city_task(self,task,**kwargs):
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/m')
 def hilton_tax_task(self, task, **kwargs):
     _sdk = HiltonTaxSDK(task=task)
+    return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/m')
+def veriflight_task(self, task, **kwargs):
+    _sdk = VeriFlightSDK(task=task)
     return _sdk.execute()

@@ -6,6 +6,7 @@
 # @File    : test_images_task.py
 # @Software: PyCharm
 import sys
+
 sys.path.append('/data/lib')
 from proj.my_lib.Common.Task import Task
 from proj.total_tasks import images_task
@@ -100,23 +101,32 @@ if __name__ == '__main__':
     #         "task_response": TaskResponse()
     #     }
     # )
-    task = Task(_worker='proj.total_tasks.images_task', _task_id='aa045fc98d585748cae78abea2b6ab0e', _source='Qyer',
+    task = Task(_worker='proj.total_tasks.images_task', _task_id='176ddbc7960c2a6f6d8d7c9baea65617', _source='huantaoyou',
                 _type='DownloadImages',
-                _task_name='images_hotel_ihg_20171220a',
+                _task_name='image_wanle_huantaoyou',
                 _used_times=0, max_retry_times=6,
                 # kwargs={"source": "daodao", "new_part": "detail_attr_daodao_20171122a",
                 #         "target_url": "https://ccm.ddcdn.com/ext/photo-s/0f/dd/44/61/peaceful-time.jpg",
                 #         "source_id": "test", "bucket_name": "mioji-attr", "is_poi_task": True, "part": "20171122a",
                 #         "file_prefix": ""},
+                # kwargs={
+                #     "source": "ihg",
+                #     "new_part": "detail_hotel_ihg_20171220a",
+                #     "target_url": "https://ihg.scene7.com/is/image/ihg/candlewood-suites-idaho-falls-3053752126-4x3?fmt=png-alpha",
+                #     "source_id": "idapd",
+                #     "bucket_name": "mioji-hotel",
+                #     "is_poi_task": False,
+                #     "part": "20171220a",
+                #     "file_prefix": ""
+                # },
                 kwargs={
-                    "source": "ihg",
-                    "new_part": "detail_hotel_ihg_20171220a",
-                    "target_url": "https://ihg.scene7.com/is/image/ihg/candlewood-suites-idaho-falls-3053752126-4x3?fmt=png-alpha",
-                    "source_id": "idapd",
-                    "bucket_name": "mioji-hotel",
-                    "is_poi_task": False,
-                    "part": "20171220a",
-                    "file_prefix": ""
+                    'file_prefix': 'huantaoyou',
+                    'target_url': "http://img.huantaoyou.com/inc/images/ORDER_NO_EXCHANGE.jpg",
+                    'source_id': "17100",
+                    'need_insert_db': True,
+                    'source': "huantaoyou",
+                    'bucket_name': 'mioji-wanle',
+                    'is_poi_task': True,
                 },
                 _queue='file_downloader', _routine_key='file_downloader',
                 list_task_token='', task_type=0

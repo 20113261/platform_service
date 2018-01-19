@@ -52,3 +52,9 @@ cat new_hosts.txt |xargs -I host scp -r lib host:/data/
 
 # kill all slave
 pssh -h hosts.txt -i 'sh /data/hourong/ServicePlatform/kill_all.sh'
+
+# mongo dump
+mongodump -h 10.10.231.105 -d QyerCity -o res.json
+
+# restore qyer city
+mongorestore -h 10.19.2.103 --port 27017 -u root -p miaoji1109-= --authenticationDatabase admin --db QyerCity QyerCity/QyerCity
