@@ -3,9 +3,9 @@ import requests
 import re
 import json
 from lxml.html import fromstring
-from mioji.common.utils import setdefaultencoding_utf8
+# from mioji.common.utils import setdefaultencoding_utf8
 from proj.my_lib.models.HotelModel import HotelBase
-setdefaultencoding_utf8()
+# setdefaultencoding_utf8()
 # class HotelBase(object):
 #     __asd__ = 'asdasd'
 #     a = '1111'
@@ -42,7 +42,7 @@ def holiday_parser(content, url, other_info):
     detail['source_id'] = other_info.get('source_id', '') or hotel_code
     detail['source_city_id'] = other_info.get('source_city_id', '')
     detail['brand_name'] = resp.get('brandInfo', '').get('brandName', '')
-    detail['map_info'] = str(resp.get('profile', '').get('latitude', '')) + ',' + str(resp.get('profile', '').get('longitude', ''))
+    detail['map_info'] = str(resp.get('profile', '').get('longitude', '')) + ',' + str(resp.get('profile', '').get('latitude', ''))
     detail['address'] = get_all_street(resp)
     detail['city'] = resp.get('address', '').get('city', '')
     detail['country'] = resp.get('address', '').get('country', '').get('name', '')
@@ -147,7 +147,7 @@ def get_ota_server(tree, *args):
 
 
 if __name__ == '__main__':
-    url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/empcd/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/EMPCD/details'
+    url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/ngbul/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/NGBUL/details'
     url2, url1 = url.split('#####')
     # url1 = 'https://apis.ihg.com/hotels/v1/profiles/EMPCD/details'
     # url2 = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/empcd/hoteldetail'
