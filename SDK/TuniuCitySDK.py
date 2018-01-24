@@ -44,13 +44,11 @@ class TuniuCitySDK(BaseSDK):
                                 'format':'json'}
                 )
                 content = response.content
-
-                city_list = json.loads(content)['Data']
                 suggest['suggest'] = content
                 db = client['SuggestName']
                 db.TuniuCitySuggestion.save(suggest)
                 self.task.error_code = 0
-                return {'搜索到的city数量': len(city_list)}
+                return {'搜索到的city数量': 1}
             except requests.exceptions.RequestException as e:
                 raise ServiceStandardError(ServiceStandardError.PROXY_INVALID, wrapped_exception=e)
             except pymongo.errors.PyMongoError as e:
