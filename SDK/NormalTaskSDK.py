@@ -8,7 +8,7 @@ from SDK.MarriottCitySDK import MarriottCitySDK
 from SDK.BaiDuSearchSDK import BaiDuSearchSDK
 from SDK.DaoDaoCitySDK import DaoDaoCitySDK
 from SDK.CtripCitySDK import CtripCitySDK
-
+from SDK.TuniuCitySDK import TuniuCitySDK
 
 class NormalTaskSDK(BaseSDK):
 
@@ -18,7 +18,8 @@ class NormalTaskSDK(BaseSDK):
              'baidusearch': BaiDuSearchSDK,
              'daodao': DaoDaoCitySDK,
              'ihg': IhgCitySDK,
-             'ctrip':CtripCitySDK
+             'ctrip':CtripCitySDK,
+             'tuniu':TuniuCitySDK
         }
         class_name = None
         source = source.lower()
@@ -39,7 +40,7 @@ if __name__ == "__main__":
     args = {
         'keyword': '纽约'
     }
-    task = Task(_worker='', _task_id='demo', _source='ctrip', _type='poi_list', _task_name='ctrip_city_suggest',
+    task = Task(_worker='', _task_id='demo', _source='tuniu', _type='poi_list', _task_name='tuniu_city_suggest',
                 _used_times=0, max_retry_times=6,
                 kwargs=args, _queue='poi_list',
                 _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
