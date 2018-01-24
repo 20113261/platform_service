@@ -10,13 +10,11 @@ from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.Common.Task import Task
 import json
 from lxml import html
-config = {
-    'host': '10.10.213.148',
-}
+
 
 logger = get_logger('ctrip_suggest')
 
-client = pymongo.MongoClient(**config)
+client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
 db = client['SuggestName']
 
 headers = {
