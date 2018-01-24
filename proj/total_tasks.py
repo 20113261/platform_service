@@ -160,7 +160,7 @@ def ks_move_task(self, task, **kwargs):
 #     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='10/s')
+@app.task(bind=True, base=BaseTask, max_retries=5, rate_limit='5/s')
 def normal_city_task(self, task, **kwargs):
     _sdk = NormalTaskSDK(task=task)
     return _sdk.execute()
