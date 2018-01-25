@@ -27,3 +27,4 @@ from .MarriottCitySDK import MarriottCitySDK
 from .NormalTaskSDK import NormalTaskSDK
 from .SlowTaskSDK import SlowTaskSDK
 from .VeriFlightSDK import VeriFlightSDK
+from .GoogleDriveSDK import GoogleDriveSDK

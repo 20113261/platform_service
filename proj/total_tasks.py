@@ -182,3 +182,9 @@ def hilton_tax_task(self, task, **kwargs):
 def veriflight_task(self, task, **kwargs):
     _sdk = VeriFlightSDK(task=task)
     return _sdk.execute()
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='13/s')
+def google_drive_task(self, task, **kwargs):
+    _sdk = GoogleDriveSDK(task=task)
+    return _sdk.execute()
