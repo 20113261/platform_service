@@ -35,13 +35,14 @@ class GoogleDriveSDK(BaseSDK):
                     url=url,
                     data=content
                 )
-                result['para'] = base64.b64encode(pdata)
+                result["url"] = url
+                result["para"] = base64.b64encode(pdata)
                 result["index_key"] = index_key
                 result["info_key"] = info_key
                 result["coor_key"] = coor_key
 
                 try:
-                    insert_rabbitmq(args=json.dumps(result))
+                    insert_rabbitmq(args=result)
                 except Exception as e:
                     raise ServiceStandardError(error_code=ServiceStandardError.RABBITMQ_ERROR, wrapped_exception=e)
             self.task.error_code = 0
