@@ -18,6 +18,7 @@ from proj.my_lib.GoogleRealTraffic.insert_rabbitmq import insert_rabbitmq
 class GoogleDriveSDK(BaseSDK):
     def _execute(self, **kwargs):
         url = self.task.kwargs['url']
+        task_id = self.task.kwargs['task_id']
         md5_url = encode(url)
         with MySession(need_proxies=True, need_cache=True) as session:
             page = session.get(url, timeout=240)
@@ -40,6 +41,7 @@ class GoogleDriveSDK(BaseSDK):
                 result["index_key"] = index_key
                 result["info_key"] = info_key
                 result["coor_key"] = coor_key
+                result["task_id"] = task_id
 
                 try:
                     insert_rabbitmq(args=result)
