@@ -41,7 +41,7 @@ class GoogleDriveSDK(BaseSDK):
                 result["index_key"] = index_key
                 result["info_key"] = info_key
                 result["coor_key"] = coor_key
-                result["task_id"] = task_id
+                result["task_id"] = str(task_id)
 
                 try:
                     insert_rabbitmq(args=result)
