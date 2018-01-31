@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
+'''
+@author: feng
 
+@date: 18-01-31
+'''
 import pymongo
 import pymongo.errors
 import requests.exceptions
@@ -15,7 +19,7 @@ config = {
     'host': '10.10.213.148',
 }
 
-logger = get_logger('daodao_suggest')
+logger = get_logger('ctripPoi_suggest')
 
 client = pymongo.MongoClient(**config)
 db = client['SuggestName']
@@ -82,3 +86,4 @@ if __name__ == "__main__":
     normal = DaoDaoCitySDK(task)
 
     normal.execute()
+
