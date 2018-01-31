@@ -2650,7 +2650,7 @@ db.Task_Queue_supplement_field_TaskName_baidu_search_20171211a.update({finished:
     }
 }, false, true);
 
-db.Task_Queue_hotel_detail_TaskName_detail_hotel_holiday_20171226a.update({finished: 0}, {
+db.Task_Queue_file_downloader_TaskName_images_hotel_ihg_20171220a.update({finished: 0}, {
     $set: {
         'running': 0,
         'used_times': 0
@@ -2658,7 +2658,16 @@ db.Task_Queue_hotel_detail_TaskName_detail_hotel_holiday_20171226a.update({finis
 }, false, true);
 
 
-db.Task_Queue_hotel_detail_TaskName_detail_hotel_ihg_20171221a.update({}, {
+db.Task_Queue_file_downloader_TaskName_images_hotel_ihg_20171220a.update({}, {
+    $set: {
+        'finished': 0,
+        'running': 0,
+        'used_times': 0
+    }
+}, false, true);
+
+
+db.Task_Queue_file_downloader_TaskName_google_drive_task_20170125.update({}, {
     $set: {
         'finished': 0,
         'running': 0,
