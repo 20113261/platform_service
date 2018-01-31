@@ -62,37 +62,40 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     #     c_list.append(('Task_Queue_file_downloader_TaskName_images_total_qyer_20171120a', 2000))
     # todo 先均分任务，之后考虑不同的阀值分配不同的任务
     for each_collection_name, each_limit in c_list:
-        for d in _get_task_total_simple(collection_name=each_collection_name, queue=queue, used_times=used_times,
-                                        limit=each_limit,
-                                        debug=debug):
-            # _queue, _worker, _task_id, _source, _type, _task_name, _used_times, max_retry_times,
-            t_list = d['task_name'].split('_')
-            if not t_list:
-                continue
-            if t_list[0] == 'list':
-                task_type = TaskType.LIST_TASK
-            else:
-                task_type = TaskType.NORMAL
+        try:
+            for d in _get_task_total_simple(collection_name=each_collection_name, queue=queue, used_times=used_times,
+                                            limit=each_limit,
+                                            debug=debug):
+                # _queue, _worker, _task_id, _source, _type, _task_name, _used_times, max_retry_times,
+                t_list = d['task_name'].split('_')
+                if not t_list:
+                    continue
+                if t_list[0] == 'list':
+                    task_type = TaskType.LIST_TASK
+                else:
+                    task_type = TaskType.NORMAL
 
-            _task = Task(
-                _queue=d['queue'],
-                _routine_key=d['routing_key'],
-                _worker=d['worker'],
-                _task_id=d['task_token'],
-                _source=d['source'],
-                _type=d['type'],
-                _task_name=d['task_name'],
-                _used_times=d['used_times'],
-                max_retry_times=used_times,
-                task_type=task_type,
-                list_task_token=d.get('list_task_token', None),
-                kwargs=d['args'],
-                collection=each_collection_name
-            )
-            if task_type == TaskType.LIST_TASK:
-                _task.list_task_token = d['list_task_token']
+                _task = Task(
+                    _queue=d['queue'],
+                    _routine_key=d['routing_key'],
+                    _worker=d['worker'],
+                    _task_id=d['task_token'],
+                    _source=d['source'],
+                    _type=d['type'],
+                    _task_name=d['task_name'],
+                    _used_times=d['used_times'],
+                    max_retry_times=used_times,
+                    task_type=task_type,
+                    list_task_token=d.get('list_task_token', None),
+                    kwargs=d['args'],
+                    collection=each_collection_name
+                )
+                if task_type == TaskType.LIST_TASK:
+                    _task.list_task_token = d['list_task_token']
 
-            yield _task
+                yield _task
+        except Exception as exc:
+            logger.exception(msg="[collection exc]", exc_info=exc)
 
 
 @func_time_logger
