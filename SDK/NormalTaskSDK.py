@@ -9,7 +9,7 @@ from SDK.BaiDuSearchSDK import BaiDuSearchSDK
 from SDK.DaoDaoCitySDK import DaoDaoCitySDK
 from SDK.CtripCitySDK import CtripCitySDK
 from SDK.TuniuCitySDK import TuniuCitySDK
-from SDK.CtripPOISDK import CtripPoiSDK
+from SDK.CtripPoiListSDK import CtripPoiSDK
 
 class NormalTaskSDK(BaseSDK):
 
@@ -21,7 +21,7 @@ class NormalTaskSDK(BaseSDK):
              'ihg': IhgCitySDK,
              'ctrip':CtripCitySDK,
              'tuniu':TuniuCitySDK,
-             'ctirppoi':CtripPoiSDK
+             'ctrippoi':CtripPoiSDK
         }
         class_name = None
         source = source.lower()
