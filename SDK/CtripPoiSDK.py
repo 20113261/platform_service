@@ -25,17 +25,15 @@ client = pymongo.MongoClient(**config)
 db = client['SuggestName']
 
 headers = {
-    'referer': 'https://www.tripadvisor.cn/',
-    'x-requested-with': 'XMLHttpRequest',
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'accept-encoding': 'gzip, deflate, br',
-    'accept': 'text/javascript, text/html, application/xml, text/xml, */*',
-    'accept-language': 'zh-CN,zh;q=0.9',
-    'Origin': 'https://www.tripadvisor.cn',
-    'Host': 'www.tripadvisor.cn'
+    'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    'upgrade-insecure-requests': '1',
+    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.101 Safari/537.36'
 }
-search_url = "https://www.tripadvisor.cn/TypeAheadJson"
+search_url = "http://you.ctrip.com/SearchSite/Service/Tip2"
 
-class DaoDaoCitySDK(BaseSDK):
+class CtripPoiSDK(BaseSDK):
 
     def _execute(self, **kwargs):
 
@@ -47,21 +45,15 @@ class DaoDaoCitySDK(BaseSDK):
                     url=search_url,
                     headers=headers,
                     data={
-                        'action': 'API',
-                        'uiOrigin': 'PTPT-dest',
-                        'types': 'geo,dest',
-                        'hglt': True,
-                        'global': True,
-                        'legacy_format': True,
-                        '_ignoreMinCount': True,
-                        'query': keyword
+                        'Jsoncallback': 'jQuery',
+                        'keyword': keyword
                     }
                 )
 
                 json_data = json.loads(response.content)
                 suggest['suggest'] = json_data
                 db = client['SuggestName']
-                db.DaoDaoCitySuggest.save(suggest)
+                db.CtripPoiSDK.save(suggest)
                 self.task.error_code = 0
                 count = 1
                 if isinstance(json_data,list):
@@ -79,11 +71,11 @@ if __name__ == "__main__":
     args = {
         'keyword': '纽约'
     }
-    task = Task(_worker='', _task_id='demo', _source='daodaocity', _type='poi_list', _task_name='daodao_city_suggest',
+    task = Task(_worker='', _task_id='demo', _source='ctirppoi', _type='poi_list', _task_name='ctrip_poi_suggest',
                 _used_times=0, max_retry_times=6,
                 kwargs=args, _queue='poi_list',
                 _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
-    normal = DaoDaoCitySDK(task)
+    normal = CtripPoiSDK(task)
 
     normal.execute()
 
