@@ -8,8 +8,17 @@
 from __future__ import absolute_import
 from SDK import *
 from SDK.HiltonTaxSDK import HiltonTaxSDK
+from SDK.PoiCtripListSDK import PoiCtripListSDK
 from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
+
+
+#
+#
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='40/m')
+def ctrip_poi_list_task(self, task, **kwargs):
+    _sdk = PoiCtripListSDK(task=task)
+    return _sdk.execute()
 
 
 #
