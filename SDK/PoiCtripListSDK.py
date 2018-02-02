@@ -43,7 +43,7 @@ client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
 collections = client['data_result']['ctrip_poi_list']
 
 
-def ctrip_poilist_to_database(tid, used_times, source, city_id, check_in, city_url, need_cache=True):
+def ctrip_poilist_to_database(tid, used_times, source, city_id, city_url, need_cache=True):
     task = Task()
     task.content = city_url
     task.ticket_info = {
@@ -62,14 +62,10 @@ def ctrip_poilist_to_database(tid, used_times, source, city_id, check_in, city_u
 
 
 class PoiCtripListSDK(BaseSDK):
-    def get_task_finished_code(self):
-        # 穷游数据特殊，29 不可以定为完成
-        return [0, 106, 107, 109]
 
     def _execute(self, **kwargs):
         city_id = self.task.kwargs['city_id']
         country_id = self.task.kwargs['country_id']
-        check_in = self.task.kwargs['check_in']
         city_url = self.task.kwargs['city_url']
 
         error_code, result, page_store_key = ctrip_poilist_to_database(
@@ -77,7 +73,6 @@ class PoiCtripListSDK(BaseSDK):
             used_times=self.task.used_times,
             source=self.task.kwargs['source'],
             city_id=city_id,
-            check_in=check_in,
             city_url=city_url,
             need_cache=self.task.used_times == 0
         )
@@ -120,10 +115,9 @@ class PoiCtripListSDK(BaseSDK):
 if __name__ == '__main__':
     from proj.my_lib.Common.Task import Task as ttt
     args = {
-        "check_in": "20180128",
         "city_id": "20645",
         "country_id": "133",
-        "source": "ctripPOI",
+        "source": "ctripoi",
         "city_url": "sedaxian120478",
         "date_index": 0
     }
