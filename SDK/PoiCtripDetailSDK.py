@@ -56,29 +56,28 @@ def ctrip_poidetail_to_database(tid, used_times, source, url, need_cache=True):
 class PoiCtripDetailSDK(BaseSDK):
 
     def _execute(self, **kwargs):
-        def _execute(self, **kwargs):
-            poi_id = self.task.kwargs['poi_id']
-            tag = self.task.kwargs['tag']
-            url = self.task.kwargs['detail_url']
+        poi_id = self.task.kwargs['poi_id']
+        tag = self.task.kwargs['tag']
+        url = self.task.kwargs['detail_url']
 
-            error_code, result, page_store_key = ctrip_poidetail_to_database(
-                tid=self.task.task_id,
-                used_times=self.task.used_times,
-                source=self.task.kwargs['source'],
-                url=url,
-                need_cache=self.task.used_times == 0
-            )
+        error_code, result, page_store_key = ctrip_poidetail_to_database(
+            tid=self.task.task_id,
+            used_times=self.task.used_times,
+            source=self.task.kwargs['source'],
+            url=url,
+            need_cache=self.task.used_times == 0
+        )
 
-            collections.save({
-                'collections': self.task.collection,
-                'task_id': self.task.task_id,
-                'used_times': self.task.used_times[0],
-                'stored_page_keys': page_store_key,
-                'result': result,
-                'insert_time': datetime.datetime.now()
-            })
+        collections.save({
+            'collections': self.task.collection,
+            'task_id': self.task.task_id,
+            'used_times': self.task.used_times[0],
+            'stored_page_keys': page_store_key,
+            'result': result,
+            'insert_time': datetime.datetime.now()
+        })
 
-            self.task.error_code = error_code
+        self.task.error_code = error_code
 
 if __name__ == '__main__':
     from proj.my_lib.Common.Task import Task as ttt
