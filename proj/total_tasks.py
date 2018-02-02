@@ -14,6 +14,11 @@ from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 
 
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+def ctrip_poi_detail_task(self, task, **kwargs):
+    _sdk = PoiCtripDetailSDK(task=task)
+    return _sdk.execute()
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='40/m')
