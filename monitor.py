@@ -17,7 +17,7 @@ import pymongo
 import os
 import sys
 import cachetools.func
-from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task
+from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task, send_ctripPoi_detail_task
 from attach_send_task import qyer_supplement_map_info
 from proj.my_lib.logger import get_logger
 from send_email import send_email, SEND_TO, EMAIL_TITLE
@@ -141,6 +141,23 @@ def create_table(table_name):
     cursor.execute(sql_file % table_name)
     cursor.close()
     conn.close()
+
+##-- fengyufei ctrip poi
+
+def monitoring_ctripPoi_list2detail():
+    collections = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')['data_result']['ctrip_poi_list']
+    for data in collections.find():
+        table_name = data['collections']
+        results = data['result']
+        for result in results:
+            timestamp, priority, sequence = get_seek(table_name)
+            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+            timestamp = send_ctripPoi_detail_task(result, detail_table_name, priority)
+            if timestamp is not None:
+                update_seek(table_name, timestamp, priority, sequence)
+
+
+##--
 
 
 def monitoring_hotel_list2detail():
@@ -530,16 +547,17 @@ if __name__ == '__main__':
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
     while True:
-        monitoring_qyer_list2detail()
+        #monitoring_qyer_list2detail()
         # monitoring_zombies_task_total()
         # city2list()
         # get_default_timestramp()
         # get_seek('hotel_list2detail_test')
         # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
         # test_timstramp()
-        monitoring_hotel_list2detail()
+        #monitoring_hotel_list2detail()
         # monitoring_hotel_detail2ImgOrComment()
         # monitoring_zombies_task()
+        monitoring_ctripPoi_list2detail()
 # query_sql = '''SELECT
 #   source,
 #   id,
