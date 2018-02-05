@@ -21,7 +21,7 @@ def ctrip_poi_detail_task(self, task, **kwargs):
     return _sdk.execute()
 #
 #
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='40/m')
 def ctrip_poi_list_task(self, task, **kwargs):
     _sdk = PoiCtripListSDK(task=task)
     return _sdk.execute()
