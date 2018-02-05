@@ -82,6 +82,7 @@ class PoiCtripListSDK(BaseSDK):
             'task_id': self.task.task_id,
             'used_times': self.task.used_times[0],
             'stored_page_keys': page_store_key,
+            'city': city_url,
             'result': result,
             'insert_time': datetime.datetime.now()
         })
@@ -118,7 +119,7 @@ if __name__ == '__main__':
         "city_id": "20645",
         "country_id": "133",
         "source": "ctripoi",
-        "city_url": "sedaxian120478",
+        "city_url": "newyork248",
         "date_index": 0
     }
 
