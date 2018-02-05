@@ -147,14 +147,13 @@ def create_table(table_name):
 def monitoring_ctripPoi_list2detail():
     collections = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')['data_result']['ctrip_poi_list']
     for data in collections.find():
-        table_name = data['collections']
+        table_name = data['collections'].split("_",6)[-1]
         results = data['result']
-        for result in results:
-            timestamp, priority, sequence = get_seek(table_name)
-            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
-            timestamp = send_ctripPoi_detail_task(result, detail_table_name, priority)
-            if timestamp is not None:
-                update_seek(table_name, timestamp, priority, sequence)
+        timestamp, priority, sequence = get_seek(table_name)
+        detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+        timestamp = send_ctripPoi_detail_task(results, detail_table_name, priority)
+        if timestamp is not None:
+            update_seek(table_name, timestamp, priority, sequence)
 
 
 ##--

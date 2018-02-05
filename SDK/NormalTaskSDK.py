@@ -9,7 +9,7 @@ from SDK.BaiDuSearchSDK import BaiDuSearchSDK
 from SDK.DaoDaoCitySDK import DaoDaoCitySDK
 from SDK.CtripCitySDK import CtripCitySDK
 from SDK.TuniuCitySDK import TuniuCitySDK
-from SDK.CtripPoiListSDK import CtripPoiSDK
+from SDK.CtripPoiCitySDK import CtripPoiSDK
 
 class NormalTaskSDK(BaseSDK):
 
