@@ -139,6 +139,7 @@ def create_table(table_name):
             sql_file = LOAD_FILES['images_daodao']
 
     cursor.execute(sql_file % table_name)
+    logger.info('已创建表: %s' % table_name)
     cursor.close()
     conn.close()
 
@@ -469,8 +470,8 @@ def city2list():
         # per_data = collections.find_one()
         task_name = per_data['task_name']
         new_task_name = re.sub('city_', 'list_', task_name)
-
         create_table(new_task_name)
+        logger.info('%s : %s' % (task_name, new_task_name))
 
         with InsertTask(worker=per_data['worker'], queue=per_data['queue'], routine_key=per_data['routing_key'],
                         task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
@@ -542,10 +543,10 @@ class TaskSender(object):
 
 
 if __name__ == '__main__':
-    # city2list()
+    city2list()
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
-    while True:
+    # while True:
         #monitoring_qyer_list2detail()
         # monitoring_zombies_task_total()
         # city2list()
@@ -556,7 +557,7 @@ if __name__ == '__main__':
         #monitoring_hotel_list2detail()
         # monitoring_hotel_detail2ImgOrComment()
         # monitoring_zombies_task()
-        monitoring_ctripPoi_list2detail()
+        # monitoring_ctripPoi_list2detail()
 # query_sql = '''SELECT
 #   source,
 #   id,
