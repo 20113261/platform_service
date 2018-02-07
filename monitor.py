@@ -455,6 +455,7 @@ def get_city_date(task_name, date_index):
 
 
 def city2list():
+    logger.info(str(str(collection_name) for collection_name in db.collection_names() if str(collection_name).startswith('City_Queue_')))
     for collection_name in db.collection_names():
         if not str(collection_name).startswith('City_Queue_'):
             continue
@@ -469,6 +470,7 @@ def city2list():
 
         # per_data = collections.find_one()
         task_name = per_data['task_name']
+        if task_name not in ('city_attr_daodao_12620180207', 'city_total_qyer_12620180207'):continue
         new_task_name = re.sub('city_', 'list_', task_name)
         create_table(new_task_name)
         logger.info('%s : %s' % (task_name, new_task_name))
