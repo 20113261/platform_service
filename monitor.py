@@ -455,7 +455,8 @@ def get_city_date(task_name, date_index):
 
 
 def city2list():
-    logger.info(str(str(collection_name) for collection_name in db.collection_names() if str(collection_name).startswith('City_Queue_')))
+    aaa = str([str(collection_name) for collection_name in db.collection_names() if str(collection_name).startswith('City_Queue_')])
+    logger.info('*****  %s' % aaa)
     for collection_name in db.collection_names():
         if not str(collection_name).startswith('City_Queue_'):
             continue
