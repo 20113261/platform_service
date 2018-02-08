@@ -54,6 +54,8 @@ def ctrip_poidetail_to_database(tid, used_times, source, url, need_cache=True):
     return error_code, spider.result['POIdetail'], spider.page_store_key_list
 
 class PoiCtripDetailSDK(BaseSDK):
+    def get_task_finished_code(self):
+        return [0, 106, 107, 109]
 
     def _execute(self, **kwargs):
         poi_id = self.task.kwargs['poi_id']

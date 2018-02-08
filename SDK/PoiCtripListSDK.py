@@ -63,8 +63,7 @@ def ctrip_poilist_to_database(tid, used_times, source, city_id, city_url, need_c
 
 class PoiCtripListSDK(BaseSDK):
     def get_task_finished_code(self):
-        # 穷游数据特殊，29 不可以定为完成
-        return [0, 106, 107, 109]
+        return [0, 106, 107, 109, 29]
 
     def _execute(self, **kwargs):
         city_id = self.task.kwargs['city_id']
