@@ -456,7 +456,6 @@ def get_city_date(task_name, date_index):
 
 def city2list():
     aaa = str([str(collection_name) for collection_name in db.collection_names() if str(collection_name).startswith('City_Queue_')])
-    logger.info('abcedfg  %s' % aaa)
     for collection_name in db.collection_names():
         if not str(collection_name).startswith('City_Queue_'):
             continue
@@ -468,13 +467,11 @@ def city2list():
             if 'task_name' in each:
                 per_data = copy.deepcopy(each)
                 break
-        logger.info('abcedfg  %s' % per_data)
         # per_data = collections.find_one()
         task_name = per_data['task_name']
-        if task_name not in ('city_attr_daodao_12620180207', 'city_total_qyer_12620180207'):continue
         new_task_name = re.sub('city_', 'list_', task_name)
         create_table(new_task_name)
-        logger.info('abcedfg  %s : %s' % (task_name, new_task_name))
+        logger.info('转换任务名  %s : %s' % (task_name, new_task_name))
 
         with InsertTask(worker=per_data['worker'], queue=per_data['queue'], routine_key=per_data['routing_key'],
                         task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
