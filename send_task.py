@@ -109,11 +109,11 @@ def send_ctripPoi_detail_task(tasks, task_tag, priority):
     with InsertTask(worker='proj.total_tasks.ctrip_poi_detail_task', queue='poi_detail', routine_key='poi_detail',
                     task_name=task_tag, source='CtripPoi',_type='CtripPoiDetail',
                     priority=priority) as it:
-        for poi_id, tag, url in tasks:
+        for source, source_id, city_id,country_id, url, utime in tasks:
             it.insert_task({
-                'source': 'ctripoi',
-                'poi_id': poi_id,
-                'tag': tag,
+                'source': source,
+                'poi_id': source_id,
+                'tag': country_id,
                 'detail_url': url
             })
     return utime

@@ -94,7 +94,7 @@ class PoiCtripListSDK(BaseSDK):
         sql = SQL.format(self.task.task_name)
         data = []
         for sid, tag, url in result:
-            data.append(('ctripPoi', sid, city_id, country_id, url))
+            data.append(('ctripPoi', sid, city_id, tag, url))
         try:
             service_platform_conn = service_platform_pool.connection()
             cursor = service_platform_conn.cursor()

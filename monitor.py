@@ -37,6 +37,7 @@ HOTEL_SOURCE = (
     'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton', 'ihg', 'holiday', 'accor', 'marriott')
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
+CTRIPPOI_SOURCE = 'ctripPoi'
 PRIORITY = 3
 # TODO  所有表的update_time字段加索引
 # TODO  所有表的update_time字段改为timestramp(6)类型
@@ -146,15 +147,49 @@ def create_table(table_name):
 ##-- fengyufei ctrip poi
 
 def monitoring_ctripPoi_list2detail():
-    collections = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')['data_result']['ctrip_poi_list']
-    for data in collections.find():
-        table_name = data['collections'].split("_",6)[-1]
-        results = data['result']
-        timestamp, priority, sequence = get_seek(table_name)
-        detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
-        timestamp = send_ctripPoi_detail_task(results, detail_table_name, priority)
-        if timestamp is not None:
-            update_seek(table_name, timestamp, priority, sequence)
+    sql = """select source, source_id, city_id,country_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
+    try:
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+
+        for table_name in table_dict.keys():
+
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'total':
+                continue
+            if tab_args[2] != CTRIPPOI_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
+
+            timestamp, priority, sequence = get_seek(table_name)
+
+            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+
+            # if table_dict.get(detail_table_name, True):
+            #     create_table(detail_table_name)
+
+            timestamp = send_ctripPoi_detail_task(
+                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
+            logger.info('timestamp  :  %s' % (timestamp))
+
+            if timestamp is not None:
+                update_seek(table_name, timestamp, priority, sequence)
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
+    # collections = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')['data_result']['ctrip_poi_list']
+    # for data in collections.find():
+    #     table_name = data['collections'].split("_",6)[-1]
+    #     results = data['result']
+    #     timestamp, priority, sequence = get_seek(table_name)
+    #     detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+    #     timestamp = send_ctripPoi_detail_task(results, detail_table_name, priority)
+    #     if timestamp is not None:
+    #         update_seek(table_name, timestamp, priority, sequence)
 
 
 ##--
@@ -469,6 +504,7 @@ def city2list():
                 break
         # per_data = collections.find_one()
         task_name = per_data['task_name']
+
         new_task_name = re.sub('city_', 'list_', task_name)
         create_table(new_task_name)
         logger.info('转换任务名  %s : %s' % (task_name, new_task_name))
@@ -543,7 +579,7 @@ class TaskSender(object):
 
 
 if __name__ == '__main__':
-    city2list()
+    monitoring_ctripPoi_list2detail()
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
     # while True:
