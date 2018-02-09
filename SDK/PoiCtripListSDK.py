@@ -91,26 +91,26 @@ class PoiCtripListSDK(BaseSDK):
 
         self.task.error_code = error_code
 
-        # sql = SQL.format(self.task.task_name)
-        # data = []
-        # for sid, tag, url in result:
-        #     data.append(('ctripPOI', sid, tag, url))
-        # try:
-        #     service_platform_conn = service_platform_pool.connection()
-        #     cursor = service_platform_conn.cursor()
-        #     _res = cursor.executemany(sql, data)
-        #     service_platform_conn.commit()
-        #     cursor.close()
-        #     service_platform_conn.close()
-        #     self.task.get_data_per_times = len(data)
-        #     self.task.list_task_insert_db_count = _res
-        # except Exception as e:
-        #     raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
-        #
-        # if len(data) > 0:
-        #     self.task.error_code = 0
-        # else:
-        #     raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
+        sql = SQL.format(self.task.task_name)
+        data = []
+        for sid, tag, url in result:
+            data.append(('ctripPOI', sid, city_id, country_id, url))
+        try:
+            service_platform_conn = service_platform_pool.connection()
+            cursor = service_platform_conn.cursor()
+            _res = cursor.executemany(sql, data)
+            service_platform_conn.commit()
+            cursor.close()
+            service_platform_conn.close()
+            self.task.get_data_per_times = len(data)
+            self.task.list_task_insert_db_count = _res
+        except Exception as e:
+            raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
+
+        if len(data) > 0:
+            self.task.error_code = 0
+        else:
+            raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
 
         return result, error_code
 
