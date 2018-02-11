@@ -114,6 +114,7 @@ def send_ctripPoi_detail_task(tasks, task_tag, priority):
                 'source': source,
                 'poi_id': source_id,
                 'tag': country_id,
+                'city_id': city_id,
                 'detail_url': url
             })
     return utime
