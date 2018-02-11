@@ -61,6 +61,7 @@ class PoiCtripDetailSDK(BaseSDK):
         poi_id = self.task.kwargs['poi_id']
         tag = self.task.kwargs['tag']
         url = self.task.kwargs['detail_url']
+        city_id = self.task.kwargs['city_id']
 
         error_code, result, page_store_key = ctrip_poidetail_to_database(
             tid=self.task.task_id,
@@ -79,8 +80,10 @@ class PoiCtripDetailSDK(BaseSDK):
             'poi_id':poi_id,
             'tag': tag,
             'result': result,
+            'city_id':city_id,
             'insert_time': datetime.datetime.now()
         })
+        # -- detail 2 mysql --
 
         self.task.error_code = error_code
 
@@ -90,6 +93,7 @@ if __name__ == '__main__':
         'source': 'ctripoi',
         'poi_id': '109889',
         'tag': 'sight',
+        'city_id':'000',
         'detail_url':'http://you.ctrip.com/sight/sedaxian120478/109889.html'
     }
 
