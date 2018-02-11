@@ -84,6 +84,7 @@ class PoiCtripListSDK(BaseSDK):
             'task_id': self.task.task_id,
             'used_times': self.task.used_times[0],
             'stored_page_keys': page_store_key,
+            'city_id':city_id,
             'city': city_url,
             'result': result,
             'insert_time': datetime.datetime.now()
