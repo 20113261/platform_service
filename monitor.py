@@ -147,7 +147,7 @@ def create_table(table_name):
 ##-- fengyufei ctrip poi
 
 def monitoring_ctripPoi_list2detail():
-    sql = """select source, source_id, city_id,country_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 5000"""
+    sql = """select source, source_id, city_id,country_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 8000"""
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
