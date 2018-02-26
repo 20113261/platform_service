@@ -40,7 +40,7 @@ class CtripPoiDetailSDK(BaseSDK):
             keyword = self.task.kwargs['keyword']
             suggest = {}
             try:
-                response = requests.get(
+                response = session.get(
                     url=search_url.format(keyword),
                     headers=headers
                 )
@@ -82,21 +82,26 @@ class CtripPoiDetailSDK(BaseSDK):
 
 
 if __name__ == "__main__":
-    all = []
-    for ce in db.CtripPoiSDK.find({}):
-        try:
-            s = ce['suggest']['List']
-        except:
-            continue
-        for sug in ce['suggest']['List']:
-
-            args = {
-                'name':sug['Name'],
-                'dest_name':sug['DestName'],
-                'keyword': sug['Url'].split('.')[0].split('/')[-1]
-            }
-            all.append(args)
-
+    # all = []
+    # for ce in db.CtripPoiSDK.find({}):
+    #     try:
+    #         s = ce['suggest']['List']
+    #     except:
+    #         continue
+    #     for sug in ce['suggest']['List']:
+    #
+    #         args = {
+    #             'name':sug['Name'],
+    #             'dest_name':sug['DestName'],
+    #             'keyword': sug['Url'].split('.')[0].split('/')[-1]
+    #         }
+    #         all.append(args)
+    all = [
+        {
+            'name': '纽约',
+            'dest_name': '美国',
+            'keyword': 'newyork248'}
+    ]
     for args in all:
         task = Task(_worker='', _task_id='demo', _source='ctirppoi', _type='poi_list', _task_name='ctrip_poi_suggest',
                     _used_times=0, max_retry_times=6,
