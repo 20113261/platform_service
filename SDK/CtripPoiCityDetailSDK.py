@@ -36,7 +36,7 @@ class CtripPoiDetailSDK(BaseSDK):
 
     def _execute(self, **kwargs):
 
-        with MySession(need_proxies=True, need_cache=True) as session:
+        with MySession(need_proxies=False, need_cache=True) as session:
             keyword = self.task.kwargs['keyword']
             suggest = {}
             try:
@@ -46,16 +46,15 @@ class CtripPoiDetailSDK(BaseSDK):
                 )
 
                 res = response.content
-                root = html.fromstring(res)
+                root = html.fromstring(res.decode('utf-8'))
                 dests = root.xpath("//div[@class='breadbar_v1 cf']/ul/li")
                 dest = ''
                 for de in dests[2:-1]:
                     if dest != '':
                         dest += '|'
                     dest += de.xpath("a/text()")[0]
-                    aaa = de.xpath("a/text()")[0]
 
-                dest = str(dest)
+                print dest
                 tags = root.xpath("//ul[@class='map_tab cf']/li")
                 tag = {}
                 for ta in tags:
