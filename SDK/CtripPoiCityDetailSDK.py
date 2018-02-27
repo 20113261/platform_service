@@ -53,7 +53,9 @@ class CtripPoiDetailSDK(BaseSDK):
                     if dest != '':
                         dest += '|'
                     dest += de.xpath("a/text()")[0]
-                print dest
+                    aaa = de.xpath("a/text()")[0]
+
+                dest = str(dest)
                 tags = root.xpath("//ul[@class='map_tab cf']/li")
                 tag = {}
                 for ta in tags:
