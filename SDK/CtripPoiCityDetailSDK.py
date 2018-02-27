@@ -61,12 +61,17 @@ class CtripPoiDetailSDK(BaseSDK):
                     tt = ta.xpath('a/text()')[-1].strip()
                     tag[t] = tt
                 print tag
-                map_info = ''
-                map_info = re.findall('centerGeo: ({.+})', res)[0].replace('\'', '\"')
+                try:
+                    map_info = re.findall('centerGeo: ({.+})', res)[0].replace('\'', '\"')
+                except:
+                    map_info = ''
                 print map_info
 
                 db = client['SuggestName']
                 db.CtripPoiSDK_detail.save({
+                    'name':self.task.kwargs['name'],
+                    'dest_name':self.task.kwargs['dest_name'],
+                    'keyword':keyword,
                     'dest':dest,
                     'tag_info':tag,
                     'map_info':map_info
