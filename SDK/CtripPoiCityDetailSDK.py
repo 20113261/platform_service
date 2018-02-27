@@ -36,7 +36,7 @@ class CtripPoiDetailSDK(BaseSDK):
 
     def _execute(self, **kwargs):
 
-        with MySession(need_proxies=False, need_cache=True) as session:
+        with MySession(need_proxies=True, need_cache=True) as session:
             keyword = self.task.kwargs['keyword']
             suggest = {}
             try:
@@ -44,28 +44,36 @@ class CtripPoiDetailSDK(BaseSDK):
                     url=search_url.format(keyword),
                     headers=headers
                 )
-
+                #response = requests.get(search_url.format(keyword))
                 res = response.content
                 root = html.fromstring(res.decode('utf-8'))
                 dests = root.xpath("//div[@class='breadbar_v1 cf']/ul/li")
                 dest = ''
-                for de in dests[2:-1]:
-                    if dest != '':
-                        dest += '|'
-                    dest += de.xpath("a/text()")[0]
+                try:
+                    for de in dests[2:-1]:
+                        if dest != '':
+                            dest += '|'
+                        dest += de.xpath("a/text()")[0]
+                except:
+                    pass
 
                 print dest
-                tags = root.xpath("//ul[@class='map_tab cf']/li")
                 tag = {}
-                for ta in tags:
-                    t = ta.xpath('a/span/text()')[0]
-                    tt = ta.xpath('a/text()')[-1].strip()
-                    tag[t] = tt
+                try:
+                    tags = root.xpath("//ul[@class='map_tab cf']/li")
+                    for ta in tags:
+                        t = ta.xpath('a/span/text()')[0]
+                        tt = ta.xpath('a/text()')[-1].strip()
+                        tag[t] = tt
+                except:
+                    pass
                 print tag
+
+                map_info = ''
                 try:
                     map_info = re.findall('centerGeo: ({.+})', res)[0].replace('\'', '\"')
                 except:
-                    map_info = ''
+                    pass
                 print map_info
 
                 db = client['SuggestName']
