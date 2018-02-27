@@ -184,6 +184,15 @@ def hotels_parser(content, url, other_info):
                     first_img = img_url
                 hotel.img_items += img_url + '|'
         hotel.img_items = hotel.img_items[:-1]
+
+        if not hotel.img_items:
+            img_list = root.xpath('//div[@id="carousel-container"]/div[1]/ul/li[@data-desktop]')
+            hotel.img_items = ''
+            for i, li in enumerate(img_list):
+                img_url = li.xpath('./@data-desktop')[0]
+                hotel.img_items += img_url + '|'
+
+        hotel.img_items = hotel.img_items[:-1]
         # image_list = root.find_class('carousel-thumbnails')[0].xpath('ol/li')
         # hotel.img_items = ''
         # image_name = ''
@@ -327,6 +336,7 @@ if __name__ == '__main__':
     # url = 'https://zh.hotels.com/ho619519840/'
     # url = 'https://zh.hotels.com/ho416746/'
     url = 'https://zh.hotels.com/ho416746/'
+    url = 'https://zh.hotels.com/ho223798/'
     with MySession(need_cache=True) as session:
         # page = requests.get(url)
         page = session.get(url=url)
