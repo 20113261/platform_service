@@ -64,7 +64,7 @@ def ctrip_GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
 
 class CtripGTDetailSDK(BaseSDK):
     def get_task_finished_code(self):
-        return [0, 106, 107, 109]
+        return [0, 106, 107, 109, 29]
 
     def _execute(self, **kwargs):
 
@@ -82,6 +82,7 @@ class CtripGTDetailSDK(BaseSDK):
             'used_times': self.task.used_times[0],
             'stored_page_keys': page_store_key,
             'result': result,
+            'args':self.task.kwargs,
             'insert_time': datetime.datetime.now()
         })
         # -- detail 2 mysql --
