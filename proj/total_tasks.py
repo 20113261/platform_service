@@ -188,3 +188,8 @@ def veriflight_task(self, task, **kwargs):
 def google_drive_task(self, task, **kwargs):
     _sdk = GoogleDriveSDK(task=task)
     return _sdk.execute()
+
+@app.task(bind=True, base=BaseTask, max_retires=3, rate_limit='5/s')
+def allhotel_city_suggest(self,task,**kwargs):
+    _sdk = AllHotelSourceSDK(task=task)
+    return _sdk.execute()
