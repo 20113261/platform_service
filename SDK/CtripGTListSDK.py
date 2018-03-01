@@ -3,8 +3,8 @@
 
 '''
 @author: feng
-@date: 2018-02-01
-@purpose: ctrip poi list sdk
+@date: 2018-03-01
+@purpose: ctrip grouptravel list sdk
 '''
 from __future__ import absolute_import
 import datetime

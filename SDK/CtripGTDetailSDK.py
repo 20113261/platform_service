@@ -1,5 +1,11 @@
 # coding=utf-8
 
+'''
+@author: feng
+@date: 2018-03-01
+@purpose: ctrip grouptravel detail sdk
+'''
+
 from __future__ import absolute_import
 import datetime
 import pymongo
