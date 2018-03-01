@@ -69,8 +69,8 @@ def func_time_logger(fun):
         begin = datetime.now()
         result = fun(*args, **kw)
         end = datetime.now()
-        time_logger.debug('[文件: {}][函数: {}][耗时 {}][当前运行 {} 个此函数]'.format(
-            func_file, func_name, end - begin, func_count_dict[func_key]
+        time_logger.debug('[文件: {}][函数: {}][耗时 {}][当前运行 {} 个此函数][args: {}][kwargs: {}]'.format(
+            func_file, func_name, end - begin, func_count_dict[func_key], args, kw
         ))
         func_count_dict[func_key] -= 1
         return result

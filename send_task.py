@@ -104,6 +104,31 @@ def send_poi_detail_task(tasks, task_tag, priority):
 
     return utime
 
+def send_ctripPoi_detail_task(tasks, task_tag, priority):
+    utime = None
+    with InsertTask(worker='proj.total_tasks.ctrip_poi_detail_task', queue='poi_detail', routine_key='poi_detail',
+                    task_name=task_tag, source='CtripPoi',_type='CtripPoiDetail',
+                    priority=priority) as it:
+        for source, source_id, city_id,country_id, url, utime in tasks:
+            it.insert_task({
+                'source': source,
+                'poi_id': source_id,
+                'tag': country_id,
+                'city_id': city_id,
+                'detail_url': url
+            })
+    return utime
+
+def send_ctripGT_detail_task(tasks, task_tag, priority):
+    utime = None
+    with InsertTask(worker='proj.total_tasks.ctrip_GT_detail_task', queue='poi_detail', routine_key='poi_detail',
+                    task_name=task_tag, source='CtripGT', _type='CtripGTDetail',
+                    priority=priority) as it:
+        for source, source_id, city_id, country_id, url, utime in tasks:
+            it.insert_task(
+                country_id
+            )
+    return utime
 
 def send_qyer_detail_task(tasks, task_tag, priority):
     utime = None

@@ -17,7 +17,7 @@ import pymongo
 import os
 import sys
 import cachetools.func
-from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task
+from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task, send_ctripPoi_detail_task, send_ctripGT_detail_task
 from attach_send_task import qyer_supplement_map_info
 from proj.my_lib.logger import get_logger
 from send_email import send_email, SEND_TO, EMAIL_TITLE
@@ -37,6 +37,8 @@ HOTEL_SOURCE = (
     'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton', 'ihg', 'holiday', 'accor', 'marriott')
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
+CTRIPPOI_SOURCE = 'ctripPoi'
+CTRIPGT_SOURCE = 'ctripGT'
 PRIORITY = 3
 # TODO  所有表的update_time字段加索引
 # TODO  所有表的update_time字段改为timestramp(6)类型
@@ -139,8 +141,95 @@ def create_table(table_name):
             sql_file = LOAD_FILES['images_daodao']
 
     cursor.execute(sql_file % table_name)
+    logger.info('已创建表: %s' % table_name)
     cursor.close()
     conn.close()
+
+##-- fengyufei ctrip poi
+
+def monitoring_ctripPoi_list2detail():
+    sql = """select source, source_id, city_id,country_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 8000"""
+    try:
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+
+        for table_name in table_dict.keys():
+
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'total':
+                continue
+            if tab_args[2] != CTRIPPOI_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
+
+            timestamp, priority, sequence = get_seek(table_name)
+
+            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+
+            # if table_dict.get(detail_table_name, True):
+            #     create_table(detail_table_name)
+
+            timestamp = send_ctripPoi_detail_task(
+                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
+            logger.info('timestamp  :  %s' % (timestamp))
+
+            if timestamp is not None:
+                update_seek(table_name, timestamp, priority, sequence)
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
+    # collections = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')['data_result']['ctrip_poi_list']
+    # for data in collections.find():
+    #     table_name = data['collections'].split("_",6)[-1]
+    #     results = data['result']
+    #     timestamp, priority, sequence = get_seek(table_name)
+    #     detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+    #     timestamp = send_ctripPoi_detail_task(results, detail_table_name, priority)
+    #     if timestamp is not None:
+    #         update_seek(table_name, timestamp, priority, sequence)
+
+
+def monitoring_ctripGT_list2detail():
+    sql = """select source, source_id, city_id,country_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 8000"""
+    try:
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+
+        for table_name in table_dict.keys():
+
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'total':
+                continue
+            if tab_args[2] != CTRIPGT_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
+
+            timestamp, priority, sequence = get_seek(table_name)
+
+            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+
+            # if table_dict.get(detail_table_name, True):
+            #     create_table(detail_table_name)
+
+            timestamp = send_ctripGT_detail_task(
+                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
+            logger.info('timestamp  :  %s' % (timestamp))
+
+            if timestamp is not None:
+                update_seek(table_name, timestamp, priority, sequence)
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
+
+##--
 
 
 def monitoring_hotel_list2detail():
@@ -438,6 +527,7 @@ def get_city_date(task_name, date_index):
 
 
 def city2list():
+    aaa = str([str(collection_name) for collection_name in db.collection_names() if str(collection_name).startswith('City_Queue_')])
     for collection_name in db.collection_names():
         if not str(collection_name).startswith('City_Queue_'):
             continue
@@ -449,12 +539,12 @@ def city2list():
             if 'task_name' in each:
                 per_data = copy.deepcopy(each)
                 break
-
         # per_data = collections.find_one()
         task_name = per_data['task_name']
-        new_task_name = re.sub('city_', 'list_', task_name)
 
+        new_task_name = re.sub('city_', 'list_', task_name)
         create_table(new_task_name)
+        logger.info('转换任务名  %s : %s' % (task_name, new_task_name))
 
         with InsertTask(worker=per_data['worker'], queue=per_data['queue'], routine_key=per_data['routing_key'],
                         task_name=new_task_name, source=per_data['source'], _type=per_data['type'],
@@ -526,20 +616,21 @@ class TaskSender(object):
 
 
 if __name__ == '__main__':
-    # city2list()
+    monitoring_ctripPoi_list2detail()
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
-    while True:
-        monitoring_qyer_list2detail()
+    # while True:
+        #monitoring_qyer_list2detail()
         # monitoring_zombies_task_total()
         # city2list()
         # get_default_timestramp()
         # get_seek('hotel_list2detail_test')
         # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
         # test_timstramp()
-        monitoring_hotel_list2detail()
+        #monitoring_hotel_list2detail()
         # monitoring_hotel_detail2ImgOrComment()
         # monitoring_zombies_task()
+        # monitoring_ctripPoi_list2detail()
 # query_sql = '''SELECT
 #   source,
 #   id,

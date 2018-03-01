@@ -8,8 +8,35 @@
 from __future__ import absolute_import
 from SDK import *
 from SDK.HiltonTaxSDK import HiltonTaxSDK
+from SDK.PoiCtripListSDK import PoiCtripListSDK
+from SDK.PoiCtripDetailSDK import PoiCtripDetailSDK
+from SDK.CtripGTListSDK import CtripGTListSDK
+from SDK.CtripGTDetailSDK import CtripGTDetailSDK
 from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
+
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+def ctrip_GT_detail_task(self, task, **kwargs):
+    _sdk = CtripGTDetailSDK(task=task)
+    return _sdk.execute()
+#
+#
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+def ctrip_GT_list_task(self, task, **kwargs):
+    _sdk = CtripGTListSDK(task=task)
+    return _sdk.execute()
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+def ctrip_poi_detail_task(self, task, **kwargs):
+    _sdk = PoiCtripDetailSDK(task=task)
+    return _sdk.execute()
+#
+#
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+def ctrip_poi_list_task(self, task, **kwargs):
+    _sdk = PoiCtripListSDK(task=task)
+    return _sdk.execute()
 
 
 #
