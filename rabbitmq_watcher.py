@@ -102,6 +102,9 @@ schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2',
 schedule.add_job(monitoring_ctripPoi_list2detail, 'cron', second='*/45',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripPoi_list')
 
+schedule.add_job(monitoring_ctripGT_list2detail, 'cron', second='*/45',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripGT_list')
+
 schedule.add_job(city2list, 'cron', second='*/60', id='city2list')
 schedule.add_job(monitoring_zombies_task_by_hour, 'cron', second='*/60', id='monitoring_zombies_task_by_hour')
 schedule.add_job(monitoring_zombies_task_total, 'cron', second='*/60', id='monitoring_zombies_task_total')

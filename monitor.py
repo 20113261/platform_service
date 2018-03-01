@@ -38,6 +38,7 @@ HOTEL_SOURCE = (
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 CTRIPPOI_SOURCE = 'ctripPoi'
+CTRIPGT_SOURCE = 'ctripGT'
 PRIORITY = 3
 # TODO  所有表的update_time字段加索引
 # TODO  所有表的update_time字段改为timestramp(6)类型
@@ -191,6 +192,42 @@ def monitoring_ctripPoi_list2detail():
     #     if timestamp is not None:
     #         update_seek(table_name, timestamp, priority, sequence)
 
+
+def monitoring_ctripGT_list2detail():
+    sql = """select source, source_id, city_id,country_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 8000"""
+    try:
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+
+        for table_name in table_dict.keys():
+
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'total':
+                continue
+            if tab_args[2] != CTRIPGT_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
+
+            timestamp, priority, sequence = get_seek(table_name)
+
+            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+
+            # if table_dict.get(detail_table_name, True):
+            #     create_table(detail_table_name)
+
+            timestamp = send_ctripGT_detail_task(
+                execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
+            logger.info('timestamp  :  %s' % (timestamp))
+
+            if timestamp is not None:
+                update_seek(table_name, timestamp, priority, sequence)
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
 
 ##--
 
