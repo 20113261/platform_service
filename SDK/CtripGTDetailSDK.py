@@ -82,6 +82,7 @@ class CtripGTDetailSDK(BaseSDK):
             'used_times': self.task.used_times[0],
             'stored_page_keys': page_store_key,
             'result': result,
+            'args':self.task.kwargs,
             'insert_time': datetime.datetime.now()
         })
         # -- detail 2 mysql --
