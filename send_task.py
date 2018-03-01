@@ -126,7 +126,7 @@ def send_ctripGT_detail_task(tasks, task_tag, priority):
                     priority=priority) as it:
         for source, source_id, city_id, country_id, url, utime in tasks:
             it.insert_task(
-                country_id
+                json.loads(url)
             )
     return utime
 

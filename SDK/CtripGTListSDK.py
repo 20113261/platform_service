@@ -3,8 +3,8 @@
 
 '''
 @author: feng
-@date: 2018-03-01
-@purpose: ctrip grouptravel list sdk
+@date: 2018-02-01
+@purpose: ctrip list list sdk
 '''
 from __future__ import absolute_import
 import datetime
@@ -24,6 +24,7 @@ from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.mysql_pool import service_platform_pool
 from proj.my_lib.Common.Browser import proxy_pool
 
+import json
 
 mioji.common.pool.pool.set_size(128)
 logger = get_task_logger(__name__)
@@ -94,7 +95,7 @@ class CtripGTListSDK(BaseSDK):
         sql = SQL.format(self.task.task_name)
         data = []
         for res in result:
-            data.append(('ctripGT', dept_info['id'], dest_info['id'], res, res['url']))
+            data.append(('ctripGT', res['pid_3rd'], dept_info['id'], dest_info['id'], json.dumps(res)))
         try:
             service_platform_conn = service_platform_pool.connection()
             cursor = service_platform_conn.cursor()
@@ -131,7 +132,7 @@ if __name__ == '__main__':
         "vacation_type": "grouptravel"
     }
 
-    task = ttt(_worker='', _task_id='demo', _source='ctripGT', _type='GT_list', _task_name='list_ctripGT_total_test',
+    task = ttt(_worker='', _task_id='demo', _source='ctripGT', _type='GT_list', _task_name='list_total_ctripGT_20180228a',
                 _used_times=0, max_retry_times=6,
                 kwargs=args, _queue='poi_list',
                 _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
