@@ -17,7 +17,7 @@ import pymongo
 import os
 import sys
 import cachetools.func
-from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task, send_ctripPoi_detail_task
+from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task, send_ctripPoi_detail_task, send_ctripGT_detail_task
 from attach_send_task import qyer_supplement_map_info
 from proj.my_lib.logger import get_logger
 from send_email import send_email, SEND_TO, EMAIL_TITLE
