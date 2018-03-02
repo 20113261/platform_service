@@ -165,7 +165,7 @@ class UpdateHotelValidation(object):
     def _get_content(self, source, line):
         if source in (
                 "ctripcn", "yundijie", "daolvApi", "dotwApi", "expediaApi", "gtaApi", "hotelbedsApi",
-                "innstantApi","eanApi","jtbApi",
+                "innstantApi","eanApi","jtbApi","mgApi","travcoApi",
                 "jacApi", "mikiApi", "touricoApi", "holiday", "hotelsproApi", "jielvApi", "aicApi", "veturisApi"):
             each_data = self.default_api_task_key_and_content(line)
             return each_data
