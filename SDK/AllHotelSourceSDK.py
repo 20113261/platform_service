@@ -41,7 +41,7 @@ def get_elong_suggest(suggest,map_info,country_id):
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
     try:
-        citys = suggest['data']['city']
+        citys = suggest['data'].get('city',[])
         for city in citys:
             source = 'elong'
             city_name = city['name_cn']
@@ -72,6 +72,7 @@ def get_elong_suggest(suggest,map_info,country_id):
             conn.close()
     except Exception as e:
         raise e
+    return len(save_result)
 def get_ctrip_suggest(suggest,map_info,country_id):
     suggest = suggest.decode('gbk')
     suggest = suggest.replace('cQuery.jsonpResponse=','').replace(';','')
@@ -107,6 +108,7 @@ def get_ctrip_suggest(suggest,map_info,country_id):
         raise e
     finally:
         conn.close()
+    return len(save_result)
 def get_expedia_suggest(suggest,map_info,country_id):
     pattern = re.search(r'(?<=\()(.*)(?=\))', suggest)
     suggest = pattern.group(1)
@@ -144,6 +146,7 @@ def get_expedia_suggest(suggest,map_info,country_id):
         print(e)
     finally:
         conn.close()
+    return len(save_result)
 def get_booking_suggest(suggest,map_info,country_id):
     suggest = json.loads(suggest)
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
@@ -188,6 +191,7 @@ def get_booking_suggest(suggest,map_info,country_id):
         raise e
     finally:
         conn.close()
+    return len(save_result)
 def get_hotels_suggest(suggest,map_info,country_id):
     pattern = re.search(r'(?<=srs\()(.*)(?=\);)', suggest)
     suggest = pattern.group(1)
@@ -233,6 +237,7 @@ def get_hotels_suggest(suggest,map_info,country_id):
             conn.close()
     except Exception as e:
         raise e
+    return len(save_result)
 def get_agoda_suggest(suggest,map_info,country_id):
     suggest = json.loads(suggest)
     suggestionlist = suggest['SuggestionList']
@@ -264,6 +269,7 @@ def get_agoda_suggest(suggest,map_info,country_id):
         raise e
     finally:
         conn.close()
+    return len(save_result)
 
 class AllHotelSourceSDK(BaseSDK):
 
@@ -295,21 +301,25 @@ class AllHotelSourceSDK(BaseSDK):
                     url = source_interface[source].format(keyword)
                     response = session.get(url=url,)
                     get_suggest = getattr(sys.modules[__name__],'get_{0}_suggest'.format(source))
-                get_suggest(response.content,map_info,country_id)
+                count = get_suggest(response.content,map_info,country_id)
             except Exception as e:
                 raise ServiceStandardError(ServiceStandardError.REQ_ERROR,wrapped_exception=e)
-
+            if count >= 0:
+                self.task.error_code = 0
+        return count
 
 if __name__ == "__main__":
     if __name__ == "__main__":
         args = {
-            'keyword': '纽约',
-            'source': 'agoda'
+            'keyword': '水户市',
+            'source': 'hotels',
+            'map_info': '0.0',
+            'country_id':'110'
         }
-        task = Task(_worker='', _task_id='demo', _source='hotels', _type='poi_list',
+        task = Task(_worker='', _task_id='demo', _source='hotels', _type='supplement_field',
                     _task_name='all_hotels_city_suggest',
                     _used_times=0, max_retry_times=6,
-                    kwargs=args, _queue='poi_list',
-                    _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
+                    kwargs=args, _queue='supplement_field',
+                    _routine_key='supplement_field', list_task_token='test', task_type=0, collection='')
         normal = AllHotelSourceSDK(task)
         normal.execute()
