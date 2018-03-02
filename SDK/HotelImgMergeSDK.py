@@ -76,7 +76,10 @@ class UpdateHotelValidation(object):
     def default_api_task_key_and_content(each_data):
         workload_source = each_data["source"] + "Hotel"
         workload_key = 'NULL|{}|{}'.format(each_data["sid"], workload_source)
-        content = '{}&{}&'.format(each_data["mid"], each_data["sid"])
+        if each_data["mid"]=='':
+            content = 'NULL&{}&'.format(each_data["sid"])    
+        else:
+            content = '{}&{}&'.format(each_data["mid"], each_data["sid"])
         return workload_key, content, workload_source
 
     @staticmethod
