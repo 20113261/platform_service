@@ -36,7 +36,7 @@ config = {
     'db': 'source_info',
     'charset': 'utf8'
 }
-def get_elong_suggest(suggest,map_info,country_id):
+def get_elong_suggest(suggest,map_info,country_id,city_id):
     suggest = json.loads(suggest)
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
@@ -59,7 +59,7 @@ def get_elong_suggest(suggest,map_info,country_id):
             others_info = {}
             others_info['map_info'] = map_info
             others_info = json.dumps(others_info)
-            save_result.append([source,sid_md5,sid,2,str_suggest,'NULL',country_id,city_name,region_name,country_name,'NULL',label_batch,others_info])
+            save_result.append([source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,region_name,country_name,'NULL',label_batch,others_info])
         conn = pymysql.connect(**config)
         cursor = conn.cursor()
         try:
@@ -73,7 +73,7 @@ def get_elong_suggest(suggest,map_info,country_id):
     except Exception as e:
         raise e
     return len(save_result)
-def get_ctrip_suggest(suggest,map_info,country_id):
+def get_ctrip_suggest(suggest,map_info,country_id,city_id):
     suggest = suggest.decode('gbk')
     suggest = suggest.replace('cQuery.jsonpResponse=','').replace(';','')
     suggest = json.loads(suggest)
@@ -97,7 +97,7 @@ def get_ctrip_suggest(suggest,map_info,country_id):
             others_info = {}
             others_info['map_info'] = map_info
             others_info = json.dumps(others_info)
-            save_result.append((source,sid_md5,sid,2,str_suggest,'NULL',country_id,city,'NULL',country,'NULL',label_batch,others_info))
+            save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city,'NULL',country,'NULL',label_batch,others_info))
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
     try:
@@ -109,7 +109,7 @@ def get_ctrip_suggest(suggest,map_info,country_id):
     finally:
         conn.close()
     return len(save_result)
-def get_expedia_suggest(suggest,map_info,country_id):
+def get_expedia_suggest(suggest,map_info,country_id,city_id):
     pattern = re.search(r'(?<=\()(.*)(?=\))', suggest)
     suggest = pattern.group(1)
     suggest = json.loads(suggest)
@@ -135,7 +135,7 @@ def get_expedia_suggest(suggest,map_info,country_id):
             str_suggest = json.dumps(city)
             local_time = str(datetime.datetime.now())[:10]
             label_batch = ''.join([local_time, 'a'])
-            save_result.append((source,sid_md5,sid,2,str_suggest,'NULL',country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
+            save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
     try:
@@ -147,7 +147,7 @@ def get_expedia_suggest(suggest,map_info,country_id):
     finally:
         conn.close()
     return len(save_result)
-def get_booking_suggest(suggest,map_info,country_id):
+def get_booking_suggest(suggest,map_info,country_id,city_id):
     suggest = json.loads(suggest)
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
@@ -178,7 +178,7 @@ def get_booking_suggest(suggest,map_info,country_id):
                 local_time = str(datetime.datetime.now())[:10]
                 label_batch = ''.join([local_time, 'a'])
                 str_suggest = json.dumps(city)
-            save_result.append((source,sid_md5,sid,2,str_suggest,'NULL',country_id,city_name,region_name,country_name,'NULL',label_batch,others_info))
+            save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,region_name,country_name,'NULL',label_batch,others_info))
     except Exception as e:
         raise e
     conn = pymysql.connect(**config)
@@ -192,7 +192,7 @@ def get_booking_suggest(suggest,map_info,country_id):
     finally:
         conn.close()
     return len(save_result)
-def get_hotels_suggest(suggest,map_info,country_id):
+def get_hotels_suggest(suggest,map_info,country_id,city_id):
     pattern = re.search(r'(?<=srs\()(.*)(?=\);)', suggest)
     suggest = pattern.group(1)
     suggest = json.loads(suggest)
@@ -224,7 +224,7 @@ def get_hotels_suggest(suggest,map_info,country_id):
                 label_batch = ''.join([local_time, 'a'])
                 str_suggest = json.dumps(city)
                 save_result.append(
-                    (source, sid_md5, sid, 2, str_suggest, 'NULL', country_id, city_name, 'NULL', country_name, 'NULL', label_batch,others_info))
+                    (source, sid_md5, sid, 2, str_suggest, city_id, country_id, city_name, 'NULL', country_name, 'NULL', label_batch,others_info))
         conn = pymysql.connect(**config)
         cursor = conn.cursor()
         try:
@@ -238,7 +238,7 @@ def get_hotels_suggest(suggest,map_info,country_id):
     except Exception as e:
         raise e
     return len(save_result)
-def get_agoda_suggest(suggest,map_info,country_id):
+def get_agoda_suggest(suggest,map_info,country_id,city_id):
     suggest = json.loads(suggest)
     suggestionlist = suggest['SuggestionList']
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
@@ -258,7 +258,7 @@ def get_agoda_suggest(suggest,map_info,country_id):
             others_info = {}
             others_info['map_info'] = map_info
             others_info = json.dumps(others_info)
-            save_result.append((source,sid_md5,sid,2,str_suggest,'NULL',country_id,city_name,'NULL','NULL','NULL',label_batch,others_info))
+            save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL','NULL','NULL',label_batch,others_info))
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
     try:
@@ -282,6 +282,7 @@ class AllHotelSourceSDK(BaseSDK):
                 source = self.task.kwargs['source']
                 map_info = self.task.kwargs['map_info']
                 country_id = self.task.kwargs['country_id']
+                city_id = self.task.kwargs['city_id']
                 local_time = urllib.unquote(datetime.datetime.now(pytz.timezone(pytz.country_timezones('cn')[0])).strftime(
                     '%a %b %d %Y %H:%M:%S GMT+0800 (%Z)'))
                 if source in 'agoda':
@@ -301,8 +302,9 @@ class AllHotelSourceSDK(BaseSDK):
                     url = source_interface[source].format(keyword)
                     response = session.get(url=url,)
                     get_suggest = getattr(sys.modules[__name__],'get_{0}_suggest'.format(source))
-                count = get_suggest(response.content,map_info,country_id)
+                count = get_suggest(response.content,map_info,country_id,city_id)
             except Exception as e:
+                print(e)
                 raise ServiceStandardError(ServiceStandardError.REQ_ERROR,wrapped_exception=e)
             if count >= 0:
                 self.task.error_code = 0
