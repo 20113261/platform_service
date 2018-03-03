@@ -54,8 +54,6 @@ def ctrip_GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
         'used_times': used_times
     }
     spider = factory.get_spider_by_old_source('Ctrip|vacation')
-    if spider ==None:
-        print '----FUCK---'
     spider.task = task
     if need_cache:
         error_code = spider.crawl(required=['vacation'], cache_config=cache_config)
