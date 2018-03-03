@@ -390,11 +390,12 @@ class AllHotelSourceSDK(BaseSDK):
                     get_suggest = getattr(sys.modules[__name__],'get_{0}_suggest'.format(source))
 
                 count = get_suggest(response.content,map_info,country_id,city_id,database_name,keyword)
+                if count >= 0:
+                    self.task.error_code = 0
             except Exception as e:
                 print(e)
                 raise ServiceStandardError(ServiceStandardError.REQ_ERROR,wrapped_exception=e)
-            if count >= 0:
-                self.task.error_code = 0
+
         return count
 
 if __name__ == "__main__":
