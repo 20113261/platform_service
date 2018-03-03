@@ -8,7 +8,7 @@
 import unittest
 import re
 import functools
-
+import types
 from urlparse import urlparse
 from my_logger import get_logger
 
@@ -17,15 +17,15 @@ logger = get_logger("utils")
 
 def is_legal(s):
     if s:
-        if isinstance(s, str):
+        if isinstance(s, types.StringTypes):
             if s.strip():
                 if s.lower() != 'null':
                     return True
-        elif isinstance(s, int):
+        elif isinstance(s, types.IntType):
             if s > -1:
                 return True
 
-        elif isinstance(s, float):
+        elif isinstance(s, types.FloatType):
             if s > -1.0:
                 return True
     return False
