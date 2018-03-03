@@ -294,9 +294,16 @@ def hotels_parser(content, url, other_info):
     # print hotel.is_parking_free
 
     try:
-        temp = root.xpath('//*[@id="at-a-glance"]/div/div[1]/div[2]/div/ul[2]')[0]
-        check_in_time = temp.xpath('./li[1]/text()')[0]
-        check_out_time = temp.xpath('./li[2]/text()')[0]
+        # temp = root.xpath('//*[@id="at-a-glance"]/div/div[1]/div[2]/div/ul[2]')[0]
+        # check_in_time = temp.xpath('./li[1]/text()')[0]
+        # check_out_time = temp.xpath('./li[2]/text()')[0]
+        temp_titles = root.xpath('//div[@class=" col-8-24 key-facts-container resp-module"]/div')[0]
+        for title_i, title in enumerate(temp_titles.xpath('./h4')):
+            if title.text=='抵達/離開':
+                break
+        temp_check_times = temp_titles.xpath('ul')[title_i]
+        check_in_time = temp_check_times.xpath('./li[1]/text()')[0]
+        check_out_time = temp_check_times.xpath('./li[2]/text()')[0]
     except Exception as e:
         print(str(e))
         check_in_time = 'NULL'
