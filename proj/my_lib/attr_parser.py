@@ -167,6 +167,18 @@ def parse(content, url, city_id, debug=False):
             tel = ''
     except:
         tel = ''
+    if not tel:
+        try:
+            span_list = root.xpath('//div[@class="blEntry phone directContactInfo"]/span')
+            for span in span_list:
+                tel = span.text_content()
+                if not re.search(r'[0-9]+',tel):
+                    tel = ''
+                    continue
+                else:
+                    break
+        except Exception as e:
+            tel = ''
     print 'tel: %s' % tel
 
     # m@add 官网url
@@ -227,7 +239,6 @@ def parse(content, url, city_id, debug=False):
     # 开店时间 open_time
     try:
         open_time = root.find_class('hoursAll')[0].text_content()
-
     except:
         open_time = ''
 
@@ -254,8 +265,24 @@ def parse(content, url, city_id, debug=False):
             else:
                 open_time = ''
         except Exception, e:
-            # traceback.print_exc(e)
             open_time = ''
+    if not open_time:
+        try:
+            save_result = []
+            time = root.xpath('//div[@class="timeRange"]/text()')
+            day = root.xpath('//div[contains(@class,"dayRange")]/text()')
+            day_times = zip(day,time)
+            for day_time in day_times:
+                save_result.append(' '.join([day_time[0],day_time[1]]))
+            open_time = '|'.join(save_result)
+        except Exception as e:
+            open_time = ''
+    if not open_time:
+        try:
+            open_time = root.xpath('//div[@class="detail_section duration"]/text()')[0]
+        except Exception as e:
+            open_time = ''
+
     print 'open_time: %s' % open_time
 
     # tagid
@@ -286,6 +313,11 @@ def parse(content, url, city_id, debug=False):
     except:
         try:
             desc = root.xpath('//*[@class="description"]/*[@class="text"]')[0].text_content().encode('utf-8').strip()
+        except:
+            desc = ''
+    if not desc:
+        try:
+            desc = root.xpath('//div[@class="modal-card-body"]/text()')[0].encode('utf-8').strip()
         except:
             desc = ''
     print 'desc: %s' % desc
@@ -400,6 +432,9 @@ if __name__ == '__main__':
     url = 'https://www.tripadvisor.cn//Attraction_Review-g297524-d314609-Reviews-Darwin_Bay-Genovesa_Galapagos_Islands.html,https://www.tripadvisor.cn//Attraction_Review-g297524-d314610-Reviews-Darwin_Trail-Genovesa_Galapagos_Islands.html'
     url = 'https://www.tripadvisor.cn/Attraction_Review-g187147-d188150-Reviews-Musee_d_Orsay-Paris_Ile_de_France.html'
     url = 'https://www.tripadvisor.cn//Attraction_Review-g297533-d8749417-Reviews-Santa_Cruz_Fish_Market-Puerto_Ayora_Santa_Cruz_Galapagos_Islands.html'
+    url = 'https://www.tripadvisor.cn//Attraction_Review-g298166-d12194630-Reviews-Natto_Monument-Mito_Ibaraki_Prefecture_Kanto.html'
+    url = "https://www.tripadvisor.cn/Attraction_Review-g1066459-d315484-Reviews-Ryogoku_Kokugikan-Sumida_Tokyo_Tokyo_Prefecture_Kanto.html"
+    url = 'https://www.tripadvisor.cn/Attraction_Review-g1066457-d479258-Reviews-Shinjuku_Gyoen_National_Garden-Shinjuku_Tokyo_Tokyo_Prefecture_Kanto.html'
     import requests
 
     content = requests.get(url).content
