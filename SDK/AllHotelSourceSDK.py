@@ -31,6 +31,8 @@ source_interface = {
         'v=1&lang=zh-cn&sid=856b717ff095a5294d897d227d9e7ef4&aid=376390&pid=9bb13ce9aca502d0&stype=1&src=index&eb=4&e_obj_labels=1&at=1&e_tclm=1&e_smmd=2&e_ms=1&e_msm=1&e_themes_msm_1=1&add_themes=1&themes_match_start=1&include_synonyms=1&sort_nr_destinations=1&gpf=1&term={0}',
     'expedia': 'https://suggest.expedia.com/api/v4/typeahead/{0}?client=Homepage&siteid=18&guid=cf20f4e625d7418399d0954735abcb77&lob=PACKAGES&locale=zh_CN&expuserid=-1&regiontype=95&ab=&dest=true&maxresults=9&features=ta_hierarchy&format=jsonp&device=Desktop&browser=Chrome&_=1503623716328',
     'ctrip': 'http://hotels.ctrip.com/international/Tool/cityFilter.ashx?charset=gb2312&flagship=1&keyword={0}',
+    'daodao': 'https://www.tripadvisor.cn/TypeAheadJson',
+    'qyer': 'http://www.qyer.com/qcross/home/ajax?action=search&keyword={0}'
 }
 config = {
         'host': '10.10.230.206',
@@ -225,6 +227,7 @@ def get_booking_suggest(suggest,map_info,country_id,city_id,database_name,keywor
     finally:
         conn.close()
     return len(save_result)
+
 def get_hotels_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
     config['db'] = database_name
     pattern = re.search(r'(?<=srs\()(.*)(?=\);)', suggest)
@@ -248,13 +251,11 @@ def get_hotels_suggest(suggest,map_info,country_id,city_id,database_name,keyword
                 lat = str(city['latitude'])
                 long = str(city['longitude'])
                 map_info = ','.join([long, lat])
-
                 country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
                 sid = city['geoId']
                 md5 = hashlib.md5()
                 md5.update(sid)
                 sid_md5 = md5.hexdigest()
-
                 others_info['map_info'] = map_info
                 others_info = json.dumps(others_info)
                 local_time = str(datetime.datetime.now())[:10]
@@ -321,6 +322,80 @@ def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
         conn.close()
     return len(save_result)
 
+def get_daodao_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
+    config['db'] = database_name
+    suggest_infos = json.loads(suggest)
+    sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    save_result = []
+    for suggest_info in suggest_infos:
+        city_type = suggest_info['type']
+        others_info = {}
+        if city_type == 'GEO':
+            source = 'daodao'
+            name = suggest_info['name']
+            city_name = name.split(',')[0].strip()
+            country_name = name.split(',')[-1].strip()
+            lat,long = suggest_info['coords'].split(',')
+            map_info = ','.join([long,lat])
+            others_info['map_info'] = map_info
+            others_info = json.dumps(others_info)
+            sid = str(suggest_info['value'])
+            md5 = hashlib.md5()
+            md5.update(sid)
+            sid_md5 = md5.hexdigest()
+            country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
+            local_time = str(datetime.datetime.now())[:10]
+            label_batch = ''.join([local_time, 'a'])
+            str_suggest = json.dumps(suggest_info)
+            save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
+    conn = pymysql.connect(**config)
+    cursor = conn.cursor()
+    try:
+        cursor.executemany(sql, save_result)
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+    return len(save_result)
+
+def get_qyer_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
+    config['db'] = database_name
+    suggests = json.loads(suggest)
+    sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    save_result = []
+    suggest_infos = suggests['data']['list']
+    for suggest_info in suggest_infos:
+        city_type = suggest_info['type_name']
+        source = 'qyer'
+        if city_type == 'city':
+            city_name = suggest_info['cn_name'].replace('<span class="cGreen">','').replace('</span>','')
+            if city_name == keyword:
+                country_name = get_country_name(country_id)
+                url = suggest_info['url']
+                if str(url).endswith('/'):
+                    sid = url.split('/')[-2]
+                else:
+                    sid = url.split('/')[-1]
+                md5 = hashlib.md5()
+                md5.update(sid)
+                sid_md5 = md5.hexdigest()
+                str_suggest = ''.join(['http:',url])
+                local_time = str(datetime.datetime.now())[:10]
+                label_batch = ''.join([local_time, 'a'])
+                save_result.append((source,sid_md5,sid,1,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch))
+    conn = pymysql.connect(**config)
+    cursor = conn.cursor()
+    try:
+        cursor.executemany(sql, save_result)
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+    return len(save_result)
 def get_city_country_id(city_name,country_name,map_info=None,config=None):
     mioji_country = MiojiSimilarCountryDict()
     mioji_city = MiojiSimilarCityDict()
@@ -376,6 +451,40 @@ class AllHotelSourceSDK(BaseSDK):
                     }
                     response = session.get(url=url,headers=header)
                     get_suggest = getattr(sys.modules[__name__], 'get_{0}_suggest'.format(source))
+                elif source in 'daodao':
+                    headers = {
+                        'referer': 'https://www.tripadvisor.cn/',
+                        'x-requested-with': 'XMLHttpRequest',
+                        'accept-encoding': 'gzip, deflate, br',
+                        'accept': 'text/javascript, text/html, application/xml, text/xml, */*',
+                        'accept-language': 'zh-CN,zh;q=0.9',
+                        'Origin': 'https://www.tripadvisor.cn',
+                        'Host': 'www.tripadvisor.cn'
+                    }
+                    url = source_interface[source]
+                    response = session.post(
+                        url=url,
+                        headers=headers,
+                        data={
+                            'action': 'API',
+                            'uiOrigin': 'PTPT-dest',
+                            'types': 'geo,dest',
+                            'hglt': True,
+                            'global': True,
+                            'legacy_format': True,
+                            '_ignoreMinCount': True,
+                            'query': keyword
+                        }
+                    )
+                    get_suggest = getattr(sys.modules[__name__], 'get_{0}_suggest'.format(source))
+                elif source in 'qyer':
+                    headers = {
+                        "Referer": "http://www.qyer.com/",
+                        "Host": "www.qyer.com",
+                    }
+                    url = source_interface[source].format(keyword)
+                    response = session.get(url,headers=headers)
+                    get_suggest = getattr(sys.modules[__name__], 'get_{0}_suggest'.format(source))
                 else:
                     url = source_interface[source].format(keyword)
                     response = session.get(url=url,)
@@ -393,7 +502,7 @@ class AllHotelSourceSDK(BaseSDK):
 if __name__ == "__main__":
     args = {
         'keyword': '班纳',
-        'source': 'elong',
+        'source': 'qyer',
         'map_info': '0.0',
         'country_id':'125',
         'city_id': '10002',
