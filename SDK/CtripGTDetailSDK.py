@@ -38,9 +38,12 @@ debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
-client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
-collections = client['data_result']['ctrip_GT_detail']
+# client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
+# collections = client['data_result']['ctrip_GT_detail']
 
+client = pymongo.MongoClient("mongodb://10.10.231.105:27017")
+db = client['Test']
+collections = db['ctrip_vacation001']
 
 def ctrip_GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
     task = Task()
@@ -64,7 +67,7 @@ def ctrip_GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
 
 class CtripGTDetailSDK(BaseSDK):
     def get_task_finished_code(self):
-        return [0, 106, 107, 109, 29]
+        return [0, 106, 107, 109]
 
     def _execute(self, **kwargs):
 
