@@ -5,6 +5,12 @@
 # @Site    : 
 # @File    : __init__.py.py
 # @Software: PyCharm
+
+from .PoiCtripListSDK import PoiCtripListSDK
+from .PoiCtripDetailSDK import PoiCtripDetailSDK
+from .CtripGTListSDK import CtripGTListSDK
+from .CtripGTDetailSDK import CtripGTDetailSDK
+
 from .PoiListSDK import PoiListSDK
 from .PoiDetailSDK import PoiDetailSDK
 from .QyerListSDK import QyerListSDK
