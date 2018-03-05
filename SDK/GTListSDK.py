@@ -97,8 +97,12 @@ class GTListSDK(BaseSDK):
 
         sql = SQL.format(self.task.task_name)
         data = []
-        for res in result:
-            data.append((source, res['pid_3rd'], dept_info['id'], dest_info['id'], json.dumps(res)))
+        if source == 'ctrip':
+            for res in result:
+                data.append((source, res['pid_3rd'], dept_info['id'], dest_info['id'], json.dumps(res)))
+        elif source == 'tuniu':
+            for res in result:
+                data.append((source, res['id'], dept_info['id'], dest_info['id'], json.dumps(res)))
         try:
             service_platform_conn = service_platform_pool.connection()
             cursor = service_platform_conn.cursor()

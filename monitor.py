@@ -617,7 +617,7 @@ class TaskSender(object):
 
 if __name__ == '__main__':
     #monitoring_ctripPoi_list2detail()
-    monitoring_ctripGT_list2detail()
+    monitoring_GT_list2detail()
 
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
