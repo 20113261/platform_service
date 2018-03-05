@@ -119,7 +119,7 @@ def send_ctripPoi_detail_task(tasks, task_tag, priority):
             })
     return utime
 
-def send_ctripGT_detail_task(tasks, task_tag, priority):
+def send_GT_detail_task(tasks, task_tag, priority):
     utime = None
     with InsertTask(worker='proj.total_tasks.ctrip_GT_detail_task', queue='poi_detail', routine_key='poi_detail',
                     task_name=task_tag, source='CtripGT', _type='CtripGTDetail',

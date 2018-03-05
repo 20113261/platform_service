@@ -3,7 +3,8 @@
 '''
 @author: feng
 @date: 2018-03-01
-@purpose: ctrip grouptravel detail sdk
+@update: 18-03-05
+@purpose:  grouptravel detail sdk
 '''
 
 from __future__ import absolute_import
@@ -38,14 +39,14 @@ debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
-# client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
-# collections = client['data_result']['ctrip_GT_detail']
+client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
+collections = client['data_result']['GT_detail']
 
-client = pymongo.MongoClient("mongodb://10.10.231.105:27017")
-db = client['Test']
-collections = db['ctrip_vacation001']
+# client = pymongo.MongoClient("mongodb://10.10.231.105:27017")
+# db = client['Test']
+# collections = db['ctrip_vacation001']
 
-def ctrip_GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
+def GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
     task = Task()
     task.ticket_info = {
         'tid': tid,
@@ -53,7 +54,7 @@ def ctrip_GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
         'source': source,
         'used_times': used_times
     }
-    spider = factory.get_spider_by_old_source('Ctrip|vacation')
+    spider = factory.get_spider_by_old_source('{}|vacation_detail'.format(source))
     spider.task = task
     if need_cache:
         error_code = spider.crawl(required=['vacation'], cache_config=cache_config)
@@ -63,21 +64,22 @@ def ctrip_GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
     logger.info(str(spider.result['vacation']) + '  --  ' + task.ticket_info['vacation_info']['url'])
     return error_code, spider.result['vacation'], spider.page_store_key_list
 
-class CtripGTDetailSDK(BaseSDK):
+class GTDetailSDK(BaseSDK):
     def get_task_finished_code(self):
         return [0, 106, 107, 109]
 
     def _execute(self, **kwargs):
-
-        error_code, result, page_store_key = ctrip_GTdetail_to_database(
+        source = self.task.kwargs['source']
+        error_code, result, page_store_key = GTdetail_to_database(
             tid=self.task.task_id,
             used_times=self.task.used_times,
-            source='ctripGTdetail',
+            source=source,
             ticket=self.task.kwargs,
             need_cache=self.task.used_times == 0
         )
 
         collections.save({
+            'source':source,
             'collections': self.task.collection,
             'task_id': self.task.task_id,
             'used_times': self.task.used_times[0],
@@ -94,22 +96,25 @@ if __name__ == '__main__':
     from proj.my_lib.Common.Task import Task as ttt
 
     args =  {
-	"id": "18829225",
-	"search_dept_city_id": "1",
-	"search_dept_city": "北京",
-	"search_dest_city_id": "",
-	"search_dest_city": "意大利",
-	"dept_city": "北京",
-	"highlight": "列表页传入",
-	"first_image": "列表页传入",
-	"url": "http://vacations.ctrip.com/grouptravel/p18829225s1.html",
-	"supplier": "列表页传入",
-	"brand": "列表页出传入"
-	}
+        'source':'ctrip',
+        "pid_3rd": "18829225",
+        "dept_id": "1",
+        "search_dept_city": "北京",
+        "dest_id": "",
+        "search_dest_city": "意大利",
+        "dept_city": "北京",
+        "highlight": "列表页传入",
+        "first_image": "列表页传入",
+        "url": "http://vacations.ctrip.com/grouptravel/p18829225s1.html",
+        "supplier": "列表页传入",
+        "brand": "列表页出传入"
+    }
+    args={'source':'tuniu','search_dept_city_id': '1602', 'url': 'http://www.tuniu.com/product/300095519', 'brand': '罗马假期', 'dept_city': '南京', 'search_dest_city': '普吉岛', 'first_image': 'http://m.tuniucdn.com/fb2/t1/G5/M00/09/0D/Cii-tFomThiIDU_GAAEyLjwgIi4AAAb6QIwFvUAATJG78_w160_h90_c1_t0.jpeg', 'search_dept_city': '南京', 'search_dest_city_id': '', 'id': '300095519'}
+
 
     task = ttt(_worker='', _task_id='demo', _source='ctripGT', _type='GT_detail', _task_name='list_ctripGT_total_test',
                _used_times=0, max_retry_times=6,
                kwargs=args, _queue='poi_list',
                _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
-    s = CtripGTDetailSDK(task=task)
+    s = GTDetailSDK(task=task)
     s.execute()

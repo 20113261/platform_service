@@ -8,8 +8,8 @@
 
 from .PoiCtripListSDK import PoiCtripListSDK
 from .PoiCtripDetailSDK import PoiCtripDetailSDK
-from .CtripGTListSDK import CtripGTListSDK
-from .CtripGTDetailSDK import CtripGTDetailSDK
+from .GTListSDK import GTListSDK
+from .GTDetailSDK import GTDetailSDK
 
 from .PoiListSDK import PoiListSDK
 from .PoiDetailSDK import PoiDetailSDK
