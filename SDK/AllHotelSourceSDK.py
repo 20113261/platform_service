@@ -293,11 +293,15 @@ def get_hotels_suggest(suggest,map_info,country_id,city_id,database_name,keyword
     return len(save_result)
 def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
     suggest = json.loads(suggest)
-    suggestionlist = suggest['ViewModelList']
+    save_result = []
+    try:
+        suggestionlist = suggest['ViewModelList']
+    except Exception as e:
+        return save_result
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     key_city_id = city_id
     key_country_id = country_id
-    save_result = []
+
     key_country_name = get_country_name(country_id)
     for city_info in suggestionlist:
         city_type = city_info['PageTypeId']
@@ -381,7 +385,10 @@ def get_qyer_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
     suggests = json.loads(suggest)
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
-    suggest_infos = suggests['data']['list']
+    try:
+        suggest_infos = suggests['data']['list']
+    except Exception as e:
+        return save_result
     for suggest_info in suggest_infos:
         city_type = suggest_info['type_name']
         source = 'qyer'
