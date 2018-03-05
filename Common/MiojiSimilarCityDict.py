@@ -48,10 +48,10 @@ def key_modify(s):
 
 
 class MiojiSimilarCityDict(object):
-    def __init__(self):
+    def __init__(self,config):
         self.can_use_region = defaultdict(bool)
         self.city_info_dict = defaultdict(str)
-        self.dict = self.get_mioji_similar_dict()
+        self.dict = self.get_mioji_similar_dict(config)
         self.report_data = []
 
     def __del__(self):
@@ -135,9 +135,9 @@ class MiojiSimilarCityDict(object):
     def can_use_mioji_region(self, keys):
         return self.can_use_region[keys]
 
-    def get_mioji_similar_dict(self):
+    def get_mioji_similar_dict(self,config):
         __dict = defaultdict(set)
-        db_test = dataset.connect('mysql+pymysql://reader:miaoji1109@10.10.69.170/base_data?charset=utf8',
+        db_test = dataset.connect('mysql+pymysql://{user}:{password}@{host}/{db}?charset={charset}'.format(**config),
                                   reflect_views=False)
         city_country_info = [
             i for i in db_test.query('''SELECT
@@ -181,7 +181,7 @@ FROM city
     def get_mioji_city_info(self, city_id):
         return self.city_info_dict[str(city_id)]
 
-    def get_mioji_city_id(self, keys):
+    def get_mioji_city_id(self, keys,config):
         keys = self.modify_keys(keys)
         result, match_type = self._get_mioji_city_id(keys)
         self.report_data.append((keys, match_type, result))
