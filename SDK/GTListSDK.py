@@ -71,12 +71,12 @@ class GTListSDK(BaseSDK):
     def _execute(self, **kwargs):
         dept_info = self.task.kwargs['dept_info']
         dest_info = self.task.kwargs['dest_info']
-
+        source = self.task.kwargs['source']
         error_code, result, page_store_key = GT_to_database(
             tid=self.task.task_id,
             used_times=self.task.used_times,
             vacation_type = self.task.kwargs['vacation_type'],
-            source=self.task.kwargs['source'],
+            source=source,
             ticket=self.task.kwargs,
             need_cache=self.task.used_times == 0
         )
@@ -98,7 +98,7 @@ class GTListSDK(BaseSDK):
         sql = SQL.format(self.task.task_name)
         data = []
         for res in result:
-            data.append(('ctripGT', res['pid_3rd'], dept_info['id'], dest_info['id'], json.dumps(res)))
+            data.append((source, res['pid_3rd'], dept_info['id'], dest_info['id'], json.dumps(res)))
         try:
             service_platform_conn = service_platform_pool.connection()
             cursor = service_platform_conn.cursor()

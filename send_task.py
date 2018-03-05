@@ -127,6 +127,7 @@ def send_GT_detail_task(tasks, task_tag, priority):
         for source, source_id, city_id, country_id, url, utime in tasks:
             gg = json.loads(url)
             gg['dest_id'] = country_id
+            gg['source']=source
             it.insert_task(
                 gg
             )
