@@ -86,6 +86,8 @@ class PoiCtripDetailSDK(BaseSDK):
         # -- detail 2 mysql --
 
         self.task.error_code = error_code
+        if error_code == 0 and len(result)<24:
+            self.task_error_code = 28
 
 if __name__ == '__main__':
     from proj.my_lib.Common.Task import Task as ttt
