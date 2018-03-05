@@ -98,10 +98,14 @@ def get_ctrip_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
     suggest = suggest.decode('gbk')
     suggest = suggest.replace('cQuery.jsonpResponse=','').replace(';','')
     suggest = json.loads(suggest)
-    infos = suggest.get('data').strip('@')
-    info_list = infos.split('@')
-    sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
+    try:
+        infos = suggest.get('data').strip('@')
+        info_list = infos.split('@')
+    except Exception as e:
+        return save_result
+    sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+
     key_city_id = city_id
     key_country_id = country_id
     key_country_name = get_country_name(country_id)
