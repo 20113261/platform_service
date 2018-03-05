@@ -20,7 +20,7 @@ from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, \
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail, \
     monitoring_supplement_field, monitoring_zombies_task_by_hour, city2list, monitoring_zombies_task_total, \
-    monitoring_ctripPoi_list2detail, monitoring_ctripGT_list2detail
+    monitoring_ctripPoi_list2detail, monitoring_GT_list2detail
 from proj.config import BROKER_URL
 from proj.my_lib.Common.Task import Task
 from rabbitmq_func import detect_msg_num
@@ -102,7 +102,7 @@ schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2',
 schedule.add_job(monitoring_ctripPoi_list2detail, 'cron', second='*/45',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripPoi_list')
 
-schedule.add_job(monitoring_ctripGT_list2detail, 'cron', second='*/45',
+schedule.add_job(monitoring_GT_list2detail, 'cron', second='*/45',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripGT_list')
 
 schedule.add_job(city2list, 'cron', second='*/60', id='city2list')

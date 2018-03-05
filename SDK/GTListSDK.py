@@ -4,7 +4,8 @@
 '''
 @author: feng
 @date: 2018-02-01
-@purpose: ctrip list list sdk
+@update: 18-03-05
+@purpose: grouptravel list sdk
 '''
 from __future__ import absolute_import
 import datetime
@@ -41,18 +42,18 @@ spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
-collections = client['data_result']['ctrip_GT_list']
+collections = client['data_result']['GT_list']
 
 
-def ctrip_GT_to_database(tid, used_times, source,ticket, need_cache=True):
+def GT_to_database(tid, used_times, source, vacation_type, ticket, need_cache=True):
     task = Task()
     task.ticket_info = {
         'tid': tid,
         'vacation_info':ticket,
-        'source':source,
+        'source':vacation_type,
         'used_times': used_times
     }
-    spider = factory.get_spider_by_old_source('ctrip|vacation_list')
+    spider = factory.get_spider_by_old_source('{}|vacation_list'.format(source))
     spider.task = task
     if need_cache:
         error_code = spider.crawl(required=['list'], cache_config=cache_config)
@@ -63,18 +64,19 @@ def ctrip_GT_to_database(tid, used_times, source,ticket, need_cache=True):
     return error_code, spider.result['list'], spider.page_store_key_list
 
 
-class CtripGTListSDK(BaseSDK):
+class GTListSDK(BaseSDK):
     def get_task_finished_code(self):
         return [0, 106, 107, 109]
 
     def _execute(self, **kwargs):
         dept_info = self.task.kwargs['dept_info']
         dest_info = self.task.kwargs['dest_info']
-
-        error_code, result, page_store_key = ctrip_GT_to_database(
+        source = self.task.kwargs['source']
+        error_code, result, page_store_key = GT_to_database(
             tid=self.task.task_id,
             used_times=self.task.used_times,
-            source=self.task.kwargs['vacation_type'],
+            vacation_type = self.task.kwargs['vacation_type'],
+            source=source,
             ticket=self.task.kwargs,
             need_cache=self.task.used_times == 0
         )
@@ -87,6 +89,7 @@ class CtripGTListSDK(BaseSDK):
             'dept_info':dept_info,
             'dest_info':dest_info,
             'result': result,
+            'source':self.task.kwargs['source'],
             'insert_time': datetime.datetime.now()
         })
 
@@ -94,8 +97,12 @@ class CtripGTListSDK(BaseSDK):
 
         sql = SQL.format(self.task.task_name)
         data = []
-        for res in result:
-            data.append(('ctripGT', res['pid_3rd'], dept_info['id'], dest_info['id'], json.dumps(res)))
+        if source == 'ctrip':
+            for res in result:
+                data.append((source, res['pid_3rd'], dept_info['id'], dest_info['id'], json.dumps(res)))
+        elif source == 'tuniu':
+            for res in result:
+                data.append((source, res['id'], dept_info['id'], dest_info['id'], json.dumps(res)))
         try:
             service_platform_conn = service_platform_pool.connection()
             cursor = service_platform_conn.cursor()
@@ -129,12 +136,13 @@ if __name__ == '__main__':
             "name": "巴厘岛",
             "name_en": "bali"
             },
-        "vacation_type": "grouptravel"
+        "vacation_type": "grouptravel",
+        "source":'tuniu'
     }
 
-    task = ttt(_worker='', _task_id='demo', _source='ctripGT', _type='GT_list', _task_name='list_total_ctripGT_20180228a',
+    task = ttt(_worker='', _task_id='demo', _source='ctripGT', _type='GT_list', _task_name='list_total_ctripGT_test',
                 _used_times=0, max_retry_times=6,
                 kwargs=args, _queue='poi_list',
                 _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
-    s = CtripGTListSDK(task= task)
+    s = GTListSDK(task= task)
     s.execute()

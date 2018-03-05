@@ -17,7 +17,7 @@ import pymongo
 import os
 import sys
 import cachetools.func
-from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task, send_ctripPoi_detail_task, send_ctripGT_detail_task
+from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task, send_image_task, send_ctripPoi_detail_task, send_GT_detail_task
 from attach_send_task import qyer_supplement_map_info
 from proj.my_lib.logger import get_logger
 from send_email import send_email, SEND_TO, EMAIL_TITLE
@@ -38,7 +38,7 @@ HOTEL_SOURCE = (
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 CTRIPPOI_SOURCE = 'ctripPoi'
-CTRIPGT_SOURCE = 'ctripGT'
+GT_SOURCE = 'GT'
 PRIORITY = 3
 # TODO  所有表的update_time字段加索引
 # TODO  所有表的update_time字段改为timestramp(6)类型
@@ -193,7 +193,7 @@ def monitoring_ctripPoi_list2detail():
     #         update_seek(table_name, timestamp, priority, sequence)
 
 
-def monitoring_ctripGT_list2detail():
+def monitoring_GT_list2detail():
     sql = """select source, source_id, city_id,country_id, hotel_url, utime from %s where utime >= '%s' order by utime limit 8000"""
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
@@ -205,7 +205,7 @@ def monitoring_ctripGT_list2detail():
                 continue
             if tab_args[1] != 'total':
                 continue
-            if tab_args[2] != CTRIPGT_SOURCE:
+            if tab_args[2] != GT_SOURCE:
                 continue
             if tab_args[3] == 'test':
                 continue
@@ -217,7 +217,7 @@ def monitoring_ctripGT_list2detail():
             # if table_dict.get(detail_table_name, True):
             #     create_table(detail_table_name)
 
-            timestamp = send_ctripGT_detail_task(
+            timestamp = send_GT_detail_task(
                 execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
             logger.info('timestamp  :  %s' % (timestamp))
 
@@ -617,7 +617,7 @@ class TaskSender(object):
 
 if __name__ == '__main__':
     #monitoring_ctripPoi_list2detail()
-    monitoring_ctripGT_list2detail()
+    monitoring_GT_list2detail()
 
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
