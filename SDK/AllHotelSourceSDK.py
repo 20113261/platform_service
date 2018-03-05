@@ -63,11 +63,12 @@ def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             city_name = city['name_cn']
             country_name = city['region_info']['country_name_cn']
             region_name = city['region_info']['province_name_cn']
-            if city_name != keyword and country_name != key_country_name:
-                continue
-            else:
-                city_id = key_city_id
-                country_id = key_country_id
+            if country_name == key_country_name:
+                if city_name == keyword:
+                    country_id = key_country_id
+                    city_id = key_city_id
+                else:
+                    continue
             if not region_name:
                 region_name = 'NULL'
             sid = str(city['id'])
@@ -110,11 +111,12 @@ def get_ctrip_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             source = 'ctrip'
             country = detail_infos[0].split('，')[-1]
             city = detail_infos[0].split('，')[0]
-            if city != keyword and country != key_country_name:
-                continue
-            else:
-                city_id = key_city_id
-                country_id = key_country_id
+            if country == key_country_name:
+                if city == keyword:
+                    country_id = key_country_id
+                    city_id = key_city_id
+                else:
+                    continue
             sid = ''.join([detail_infos[3],detail_infos[4]])
             md5 = hashlib.md5()
             md5.update(sid)
@@ -297,13 +299,14 @@ def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             country_name = city_info['KnowledgeGraphCountryName']
             if not city_name:
                 continue
-            if city_name != keyword and country_name != key_country_name:
-                continue
-            else:
-                country_id = key_country_id
-                city_id = key_city_id
+            if country_name == key_country_name:
+                if city_name == keyword:
+                    country_id = key_country_id
+                    city_id = key_city_id
+                else:
+                    continue
             source = 'agoda'
-            sid = str(city_info['ObjectID'])
+            sid = str(city_info['ObjectId'])
             md5 = hashlib.md5()
             md5.update(sid)
             sid_md5 = md5.hexdigest()
@@ -507,10 +510,10 @@ class AllHotelSourceSDK(BaseSDK):
 
 if __name__ == "__main__":
     args = {
-        'keyword': '班纳',
+        'keyword': '水户市',
         'source': 'agoda',
         'map_info': '0.0',
-        'country_id':'125',
+        'country_id':'121',
         'city_id': '10002',
         'database_name': 'add_city_678'
     }
