@@ -145,7 +145,10 @@ def get_expedia_suggest(suggest,map_info,country_id,city_id,database_name,keywor
     suggest = json.loads(suggest)
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
-    citys = suggest['sr']
+    try:
+        citys = suggest['sr']
+    except Exception as e:
+        return save_result
     key_country_name = get_country_name(country_id)
     for city in citys:
         city_type = city['type']
