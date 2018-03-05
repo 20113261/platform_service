@@ -780,7 +780,7 @@ def ParseGoogleData(url, data):
         traffic_type = 1
     elif traffic_mode == "driving":
         traffic_type = 0
-        if city_mode == "intercity":
+        if city_mode == "interCity":
             traffic_type = 3
     elif traffic_mode == "transit":
         traffic_type = 2
