@@ -77,7 +77,7 @@ def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             local_time = str(datetime.datetime.now())[:10]
             label_batch = ''.join([local_time, 'a'])
             str_suggest = json.dumps(city)
-            if city_name[:len(keyword)] == keyword and len(city_name) >= len(keyword) and country_name == key_country_name:
+            if city_name == keyword and country_name == key_country_name:
                 save_result.append([source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,region_name,country_name,'NULL',label_batch])
 
         conn = pymysql.connect(**config)
@@ -144,7 +144,7 @@ def get_expedia_suggest(suggest,map_info,country_id,city_id,database_name,keywor
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
     citys = suggest['sr']
-
+    key_country_name = get_country_name(country_id)
     for city in citys:
         city_type = city['type']
         if city_type == 'CITY' or city_type == 'MULTICITY':
@@ -166,7 +166,8 @@ def get_expedia_suggest(suggest,map_info,country_id,city_id,database_name,keywor
             str_suggest = json.dumps(city)
             local_time = str(datetime.datetime.now())[:10]
             label_batch = ''.join([local_time, 'a'])
-            save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
+            if city == keyword and country_name == key_country_name:
+                save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
 
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
@@ -185,6 +186,7 @@ def get_booking_suggest(suggest,map_info,country_id,city_id,database_name,keywor
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
     citys = suggest['city']
+    key_country_name = get_country_name(country_id)
     try:
         for city in citys:
             city_type = city['dest_type']
@@ -212,7 +214,8 @@ def get_booking_suggest(suggest,map_info,country_id,city_id,database_name,keywor
                 local_time = str(datetime.datetime.now())[:10]
                 label_batch = ''.join([local_time, 'a'])
                 str_suggest = json.dumps(city)
-                save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,region_name,country_name,'NULL',label_batch,others_info))
+                if city_name == keyword and country_name == key_country_name:
+                    save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,region_name,country_name,'NULL',label_batch,others_info))
     except Exception as e:
         raise e
 
@@ -235,6 +238,7 @@ def get_hotels_suggest(suggest,map_info,country_id,city_id,database_name,keyword
     suggest = json.loads(suggest)
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
+    key_country_name = get_country_name(country_id)
     try:
         suggestions = suggest['suggestions']
         for suggestion in suggestions:
@@ -261,9 +265,9 @@ def get_hotels_suggest(suggest,map_info,country_id,city_id,database_name,keyword
                 local_time = str(datetime.datetime.now())[:10]
                 label_batch = ''.join([local_time, 'a'])
                 str_suggest = json.dumps(city)
-
-                save_result.append(
-                    (source, sid_md5, sid, 2, str_suggest, city_id, country_id, city_name, 'NULL', country_name, 'NULL', label_batch,others_info))
+                if city_name == keyword and country_name == key_country_name:
+                    save_result.append(
+                        (source, sid_md5, sid, 2, str_suggest, city_id, country_id, city_name, 'NULL', country_name, 'NULL', label_batch,others_info))
 
         conn = pymysql.connect(**config)
         cursor = conn.cursor()
@@ -327,6 +331,7 @@ def get_daodao_suggest(suggest,map_info,country_id,city_id,database_name,keyword
     suggest_infos = json.loads(suggest)
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch,others_info) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
+    key_country_name = get_country_name(country_id)
     for suggest_info in suggest_infos:
         city_type = suggest_info['type']
         others_info = {}
@@ -347,7 +352,8 @@ def get_daodao_suggest(suggest,map_info,country_id,city_id,database_name,keyword
             local_time = str(datetime.datetime.now())[:10]
             label_batch = ''.join([local_time, 'a'])
             str_suggest = json.dumps(suggest_info)
-            save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
+            if city_name == keyword and country_name == key_country_name:
+                save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
     try:
@@ -502,7 +508,7 @@ class AllHotelSourceSDK(BaseSDK):
 if __name__ == "__main__":
     args = {
         'keyword': '班纳',
-        'source': 'qyer',
+        'source': 'agoda',
         'map_info': '0.0',
         'country_id':'125',
         'city_id': '10002',
