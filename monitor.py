@@ -38,7 +38,7 @@ HOTEL_SOURCE = (
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 CTRIPPOI_SOURCE = 'ctripPoi'
-CTRIPGT_SOURCE = 'ctripGT'
+GT_SOURCE = 'GT'
 PRIORITY = 3
 # TODO  所有表的update_time字段加索引
 # TODO  所有表的update_time字段改为timestramp(6)类型
@@ -205,7 +205,7 @@ def monitoring_GT_list2detail():
                 continue
             if tab_args[1] != 'total':
                 continue
-            if tab_args[2] != CTRIPGT_SOURCE:
+            if tab_args[2] != GT_SOURCE:
                 continue
             if tab_args[3] == 'test':
                 continue
