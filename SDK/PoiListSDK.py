@@ -103,15 +103,19 @@ class PoiListSDK(BaseSDK):
         self.logger.info('spider    %s %s' % (str(code), str(result)))
         self.task.error_code = code
 
-        collections.save({
-            'collections': self.task.collection,
-            'task_id': self.task.task_id,
-            'used_times': self.task.used_times[0],
-            'others_info': others_info,
-            'stored_page_keys': page_store_key,
-            'result': result,
-            'insert_time': datetime.datetime.now()
-        })
+
+        try:
+            collections.save({
+                'collections': self.task.collection,
+                'task_id': self.task.task_id,
+                'used_times': self.task.used_times[0],
+                'others_info': others_info,
+                'stored_page_keys': page_store_key,
+                'result': result,
+                'insert_time': datetime.datetime.now()
+            })
+        except Exception as e:
+            self.logger.exception(msg=traceback.format_exc(e))
 
         data = []
         try:
