@@ -53,7 +53,7 @@ def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
     suggest = json.loads(suggest)
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     save_result = []
-    key_city_id = city_id
+    config['db'] = database_name
     key_country_id = country_id
     key_country_name = get_country_name(key_country_id)
     try:
@@ -63,12 +63,7 @@ def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             city_name = city['name_cn']
             country_name = city['region_info']['country_name_cn']
             region_name = city['region_info']['province_name_cn']
-            if country_name == key_country_name:
-                if city_name == keyword:
-                    country_id = key_country_id
-                    city_id = key_city_id
-                else:
-                    continue
+            country_id,city_id = get_city_country_id(city_name,country_name,None,config)
             if not region_name:
                 region_name = 'NULL'
             sid = str(city['id'])
@@ -95,6 +90,7 @@ def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
         raise e
     return len(save_result)
 def get_ctrip_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
+    config['db'] = database_name
     suggest = suggest.decode('gbk')
     suggest = suggest.replace('cQuery.jsonpResponse=','').replace(';','')
     suggest = json.loads(suggest)
@@ -106,8 +102,6 @@ def get_ctrip_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
         return save_result
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
-    key_city_id = city_id
-    key_country_id = country_id
     key_country_name = get_country_name(country_id)
     for info in info_list:
         if 'city' in info:
@@ -115,12 +109,7 @@ def get_ctrip_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             source = 'ctrip'
             country = detail_infos[0].split('，')[-1]
             city = detail_infos[0].split('，')[0]
-            if country == key_country_name:
-                if city == keyword:
-                    country_id = key_country_id
-                    city_id = key_city_id
-                else:
-                    continue
+            country_id,city_id = get_city_country_id(city,country,None,config)
             sid = ''.join([detail_infos[3],detail_infos[4]])
             md5 = hashlib.md5()
             md5.update(sid)
@@ -299,9 +288,8 @@ def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
     except Exception as e:
         return save_result
     sql = "insert ignore into ota_location(source,sid_md5,sid,suggest_type,suggest,city_id,country_id,s_city,s_region,s_country,s_extra,label_batch) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-    key_city_id = city_id
-    key_country_id = country_id
 
+    config['db'] = database_name
     key_country_name = get_country_name(country_id)
     for city_info in suggestionlist:
         city_type = city_info['PageTypeId']
@@ -310,12 +298,7 @@ def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             country_name = city_info['KnowledgeGraphCountryName']
             if not city_name:
                 continue
-            if country_name == key_country_name:
-                if city_name == keyword:
-                    country_id = key_country_id
-                    city_id = key_city_id
-                else:
-                    continue
+            country_id,city_id = get_city_country_id(city_name,country_name,None,config)
             source = 'agoda'
             sid = str(city_info['ObjectId'])
             md5 = hashlib.md5()
@@ -396,6 +379,7 @@ def get_qyer_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
             city_name = suggest_info['cn_name'].replace('<span class="cGreen">','').replace('</span>','')
             if city_name == keyword:
                 country_name = get_country_name(country_id)
+                country_id,city_id = get_city_country_id(city_name,country_name,None,config)
                 url = suggest_info['url']
                 if str(url).endswith('/'):
                     sid = url.split('/')[-2]
@@ -421,7 +405,7 @@ def get_qyer_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
     return len(save_result)
 def get_city_country_id(city_name,country_name,map_info=None,config=None):
     mioji_country = MiojiSimilarCountryDict()
-    mioji_city = MiojiSimilarCityDict()
+    mioji_city = MiojiSimilarCityDict(config)
     new_mioji_city = new_MiojiSimilarCityDict(config)
     country_id = mioji_country.get_mioji_country_id(country_name)
     if map_info:
@@ -431,7 +415,7 @@ def get_city_country_id(city_name,country_name,map_info=None,config=None):
         else:
             city_id = 'NULL'
     else:
-        city_objects = mioji_city.get_mioji_city_id([country_name,city_name])
+        city_objects = mioji_city.get_mioji_city_id([country_name,city_name],config)
         if city_objects:
             city_id = city_objects[0]
         else:
@@ -529,7 +513,7 @@ if __name__ == "__main__":
         'map_info': '0.0',
         'country_id':'121',
         'city_id': '10002',
-        'database_name': 'add_city_678'
+        'database_name': 'add_city_682'
     }
     task = Task(_worker='', _task_id='demo', _source='hotels', _type='supplement_field',
                 _task_name='all_hotels_city_suggest',
