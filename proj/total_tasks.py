@@ -138,6 +138,14 @@ def supplement_map_info(self, task, **kwargs):
 #
 #
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
+def supplement_map_info(self, task, **kwargs):
+    _sdk = SupplementReMapInfo(task=task)
+    return _sdk.execute()
+    
+
+#
+#
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
 def supplement_daodao_img(self, task, **kwargs):
     _sdk = SupplementDaodaoImg(task=task)
     return _sdk.execute()
