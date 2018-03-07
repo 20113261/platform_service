@@ -22,7 +22,7 @@ def GT_detail_task(self, task, **kwargs):
     return _sdk.execute()
 #
 #
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='2/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='30/m')
 def GT_list_task(self, task, **kwargs):
     _sdk = GTListSDK(task=task)
     return _sdk.execute()
