@@ -7,6 +7,7 @@
 # @Software: PyCharm
 from __future__ import absolute_import
 from SDK import *
+from SDK.SupplementTask import SupplementReMapInfo
 from SDK.HiltonTaxSDK import HiltonTaxSDK
 from SDK.PoiCtripListSDK import PoiCtripListSDK
 from SDK.PoiCtripDetailSDK import PoiCtripDetailSDK
