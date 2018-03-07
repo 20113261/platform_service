@@ -17,7 +17,7 @@ import json
 import re
 from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
-from proj.my_lib.Common.NetworkUtils import google_get_map_info
+from proj.my_lib.Common.NetworkUtils import google_get_map_info,map_info_get_google
 from proj.mysql_pool import service_platform_pool
 from proj.my_lib.attr_parser import image_parser as attr_image_parser
 from proj.my_lib.rest_parser import image_parser as rest_image_parser
@@ -99,4 +99,12 @@ class SupplementDaodaoImg(BaseSDK):
 
         self.task.error_code = 0
         return source, sid
+
+class SupplementReMapInfo(BaseSDK):
+    def _execute(self, **kwargs):
+        data = self.task.kwargs['data']
+        code = map_info_get_google(data)
+        if code == 'ok':
+            self.task.error_code = 0
+        return 'ok'
 
