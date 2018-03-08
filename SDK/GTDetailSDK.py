@@ -97,19 +97,19 @@ if __name__ == '__main__':
 
     args =  {
         'source':'ctrip',
-        "pid_3rd": "18829225",
+        "pid_3rd": "17192874",
         "dept_id": "1",
         "search_dept_city": "北京",
-        "dest_id": "",
-        "search_dest_city": "意大利",
+        "dest_id": "569",
+        "search_dest_city": "塞班岛",
         "dept_city": "北京",
         "highlight": "列表页传入",
-        "first_image": "列表页传入",
-        "url": "http://vacations.ctrip.com/grouptravel/p18829225s1.html",
+        "first_image": "https://dimg04.c-ctrip.com/images/300f0a0000004x2tk6A18.jpg",
+        "url": "http://vacations.ctrip.com/grouptravel/p17192874s1.html?kwd=%E5%A1%9E%E7%8F%AD%E5%B2%9B",
         "supplier": "列表页传入",
         "brand": "列表页出传入"
     }
-    args={'source':'tuniu','search_dept_city_id': '1602', 'url': 'http://www.tuniu.com/product/300095519', 'brand': '罗马假期', 'dept_city': '南京', 'search_dest_city': '普吉岛', 'first_image': 'http://m.tuniucdn.com/fb2/t1/G5/M00/09/0D/Cii-tFomThiIDU_GAAEyLjwgIi4AAAb6QIwFvUAATJG78_w160_h90_c1_t0.jpeg', 'search_dept_city': '南京', 'search_dest_city_id': '', 'id': '300095519'}
+    #args={'source':'tuniu','search_dept_city_id': '1602', 'url': 'http://www.tuniu.com/product/300095519', 'brand': '罗马假期', 'dept_city': '南京', 'search_dest_city': '普吉岛', 'first_image': 'http://m.tuniucdn.com/fb2/t1/G5/M00/09/0D/Cii-tFomThiIDU_GAAEyLjwgIi4AAAb6QIwFvUAATJG78_w160_h90_c1_t0.jpeg', 'search_dept_city': '南京', 'search_dest_city_id': '', 'id': '300095519'}
 
 
     task = ttt(_worker='', _task_id='demo', _source='ctripGT', _type='GT_detail', _task_name='list_ctripGT_total_test',
