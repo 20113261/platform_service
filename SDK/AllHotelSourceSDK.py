@@ -35,7 +35,7 @@ source_interface = {
     'qyer': 'http://www.qyer.com/qcross/home/ajax?action=search&keyword={0}'
 }
 config = {
-        'host': '10.10.230.206',
+        'host': '10.10.228.253',
         'user': 'mioji_admin',
         'password': 'mioji1109',
         'db': '',
@@ -416,8 +416,8 @@ def get_city_country_id(city_name,country_name,map_info=None,config=None):
             city_id = 'NULL'
     else:
         city_objects = mioji_city.get_mioji_city_id([country_name,city_name],config)
-        if city_objects:
-            city_id = city_objects[0]
+        if city_objects and len(city_objects) == 1:
+            city_id = city_objects.pop()
         else:
             city_id = 'NULL'
     return country_id,city_id
@@ -508,10 +508,10 @@ class AllHotelSourceSDK(BaseSDK):
 
 if __name__ == "__main__":
     args = {
-        'keyword': '水户市',
-        'source': 'agoda',
+        'keyword': '法恩扎',
+        'source': 'daodao',
         'map_info': '0.0',
-        'country_id':'121',
+        'country_id':'205',
         'city_id': '10002',
         'database_name': 'add_city_682'
     }
