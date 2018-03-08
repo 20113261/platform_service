@@ -63,7 +63,7 @@ def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             city_name = city['name_cn']
             country_name = city['region_info']['country_name_cn']
             region_name = city['region_info']['province_name_cn']
-            country_id,city_id = get_city_country_id(city_name,country_name,None,config)
+            #country_id,city_id = get_city_country_id(city_name,country_name,None,config)
             if not region_name:
                 region_name = 'NULL'
             sid = str(city['id'])
@@ -74,7 +74,7 @@ def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             label_batch = ''.join([local_time, 'a'])
             str_suggest = json.dumps(city)
             if city_name == keyword and country_name == key_country_name:
-                save_result.append([source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,region_name,country_name,'NULL',label_batch])
+                save_result.append([source,sid_md5,sid,2,str_suggest,'NULL','NULL',city_name,region_name,country_name,'NULL',label_batch])
 
         conn = pymysql.connect(**config)
         cursor = conn.cursor()
@@ -109,7 +109,7 @@ def get_ctrip_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             source = 'ctrip'
             country = detail_infos[0].split('，')[-1]
             city = detail_infos[0].split('，')[0]
-            country_id,city_id = get_city_country_id(city,country,None,config)
+            # country_id,city_id = get_city_country_id(city,country,None,config)
             sid = ''.join([detail_infos[3],detail_infos[4]])
             md5 = hashlib.md5()
             md5.update(sid)
@@ -118,7 +118,7 @@ def get_ctrip_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             label_batch = ''.join([local_time,'a'])
             str_suggest = info
             if city == keyword and country == key_country_name:
-                save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city,'NULL',country,'NULL',label_batch))
+                save_result.append((source,sid_md5,sid,2,str_suggest,'NULL','NULL',city,'NULL',country,'NULL',label_batch))
     config['db'] = database_name
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
@@ -152,7 +152,7 @@ def get_expedia_suggest(suggest,map_info,country_id,city_id,database_name,keywor
             suggest_map_info = ','.join([long, lat])
             country_name = city['hierarchyInfo']['country']['name']
             city_name = city['regionNames']['shortName']
-            country_id,city_id = get_city_country_id(city_name,country_name,suggest_map_info,config)
+            # country_id,city_id = get_city_country_id(city_name,country_name,suggest_map_info,config)
             source = 'expedia'
             sid = city['gaiaId']
 
@@ -165,7 +165,7 @@ def get_expedia_suggest(suggest,map_info,country_id,city_id,database_name,keywor
             local_time = str(datetime.datetime.now())[:10]
             label_batch = ''.join([local_time, 'a'])
             if city == keyword and country_name == key_country_name:
-                save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
+                save_result.append((source,sid_md5,sid,2,str_suggest,'NULL','NULL',city_name,'NULL',country_name,'NULL',label_batch,others_info))
 
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
@@ -206,14 +206,14 @@ def get_booking_suggest(suggest,map_info,country_id,city_id,database_name,keywor
                         region_name = label['text']
                     elif label['type'] == 'country':
                         country_name = label['text']
-                country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
+                # country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
                 others_info['map_info'] = map_info
                 others_info = json.dumps(others_info)
                 local_time = str(datetime.datetime.now())[:10]
                 label_batch = ''.join([local_time, 'a'])
                 str_suggest = json.dumps(city)
                 if city_name == keyword and country_name == key_country_name:
-                    save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,region_name,country_name,'NULL',label_batch,others_info))
+                    save_result.append((source,sid_md5,sid,2,str_suggest,'NULL','NULL',city_name,region_name,country_name,'NULL',label_batch,others_info))
     except Exception as e:
         raise e
 
@@ -253,7 +253,7 @@ def get_hotels_suggest(suggest,map_info,country_id,city_id,database_name,keyword
                 lat = str(city['latitude'])
                 long = str(city['longitude'])
                 map_info = ','.join([long, lat])
-                country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
+                # country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
                 sid = city['geoId']
                 md5 = hashlib.md5()
                 md5.update(sid)
@@ -265,7 +265,7 @@ def get_hotels_suggest(suggest,map_info,country_id,city_id,database_name,keyword
                 str_suggest = json.dumps(city)
                 if city_name == keyword and country_name == key_country_name:
                     save_result.append(
-                        (source, sid_md5, sid, 2, str_suggest, city_id, country_id, city_name, 'NULL', country_name, 'NULL', label_batch,others_info))
+                        (source, sid_md5, sid, 2, str_suggest, 'NULL','NULL', city_name, 'NULL', country_name, 'NULL', label_batch,others_info))
 
         conn = pymysql.connect(**config)
         cursor = conn.cursor()
@@ -298,7 +298,7 @@ def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             country_name = city_info['KnowledgeGraphCountryName']
             if not city_name:
                 continue
-            country_id,city_id = get_city_country_id(city_name,country_name,None,config)
+            # country_id,city_id = get_city_country_id(city_name,country_name,None,config)
             source = 'agoda'
             sid = str(city_info['ObjectId'])
             md5 = hashlib.md5()
@@ -309,7 +309,7 @@ def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             str_suggest = json.dumps(city_info)
 
             if city_name == keyword and country_name == key_country_name:
-                save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL','NULL','NULL',label_batch))
+                save_result.append((source,sid_md5,sid,2,str_suggest,'NULL','NULL',city_name,'NULL','NULL','NULL',label_batch))
     config['db'] = database_name
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
@@ -345,12 +345,12 @@ def get_daodao_suggest(suggest,map_info,country_id,city_id,database_name,keyword
             md5 = hashlib.md5()
             md5.update(sid)
             sid_md5 = md5.hexdigest()
-            country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
+            # country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
             local_time = str(datetime.datetime.now())[:10]
             label_batch = ''.join([local_time, 'a'])
             str_suggest = json.dumps(suggest_info)
             if city_name == keyword and country_name == key_country_name:
-                save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
+                save_result.append((source,sid_md5,sid,2,str_suggest,'NULL','NULL',city_name,'NULL',country_name,'NULL',label_batch,others_info))
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
     try:
@@ -379,7 +379,7 @@ def get_qyer_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
             city_name = suggest_info['cn_name'].replace('<span class="cGreen">','').replace('</span>','')
             if city_name == keyword:
                 country_name = get_country_name(country_id)
-                country_id,city_id = get_city_country_id(city_name,country_name,None,config)
+                # country_id,city_id = get_city_country_id(city_name,country_name,None,config)
                 url = suggest_info['url']
                 if str(url).endswith('/'):
                     sid = url.split('/')[-2]
@@ -391,7 +391,7 @@ def get_qyer_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
                 str_suggest = ''.join(['http:',url])
                 local_time = str(datetime.datetime.now())[:10]
                 label_batch = ''.join([local_time, 'a'])
-                save_result.append((source,sid_md5,sid,1,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch))
+                save_result.append((source,sid_md5,sid,1,str_suggest,'NULL','NULL',city_name,'NULL',country_name,'NULL',label_batch))
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
     try:
@@ -513,7 +513,7 @@ if __name__ == "__main__":
         'map_info': '0.0',
         'country_id':'205',
         'city_id': '10002',
-        'database_name': 'add_city_682'
+        'database_name': 'BaseDataFinal'
     }
     task = Task(_worker='', _task_id='demo', _source='hotels', _type='supplement_field',
                 _task_name='all_hotels_city_suggest',
