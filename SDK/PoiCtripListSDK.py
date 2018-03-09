@@ -50,7 +50,7 @@ def ctrip_poilist_to_database(tid, used_times, source, city_id, city_url, need_c
         'tid': tid,
         'used_times': used_times
     }
-    spider = factory.get_spider_by_old_source('ctripPOI')
+    spider = factory.get_spider_by_old_source('ctripPoi_list')
     spider.task = task
     if need_cache:
         error_code = spider.crawl(required=['POIlist'], cache_config=cache_config)
