@@ -13,10 +13,25 @@ from SDK.PoiCtripListSDK import PoiCtripListSDK
 from SDK.PoiCtripDetailSDK import PoiCtripDetailSDK
 from SDK.GTListSDK import GTListSDK
 from SDK.GTDetailSDK import GTDetailSDK
+from SDK.PoiSourceListSDK import PoiSourceListSDK
+from SDK.PoiSourceDetailSDK import PoiSourceDetailSDK
 from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 
 
+# -- poi all task
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/m')
+def PoiSource_detail_task(self, task, **kwargs):
+    _sdk = PoiSourceDetailSDK(task=task)
+    return _sdk.execute()
+#
+#
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+def PoiSource_list_task(self, task, **kwargs):
+    _sdk = PoiSourceListSDK(task=task)
+    return _sdk.execute()
+
+# -- grouptravel all task
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
 def GT_detail_task(self, task, **kwargs):
     _sdk = GTDetailSDK(task=task)
@@ -28,6 +43,7 @@ def GT_list_task(self, task, **kwargs):
     _sdk = GTListSDK(task=task)
     return _sdk.execute()
 
+# -- ctrip poi 以后并入 poisourcetask
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
 def ctrip_poi_detail_task(self, task, **kwargs):
     _sdk = PoiCtripDetailSDK(task=task)
