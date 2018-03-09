@@ -50,7 +50,7 @@ def ctrip_poilist_to_database(tid, used_times, source, city_id, city_url, need_c
         'tid': tid,
         'used_times': used_times
     }
-    spider = factory.get_spider_by_old_source('ctripPOI')
+    spider = factory.get_spider_by_old_source('ctripPoi_list')
     spider.task = task
     if need_cache:
         error_code = spider.crawl(required=['POIlist'], cache_config=cache_config)
@@ -79,7 +79,7 @@ class PoiCtripListSDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        collections.save({
+        collections.insert_one({
             'collections': self.task.collection,
             'task_id': self.task.task_id,
             'used_times': self.task.used_times[0],
@@ -112,7 +112,6 @@ class PoiCtripListSDK(BaseSDK):
             self.task.error_code = 0
         else:
             raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
-
         return result, error_code
 
 

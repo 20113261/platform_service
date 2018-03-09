@@ -40,7 +40,7 @@ spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
-collections = client['data_result']['GT_detail']
+db = client['data_result']
 
 # client = pymongo.MongoClient("mongodb://10.10.231.105:27017")
 # db = client['Test']
@@ -78,7 +78,7 @@ class GTDetailSDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        collections.save({
+        db[source+'_'+'GT_detail'].save({
             'source':source,
             'collections': self.task.collection,
             'task_id': self.task.task_id,

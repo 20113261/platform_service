@@ -43,7 +43,7 @@ def ctrip_poidetail_to_database(tid, used_times, source, url, need_cache=True):
         'tid': tid,
         'used_times': used_times
     }
-    spider = factory.get_spider_by_old_source('CtripPoi')
+    spider = factory.get_spider_by_old_source('ctirpPoi_detail')
     spider.task = task
     if need_cache:
         error_code = spider.crawl(required=['POIdetail'], cache_config=cache_config)
@@ -71,7 +71,7 @@ class PoiCtripDetailSDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        collections.save({
+        collections.insert_one({
             'fuck':'fuck',
             'collections': self.task.collection,
             'task_id': self.task.task_id,
