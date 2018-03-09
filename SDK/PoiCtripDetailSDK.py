@@ -71,7 +71,7 @@ class PoiCtripDetailSDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        collections.save({
+        collections.insert_one({
             'fuck':'fuck',
             'collections': self.task.collection,
             'task_id': self.task.task_id,

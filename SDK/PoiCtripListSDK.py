@@ -79,7 +79,7 @@ class PoiCtripListSDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        collections.save({
+        collections.insert_one({
             'collections': self.task.collection,
             'task_id': self.task.task_id,
             'used_times': self.task.used_times[0],
@@ -112,7 +112,6 @@ class PoiCtripListSDK(BaseSDK):
             self.task.error_code = 0
         else:
             raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
-
         return result, error_code
 
 
