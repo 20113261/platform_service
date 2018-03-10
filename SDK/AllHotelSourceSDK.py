@@ -307,8 +307,8 @@ def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
     for city_info in suggestionlist:
         city_type = city_info['PageTypeId']
         if int(city_type) == 5:
-            city_name = city_info['KnowledgeGraphCityName']
-            country_name = city_info['KnowledgeGraphCountryName']
+            city_name = city_info['Name']
+            country_name = city_info['ResultText'].split(',')[-1].strip()
             if not city_name:
                 continue
             country_id,city_id = get_city_country_id(city_name,country_name,None,config)
@@ -366,7 +366,7 @@ def get_daodao_suggest(suggest,map_info,country_id,city_id,database_name,keyword
             str_suggest = json.dumps(suggest_info)
             keyword = keyword.decode('utf-8')
             if city_name[:len(keyword)] == keyword and country_name == key_country_name and city_id != 'NULL':
-                save_result.append((source,sid_md5,sid,2,str_suggest,'NULL','NULL',city_name,'NULL',country_name,'NULL',label_batch,others_info))
+                save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
     if len(save_result) > 1:
@@ -536,12 +536,12 @@ class AllHotelSourceSDK(BaseSDK):
 
 if __name__ == "__main__":
     args = {
-        'keyword': '纽约',
-        'source': 'expedia',
+        'keyword': '威尔明顿',
+        'source': 'agoda',
         'map_info': '0.0',
         'country_id':'501',
         'city_id': '10002',
-        'database_name': 'BaseDataFinal'
+        'database_name': 'Cityupline'
     }
     task = Task(_worker='', _task_id='demo', _source='hotels', _type='supplement_field',
                 _task_name='all_hotels_city_suggest',
