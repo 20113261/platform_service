@@ -58,9 +58,12 @@ hotel_rooms_c = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'ch
 def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=False, suggest_type='1', suggest='',
                         need_cache=True):
     task = Task()
+    task.source = source
     if not is_new_type:
-        if source == 'hilton':
+        if source in ['hilton', 'starwood']:
             task.content = check_in
+        elif source in ['hyatt']:
+            task.content = ''
         else:
             task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
 
@@ -116,14 +119,21 @@ class HotelListSDK(BaseSDK):
             return error_code, result, page_store_key
 
         error_code, result, page_store_key = hotel_list_crawl()
+        print(result)
         self.task.error_code = error_code
 
         res_data = []
-        if source in ('ctrip', 'ctripcn'):
+        if source in ('ctrip', 'ctripcn', 'starwood'):
             for line in result['hotel']:
                 sid = line[3]
                 hotel_url = line[-1]
                 res_data.append((source, sid, city_id, country_id, hotel_url))
+        elif source in ('hyatt'):
+            for line in result['hotel']:
+                sid = line[-1]
+                hotel_url = line[1]
+                res_data.append((source, sid, city_id, country_id, hotel_url))
+
         elif source == 'hilton':
             for dict_obj in result['hotel']:
                 line = dict_obj.values()

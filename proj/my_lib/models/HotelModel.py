@@ -69,3 +69,6 @@ class HiltonHotel(HotelBase):
 
 class TripadvisorHotel(HotelBase):
     pass
+
+class CommonHotel(HotelBase):
+    pass

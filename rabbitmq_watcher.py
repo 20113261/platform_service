@@ -20,7 +20,7 @@ from proj.my_lib.task_module.routine_task_func import get_routine_task_total
 from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2detail, \
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail, \
     monitoring_supplement_field, monitoring_zombies_task_by_hour, city2list, monitoring_zombies_task_total, \
-    monitoring_ctripPoi_list2detail, monitoring_GT_list2detail
+    monitoring_ctripPoi_list2detail, monitoring_GT_list2detail ,monitoring_PoiSource_list2detail
 from proj.config import BROKER_URL
 from proj.my_lib.Common.Task import Task
 from rabbitmq_func import detect_msg_num
@@ -104,7 +104,8 @@ schedule.add_job(monitoring_ctripPoi_list2detail, 'cron', second='*/45',
 
 schedule.add_job(monitoring_GT_list2detail, 'cron', second='*/45',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripGT_list')
-
+schedule.add_job(monitoring_PoiSource_list2detail, 'cron', second='*/45',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_PoiSource_list')
 schedule.add_job(city2list, 'cron', second='*/60', id='city2list')
 schedule.add_job(monitoring_zombies_task_by_hour, 'cron', second='*/60', id='monitoring_zombies_task_by_hour')
 schedule.add_job(monitoring_zombies_task_total, 'cron', second='*/60', id='monitoring_zombies_task_total')
@@ -129,7 +130,8 @@ TASK_CONF = {
     'poi_list': (36000, 40000, 10),
     'supplement_field': (9000, 40000, 10),
     'google_api': (9000, 40000, 10),
-    'merge_task': (10000, 40000, 11)
+    'merge_task': (10000, 40000, 11),
+    'grouptravel': (10000, 40000, 11)
 }
 
 MAX_RETRY_TIMES_CONF = {

@@ -24,7 +24,6 @@ from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.mysql_pool import service_platform_pool
 from proj.my_lib.Common.Browser import proxy_pool
 
-
 mioji.common.pool.pool.set_size(128)
 logger = get_task_logger(__name__)
 mioji.common.logger.logger = logger
@@ -40,7 +39,7 @@ spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
-collections = client['data_result']['ctrip_poi_list']
+db = client['data_result']
 
 
 def ctrip_poilist_to_database(tid, used_times, source, city_id, city_url, need_cache=True):
@@ -50,7 +49,7 @@ def ctrip_poilist_to_database(tid, used_times, source, city_id, city_url, need_c
         'tid': tid,
         'used_times': used_times
     }
-    spider = factory.get_spider_by_old_source('ctripPoi_list')
+    spider = factory.get_spider_by_old_source(source+'_list')
     spider.task = task
     if need_cache:
         error_code = spider.crawl(required=['POIlist'], cache_config=cache_config)
@@ -61,14 +60,16 @@ def ctrip_poilist_to_database(tid, used_times, source, city_id, city_url, need_c
     return error_code, spider.result['POIlist'], spider.page_store_key_list
 
 
-class PoiCtripListSDK(BaseSDK):
+class PoiSourceListSDK(BaseSDK):
     def get_task_finished_code(self):
         return [0, 106, 107, 109, 29]
 
     def _execute(self, **kwargs):
+        source = self.task.kwargs['source']
         city_id = self.task.kwargs['city_id']
         country_id = self.task.kwargs['country_id']
         city_url = self.task.kwargs['city_url']
+
 
         error_code, result, page_store_key = ctrip_poilist_to_database(
             tid=self.task.task_id,
@@ -79,7 +80,7 @@ class PoiCtripListSDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        collections.insert_one({
+        db[source+'_list'].insert_one({
             'collections': self.task.collection,
             'task_id': self.task.task_id,
             'used_times': self.task.used_times[0],
@@ -95,7 +96,7 @@ class PoiCtripListSDK(BaseSDK):
         sql = SQL.format(self.task.task_name)
         data = []
         for sid, tag, url in result:
-            data.append(('ctripPoi', sid, city_id, tag, url))
+            data.append((source, sid, city_id, tag, url))
         try:
             service_platform_conn = service_platform_pool.connection()
             cursor = service_platform_conn.cursor()
@@ -120,14 +121,14 @@ if __name__ == '__main__':
     args = {
         "city_id": "20645",
         "country_id": "133",
-        "source": "ctripoi",
+        "source": "ctripPoi",
         "city_url": "asti7060",
         "date_index": 0
     }
 
-    task = ttt(_worker='', _task_id='demo', _source='ctripPoi', _type='poi_list', _task_name='list_qyer_total_test',
+    task = ttt(_worker='', _task_id='demo', _source='PoiS', _type='PoiS_list', _task_name='list_PoiS_total_test',
                 _used_times=0, max_retry_times=6,
                 kwargs=args, _queue='poi_list',
                 _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
-    s = PoiCtripListSDK(task= task)
+    s = PoiSourceListSDK(task= task)
     s.execute()
