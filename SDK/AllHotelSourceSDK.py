@@ -277,7 +277,7 @@ def get_hotels_suggest(suggest,map_info,country_id,city_id,database_name,keyword
                 keyword = keyword.decode('utf-8')
                 if city_name[:len(keyword)] == keyword and country_name == key_country_name and city_id != 'NULL':
                     save_result.append(
-                        (source, sid_md5, sid, 2, str_suggest, 'NULL','NULL', city_name, 'NULL', country_name, 'NULL', label_batch,others_info))
+                        (source, sid_md5, sid, 2, str_suggest, city_id,country_id, city_name, 'NULL', country_name, 'NULL', label_batch,others_info))
         if len(save_result) > 1:
             return 0
         conn = pymysql.connect(**config)
@@ -322,7 +322,7 @@ def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             str_suggest = json.dumps(city_info)
             keyword = keyword.decode('utf-8')
             if city_name[:len(keyword)] == keyword and country_name == key_country_name and city_id != 'NULL':
-                save_result.append((source,sid_md5,sid,2,str_suggest,'NULL','NULL',city_name,'NULL','NULL','NULL',label_batch))
+                save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL','NULL','NULL',label_batch))
     config['db'] = database_name
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
@@ -348,11 +348,15 @@ def get_daodao_suggest(suggest,map_info,country_id,city_id,database_name,keyword
         city_type = suggest_info['type']
         others_info = {}
         if city_type == 'GEO':
+
             source = 'daodao'
             name = suggest_info['name']
             city_name = name.split(',')[0].strip()
             country_name = name.split(',')[-1].strip()
-            lat,long = suggest_info['coords'].split(',')
+            try:
+                lat,long = suggest_info['coords'].split(',')
+            except:
+                continue
             map_info = ','.join([long,lat])
             others_info['map_info'] = map_info
             others_info = json.dumps(others_info)
@@ -365,6 +369,7 @@ def get_daodao_suggest(suggest,map_info,country_id,city_id,database_name,keyword
             label_batch = ''.join([local_time, 'a'])
             str_suggest = json.dumps(suggest_info)
             keyword = keyword.decode('utf-8')
+
             if city_name[:len(keyword)] == keyword and country_name == key_country_name and city_id != 'NULL':
                 save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL',country_name,'NULL',label_batch,others_info))
     conn = pymysql.connect(**config)
@@ -536,8 +541,8 @@ class AllHotelSourceSDK(BaseSDK):
 
 if __name__ == "__main__":
     args = {
-        'keyword': '威尔明顿',
-        'source': 'agoda',
+        'keyword': '罗吉斯',
+        'source': 'hotels',
         'map_info': '0.0',
         'country_id':'501',
         'city_id': '10002',
