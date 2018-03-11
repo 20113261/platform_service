@@ -10,6 +10,7 @@ from mioji.common.task_info import Task
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.ServiceStandardError import ServiceStandardError
+from proj.list_config import cache_config, none_cache_config
 from proj.my_lib.logger import get_logger
 from proj.my_lib.new_hotel_parser.hotel_parser import parse_hotel
 from proj.mysql_pool import service_platform_pool
