@@ -31,7 +31,7 @@ def hotel_detail_database(url, source, need_cache=True):
         error_code = spider.crawl(required=['hotel'], cache_config=cache_config)
     else:
         error_code = spider.crawl(required=['hotel'], cache_config=none_cache_config)
-    logger.info(str(task.ticket_info) + '  --  ' + task.content)
+    logger.info(str(task.ticket_info) + '  --  ' + task.content + '--' + str(error_code))
     return error_code, spider.result, spider.page_store_key_list
 
 
