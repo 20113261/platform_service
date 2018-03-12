@@ -125,6 +125,7 @@ class HotelListSDK(BaseSDK):
         print(result)
         if source == 'starwood' and error_code==29:
             self.task.error_code = 109
+            error_code = 109
         else:
             self.task.error_code = error_code
 
