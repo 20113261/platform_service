@@ -39,7 +39,7 @@ HOTEL_SOURCE = (
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 CTRIPPOI_SOURCE = 'ctripPoi'
-POI_SOURCE = 'PoiS'
+POI_S = ('ctripPoi')
 GT_SOURCE = 'GT'
 PRIORITY = 3
 # TODO  所有表的update_time字段加索引
@@ -160,7 +160,7 @@ def monitoring_PoiSource_list2detail():
                 continue
             if tab_args[1] != 'total':
                 continue
-            if tab_args[2] != POI_SOURCE:
+            if tab_args[2] not in POI_S:
                 continue
             if tab_args[3] == 'test':
                 continue
@@ -656,7 +656,7 @@ class TaskSender(object):
 
 if __name__ == '__main__':
     #monitoring_ctripPoi_list2detail()
-    monitoring_GT_list2detail()
+    monitoring_PoiSource_list2detail()
 
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
