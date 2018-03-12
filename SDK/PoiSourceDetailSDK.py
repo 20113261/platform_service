@@ -43,6 +43,7 @@ def poidetail_to_database(tid, used_times, source, url, need_cache=True):
         'tid': tid,
         'used_times': used_times
     }
+    print (source + '_detail')
     spider = factory.get_spider_by_old_source(source+'_detail')
     spider.task = task
     if need_cache:
@@ -93,11 +94,11 @@ class PoiSourceDetailSDK(BaseSDK):
 if __name__ == '__main__':
     from proj.my_lib.Common.Task import Task as ttt
     args = {
-        'source': 'ctriPoi',
-        'poi_id': '109889',
-        'tag': 'sight',
+        'source': 'ctripPoi',
+        'poi_id': '2794436',
+        'tag': 'shopping',
         'city_id':'000',
-        'detail_url':'http://you.ctrip.com/sight/sedaxian120478/109889.html'
+        'detail_url':'http://you.ctrip.com/shopping/zaragoza1961/2794436.html'
     }
 
     task = ttt(_worker='', _task_id='demo', _source='PoiS', _type='PoiS_detail', _task_name='PoiS_detail_test',
