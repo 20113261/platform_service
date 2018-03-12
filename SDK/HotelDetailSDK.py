@@ -84,9 +84,7 @@ class HotelDetailSDK(BaseSDK):
             'source_id': source_id,
             'city_id': city_id
         }
-        logger.info(source + '==' + str(source in ['starwood', 'hyatt']))
         if source in ['starwood', 'hyatt']:
-            logger.info('++++++1')
             error_code, res, page_store_key_list = hotel_detail_database(url, source)
 
             if error_code == 0:
