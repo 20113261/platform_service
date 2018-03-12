@@ -5,6 +5,7 @@ from proj.my_lib.Common.Browser import MySession
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.Common.Utils import retry
 from proj.my_lib.Common.Task import Task
+import execjs
 from lxml import html
 import urllib
 import pytz
@@ -15,6 +16,7 @@ import pymysql
 import hashlib
 import re
 import requests
+import time
 from Common.MiojiSimilarCityDict_new import MiojiSimilarCityDict as new_MiojiSimilarCityDict
 from Common.MiojiSimilarCityDict import MiojiSimilarCityDict
 from Common.MiojiSimilarCountryDict import MiojiSimilarCountryDict
@@ -30,7 +32,8 @@ source_interface = {
     'booking': 'http://www.booking.com/autocomplete_2?' + \
         'v=1&lang=zh-cn&sid=856b717ff095a5294d897d227d9e7ef4&aid=376390&pid=9bb13ce9aca502d0&stype=1&src=index&eb=4&e_obj_labels=1&at=1&e_tclm=1&e_smmd=2&e_ms=1&e_msm=1&e_themes_msm_1=1&add_themes=1&themes_match_start=1&include_synonyms=1&sort_nr_destinations=1&gpf=1&term={0}',
     'expedia': 'https://suggest.expedia.com/api/v4/typeahead/{0}?client=Homepage&siteid=18&guid=cf20f4e625d7418399d0954735abcb77&lob=PACKAGES&locale=zh_CN&expuserid=-1&regiontype=95&ab=&dest=true&maxresults=9&features=ta_hierarchy&format=jsonp&device=Desktop&browser=Chrome&_=1503623716328',
-    'ctrip': 'http://hotels.ctrip.com/international/Tool/cityFilter.ashx?charset=gb2312&flagship=1&keyword={0}',
+    #'ctrip': 'http://hotels.ctrip.com/international/Tool/cityFilter.ashx?charset=gb2312&flagship=1&keyword={0}',
+    'ctrip': 'http://hotels.ctrip.com/international/Tool/cityFilter.ashx?charset=gb2312&keyword={0}&flagship=1',
     'daodao': 'https://www.tripadvisor.cn/TypeAheadJson',
     'qyer': 'http://www.qyer.com/qcross/home/ajax?action=search&keyword={0}'
 }
@@ -458,6 +461,58 @@ def get_country_name(country_id):
     country_name = cursor.fetchone()[0]
     return country_name
 
+def get_ctrip_eleven(max_n):
+    try:
+        ph_runtime = execjs.get('PhantomJS')
+    except Exception as e:
+        raise e
+    do = 'var Image = function(){}; var window = {}; window.document = {}; ' \
+         'var document = window.document; ' \
+         'window.navigator = ' \
+         '{"appCodeName":"Mozilla", "appName":"Netscape", "language":"zh-CN", "platform":"Win"}; ' \
+         'var navigator = window.navigator; window.location = {}; ' \
+         'window.location.href = "http://hotels.ctrip.com/hotel/hotelid.html"; ' \
+         'var location = window.location; '
+    mixjs = ph_runtime.compile("""
+
+            function generateMixed (n) {
+            var chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+            var res = '';
+
+            for (var i = 0; i < n; i++) {
+                var id = Math.ceil(Math.random() * 51);
+                res += chars[id];
+            }
+
+            return res;
+        }
+        """)
+    call_back = mixjs.call("generateMixed", max_n)
+    callback_req = "http://hotels.ctrip.com/international/Tool/cas-ocanball.aspx?callback=%s&" % (
+        str(call_back))
+    headers = {
+        'Host': 'hotels.ctrip.com',
+        'Referer': 'http://hotels.ctrip.com/international/',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.360',
+        'Connection': 'keep-alive',
+    }
+    pat = re.compile(r'new Function\(\'return "\' \+ (.+) \+ \'\";\'\)')
+    pat2 = re.compile(r'new Function\(\'return "\' \+ .+ \+ \'\";\'\)')
+    response = requests.get(callback_req,headers=headers,params= {'_': str(int(time.time() * 1000))})
+    jscontent = response.content
+    jscontent = jscontent.replace('eval(', '')[:-1]  # 加密的javaScript
+    runjs = ph_runtime.eval(jscontent)
+    eleven_str = pat.findall(runjs)
+    need_to_replace = pat2.findall(runjs)
+    replace_str = call_back + '(' + need_to_replace[0] + ')'
+    js = runjs.replace(replace_str, 'return ' + eleven_str[0])
+    js = do + js
+    js = js.replace(r'!!window.Script', 'false').replace(';!function()',
+                                                         'function run()')
+    js = js[:-3]
+    eleven = ph_runtime.compile(js).call('run')
+    return eleven
 class AllHotelSourceSDK(BaseSDK):
 
     @retry(times=5)
@@ -474,6 +529,7 @@ class AllHotelSourceSDK(BaseSDK):
                 local_time = urllib.unquote(datetime.datetime.now(pytz.timezone(pytz.country_timezones('cn')[0])).strftime(
                     '%a %b %d %Y %H:%M:%S GMT+0800 (%Z)'))
                 if source in 'agoda':
+
                     url = source_interface[source].format(keyword,local_time)
                     header = {
                         'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
@@ -522,8 +578,11 @@ class AllHotelSourceSDK(BaseSDK):
                     get_suggest = getattr(sys.modules[__name__], 'get_{0}_suggest'.format(source))
                 elif source in 'ctrip':
                     headers = {
-                        'Host': 'hotels.ctrip.com',
+                        'Accept-Encoding': 'gzip, deflate',
+                        'Accept-Language': 'zh-CN,zh;q=0.9',
                         'Referer': 'http://hotels.ctrip.com/international/',
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36',
+                        'Connection': 'keep-alive'
                     }
                     url = source_interface[source].format(keyword)
                     response = session.get(url, headers=headers)
@@ -544,8 +603,8 @@ class AllHotelSourceSDK(BaseSDK):
 
 if __name__ == "__main__":
     args = {
-        'keyword': '威奇托瀑布城',
-        'source': 'agoda',
+        'keyword': '威尔明顿',
+        'source': 'ctrip',
         'map_info': '0.0',
         'country_id':'501',
         'city_id': '10002',
