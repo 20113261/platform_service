@@ -74,7 +74,7 @@ class PoiSourceDetailSDK(BaseSDK):
         )
 
         db[source+'_detail'].insert_one({
-            'fuck':'fuck',
+            'new':'new',
             'collections': self.task.collection,
             'task_id': self.task.task_id,
             'used_times': self.task.used_times[0],
@@ -95,10 +95,10 @@ if __name__ == '__main__':
     from proj.my_lib.Common.Task import Task as ttt
     args = {
         'source': 'ctripPoi',
-        'poi_id': '2794436',
-        'tag': 'shopping',
+        'poi_id': '2036',
+        'tag': 'food',
         'city_id':'000',
-        'detail_url':'http://you.ctrip.com/shopping/zaragoza1961/2794436.html'
+        'detail_url':'http://you.ctrip.com/food/tacheng2510/2036.html'
     }
 
     task = ttt(_worker='', _task_id='demo', _source='PoiS', _type='PoiS_detail', _task_name='PoiS_detail_test',

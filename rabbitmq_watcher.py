@@ -99,8 +99,8 @@ schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/45',
 schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=7),
                  id='monitoring_supplement_field')
-schedule.add_job(monitoring_ctripPoi_list2detail, 'cron', second='*/45',
-                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripPoi_list')
+# schedule.add_job(monitoring_ctripPoi_list2detail, 'cron', second='*/45',
+#                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripPoi_list')
 
 schedule.add_job(monitoring_GT_list2detail, 'cron', second='*/45',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripGT_list')
