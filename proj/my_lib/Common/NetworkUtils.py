@@ -18,7 +18,7 @@ logger = get_logger("google map_info logger")
 
 client = pymongo.MongoClient('10.19.2.103:27017', 27017, username='root', password='miaoji1109-=')
 db = client['Google_city']
-col = db['mapGoogle']
+
 
 @retry(times=4, raise_exc=False)
 def google_get_map_info(address):
@@ -42,6 +42,8 @@ def google_get_map_info(address):
 @retry(times=4, raise_exc=False)
 def map_info_get_google(data):
     try:
+        collect = data.split('&')[-1]
+        col = db[collect]
         id = data.split('&')[0]
         map_info = data.split('&')[1]
         g_map = data.split('&')[1].split(',')[1] + ',' + data.split('&')[1].split(',')[0]
