@@ -42,6 +42,7 @@ app.conf.update(
         Queue('google_api', exchange=Exchange('google_api', type='direct'), routing_key='google_api'),
         Queue('supplement_field', exchange=Exchange('supplement_field', type='direct'), routing_key='supplement_field'),
         Queue('merge_task', exchange=Exchange('merge_task', type='direct'), routing_key='merge_task'),
+        Queue('grouptravel', exchange=Exchange('grouptravel', type='direct'), routing_key='grouptravel'),
     ),
 
 )
