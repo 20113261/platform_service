@@ -307,26 +307,29 @@ def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
     for city_info in suggestionlist:
         city_type = city_info['PageTypeId']
         if int(city_type) == 5:
-            city_name = city_info['Name']
-            country_name = city_info['ResultText'].split(',')[-1].strip()
-            if not city_name:
-                continue
-            country_id,city_id = get_city_country_id(city_name,country_name,None,config)
-            source = 'agoda'
-            sid = str(city_info['ObjectId'])
-            md5 = hashlib.md5()
-            md5.update(sid)
-            sid_md5 = md5.hexdigest()
-            local_time = str(datetime.datetime.now())[:10]
-            label_batch = ''.join([local_time, 'a'])
-            str_suggest = json.dumps(city_info)
-            keyword = keyword.decode('utf-8')
-            if city_name[:len(keyword)] == keyword and country_name == key_country_name and city_id != 'NULL':
-                save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL','NULL','NULL',label_batch))
+            try:
+                city_name = city_info['Name']
+                country_name = city_info['ResultText'].split(',')[-1].strip()
+                if not city_name:
+                    continue
+                country_id,city_id = get_city_country_id(city_name,country_name,None,config)
+                source = 'agoda'
+                sid = str(city_info['ObjectId'])
+                md5 = hashlib.md5()
+                md5.update(sid)
+                sid_md5 = md5.hexdigest()
+                local_time = str(datetime.datetime.now())[:10]
+                label_batch = ''.join([local_time, 'a'])
+                str_suggest = json.dumps(city_info)
+                keyword = keyword.decode('utf-8')
+                if city_name[:len(keyword)] == keyword and country_name == key_country_name and city_id != 'NULL':
+                    save_result.append((source,sid_md5,sid,2,str_suggest,city_id,country_id,city_name,'NULL','NULL','NULL',label_batch))
+            except Exception as e:
+                print e
     config['db'] = database_name
     conn = pymysql.connect(**config)
     cursor = conn.cursor()
-    if len(save_result) > 0:
+    if len(save_result) > 1:
         return 0
     try:
         cursor.executemany(sql, save_result)
@@ -541,8 +544,8 @@ class AllHotelSourceSDK(BaseSDK):
 
 if __name__ == "__main__":
     args = {
-        'keyword': '罗吉斯',
-        'source': 'hotels',
+        'keyword': '威奇托瀑布城',
+        'source': 'agoda',
         'map_info': '0.0',
         'country_id':'501',
         'city_id': '10002',
