@@ -123,7 +123,10 @@ class HotelListSDK(BaseSDK):
 
         error_code, result, page_store_key = hotel_list_crawl()
         print(result)
-        self.task.error_code = error_code
+        if source == 'starwood' and error_code==29:
+            self.task.error_code = 109
+        else:
+            self.task.error_code = error_code
 
         res_data = []
         if source in ('ctrip', 'ctripcn', 'starwood'):
