@@ -172,7 +172,7 @@ class MiojiSimilarCityDict(object):
   country.short_name_en AS country_short_name_en
 FROM city
   JOIN country ON city.country_id = country.mid
-  LEFT JOIN province ON prov_id = province.id;''')
+  LEFT JOIN province ON (prov_id = province.id) where city.status_online='Open' or city.status_test = 'Open';''')
         ]
         for _line in city_country_info:
             for key in self.get_keys(_line):
