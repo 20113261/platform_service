@@ -42,7 +42,7 @@ spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
-collections = client['data_result']['GT_list']
+db = client['data_result']
 
 
 def GT_to_database(tid, used_times, source, vacation_type, ticket, need_cache=True):
@@ -81,7 +81,7 @@ class GTListSDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        collections.save({
+        db[source +'GT_detail'].save({
             'collections': self.task.collection,
             'task_id': self.task.task_id,
             'used_times': self.task.used_times[0],
@@ -142,7 +142,7 @@ if __name__ == '__main__':
 
     task = ttt(_worker='', _task_id='demo', _source='ctripGT', _type='GT_list', _task_name='list_total_ctripGT_test',
                 _used_times=0, max_retry_times=6,
-                kwargs=args, _queue='poi_list',
-                _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
+                kwargs=args, _queue='grouptravel',
+                _routine_key='grouptravel', list_task_token='test', task_type=0, collection='')
     s = GTListSDK(task= task)
     s.execute()

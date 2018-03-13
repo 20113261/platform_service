@@ -78,7 +78,7 @@ class GTDetailSDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        db[source+'_'+'GT_detail'].save({
+        db[source+'GT_detail'].save({
             'source':source,
             'collections': self.task.collection,
             'task_id': self.task.task_id,
@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     task = ttt(_worker='', _task_id='demo', _source='ctripGT', _type='GT_detail', _task_name='list_ctripGT_total_test',
                _used_times=0, max_retry_times=6,
-               kwargs=args, _queue='poi_list',
-               _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
+               kwargs=args, _queue='grouptravel',
+               _routine_key='grouptravel', list_task_token='test', task_type=0, collection='')
     s = GTDetailSDK(task=task)
     s.execute()
