@@ -81,7 +81,7 @@ class GTListSDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        db[source +'GT_detail'].save({
+        db[source +'GT_list'].save({
             'collections': self.task.collection,
             'task_id': self.task.task_id,
             'used_times': self.task.used_times[0],
