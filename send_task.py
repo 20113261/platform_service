@@ -136,7 +136,7 @@ def send_ctripPoi_detail_task(tasks, task_tag, priority):
 
 def send_GT_detail_task(tasks, task_tag, priority):
     utime = None
-    with InsertTask(worker='proj.total_tasks.GT_detail_task', queue='poi_detail', routine_key='poi_detail',
+    with InsertTask(worker='proj.total_tasks.GT_detail_task', queue='grouptravel', routine_key='grouptravel',
                     task_name=task_tag, source='GT', _type='GTDetail',
                     priority=priority) as it:
         for source, source_id, city_id, country_id, url, utime in tasks:
