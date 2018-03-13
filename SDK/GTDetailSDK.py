@@ -89,7 +89,8 @@ class GTDetailSDK(BaseSDK):
             'insert_time': datetime.datetime.now()
         })
         # -- detail 2 mysql --
-
+        if len(result) == 0:
+            error_code = 29
         self.task.error_code = error_code
 
 if __name__ == '__main__':
