@@ -247,7 +247,7 @@ def google_drive_task(self, task, **kwargs):
     _sdk = GoogleDriveSDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True, base=BaseTask, max_retires=3, rate_limit='30/s')
+@app.task(bind=True, base=BaseTask, max_retires=3, rate_limit='10/s')
 def allhotel_city_suggest(self,task,**kwargs):
     _sdk = AllHotelSourceSDK(task=task)
     return _sdk.execute()
