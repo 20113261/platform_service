@@ -51,19 +51,6 @@ base_data_config = {
     'db': 'base_data',
     'charset': 'utf8'
 }
-
-def get_country(country_id):
-    select_country = "select mid, name from country"
-    conn = pymysql.connect(**base_data_config)
-    cursor = conn.cursor()
-    cursor.execute(select_country,())
-    return {mid:name for mid, name in cursor.fetchall()}
-
-country_dict = get_country()
-mioji_country = MiojiSimilarCountryDict()
-mioji_city = MiojiSimilarCityDict(config)
-new_mioji_city = new_MiojiSimilarCityDict(config)
-
 def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
     config['db'] = database_name
     suggest = json.loads(suggest)
@@ -446,6 +433,9 @@ def get_qyer_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
         conn.close()
     return len(save_result)
 def get_city_country_id(city_name,country_name,map_info=None,config=None):
+    mioji_country = MiojiSimilarCountryDict()
+    mioji_city = MiojiSimilarCityDict(config)
+    new_mioji_city = new_MiojiSimilarCityDict(config)
     country_id = mioji_country.get_mioji_country_id(country_name)
     if not country_id:
         country_id = 'NULL'
@@ -464,7 +454,12 @@ def get_city_country_id(city_name,country_name,map_info=None,config=None):
     return country_id,city_id
 
 def get_country_name(country_id):
-    return country_dict.get(str(country_id), 'NULL')
+    select_country = "select name from country where mid=%s"
+    conn = pymysql.connect(**base_data_config)
+    cursor = conn.cursor()
+    cursor.execute(select_country,(country_id,))
+    country_name = cursor.fetchone()[0]
+    return country_name
 
 def get_ctrip_eleven(max_n):
     try:
@@ -608,11 +603,11 @@ class AllHotelSourceSDK(BaseSDK):
 
 if __name__ == "__main__":
     args = {
-        'keyword': '娘隆县',
-        'source': 'elong',
-        'map_info': '102.7939759,14.6640154',
-        'country_id':'125',
-        'city_id': None,
+        'keyword': '威尔明顿',
+        'source': 'ctrip',
+        'map_info': '0.0',
+        'country_id':'501',
+        'city_id': '10002',
         'database_name': 'Cityupline'
     }
     task = Task(_worker='', _task_id='demo', _source='hotels', _type='supplement_field',
