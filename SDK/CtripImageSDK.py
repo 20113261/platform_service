@@ -15,7 +15,7 @@ client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
 db = client['data_result']
 
 
-class CtripCitySDK(BaseSDK):
+class CtripImageSDK(BaseSDK):
     def _execute(self, **kwargs):
         with MySession(need_proxies=True, need_cache=True) as session:
             search_url = self.task.kwargs['url']
@@ -48,6 +48,6 @@ if __name__ == "__main__":
                 _used_times=0, max_retry_times=6,
                 kwargs=args, _queue='poi_list',
                 _routine_key='poi_list', list_task_token='test', task_type=0, collection='')
-    ihg = CtripCitySDK(task)
+    ihg = CtripImageSDK(task)
 
     ihg.execute()
