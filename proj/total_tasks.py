@@ -194,7 +194,7 @@ def supplement_daodao_img(self, task, **kwargs):
 #     return _sdk.execute()
 #
 #
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='60/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='25/m')
 def ks_move_task(self, task, **kwargs):
     _sdk = KsMoveSDK(task=task)
     return _sdk.execute()
@@ -247,7 +247,7 @@ def google_drive_task(self, task, **kwargs):
     _sdk = GoogleDriveSDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True, base=BaseTask, max_retires=3, rate_limit='10/s')
+@app.task(bind=True, base=BaseTask, max_retires=3, rate_limit='30/m')
 def allhotel_city_suggest(self,task,**kwargs):
     _sdk = AllHotelSourceSDK(task=task)
     return _sdk.execute()
