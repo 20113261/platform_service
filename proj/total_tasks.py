@@ -15,10 +15,16 @@ from SDK.GTListSDK import GTListSDK
 from SDK.GTDetailSDK import GTDetailSDK
 from SDK.PoiSourceListSDK import PoiSourceListSDK
 from SDK.PoiSourceDetailSDK import PoiSourceDetailSDK
+from SDK.CtripImageSDK import  CtripImageSDK
 from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 
 
+#ctripPoi image task
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+def ctripPoi_image_task(self, task, **kwargs):
+    _sdk = CtripImageSDK(task=task)
+    return _sdk.execute()
 # -- poi all task
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/m')
 def PoiSource_detail_task(self, task, **kwargs):
