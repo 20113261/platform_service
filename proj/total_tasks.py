@@ -26,7 +26,7 @@ def ctripPoi_image_task(self, task, **kwargs):
     _sdk = CtripImageSDK(task=task)
     return _sdk.execute()
 # -- poi all task
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='15/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='25/m')
 def PoiSource_detail_task(self, task, **kwargs):
     _sdk = PoiSourceDetailSDK(task=task)
     return _sdk.execute()
