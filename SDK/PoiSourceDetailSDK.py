@@ -56,7 +56,7 @@ def poidetail_to_database(tid, used_times, source, url, need_cache=True):
 
 class PoiSourceDetailSDK(BaseSDK):
     def get_task_finished_code(self):
-        return [0, 106, 107, 109]
+        return [0, 106, 107, 109, 29]
 
     def _execute(self, **kwargs):
         source = self.task.kwargs['source']
