@@ -127,14 +127,14 @@ if __name__ == '__main__':
     from proj.my_lib.Common.Task import Task as ttt
     args = {
         "dept_info": {
-            "id": "1",
-            "name": "北京",
-            "name_en": "Beijing"
+            "id": "1211",
+            "name": "南阳",
+            "name_en": "nanyang"
         },
         "dest_info": {
-            "id": "438",
+            "id": "2002213",
             "name": "巴厘岛",
-            "name_en": "bali"
+            "name_en": "tour"
             },
         "vacation_type": "grouptravel",
         "source":'tuniu'
