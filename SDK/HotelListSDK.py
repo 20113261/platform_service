@@ -133,6 +133,9 @@ class HotelListSDK(BaseSDK):
 
         # more_list
         if fla:
+            for line in result['filter']:
+                line['country_id'] = country_id
+                line['source'] = source
             filter_collections.insert_many(
                 result['filter']
             )
