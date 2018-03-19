@@ -90,7 +90,6 @@ def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=
             'used_times': used_times,
         }
         task.content = ''
-    task.ticket_info ['list_more'] = flag
     if flag:
         old_spider_tag = source+'FilterHotel'
         required = ['filter']
