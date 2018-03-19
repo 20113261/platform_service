@@ -41,7 +41,6 @@ mioji.common.pages_store.STORE_TYPE = cache_type
 # pymongo client
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
-collections= client['data_result']['hotel_list']
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
 # get_proxy = simple_get_socks_proxy
@@ -89,12 +88,18 @@ def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=
         }
         task.content = ''
     task.ticket_info ['list_more'] = flag
-    spider = factory.get_spider_by_old_source(source + 'ListHotel' if not flag else 'FilterHotel')
+    if flag:
+        old_spider_tag = source+'FilterHotel'
+        required = ['filter']
+    else:
+        old_spider_tag = source + 'ListHotel'
+        required = ['hotel']
+    spider = factory.get_spider_by_old_source(old_spider_tag)
     spider.task = task
     if need_cache:
-        error_code = spider.crawl(required=['hotel'], cache_config=cache_config)
+        error_code = spider.crawl(required=required, cache_config=cache_config)
     else:
-        error_code = spider.crawl(required=['hotel'], cache_config=none_cache_config)
+        error_code = spider.crawl(required=required, cache_config=none_cache_config)
     logger.info(str(task.ticket_info) + '  --  ' + task.content)
     # logger.info(str(spider.result['hotel'][:100]))
     return error_code, spider.result, spider.page_store_key_list
@@ -106,6 +111,10 @@ class HotelListSDK(BaseSDK):
         city_id = self.task.kwargs['city_id']
         country_id = self.task.kwargs['country_id']
         fla = self.task.kwargs['list_more']
+        if fla:
+            collections = client['data_result']['hotel_filter']
+        else:
+            collections = client['data_result']['hotel_list']
         @func_time_logger
         def hotel_list_crawl():
             error_code, result, page_store_key = hotel_list_database(tid=self.task.task_id,
