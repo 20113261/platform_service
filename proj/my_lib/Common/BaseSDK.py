@@ -146,7 +146,7 @@ class BaseSDK(object):
             res = traceback.format_exc()
 
         # 当列表页任务时候，添加列表页城市相关信息
-        if self.task.task_type == TaskType.LIST_TASK:
+        if self.task.task_type == TaskType.LIST_TASK and not self.task.kwargs.get('list_more', False):
             self.update_city_list_info()
         return res
 

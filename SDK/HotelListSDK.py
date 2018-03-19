@@ -41,6 +41,8 @@ mioji.common.pages_store.STORE_TYPE = cache_type
 # pymongo client
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
+collections = client['data_result']['hotel_list']
+filter_collections = client['data_result']['hotel_filter']
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
 # get_proxy = simple_get_socks_proxy
@@ -110,11 +112,7 @@ class HotelListSDK(BaseSDK):
         source = self.task.kwargs['source']
         city_id = self.task.kwargs['city_id']
         country_id = self.task.kwargs['country_id']
-        fla = self.task.kwargs['list_more']
-        if fla:
-            collections = client['data_result']['hotel_filter']
-        else:
-            collections = client['data_result']['hotel_list']
+        fla = self.task.kwargs.get('list_more', False)
         @func_time_logger
         def hotel_list_crawl():
             error_code, result, page_store_key = hotel_list_database(tid=self.task.task_id,
@@ -135,7 +133,7 @@ class HotelListSDK(BaseSDK):
 
         # more_list
         if fla:
-            collections.insert_many(
+            filter_collections.insert_many(
                 result['filter']
             )
             if len(result['filter']) > 0:
