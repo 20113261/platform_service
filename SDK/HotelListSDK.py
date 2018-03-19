@@ -41,8 +41,7 @@ mioji.common.pages_store.STORE_TYPE = cache_type
 # pymongo client
 
 client_and_collections = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/data_result')
-# collections = client_and_collections['hotel_list']
-collections = ''
+collections = client_and_collections['hotel_list']
 filter_collections = client_and_collections['hotel_filter']
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
