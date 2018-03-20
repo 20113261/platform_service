@@ -55,8 +55,8 @@ base_data_config = {
     'charset': 'utf8'
 }
 
-mioji_country = MiojiSimilarCountryDict()
-country_dict = mioji_country.dict
+# mioji_country = MiojiSimilarCountryDict()
+# country_dict = mioji_country.dict
 def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
     config['db'] = database_name
     suggest = json.loads(suggest)
