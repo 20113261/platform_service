@@ -20,6 +20,9 @@ import time
 from Common.MiojiSimilarCityDict_new import MiojiSimilarCityDict as new_MiojiSimilarCityDict
 from Common.MiojiSimilarCityDict import MiojiSimilarCityDict
 from Common.MiojiSimilarCountryDict import MiojiSimilarCountryDict
+from Common.CityMapClient import run
+import memory_profiler
+import psutil
 source_interface = {
     'hotels': 'https://lookup.hotels.com/1/suggest/v1.7/json?' + \
         'locale=zh_CN&boostConfig=config-boost-champion&excludeLpa=false&callback=srs&query={0}',
@@ -51,6 +54,9 @@ base_data_config = {
     'db': 'base_data',
     'charset': 'utf8'
 }
+
+mioji_country = MiojiSimilarCountryDict()
+country_dict = mioji_country.dict
 def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
     config['db'] = database_name
     suggest = json.loads(suggest)
@@ -66,7 +72,9 @@ def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             city_name = city['name_cn']
             country_name = city['region_info']['country_name_cn']
             region_name = city['region_info']['province_name_cn']
-            country_id,city_id = get_city_country_id(city_name,country_name,None,config)
+            if country_name in country_dict:
+                country_id = country_dict[country_name]
+            city_id = run(country_name,city_name,province=region_name)
             if not region_name:
                 region_name = 'NULL'
             sid = str(city['id'])
@@ -95,6 +103,8 @@ def get_elong_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
     except Exception as e:
         raise e
     return len(save_result)
+
+
 def get_ctrip_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
     config['db'] = database_name
     suggest = suggest.decode('gbk')
@@ -115,7 +125,10 @@ def get_ctrip_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
             source = 'ctrip'
             country = detail_infos[0].split('，')[-1]
             city = detail_infos[0].split('，')[0]
-            country_id,city_id = get_city_country_id(city,country,None,config)
+            if country in country_dict:
+                country_id = country_dict[country]
+            city_id = run(country,city)
+
             sid = ''.join([detail_infos[3],detail_infos[4]])
             md5 = hashlib.md5()
             md5.update(sid)
@@ -161,7 +174,9 @@ def get_expedia_suggest(suggest,map_info,country_id,city_id,database_name,keywor
             suggest_map_info = ','.join([long, lat])
             country_name = city['hierarchyInfo']['country']['name']
             city_name = city['regionNames']['shortName']
-            country_id,city_id = get_city_country_id(city_name,country_name,suggest_map_info,config)
+            if country_name in country_dict:
+                country_id = country_dict[country_name]
+            city_id = run(country_name,city_name,suggest_map_info)
             source = 'expedia'
             sid = city['gaiaId']
 
@@ -218,7 +233,10 @@ def get_booking_suggest(suggest,map_info,country_id,city_id,database_name,keywor
                         region_name = label['text']
                     elif label['type'] == 'country':
                         country_name = label['text']
-                country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
+                if country_name in country_dict:
+                    country_id = country_dict[country_name]
+                city_id = run(country_name,city_name,map_info,region_name)
+
                 others_info['map_info'] = map_info
                 others_info = json.dumps(others_info)
                 local_time = str(datetime.datetime.now())[:10]
@@ -267,7 +285,10 @@ def get_hotels_suggest(suggest,map_info,country_id,city_id,database_name,keyword
                 lat = str(city['latitude'])
                 long = str(city['longitude'])
                 map_info = ','.join([long, lat])
-                country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
+                if country_name in country_dict:
+                    country_id = country_dict[country_name]
+                city_id = run(country_name,city_name,map_info)
+
                 sid = city['geoId']
                 md5 = hashlib.md5()
                 md5.update(sid)
@@ -315,7 +336,10 @@ def get_agoda_suggest(suggest,map_info,country_id,city_id,database_name,keyword)
                 country_name = city_info['ResultText'].split(',')[-1].strip()
                 if not city_name:
                     continue
-                country_id,city_id = get_city_country_id(city_name,country_name,None,config)
+                if country_name in country_dict:
+                    country_id = country_dict[country_name]
+                city_id = run(country_name,city_name)
+
                 source = 'agoda'
                 sid = str(city_info['ObjectId'])
                 md5 = hashlib.md5()
@@ -364,13 +388,16 @@ def get_daodao_suggest(suggest,map_info,country_id,city_id,database_name,keyword
             except:
                 continue
             map_info = ','.join([long,lat])
+            if country_name in country_dict:
+                country_id = country_dict[country_name]
+            city_id = run(country_name,city_name,map_info)
             others_info['map_info'] = map_info
             others_info = json.dumps(others_info)
             sid = str(suggest_info['value'])
             md5 = hashlib.md5()
             md5.update(sid)
             sid_md5 = md5.hexdigest()
-            country_id,city_id = get_city_country_id(city_name,country_name,map_info,config)
+
             local_time = str(datetime.datetime.now())[:10]
             label_batch = ''.join([local_time, 'a'])
             str_suggest = json.dumps(suggest_info)
@@ -408,7 +435,10 @@ def get_qyer_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
             city_name = suggest_info['cn_name'].replace('<span class="cGreen">','').replace('</span>','')
             if city_name == keyword:
                 country_name = get_country_name(country_id)
-                country_id,city_id = get_city_country_id(city_name,country_name,None,config)
+                if country_name in country_dict:
+                    country_id = country_dict[country_name]
+                city_id = run(country_name,city_name)
+
                 url = suggest_info['url']
                 if str(url).endswith('/'):
                     sid = url.split('/')[-2]
@@ -432,8 +462,10 @@ def get_qyer_suggest(suggest,map_info,country_id,city_id,database_name,keyword):
     finally:
         conn.close()
     return len(save_result)
+
+
 def get_city_country_id(city_name,country_name,map_info=None,config=None):
-    mioji_country = MiojiSimilarCountryDict()
+
     mioji_city = MiojiSimilarCityDict(config)
     new_mioji_city = new_MiojiSimilarCityDict(config)
     country_id = mioji_country.get_mioji_country_id(country_name)
@@ -603,8 +635,8 @@ class AllHotelSourceSDK(BaseSDK):
 
 if __name__ == "__main__":
     args = {
-        'keyword': '威尔明顿',
-        'source': 'ctrip',
+        'keyword': '纽约',
+        'source': 'booking',
         'map_info': '0.0',
         'country_id':'501',
         'city_id': '10002',
