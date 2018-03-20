@@ -66,7 +66,7 @@ def GT_to_database(tid, used_times, source, vacation_type, ticket, need_cache=Tr
 
 class GTListSDK(BaseSDK):
     def get_task_finished_code(self):
-        return [0, 106, 107, 109]
+        return [0, 106, 107, 109, 27]
 
     def _execute(self, **kwargs):
         dept_info = self.task.kwargs['dept_info']
@@ -115,7 +115,7 @@ class GTListSDK(BaseSDK):
         except Exception as e:
             raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
 
-        if len(data) > 0:
+        if error_code == 27 or len(data) > 0:
             self.task.error_code = 0
         else:
             raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
