@@ -17,12 +17,12 @@ import hashlib
 import re
 import requests
 import time
-from Common.MiojiSimilarCityDict_new import MiojiSimilarCityDict as new_MiojiSimilarCityDict
-from Common.MiojiSimilarCityDict import MiojiSimilarCityDict
-from Common.MiojiSimilarCountryDict import MiojiSimilarCountryDict
-from Common.CityMapClient import run
-import memory_profiler
-import psutil
+# from Common.MiojiSimilarCityDict_new import MiojiSimilarCityDict as new_MiojiSimilarCityDict
+# from Common.MiojiSimilarCityDict import MiojiSimilarCityDict
+# from Common.MiojiSimilarCountryDict import MiojiSimilarCountryDict
+# from Common.CityMapClient import run
+# import memory_profiler
+# import psutil
 source_interface = {
     'hotels': 'https://lookup.hotels.com/1/suggest/v1.7/json?' + \
         'locale=zh_CN&boostConfig=config-boost-champion&excludeLpa=false&callback=srs&query={0}',
