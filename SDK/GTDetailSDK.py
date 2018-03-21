@@ -61,7 +61,7 @@ def GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
     else:
         error_code = spider.crawl(required=['vacation'], cache_config=none_cache_config)
     print(error_code)
-    logger.info(str(spider.result['vacation']) + '  --  ' + task.ticket_info['vacation_info']['url'])
+    # logger.info(str(spider.result['vacation']) + '  --  ' + task.ticket_info['vacation_info']['url'])
     return error_code, spider.result['vacation'], spider.page_store_key_list
 
 class GTDetailSDK(BaseSDK):
