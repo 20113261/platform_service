@@ -55,7 +55,6 @@ hotel_default = {'check_in': '20170903', 'nights': 1, 'rooms': [{}]}
 hotel_rooms = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 3}]}
 hotel_rooms_c = {'check_in': '20170903', 'nights': 1, 'rooms': [{'adult': 1, 'child': 2, 'child_age': [0, 6]}] * 2}
 
-
 def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=False, suggest_type='1', suggest='',
                         need_cache=True,flag=False):
     task = Task()
@@ -67,6 +66,8 @@ def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=
             task.content = suggest+'&'
         elif source in ['hyatt']:
             task.content = ''
+        elif source == 'gha':
+            task.content = '&'.join(city_id, suggest)
         else:
             task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
 
@@ -107,6 +108,9 @@ def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=
 
 
 class HotelListSDK(BaseSDK):
+    def get_task_finished_code(self):
+        return [0, 106, 107, 109, 29]
+
     def _execute(self, **kwargs):
         source = self.task.kwargs['source']
         city_id = self.task.kwargs['city_id']
