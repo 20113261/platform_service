@@ -120,7 +120,7 @@ class GTListSDK(BaseSDK):
         else:
             raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
 
-        return result, error_code
+        return len(result), error_code
 
 
 if __name__ == '__main__':
