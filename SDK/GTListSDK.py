@@ -60,7 +60,7 @@ def GT_to_database(tid, used_times, source, vacation_type, ticket, need_cache=Tr
     else:
         error_code = spider.crawl(required=['list'], cache_config=none_cache_config)
     print(error_code)
-    logger.info(str(len(spider.result['list'])) + '  --  ' + task.ticket_info['vacation_info']['dept_info']['id']+'-'+task.ticket_info['vacation_info']['dest_info']['id'])
+    # logger.info(str(len(spider.result['list'])) + '  --  ' + task.ticket_info['vacation_info']['dept_info']['id']+'-'+task.ticket_info['vacation_info']['dest_info']['id'])
     return error_code, spider.result['list'], spider.page_store_key_list
 
 
