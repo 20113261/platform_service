@@ -63,7 +63,7 @@ def ctrip_poi_list_task(self, task, **kwargs):
 
 
 #
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/s')
 def qyer_list_task(self, task, **kwargs):
     _sdk = QyerListSDK(task=task)
     return _sdk.execute()
