@@ -568,7 +568,7 @@ def get_city_date(task_name, date_index):
 def city2list():
     aaa = str([str(collection_name) for collection_name in db.collection_names() if str(collection_name).startswith('City_Queue_')])
     for collection_name in db.collection_names():
-        if not str(collection_name).startswith('City_Queue_'):
+        if not str(collection_name).startswith('City_Queue_') and collection_name in ('City_Queue_grouptravel_TaskName_city_total_GT_20180312a', 'City_Queue_grouptravel_TaskName_city_total_GT_20180314a'):
             continue
         collections = db[collection_name]
         _count = 0
