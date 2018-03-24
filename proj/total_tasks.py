@@ -71,7 +71,7 @@ def qyer_list_task(self, task, **kwargs):
 
 #
 #
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='5/m')
 def poi_list_task(self, task, **kwargs):
     _sdk = PoiListSDK(task=task)
     return _sdk.execute()
