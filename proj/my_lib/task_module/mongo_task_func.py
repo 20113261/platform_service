@@ -66,8 +66,8 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
         #         or each_collection_name == 'Task_Queue_grouptravel_TaskName_list_total_GT_20180312a': continue
 
         if each_collection_name=='Task_Queue_grouptravel_TaskName_detail_total_GT_20180314a' \
-                or each_collection_name=='Task_Queue_grouptravel_TaskName_detail_total_GT_20180312a' \
-                or each_collection_name=='Task_Queue_file_downloader_TaskName_images_total_Poi_20180314a':continue
+                or each_collection_name=='Task_Queue_grouptravel_TaskName_detail_total_GT_20180312a' :continue
+                # or each_collection_name=='Task_Queue_file_downloader_TaskName_images_total_Poi_20180314a':continue
 
         try:
             for d in _get_task_total_simple(collection_name=each_collection_name, queue=queue, used_times=used_times,
