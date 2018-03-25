@@ -84,7 +84,7 @@ class HotelDetailSDK(BaseSDK):
             'source_id': source_id,
             'city_id': city_id
         }
-        if source in ['starwood', 'hyatt']:
+        if source in ['starwood', 'hyatt', 'gha']:
             error_code, res, page_store_key_list = hotel_detail_database(url, source)
 
             if error_code == 0:
