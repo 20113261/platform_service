@@ -67,7 +67,7 @@ def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=
         elif source in ['hyatt']:
             task.content = ''
         elif source == 'gha':
-            task.content = '&'.join([city_id, suggest])
+            task.content = suggest
         else:
             task.content = str(city_id) + '&' + '2&1&{0}'.format(check_in)
 
