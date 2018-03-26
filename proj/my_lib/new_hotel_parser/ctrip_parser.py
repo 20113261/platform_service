@@ -147,7 +147,8 @@ def ctrip_parser(page, url, other_info):
             check_in_time = checkin_pat1.findall(q)[0].encode('utf-8') + '以后'
         else:
             check_in_str = check_in[0].encode('utf-8')
-            time = check_in_str.split('</span>-<span class="text_bold">')
+            time = re.findall('(\d{1,2}:\d{1,2}).*?(\d{1,2}:\d{1,2})', check_in_str)[0]
+            # time = check_in_str.split('</span>-<span class="text_bold">')
             check_in_time = time[0] + '-' + time[1]
 
         checkout_pat = re.compile(
@@ -157,7 +158,8 @@ def ctrip_parser(page, url, other_info):
             checkout_pat1 = re.compile(
                 r'&#160;&#160;&#160;&#160;&#160;&#160;&#31163;&#24215;&#26102;&#38388;&#65306;<span class=\"text_bold\">(.*?)</span></td></tr>')
             check_out_str = checkout_pat1.findall(q)[0]
-            time = check_out_str.split('</span>-<span class="text_bold">')
+            time = re.findall('(\d{1,2}:\d{1,2}).*?(\d{1,2}:\d{1,2})', check_in_str)[0]
+            # time = check_out_str.split('</span>-<span class="text_bold">')
             check_out_time = time[0] + '-' + time[1]
         else:
             check_out_time = check_out[0].encode('utf-8') + '以前'
@@ -303,7 +305,9 @@ def ctrip_parser(page, url, other_info):
 if __name__ == '__main__':
     # url = 'http://hotels.ctrip.com/international/992466.html'
     # url = 'http://hotels.ctrip.com/international/3723551.html?IsReposted=3723551'
-    url = 'http://hotels.ctrip.com/international/2611722.html'
+    # url = 'http://hotels.ctrip.com/international/2611722.html'
+    url = 'http://hotels.ctrip.com/international/3681269.html'
+    # url = 'http://hotels.ctrip.com/international/747361.html'
     # url = 'http://hotels.ctrip.com/international/10146828.html'
     other_info = {
         'source_id': '1039433',
