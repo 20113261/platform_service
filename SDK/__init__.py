@@ -35,3 +35,4 @@ from .SlowTaskSDK import SlowTaskSDK
 from .VeriFlightSDK import VeriFlightSDK
 from .GoogleDriveSDK import GoogleDriveSDK
 from .AllHotelSourceSDK import AllHotelSourceSDK
+from .AllSuggestCitySDK import AllSuggestCitySDK

@@ -251,3 +251,8 @@ def google_drive_task(self, task, **kwargs):
 def allhotel_city_suggest(self,task,**kwargs):
     _sdk = AllHotelSourceSDK(task=task)
     return _sdk.execute()
+
+@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='5/m')
+def all_city_suggest(self,task,**kwargs):
+    _sdk = AllSuggestCitySDK(task=task)
+    return _sdk.execute()
