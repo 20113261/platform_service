@@ -157,7 +157,7 @@ class HotelListSDK(BaseSDK):
             self.task.error_code = error_code
 
         res_data = []
-        if source in ('ctrip', 'ctripcn', 'starwood', 'gha'):
+        if source in ('ctrip', 'ctripcn', 'starwood', 'gha','shangrila'):
             for line in result['hotel']:
                 sid = line[3]
                 hotel_url = line[-1]
