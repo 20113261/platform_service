@@ -41,6 +41,8 @@ SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url)
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
 db = client['data_result']
+tuniu_collections = db['tuniuGT_detail']
+ctrip_collections = db['ctripGT_detail']
 
 # client = pymongo.MongoClient("mongodb://10.10.231.105:27017")
 # db = client['Test']
@@ -66,7 +68,7 @@ def GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
 
 class GTDetailSDK(BaseSDK):
     def get_task_finished_code(self):
-        return [0, 106, 107, 109]
+        return [0, 106, 107, 109, 29]
 
     def _execute(self, **kwargs):
         source = self.task.kwargs['source']
@@ -77,8 +79,14 @@ class GTDetailSDK(BaseSDK):
             ticket=self.task.kwargs,
             need_cache=self.task.used_times == 0
         )
+        if source == 'ctrip':
+            my_collections = ctrip_collections
+        elif source == 'tuniu':
+            my_collections = tuniu_collections
+        else:
+            raise Exception(u'未知的源')
 
-        db[source+'GT_detail'].save({
+        my_collections.save({
             'source':source,
             'collections': self.task.collection,
             'task_id': self.task.task_id,
@@ -89,24 +97,30 @@ class GTDetailSDK(BaseSDK):
             'insert_time': datetime.datetime.now()
         })
         # -- detail 2 mysql --
-        if len(result) == 0:
-            error_code = 29
-        self.task.error_code = error_code
+        if len(result) > 0:
+            self.task.error_code = 0
+        elif len(result) == 0:
+            self.task.error_code = 29
+        elif int(error_code) == 0:
+            raise ServiceStandardError(ServiceStandardError.EMPTY_TICKET)
+        else:
+            raise ServiceStandardError(error_code=error_code)
+        return self.task.error_code
 
 if __name__ == '__main__':
     from proj.my_lib.Common.Task import Task as ttt
 
     args =  {
         'source':'ctrip',
-        "pid_3rd": "17192874",
+        "pid_3rd": "18557244",
         "dept_id": "1",
         "search_dept_city": "北京",
-        "dest_id": "569",
-        "search_dest_city": "塞班岛",
-        "dept_city": "北京",
+        "dest_id": "34745",
+        "search_dest_city": "半月",
+        "dept_city": "上海",
         "highlight": "列表页传入",
-        "first_image": "https://dimg04.c-ctrip.com/images/300f0a0000004x2tk6A18.jpg",
-        "url": "http://vacations.ctrip.com/grouptravel/p17192874s1.html?kwd=%E5%A1%9E%E7%8F%AD%E5%B2%9B",
+        "first_image": "https://dimg04.c-ctrip.com/images/300p0m000000derkj7459.png",
+        "url": "http://vacations.ctrip.com/grouptravel/p18557244s1.html?kwd=%e5%8d%8a%e6%9c%88%e6%b9%be",
         "supplier": "列表页传入",
         "brand": "列表页出传入"
     }
