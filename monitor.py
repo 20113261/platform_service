@@ -36,7 +36,7 @@ db = client['MongoTask']
 HOTEL_SOURCE = (
     'agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
     'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton', 'ihg', 'holiday', 'accor', 'marriott', 'starwood',
-    'hyatt', 'gha', 'shangrila')
+    'hyatt', 'gha', 'shangrila', 'fourseasons')
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 CTRIPPOI_SOURCE = 'ctripPoi'
@@ -567,10 +567,11 @@ def get_city_date(task_name, date_index):
 
 
 def city2list():
-    aaa = str([str(collection_name) for collection_name in db.collection_names() if str(collection_name).startswith('City_Queue_')])
+    # aaa = str([str(collection_name) for collection_name in db.collection_names() if str(collection_name).startswith('City_Queue_')])
     for collection_name in db.collection_names():
-        if not str(collection_name).startswith('City_Queue_') and collection_name in ('City_Queue_grouptravel_TaskName_city_total_GT_20180312a', 'City_Queue_grouptravel_TaskName_city_total_GT_20180314a'):
+        if not str(collection_name).startswith('City_Queue_'):
             continue
+        if collection_name in ('City_Queue_grouptravel_TaskName_city_total_GT_20180312a', 'City_Queue_grouptravel_TaskName_city_total_GT_20180314a'):continue
         collections = db[collection_name]
         _count = 0
 
@@ -657,14 +658,18 @@ class TaskSender(object):
 
 if __name__ == '__main__':
     #monitoring_ctripPoi_list2detail()
-    monitoring_PoiSource_list2detail()
+
+    # monitoring_PoiSource_list2detail()
+
+    #monitoring_hotel_list2detail()
+
 
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
     # while True:
         #monitoring_qyer_list2detail()
         # monitoring_zombies_task_total()
-        # city2list()
+    city2list()
         # get_default_timestramp()
         # get_seek('hotel_list2detail_test')
         # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
