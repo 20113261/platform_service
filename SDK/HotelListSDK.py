@@ -162,7 +162,7 @@ class HotelListSDK(BaseSDK):
                 sid = line[3]
                 hotel_url = line[-1]
                 res_data.append((source, sid, city_id, country_id, hotel_url))
-        if source in (' fourseasons'):
+        if source in ('fourseasons'):
             for line in result['hotel']:
                 sid = line[-1]
                 hotel_url = line[0]
