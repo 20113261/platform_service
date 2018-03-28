@@ -19,8 +19,7 @@ from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.mysql_pool import service_platform_pool
 from proj.my_lib.Common.Browser import proxy_pool
-
-import json
+logger = get_task_logger(__name__)
 MONGODB_CONFIG = {
     'host': '10.10.213.148'
 }
@@ -31,16 +30,18 @@ spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 client = pymongo.MongoClient(**MONGODB_CONFIG)
 
 
-def suggest_to_database(tid, used_times, source, keyword, spider_tag, need_cache=True):
+def suggest_to_database(tid, used_times, source, key,keyword, spider_tag, need_cache=True):
     task = Task()
     task.content = keyword
+    task.ticket_info['key']=key
     spider = factory.get_spider_by_old_source(spider_tag)
     spider.task = task
     if need_cache:
         error_code = spider.crawl(required=['suggest'], cache_config=cache_config)
     else:
         error_code = spider.crawl(required=['suggest'], cache_config=none_cache_config)
-    print(error_code)
+    logger.info(
+        str(len(spider.result['suggest'])) + '  --  ' + keyword)
     return error_code, spider.result['suggest']
 
 
@@ -51,6 +52,7 @@ class AllSuggestCitySDK(BaseSDK):
         spider_tag = self.task.kwargs['spider_tag']
         collection_name = self.task.kwargs['collection_name']
         key_word = self.task.kwargs['keyword']
+        key = self.task.kwargs['key']
         source = self.task.kwargs['source']
 
         error_code, values = suggest_to_database(
@@ -59,6 +61,7 @@ class AllSuggestCitySDK(BaseSDK):
             spider_tag=spider_tag,
             source=source,
             keyword = key_word,
+            key = key,
             need_cache=self.task.used_times == 0
         )
 
@@ -69,8 +72,10 @@ class AllSuggestCitySDK(BaseSDK):
             else:
                 content = {'suggest':value}
                 collection.insert(content)
-        if len(values) >= 0:
+        if len(values) > 0:
             self.task.error_code = 0
+        else:
+            self.task.error_code = 29
         return self.task.error_code
 
 
@@ -78,10 +83,11 @@ class AllSuggestCitySDK(BaseSDK):
 if __name__ == "__main__":
     from proj.my_lib.Common.Task import Task as ttt
     args = {
-        'keyword': 'xiyi',
+        'keyword': 'Praia Grande (普拉亚格兰德)',
         'spider_tag':'bestwestSuggest',
         'collection_name':'test',
-        'source':'bestwest'
+        'source':'bestwest',
+        'key':'123'
     }
     task = ttt(_worker='', _task_id='demo', _source='', _type='suggest', _task_name='tes',
                 _used_times=0, max_retry_times=6,
