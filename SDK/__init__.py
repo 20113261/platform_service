@@ -34,5 +34,6 @@ from .NormalTaskSDK import NormalTaskSDK
 from .SlowTaskSDK import SlowTaskSDK
 from .VeriFlightSDK import VeriFlightSDK
 from .GoogleDriveSDK import GoogleDriveSDK
-from .AllHotelSourceSDK import AllHotelSourceSDK
+# from .AllHotelSourceSDK import AllHotelSourceSDK
 from .AllSuggestCitySDK import AllSuggestCitySDK
+from .DaodaoOthersSourceHotleUrlSDK import OthersSourceHotelUrl
