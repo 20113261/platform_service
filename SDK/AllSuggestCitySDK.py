@@ -45,7 +45,8 @@ def suggest_to_database(tid, used_times, source, keyword, spider_tag, need_cache
 
 
 class AllSuggestCitySDK(BaseSDK):
-
+    def get_task_finished_code(self):
+        return [0, 106, 107, 109]
     def _execute(self, **kwargs):
         spider_tag = self.task.kwargs['spider_tag']
         collection_name = self.task.kwargs['collection_name']
@@ -69,7 +70,8 @@ class AllSuggestCitySDK(BaseSDK):
                 content = {'suggest':value}
                 collection.insert(content)
         if len(values) >= 0:
-            self.finished_error_code = 0
+            self.task.error_code = 0
+        return self.task.error_code
 
 
 
