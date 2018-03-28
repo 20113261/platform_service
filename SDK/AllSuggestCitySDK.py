@@ -69,7 +69,7 @@ class AllSuggestCitySDK(BaseSDK):
             else:
                 content = {'suggest':value}
                 collection.insert(content)
-        if len(values) >= 0:
+        if len(values) > 0:
             self.task.error_code = 0
         else:
             self.task.error_code = 29
