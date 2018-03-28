@@ -36,7 +36,7 @@ db = client['MongoTask']
 HOTEL_SOURCE = (
     'agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
     'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton', 'ihg', 'holiday', 'accor', 'marriott', 'starwood',
-    'hyatt', 'gha', 'shangrila')
+    'hyatt', 'gha', 'shangrila', 'fourseasons')
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 CTRIPPOI_SOURCE = 'ctripPoi'
@@ -657,7 +657,7 @@ class TaskSender(object):
 
 if __name__ == '__main__':
     #monitoring_ctripPoi_list2detail()
-    monitoring_PoiSource_list2detail()
+    monitoring_hotel_list2detail()
 
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
