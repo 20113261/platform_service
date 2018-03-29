@@ -65,7 +65,7 @@ class AllSuggestCitySDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        # collection = client['CitySuggest'][collection_name]
+        collection = client['CitySuggest'][collection_name]
         for value in values:
             if isinstance(value,(types.DictType,types.ListType)):
                 collection.insert(value)
