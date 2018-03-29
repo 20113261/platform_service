@@ -55,8 +55,8 @@ class OthersSourceHotelUrl(BaseSDK):
             keyword=url,
             need_cache=self.task.used_times == 0
         )
-        client = pymongo.MongoClient(**MONGODB_CONFIG)
-        db = client['HotelUrl']['DaoDaoSourceUrl']
+        # client = pymongo.MongoClient(**MONGODB_CONFIG)
+        # db = client['HotelUrl']['DaoDaoSourceUrl']
         db.insert(values)
         if error_code == 0:
             self.finished_error_code = 0
