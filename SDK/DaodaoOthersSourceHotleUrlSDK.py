@@ -45,8 +45,9 @@ class OthersSourceHotelUrl(BaseSDK):
 
     def _execute(self, **kwargs):
         url = kwargs.get('url')
-        spider_tag = self.task.kwargs['spider_tag']
-        source = self.task.kwargs['source']
+        spider_tag = kwargs.get('spider_tag')
+        source = kwargs.get('source')
+
         error_code, values = hotel_url_to_database(
             tid=self.task.task_id,
             used_times=self.task.used_times,
@@ -73,6 +74,7 @@ if __name__ == "__main__":
         'spider_tag': 'daodaoListHotel'
 
     }
+
     task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
                _used_times=0, max_retry_times=6,
                kwargs=args, _queue='supplement_field',
