@@ -13,8 +13,8 @@ from proj.my_lib import ServiceStandardError
 from proj.my_lib.Common.Browser import proxy_pool
 from celery.utils.log import get_task_logger
 import mioji.common.logger
-import mioji.common.pages_store
 import mioji.common.pool
+import mioji.common.pages_store
 mioji.common.pool.pool.set_size(1024)
 logger = get_task_logger('daodaoothers')
 mioji.common.logger.logger = logger
