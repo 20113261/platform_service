@@ -17,7 +17,7 @@ from celery.utils.log import get_task_logger
 import mioji.common.logger
 import mioji.common.pages_store
 import mioji.common.pool
-mioji.common.pool.pool.set_size(128)
+# mioji.common.pool.pool.set_size(128)
 logger = get_task_logger(__name__)
 mioji.common.logger.logger = loggergg
 mioji.common.pages_store.cache_dir = list_cache_path
