@@ -71,18 +71,18 @@ class EuropeStationSDK(BaseSDK):
         # station_code = sta[1]
         google_map_info = google_get_map_info('{},{},{}'.format(country_code, city_name, station_name))
         google_city_map_info = google_get_map_info('{},{}'.format(country_code, city_name))
-        try:
-            collections.update({
-                '_id': ObjectId(_id)
-            }, {'$set':{
-                    'map_info': google_map_info,
-                    # 'map_info': '',
-                    'city_map_info': google_city_map_info,
-                    # 'city_map_info': '',
-                }
-            })
-        except Exception:
-            raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR)
+        # try:
+        collections.update({
+            '_id': ObjectId(_id)
+        }, {'$set':{
+                'map_info': google_map_info,
+                # 'map_info': '',
+                'city_map_info': google_city_map_info,
+                # 'city_map_info': '',
+            }
+        })
+        # except Exception:
+        #     raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR)
 
         self.task.error_code = 0
         return 'OK'
