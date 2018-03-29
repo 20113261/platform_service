@@ -102,7 +102,7 @@ def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=
         error_code = spider.crawl(required=required, cache_config=cache_config)
     else:
         error_code = spider.crawl(required=required, cache_config=none_cache_config)
-    logger.info(str(task.ticket_info) + '  --  ' + task.content)
+    logger.info(str(task.ticket_info) + '  --  ' + '-'+str(error_code)+'-' +task.content)
     # logger.info(str(spider.result['hotel'][:100]))
     return error_code, spider.result, spider.page_store_key_list
 
@@ -162,7 +162,7 @@ class HotelListSDK(BaseSDK):
                 sid = line[3]
                 hotel_url = line[-1]
                 res_data.append((source, sid, city_id, country_id, hotel_url))
-        if source in (' fourseasons'):
+        if source in ('fourseasons'):
             for line in result['hotel']:
                 sid = line[-1]
                 hotel_url = line[0]
