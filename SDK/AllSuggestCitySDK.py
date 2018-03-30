@@ -57,8 +57,9 @@ class AllSuggestCitySDK(BaseSDK):
             key = key,
             need_cache=self.task.used_times == 0
         )
-
-
+        if values[0] =="OVER_QUERY_LIMIT":
+            self.task.error_code = 102
+            return self.task.error_code
         for value in values:
             if isinstance(value,(types.DictType,types.ListType)):
                 collection.insert(value)
