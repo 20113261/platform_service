@@ -22,7 +22,7 @@ import pymongo
 import mioji.common.pool
 
 mioji.common.spider.NEED_FLIP_LIMIT = False
-mioji.common.pool.pool.set_size(2024)
+mioji.common.pool.pool.set_size(128)
 
 # pymongo client
 
