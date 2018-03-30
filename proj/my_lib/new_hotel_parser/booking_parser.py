@@ -6,7 +6,7 @@ import requests
 import json
 from lxml import html as HTML
 # from data_obj import BookingHotel
-from mioji.common.class_common import Hotel_New
+# from mioji.common.class_common import Hotel_New
 # from common.common import get_proxy
 # from proj.my_lib.Common.KeyMatch import key_is_legal
 
@@ -128,40 +128,40 @@ def booking_parser(content, url, other_info):
 
 
 if __name__ == '__main__':
-    from time import time
-    from gevent import monkey
-    monkey.patch_all()
-    from gevent.queue import Queue
-    import gevent
-
-
-    def list_to_queue(_):
-        global queue
-        for each in _:
-            queue.put_nowait(each)
-        return queue
-    start = time()
-    other_info = {'source_id': '1016533', 'city_id': '10067'}
-    queue = Queue()
-    url_list = (i for i in open(r'/Users/mioji/Desktop/booking_detail_url.txt', 'r'))
-    gevent.spawn(list_to_queue, url_list).join()
-    print(queue.qsize())
-
-    def f(que):
-        while not que.empty():
-            url = que.get_nowait()
-            while True:
-                try:
-                    content = requests.get(url).text
-                except:
-                    pass
-                else:
-                    break
-            print(url)
-            result = booking_parser(content, url, other_info)
-            print(result)
-            print('- ' * 100)
-
-    gevent.joinall([gevent.spawn(f, queue) for i in range(10)])
-    end = time()
-    print('Total time is %.2f s' % (end - start))
+    # from time import time
+    # from gevent import monkey
+    # monkey.patch_all()
+    # from gevent.queue import Queue
+    # import gevent
+    #
+    #
+    # def list_to_queue(_):
+    #     global queue
+    #     for each in _:
+    #         queue.put_nowait(each)
+    #     return queue
+    # start = time()
+    # other_info = {'source_id': '1016533', 'city_id': '10067'}
+    # queue = Queue()
+    # url_list = (i for i in open(r'/Users/mioji/Desktop/booking_detail_url.txt', 'r'))
+    # gevent.spawn(list_to_queue, url_list).join()
+    # print(queue.qsize())
+    #
+    # def f(que):
+    #     while not que.empty():
+    #         url = que.get_nowait()
+    #         while True:
+    #             try:
+    #                 content = requests.get(url).text
+    #             except:
+    #                 pass
+    #             else:
+    #                 break
+    #         print(url)
+    #         result = booking_parser(content, url, other_info)
+    #         print(result)
+    #         print('- ' * 100)
+    #
+    # gevent.joinall([gevent.spawn(f, queue) for i in range(10)])
+    # end = time()
+    # print('Total time is %.2f s' % (end - start))
