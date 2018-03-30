@@ -18,7 +18,6 @@ import mioji.common.pages_store
 mioji.common.pool.pool.set_size(128)
 
 logger = get_task_logger('daodaoHotel')
-mioji.common.pool.pool.set_size(1024)
 mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path
 mioji.common.pages_store.STORE_TYPE = cache_type
