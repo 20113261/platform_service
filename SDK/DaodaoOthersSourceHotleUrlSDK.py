@@ -1,10 +1,19 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 import pymongo
+import pymysql
 from mioji import spider_factory
 MONGODB_CONFIG = {
     'host': '10.10.213.148'
 }
+config = {
+    'host': '10.10.230.206',
+    'user': 'mioji_admin',
+    'password': 'mioji1109',
+    'db': 'daodao_google',
+    'charset': 'utf8'
+}
+import json
 from mioji.common.task_info import Task
 from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 from proj.my_lib.Common.BaseSDK import BaseSDK
@@ -46,7 +55,7 @@ class OthersSourceHotelUrl(BaseSDK):
         url = kwargs.get('url')
         spider_tag = kwargs.get('spider_tag')
         source = kwargs.get('source')
-
+        data_from = kwargs.get('data_from')
         error_code, values = hotel_url_to_database(
             tid=self.task.task_id,
             used_times=self.task.used_times,
@@ -55,10 +64,28 @@ class OthersSourceHotelUrl(BaseSDK):
             keyword=url,
             need_cache=self.task.used_times == 0
         )
-        client = pymongo.MongoClient(**MONGODB_CONFIG)
-        db = client['HotelUrl']['DaoDaoSourceUrl']
-        if values:
-            db.insert(values)
+        temp_save = []
+        if data_from == 'daodao':
+            hotel_urls = values['hotel']
+            insert_sql = "insert into daodao_hotel(hotel_name,hotel_name_en,agoda,booking,ctrip,elong,expedia,hotels,other_source) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            conn = pymysql.connect(**config)
+            cursor = conn.cursor()
+            for hotel_url in hotel_urls:
+                temp_save.append(
+                    (
+                        hotel_url.get('hotel_name',''),hotel_url.get('hotel_name_en',''),hotel_url.get('agoda',''),hotel_url.get('booking',''),hotel_url.get('ctrip',''),
+                        hotel_url.get('elong',''),hotel_url.get('expedia',''),hotel_url.get('hotels',''),json.dumps(hotel_url)
+                    )
+                )
+                if len(temp_save) >= 2000:
+                    cursor.executemany(insert_sql,temp_save)
+                    conn.commit()
+                    temp_save = []
+            else:
+                cursor.executemany(insert_sql,temp_save)
+                conn.commit()
+        elif data_from == 'google':
+            pass
         if error_code == 0:
             self.finished_error_code = 0
         else:
@@ -70,7 +97,8 @@ if __name__ == "__main__":
     args = {
         'url': url,
         'source': 'daodao',
-        'spider_tag': 'daodaoListHotel'
+        'spider_tag': 'daodaoListHotel',
+        'data_from': 'daodao'
 
     }
 
