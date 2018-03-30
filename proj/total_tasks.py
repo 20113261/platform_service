@@ -7,17 +7,17 @@
 # @Software: PyCharm
 from __future__ import absolute_import
 from SDK import *
-# from SDK.SupplementTask import SupplementReMapInfo
-# from SDK.HiltonTaxSDK import HiltonTaxSDK
-# from SDK.PoiCtripListSDK import PoiCtripListSDK
-# from SDK.PoiCtripDetailSDK import PoiCtripDetailSDK
-# from SDK.GTListSDK import GTListSDK
-# from SDK.GTDetailSDK import GTDetailSDK
-# from SDK.PoiSourceListSDK import PoiSourceListSDK
-# from SDK.PoiSourceDetailSDK import PoiSourceDetailSDK
-# from SDK.CtripImageSDK import  CtripImageSDK
-# from proj.celery import app
-# from proj.my_lib.BaseTask import BaseTask
+from SDK.SupplementTask import SupplementReMapInfo
+from SDK.HiltonTaxSDK import HiltonTaxSDK
+from SDK.PoiCtripListSDK import PoiCtripListSDK
+from SDK.PoiCtripDetailSDK import PoiCtripDetailSDK
+from SDK.GTListSDK import GTListSDK
+from SDK.GTDetailSDK import GTDetailSDK
+from SDK.PoiSourceListSDK import PoiSourceListSDK
+from SDK.PoiSourceDetailSDK import PoiSourceDetailSDK
+from SDK.CtripImageSDK import  CtripImageSDK
+from proj.celery import app
+from proj.my_lib.BaseTask import BaseTask
 
 
 #ctripPoi image task
