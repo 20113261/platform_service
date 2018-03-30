@@ -58,10 +58,10 @@ class AllSuggestCitySDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
         if error_code==0 :
-            if values[0] != 'OK':
+            if values[0] == 'OVER_QUERY_LIMIT':
                 self.task.error_code=102
                 return self.task.error_code
-            elif values == ['OK']:
+            if values[0] == 'OK':
                 self.task.error_code = 29
                 return self.task.error_code
         for value in values:
