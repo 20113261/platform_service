@@ -20,7 +20,7 @@ import requests
 from lxml import html as HTML
 from urlparse import urljoin
 # from data_obj import Hotel, DBSession
-from mioji.common.class_common import Hotel_New
+# from mioji.common.class_common import Hotel_New
 import json
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -47,6 +47,7 @@ def ctrip_parser(page, url, other_info):
 
     ph_runtime = execjs.get('PhantomJS')
     js_str = root.xpath('//script[contains(text(),"hotelDomesticConfig")]/text()')[0]
+    print js_str
     page_js = ph_runtime.compile(js_str[:js_str.index('function  loadCallback_roomList()')])
     page_js.eval('hotelDomesticConfig')
     page_js.eval('pictureConfigNew')
