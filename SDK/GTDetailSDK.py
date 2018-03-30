@@ -68,7 +68,7 @@ def GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
 
 class GTDetailSDK(BaseSDK):
     def get_task_finished_code(self):
-        return [0, 106, 107, 109, 29]
+        return [0, 106, 107, 109]
 
     def _execute(self, **kwargs):
         source = self.task.kwargs['source']
@@ -105,7 +105,7 @@ class GTDetailSDK(BaseSDK):
             raise ServiceStandardError(ServiceStandardError.EMPTY_TICKET)
         else:
             raise ServiceStandardError(error_code=error_code)
-        return self.task.error_code
+        return self.task.error_code, len(result)
 
 if __name__ == '__main__':
     from proj.my_lib.Common.Task import Task as ttt

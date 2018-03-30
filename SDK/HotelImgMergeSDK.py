@@ -176,7 +176,7 @@ class UpdateHotelValidation(object):
             # ep 系，使用 url 类型的
             each_data = self.expedia(line, source=source)
             return each_data
-        elif source in ("hrs", "ctrip", "ihg"):
+        elif source in ("hrs", "ctrip", "ihg","expediaTaapApi","gha","hyatt","starwood"):
             # 单纯 sid 的
             each_data = self.sid_only_key_and_content(line)
             return each_data

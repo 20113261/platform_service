@@ -2,22 +2,15 @@
 # -*-coding:utf-8 -*-
 
 from __future__ import absolute_import
-import datetime
 import pymongo
 import types
-import mioji.common.logger
-import mioji.common.pages_store
-import mioji.common.pool
 from celery.utils.log import get_task_logger
 from mioji import spider_factory
 from mioji.common.task_info import Task
-from mioji.common.utils import simple_get_socks_proxy
 from mioji.spider_factory import factory
 
-from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
+from proj.list_config import cache_config, none_cache_config
 from proj.my_lib.Common.BaseSDK import BaseSDK
-from proj.my_lib.ServiceStandardError import ServiceStandardError
-from proj.mysql_pool import service_platform_pool
 from proj.my_lib.Common.Browser import proxy_pool
 logger = get_task_logger(__name__)
 MONGODB_CONFIG = {
@@ -28,7 +21,7 @@ get_proxy = proxy_pool.get_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 client = pymongo.MongoClient(**MONGODB_CONFIG)
-
+collection = client['CitySuggest']['bestwest_city_suggest_20180328']
 
 def suggest_to_database(tid, used_times, source, key,keyword, spider_tag, need_cache=True):
     task = Task()
@@ -47,7 +40,7 @@ def suggest_to_database(tid, used_times, source, key,keyword, spider_tag, need_c
 
 class AllSuggestCitySDK(BaseSDK):
     def get_task_finished_code(self):
-        return [0, 106, 107, 109]
+        return [0, 106, 107, 109, 29]
     def _execute(self, **kwargs):
         spider_tag = self.task.kwargs['spider_tag']
         collection_name = self.task.kwargs['collection_name']
@@ -65,7 +58,7 @@ class AllSuggestCitySDK(BaseSDK):
             need_cache=self.task.used_times == 0
         )
 
-        collection = client['CitySuggest'][collection_name]
+
         for value in values:
             if isinstance(value,(types.DictType,types.ListType)):
                 collection.insert(value)
@@ -74,8 +67,8 @@ class AllSuggestCitySDK(BaseSDK):
                 collection.insert(content)
         if len(values) > 0:
             self.task.error_code = 0
-        else:
-            self.task.error_code = 29
+        if error_code == 29:
+            self.task.error_code = 0
         return self.task.error_code
 
 
