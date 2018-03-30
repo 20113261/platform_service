@@ -41,6 +41,7 @@ spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 def hotel_url_to_database(tid, used_times, source, keyword, spider_tag, need_cache=False,data_from = 'daodao'):
     task = Task()
     task.ticket_info['url'] = keyword
+    task.ticket_info['hotel_name'] = keyword
     spider = factory.get_spider_by_old_source(spider_tag)
     spider.task = task
     if need_cache:
