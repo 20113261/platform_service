@@ -57,12 +57,13 @@ class AllSuggestCitySDK(BaseSDK):
             key = key,
             need_cache=self.task.used_times == 0
         )
-        if values[0] != 'OK':
-            self.task.error_code=102
-            return self.task.error_code
-        elif values == ['OK']:
-            self.task.error_code = 29
-            return self.task.error_code
+        if error_code==0 :
+            if values[0] != 'OK':
+                self.task.error_code=102
+                return self.task.error_code
+            elif values == ['OK']:
+                self.task.error_code = 29
+                return self.task.error_code
         for value in values:
             if isinstance(value,(types.DictType,types.ListType)):
                 collection.insert(value)
