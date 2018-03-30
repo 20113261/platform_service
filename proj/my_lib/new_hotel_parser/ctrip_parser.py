@@ -20,7 +20,7 @@ import requests
 from lxml import html as HTML
 from urlparse import urljoin
 # from data_obj import Hotel, DBSession
-# from mioji.common.class_common import Hotel_New
+from mioji.common.class_common import Hotel_New
 import json
 reload(sys)
 sys.setdefaultencoding('utf8')

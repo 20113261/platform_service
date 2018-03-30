@@ -6,7 +6,7 @@ import requests
 import json
 from lxml import html as HTML
 # from data_obj import BookingHotel
-# from mioji.common.class_common import Hotel_New
+from mioji.common.class_common import Hotel_New
 # from common.common import get_proxy
 # from proj.my_lib.Common.KeyMatch import key_is_legal
 
