@@ -38,6 +38,7 @@ get_proxy = proxy_pool.get_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 
+
 def hotel_url_to_database(tid, used_times, source, keyword, spider_tag, need_cache=False,data_from = 'daodao'):
     task = Task()
     task.ticket_info['url'] = keyword
@@ -53,8 +54,8 @@ def hotel_url_to_database(tid, used_times, source, keyword, spider_tag, need_cac
         return error_code,spider.result,spider.user_datas['search_result']
     return error_code, spider.result,''
 
-class OthersSourceHotelUrl(BaseSDK):
 
+class OthersSourceHotelUrl(BaseSDK):
     def _execute(self, **kwargs):
         url = kwargs.get('url')
         spider_tag = kwargs.get('spider_tag')
@@ -116,6 +117,7 @@ class OthersSourceHotelUrl(BaseSDK):
             self.task.error_code = 0
         else:
             raise ServiceStandardError.ServiceStandardError(error_code,msg="爬虫出现错误")
+
 
 if __name__ == "__main__":
     from proj.my_lib.Common.Task import Task as Task_to
