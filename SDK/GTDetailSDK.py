@@ -68,7 +68,7 @@ def GTdetail_to_database(tid, used_times, source,ticket, need_cache=True):
 
 class GTDetailSDK(BaseSDK):
     def get_task_finished_code(self):
-        return [0, 106, 107, 109]
+        return [0, 106, 107, 109,29]
 
     def _execute(self, **kwargs):
         source = self.task.kwargs['source']
@@ -99,10 +99,10 @@ class GTDetailSDK(BaseSDK):
         # -- detail 2 mysql --
         if len(result) > 0:
             self.task.error_code = 0
-        # elif len(result) == 0:
-        #     self.task.error_code = 29
         elif len(result) == 0:
-            raise ServiceStandardError(ServiceStandardError.EMPTY_TICKET)
+            self.task.error_code = 29
+        # elif len(result) == 0:
+        #     raise ServiceStandardError(ServiceStandardError.EMPTY_TICKET)
         else:
             raise ServiceStandardError(error_code=error_code)
         return self.task.error_code, len(result)
