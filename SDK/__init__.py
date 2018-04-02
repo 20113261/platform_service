@@ -37,3 +37,4 @@ from .GoogleDriveSDK import GoogleDriveSDK
 # from .AllHotelSourceSDK import AllHotelSourceSDK
 from .AllSuggestCitySDK import AllSuggestCitySDK
 from .DaodaoOthersSourceHotleUrlSDK import OthersSourceHotelUrl
+from .DaodaoHotelDetailSDK import DaodaoHotelDetailSDK
