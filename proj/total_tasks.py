@@ -267,3 +267,9 @@ def daodao_detail_hotel(self,task,**kwargs):
     _sdk = DaodaoHotelDetailSDK(task=task)
     return _sdk.execute()
 
+@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='8/m')
+def google_hotel_task(self,task,**kwargs):
+    _sdk = GoogleHotelUrl(task=task)
+    return _sdk.execute()
+
+
