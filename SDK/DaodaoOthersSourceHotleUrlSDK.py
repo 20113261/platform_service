@@ -3,6 +3,7 @@
 import pymongo
 import pymysql
 from mioji import spider_factory
+
 MONGODB_CONFIG = {
     'host': '10.10.213.148'
 }
@@ -43,6 +44,7 @@ def hotel_url_to_database(tid, used_times, source, keyword, spider_tag, need_cac
     task.ticket_info['url'] = keyword
     task.ticket_info['hotel_name'] = keyword
     spider = factory.get_spider_by_old_source(spider_tag)
+    spider.NEED_FLIP_LIMIT = False
     spider.task = task
     if need_cache:
         error_code = spider.crawl(required=['hotel'], cache_config=cache_config)
@@ -119,12 +121,12 @@ class OthersSourceHotelUrl(BaseSDK):
 
 if __name__ == "__main__":
     from proj.my_lib.Common.Task import Task as Task_to
-    url = "Hotel Dukes' Palace"
+    url = "https://www.tripadvisor.cn/Hotels-g28970-Washington_DC_District_of_Columbia-Hotels.html"
     args = {
         'url': url,
         'source': 'daodao',
-        'spider_tag': 'googlelistspider',
-        'data_from': 'google'
+        'spider_tag': 'daodaoListHotel',
+        'data_from': 'daodao'
     }
 
     task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
