@@ -261,3 +261,4 @@ def all_city_suggest(self,task,**kwargs):
 def other_source_hotel_url(self,task,**kwargs):
     _sdk = OthersSourceHotelUrl(task=task)
     return _sdk.execute()
+
