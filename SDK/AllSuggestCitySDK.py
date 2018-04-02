@@ -57,8 +57,13 @@ class AllSuggestCitySDK(BaseSDK):
             key = key,
             need_cache=self.task.used_times == 0
         )
-
-
+        if error_code==0 :
+            if values[0] == 'OVER_QUERY_LIMIT':
+                self.task.error_code=102
+                return self.task.error_code
+            if values[0] == 'OK':
+                self.task.error_code = 29
+                return self.task.error_code
         for value in values:
             if isinstance(value,(types.DictType,types.ListType)):
                 collection.insert(value)
@@ -66,8 +71,6 @@ class AllSuggestCitySDK(BaseSDK):
                 content = {'suggest':value}
                 collection.insert(content)
         if len(values) > 0:
-            self.task.error_code = 0
-        if error_code == 29:
             self.task.error_code = 0
         return self.task.error_code
 
@@ -80,7 +83,7 @@ if __name__ == "__main__":
         'spider_tag':'bestwestSuggest',
         'collection_name':'test',
         'source':'bestwest',
-        'key':'123'
+        'key':'AIzaSyCgjdzySu-izjNOlSiJjCEn_-_E25MdWaU'
     }
     task = ttt(_worker='', _task_id='demo', _source='', _type='suggest', _task_name='tes',
                 _used_times=0, max_retry_times=6,
