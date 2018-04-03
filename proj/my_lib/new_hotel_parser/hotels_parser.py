@@ -318,7 +318,10 @@ def hotels_parser(content, url, other_info):
     hotel.source = 'hotels'
 
     hotel.hotel_url = url
-    hotel.source_id = other_info['source_id']
+    if other_info.get('hid'):
+        hotel.source_id = re.search('"cityId": ?(\d+)', content).groups()[0]
+    else:
+        hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
     if first_img:
@@ -333,7 +336,8 @@ if __name__ == '__main__':
     # url = 'https://zh.hotels.com/ho182001/?MGT=1&SYE=3&WOD=6&WOE=7&YGF=14&ZSX=0&pa=188&q-check-in=2017-06-03&q-check-out=2017-06-04&q-room-0-adults=2&q-room-0-children=0&tab=description'
     other_info = {
         'source_id': '119538',
-        'city_id': '10001'
+        'city_id': '10001',
+        'hid':1234
     }
     # url = 'http://zh.hotels.com/hotel/details.html?q-check-out=2018-01-04&q-check-in=2018-01-03&WOE=4&WOD=3&q-room-0-children=0&pa=157&tab=description&hotel-id=666153&q-room-0-adults=2&YGF=14&MGT=1&ZSX=0&SYE=3'
     # url = 'https://zh.hotels.com/ho223637/'
@@ -344,9 +348,9 @@ if __name__ == '__main__':
     # url = 'https://zh.hotels.com/ho416746/'
     url = 'https://zh.hotels.com/ho416746/'
     url = 'https://zh.hotels.com/ho223798/'
-    with MySession(need_cache=True) as session:
-        # page = requests.get(url)
-        page = session.get(url=url)
+    # with MySession(need_cache=True) as session:
+    page = requests.get(url)
+    #     page = session.get(url=url)
     page.encoding = 'utf8'
     content = page.text
     result = hotels_parser(content, url, other_info)
