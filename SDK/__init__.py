@@ -38,4 +38,4 @@ from .GoogleDriveSDK import GoogleDriveSDK
 from .AllSuggestCitySDK import AllSuggestCitySDK
 from .DaodaoOthersSourceHotleUrlSDK import OthersSourceHotelUrl
 from .DaodaoHotelDetailSDK import DaodaoHotelDetailSDK
-from .GoogleHotelSDK import GoogleHotelSDK
+from .GoogleHotelSDK import GoogleHotelUrl
