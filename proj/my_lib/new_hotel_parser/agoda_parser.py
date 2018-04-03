@@ -260,7 +260,10 @@ def agoda_parser(content, url, other_info):
 
     hotel.source = 'agoda'
     hotel.hotel_url = url.encode('utf-8')
-    hotel.source_id = other_info['source_id']
+    if other_info.get('hid'):
+        hotel.source_id = re.search('cityId: ?(\d+),', content).groups()[0]
+    else:
+        hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
     # others_info_dict = hotel.__dict__
@@ -281,7 +284,8 @@ if __name__ == '__main__':
 
     other_info = {
         'source_id': '1006311',
-        'city_id': '11164'
+        'city_id': '11164',
+        'hid': 100
     }
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_agoda&id=329cf4fa7c9196ce026aa1053c652c2f'
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_agoda&id=49536fe85753dfd12ea88d0700bda26d'
