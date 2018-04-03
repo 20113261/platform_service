@@ -10,9 +10,9 @@ import requests
 import json
 # from common.logger import logger
 from lxml import html as HTML
+
 # from data_obj import ExpediaHotel  # DBSession
-# from proj.my_lib.models.HotelModel import ExpediaHotel
-from mioji.common.class_common import Hotel_New
+from proj.my_lib.models.HotelModel import ExpediaHotel
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -20,7 +20,7 @@ map_pattern = re.compile(r'center=(.*?)')
 
 
 def expedia_parser(content, url, other_info):
-    hotel = Hotel_New()
+    hotel = ExpediaHotel()
 
     try:
         html = HTML.fromstring(content.decode('utf-8'))
@@ -131,140 +131,117 @@ def expedia_parser(content, url, other_info):
         print str(e)
     print 'review_num=>%s' % hotel.review_num
 
-    # try:
-    #     # info_table = encode_unicode(
-    #     #     root.find_class('tab-pane')[0].find_class('col')[0].xpath('section')[0].text_content())
-    #     internet_info = root.xpath('//div[@data-section="internet"]')[0].text_content()
-    #     # if '免费 WiFi' in internet_info or '免費無線上網' in internet_info:
-    #     #     has_wifi = 'Yes'
-    #     #     is_wifi_free = 'Yes'
-    #     # hotel.has_wifi = has_wifi
-    #     # hotel.is_wifi_free = is_wifi_free
-    #     internet_info = internet_info.lower()
-    #     if 'WiFi'.lower() in internet_info:
-    #         hotel.facility['Room_wifi'] = internet_info
-    #         hotel.facility['Public_wifi'] = internet_info
-    # except Exception, e:
-    #     print str(e)
-    # try:
-    #     parking_info = root.xpath('//div[@data-section="parking"]')[0].text_content()
-    #     # if '收费' in parking_info or '收費' in parking_info:
-    #     #     has_parking = 'Yes'
-    #     #     is_parking_free = 'No'
-    #     # if '免费' in parking_info or '免費' in parking_info:
-    #     #     has_parking = 'Yes'
-    #     #     is_parking_free = 'Yes'
-    #     # hotel.has_parking = has_parking
-    #     # hotel.is_parking_free = is_parking_free
-    #     if "停车" in parking_info:
-    #         hotel.facility['Parking'] = parking_info
-    # except Exception as e:
-    #     print str(e)
-    # print 'has_wifi=>%s' % hotel.has_wifi
-    # print 'is_wifi_free=>%s' % hotel.is_wifi_free
-    # print 'has_parking=>%s' % hotel.has_parking
-    # print 'is_parking_free=>%s' % hotel.is_parking_free
+    try:
+        # info_table = encode_unicode(
+        #     root.find_class('tab-pane')[0].find_class('col')[0].xpath('section')[0].text_content())
+        internet_info = root.xpath('//div[@data-section="internet"]')[0].text_content()
+        if '免费 WiFi' in internet_info or '免費無線上網' in internet_info:
+            has_wifi = 'Yes'
+            is_wifi_free = 'Yes'
+        hotel.has_wifi = has_wifi
+        hotel.is_wifi_free = is_wifi_free
+    except Exception, e:
+        hotel.has_wifi = 'No'
+        hotel.is_wifi_free = 'No'
+        print str(e)
+    try:
+        parking_info = root.xpath('//div[@data-section="parking"]')[0].text_content()
+        if '收费' in parking_info or '收費' in parking_info:
+            has_parking = 'Yes'
+            is_parking_free = 'No'
+        if '免费' in parking_info or '免費' in parking_info:
+            has_parking = 'Yes'
+            is_parking_free = 'Yes'
+        hotel.has_parking = has_parking
+        hotel.is_parking_free = is_parking_free
+    except Exception as e:
+        hotel.has_parking = 'No'
+        hotel.is_parking_free = 'No'
+        print str(e)
+    print 'has_wifi=>%s' % hotel.has_wifi
+    print 'is_wifi_free=>%s' % hotel.is_wifi_free
+    print 'has_parking=>%s' % hotel.has_parking
+    print 'is_parking_free=>%s' % hotel.is_parking_free
 
     try:
         info_table = root.find_class('tab-pane')[0].find_class('col')[0].xpath('section')[0]
         category_num = len(info_table.xpath('h3'))
+        service = ''
         try:
-            facilities_dict = {'Swimming_Pool': '游泳池', 'gym': '健身', 'SPA': 'SPA', 'Bar': '酒吧', 'Coffee_house': '咖啡厅',
-                               'Tennis_court': '网球场', 'Golf_Course': '高尔夫球场', 'Sauna': '桑拿', 'Mandara_Spa': '水疗中心',
-                               'Recreation': '儿童娱乐场', 'Business_Centre': '商务中心', 'Lounge': '行政酒廊',
-                               'Wedding_hall': '婚礼礼堂', 'Restaurant': '餐厅',
-                               'Airport_bus': '机场', 'Valet_Parking': '代客泊车', 'Call_service': '叫车服务',
-                               'Rental_service': '租车服务'}
-            reverse_facility_dict = {v: k for k, v in facilities_dict.items()}
-            service_dict = {'Luggage_Deposit': '行李寄存', 'front_desk': '24小时前台', 'Lobby_Manager': '24小时大堂经理',
-                            '24Check_in': '24小时办理入住', 'Security': '24小时安保', 'Protocol': '礼宾服务',
-                            'wake': '叫醒服务', 'Chinese_front': '中文前台', 'Postal_Service': '邮政服务',
-                            'Fax_copy': '传真/复印', 'Laundry': '洗衣服务', 'polish_shoes': '擦鞋服务', 'Frontdesk_safe': '保险',
-                            'fast_checkin': '快速办理入住', 'ATM': '自动柜员机(ATM)/银行服务', 'child_care': '儿童看护',
-                            'Food_delivery': '送餐服务'}
-            reverse_sevice_dict = {v: k for k, v in service_dict.items()}
-            # general = info_table.xpath('div[@data-section="amenities-general"]')[0]
-            fea_list = html.xpath("//div[@data-section='amenities-general']/article/section/ul/li/text()")
-            for each in fea_list:
-                each = each.rstrip(' ').lower().replace(" ", "")
-                for fac_value in facilities_dict.values():
-                    if fac_value in each:
-                        hotel.facility[reverse_facility_dict[fac_value]] = each
-                        break
-                for serv_value in service_dict.values():
-                    if serv_value in each:
-                        hotel.service[reverse_sevice_dict[serv_value]] = each
-                        break
+            general = info_table.xpath('div[@data-section="amenities-general"]')[0]
+            service += '酒店设施：'
+            info1 = ''
+            for each in general.find_class('toggle-pane')[0].xpath('ul')[0].xpath('li'):
+                info1 += each.text_content().rstrip(' ')
+                info1 += ','
+            service += encode_unicode(info1.rstrip(','))
+            service += '|'
+            hotel.service = service
         except Exception, e:
-            print "解析hotel.service/facilities出错:  {}".format(e)
+            print str(e)
 
         try:
-            internet_info_list = html.xpath("//div[@data-section='internet']/p/text()")
-            position_info = html.xpath("//div[@data-section='internet']/p/span/text()")
-            internet_info_list2 = map(lambda x: x.strip().replace("\n", ""), internet_info_list)
-            internet_info = []
-            for internet in internet_info_list2:
-                if internet != "":
-                    internet_info.append(internet)
-            for tump in zip(position_info, internet_info):
-                internet_str = tump[0] + tump[1]
-                internet_str = internet_str.lower()
-                if u"客房" in internet_str:
-                    if u"wifi" in internet_str or u"无线" in internet_str:
-                        hotel.facility['Room_wifi'] = internet_str
-                if u"客房" in internet_str and u"有线" in internet_str:
-                    hotel.facility['Room_wired'] = internet_str
-                if u"公共区域" in internet_str:
-                    if u"wifi" in internet_str or u"无线" in internet_str:
-                        hotel.facility['Public_wifi'] = internet_str
-                if u"公共区域" in internet_str and u"有线" in internet_str:
-                    hotel.facility['Public_wired'] = internet_str
+            internet = info_table.xpath('div[@data-section="internet"]')[0]
+            service += '互联网：'
+            info2 = ''
+            for each in general.find_class('toggle-pane')[0].xpath('ul')[0].xpath('li'):
+                info2 += each.text_content().rstrip(' ')
+                info2 += ','
+            service += encode_unicode(info2.rstrip(','))
+            service += '|'
+            hotel.service = service
         except Exception, e:
-            print "解析facility['Room_wifi']出错: {}".format(e)
+            print str(e)
 
         try:
-            parking_info = html.xpath("//div[@data-section='parking']/p/text()")
-            parking_info_str = " ".join(parking_info).strip().replace("\n", "")
-            if u"停车" in parking_info_str:
-                hotel.facility['Parking'] = parking_info_str
+            parking = info_table.xpath('div[@data-section="internet"]')[0]
+            service += '停车：'
+            info3 = ''
+            for each in general.find_class('toggle-pane')[0].xpath('ul')[0].xpath('li'):
+                info3 += each.text_content().rstrip(' ')
+                info3 += ','
+            service += encode_unicode(info3.rstrip(','))
+            service += '|'
+            service = service.rstrip('|')
+            hotel.service = service
+        except Exception, e:
+            print str(e)
+
+        try:
+            house_facilities = info_table.xpath('div[@data-section="amenities-family"]/article/section/ul/li/text()')
+            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in house_facilities))
+            service += '家居型设施：' + facilities + '|'
+            print service
         except Exception as e:
-            print "解析facility['Parking']出错: {}".format(e)
+            print e
 
+        try:
+            guestroom_facilities = info_table.xpath('div[@data-section="room"]/article/section/ul/li/text()')
+            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in guestroom_facilities))
+            service += '客房设施：' + facilities + '|'
+            print service
+        except Exception as e:
+            print e
 
-        # try:
-        #     house_facilities = info_table.xpath('div[@data-section="amenities-family"]/article/section/ul/li/text()')
-        #     facilities = encode_unicode(','.join(facilitie.strip() for facilitie in house_facilities))
-        #     service += '家居型设施：' + facilities + '|'
-        #     print service
-        # except Exception as e:
-        #     print e
-        #
-        # try:
-        #     guestroom_facilities = info_table.xpath('div[@data-section="room"]/article/section/ul/li/text()')
-        #     facilities = encode_unicode(','.join(facilitie.strip() for facilitie in guestroom_facilities))
-        #     service += '客房设施：' + facilities + '|'
-        #     print service
-        # except Exception as e:
-        #     print e
-        #
-        # try:
-        #     foods = info_table.xpath('div[@data-section="dining"]/article/section/p/text()')
-        #     facilities = encode_unicode(','.join(facilitie.strip() for facilitie in foods))
-        #     service += '美食佳肴：' + facilities + '|'
-        #     print service
-        # except Exception as e:
-        #     print e
-        #
-        # try:
-        #     accessibility = info_table.xpath('div[@data-section="accessibility"]/article/section/p/text()')
-        #     facilities = encode_unicode(','.join(facilitie.strip() for facilitie in accessibility))
-        #     service += '无障碍设施：' + facilities + '|'
-        #     print service
-        # except Exception as e:
-        #     print e
+        try:
+            foods = info_table.xpath('div[@data-section="dining"]/article/section/p/text()')
+            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in foods))
+            service += '美食佳肴：' + facilities + '|'
+            print service
+        except Exception as e:
+            print e
+
+        try:
+            accessibility = info_table.xpath('div[@data-section="accessibility"]/article/section/p/text()')
+            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in accessibility))
+            service += '无障碍设施：' + facilities + '|'
+            print service
+        except Exception as e:
+            print e
 
     except Exception as e:
         print e
+    print 'service=>%s' % hotel.service
     try:
         map_part = root.xpath('// div[@class="map"]/a/figure/@data-src')
         map_str = map_part[-1]
@@ -294,7 +271,6 @@ def expedia_parser(content, url, other_info):
             if each_url != 'https:':
                 img_url_set.add(each_url)
         hotel.img_items = '|'.join(img_url_set)
-        hotel.Img_first = first_img
     except Exception, e:
         print str(e)
     print 'img_items=>%s' % hotel.img_items
@@ -353,20 +329,6 @@ def expedia_parser(content, url, other_info):
     except Exception, e:
         print str(e)
     print 'check_out_time=>%s' % hotel.check_out_time
-
-    try:
-        child_beds = html.xpath("//div[@data-secion='childBeds']/div[@class='paragraph-hack']/ul/li/text()")
-        hotel.chiled_bed_type = " ".join(child_beds)
-    except Exception as e:
-        print e
-    print 'child_bed_type ==> %s' % hotel.chiled_bed_type
-
-    try:
-        pet = html.xpath("//div[contains(@data-section, 'pets')]/div[@class='paragraph-hack']/ul/li/text()")
-        hotel.pet_type = " ".join(pet)
-    except Exception as e:
-        print e
-    print 'pet_type ==> %s' % hotel.pet_type
     hotel.hotel_url = url
     hotel.source = 'expedia'
     hotel.source_id = other_info['source_id']
@@ -374,12 +336,7 @@ def expedia_parser(content, url, other_info):
 
     if first_img:
         hotel.others_info = json.dumps({'first_img':first_img})
-
-    res = hotel.to_dict()
-    res = json.loads(res)
-    res = json.dumps(res, ensure_ascii=False)
-    print res
-    return res
+    return hotel
 
 
 def encode_unicode(str):
@@ -396,34 +353,20 @@ if __name__ == '__main__':
     # url = 'https://www.expedia.cn/h15421134.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/h9999647.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Savannah-Hotels-Best-Western-Savannah-Historic-District.h454.Hotel-Information'
-    # url = 'https://www.expedia.com.hk/cn/Chiang-Mai-Hotels-VCSuanpaak-Hotel-Serviced-Apartments.h6713388.Hotel-Information?chkin=2016%2F12%2F14&chkout=2016%2F12%2F15&rm1=a3&hwrqCacheKey=f03a3186-af50-40c4-881f-b5f8c58d19a7HWRQ1480420091939&c=4617cc10-b9c1-46dc-992b-5a6fe87f7f49&'
+    url = 'https://www.expedia.com.hk/cn/Chiang-Mai-Hotels-VCSuanpaak-Hotel-Serviced-Apartments.h6713388.Hotel-Information?chkin=2016%2F12%2F14&chkout=2016%2F12%2F15&rm1=a3&hwrqCacheKey=f03a3186-af50-40c4-881f-b5f8c58d19a7HWRQ1480420091939&c=4617cc10-b9c1-46dc-992b-5a6fe87f7f49&'
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=ef1d21e286502f87feaea39098c11b1c'
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_expedia_total_new&id=0035837c89d997704b1312cd3cf6c50e'
     # url = 'https://www.expedia.com.hk/cn/h10000.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Wagga-Wagga-Hotels-International-Hotel-Wagga-Wagga.h8966967.Hotel-Information?chkin=2017%2F9%2F25&chkout=2017%2F9%2F26&rm1=a2&regionId=181592&hwrqCacheKey=cf20f4e6-25d7-4183-99d0-954735abcb77HWRQ1506309449240&vip=false&c=297cd267-27af-484b-9117-f3f38e35362c&&exp_dp=729.14&exp_ts=1506309449666&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
     # url = 'https://www.expedia.com.hk/Hotels-Sahara-Motel.h13279481.Hotel-Information'
     # url = 'https://www.expedia.com.hk/cn/Mauritius-Island-Hotels-Ocean-Villas.h1466602.Hotel-Information?chkin=2017%2F11%2F25&chkout=2017%2F11%2F26&rm1=a2&regionId=6051080&sort=recommended&hwrqCacheKey=58665cc7-0e73-4f2d-89da-6cf5f79637efHWRQ1506387257474&vip=false&c=251228bc-5980-49ea-ac6d-87d847977318&'
-    # url = 'https://www.expedia.com.hk/Hotels-Saint-Georges-Hotel.h1.Hotel-Information?chkin=2017%2F11%2F7&chkout=2017%2F11%2F8&rm1=a2&regionId=178279&sort=recommended&hwrqCacheKey=3a7247f4-a225-4f75-afd4-8fd3463f2d85HWRQ1506618956146&vip=false&c=c6d00f50-8b75-4eec-b23c-f9c20f690aa8&'
-    # url = 'https://www.expedia.cn/cn/Lansing-Hotels-The-English-Inn.h36874.Hotel-Information?chkin=2017%2F10%2F19&chkout=2017%2F10%2F20&rm1=a2&regionId=100011&hwrqCacheKey=9cbe2ff3-4cb7-497c-95dc-6dbde2ac34beHWRQ1508384715126&vip=false&c=f41b55eb-3095-45d6-ba58-ef205e58f100&&exp_dp=762.15&exp_ts=1508384715401&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia.com.hk/cn/Salvador-Hotels-Lindo-Village-Em-Itacimirim.h20176166.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=601935&sort=recommended&hwrqCacheKey=aecb76ac-5c80-4031-9121-0e14a862cfc7HWRQ1511793011756&vip=false&c=660706b3-a71d-4608-b43d-6658fab0907a&'
-    # url = 'https://www.expedia.com.hk/cn/Phetchabun-Hotels-Tonkaew-Khaokho-Resort.h20575001.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=6131746&sort=recommended&hwrqCacheKey=48693fa5-54ea-4f8d-acff-2658de10c675HWRQ1511793063089&vip=false&c=c0e12fca-078e-43e3-9525-b63c505c4be6&'
-    # url = 'https://www.expedia.com.hk/Khao-Kho-Hotels-Raiphuduen-Resort.h20574520.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=6131746&sort=recommended&hwrqCacheKey=48693fa5-54ea-4f8d-acff-2658de10c675HWRQ1511793063089&vip=false&c=c0e12fca-078e-43e3-9525-b63c505c4be6&'
-    # url = 'https://www.expedia.com.hk/Hotels-Upscale-3BR-Pad-In-Plateau-Montreal-By-Host-Kick.h20193722.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=178288&sort=recommended&hwrqCacheKey=1b19fce7-f3f9-4a70-8b4d-bfedd0cb3969HWRQ1511802368580&vip=false&c=8978761e-8607-49e8-bc1f-e8a4dbf8c462&'
-    # url = 'https://www.expedia.com/Paris-Hotels-Maison-Albar-Hotel-Paris-Champs-Elysees-Formerly-Mac-Mahon.h53564.Hotel-Information?chkin=12%2F1%2F2017&chkout=12%2F2%2F2017&rm1=a2&regionId=179898&hwrqCacheKey=4d9d56dc-f47b-41f2-bde6-8a47ff954388HWRQ1512100403589&vip=false&c=d44429b6-4c6e-408f-bf40-1c35ad4ef1c5&&exp_dp=217.41&exp_ts=1512100404426&exp_curr=USD&swpToggleOn=false&exp_pg=HSR'
-
-
-    # url = 'https://www.expedia.com.hk/cn/New-York-Hotels-PUBLIC.h17117062.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178293&hwrqCacheKey=e0be673e-eca6-45be-bd2b-ea5bf0dd0eebHWRQ1522392221194&vip=false&c=1e3b30f7-285b-4ae4-9b91-1a178037b7a0&&exp_dp=2158.23&exp_ts=1522392225366&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia.com.hk/cn/New-York-Hotels-1-Hotel-Central-Park.h9215515.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178293&hwrqCacheKey=e0be673e-eca6-45be-bd2b-ea5bf0dd0eebHWRQ1522652432294&vip=false&c=01bac27d-9159-4817-b69f-db3e14f44fb5&&exp_dp=3683.05&exp_ts=1522652433372&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia.com.hk/cn/New-York-Hotels-The-Roosevelt-Hotel.h41864.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178293&hwrqCacheKey=e0be673e-eca6-45be-bd2b-ea5bf0dd0eebHWRQ1522652432294&vip=false&c=01bac27d-9159-4817-b69f-db3e14f44fb5&&exp_dp=1978.89&exp_ts=1522652433378&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia.com.hk/cn/New-York-Hotels-The-Belvedere-Hotel.h104193.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178293&hwrqCacheKey=e0be673e-eca6-45be-bd2b-ea5bf0dd0eebHWRQ1522652432294&vip=false&c=01bac27d-9159-4817-b69f-db3e14f44fb5&&exp_dp=2137.49&exp_ts=1522652433378&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-Hotel-Angeleno.h21848.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=1203.75&exp_ts=1522655643080&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-Avenue-Hotel.h15985.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=1380.55&exp_ts=1522655643081&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-GuestHouse-Hotel-Norwalk.h973796.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=551.01&exp_ts=1522655643081&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-Best-Western-Plus-Gardena-Inn-Suites.h13145369.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=865.96&exp_ts=1522655643083&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-Hotel-Angeleno.h21848.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=1203.75&exp_ts=1522655643080&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-Downtown-Los-Angeles-Condos.h21935757.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=789.46&exp_ts=1522655643083&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
-    # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-Foghorn-Harbor-Inn.h2200019.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=1396.26&exp_ts=1522655643084&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
-    url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-La-Quinta-Inn-Suites-LAX.h3919.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=877.59&exp_ts=1522655643088&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
+    url = 'https://www.expedia.com.hk/Hotels-Saint-Georges-Hotel.h1.Hotel-Information?chkin=2017%2F11%2F7&chkout=2017%2F11%2F8&rm1=a2&regionId=178279&sort=recommended&hwrqCacheKey=3a7247f4-a225-4f75-afd4-8fd3463f2d85HWRQ1506618956146&vip=false&c=c6d00f50-8b75-4eec-b23c-f9c20f690aa8&'
+    url = 'https://www.expedia.cn/cn/Lansing-Hotels-The-English-Inn.h36874.Hotel-Information?chkin=2017%2F10%2F19&chkout=2017%2F10%2F20&rm1=a2&regionId=100011&hwrqCacheKey=9cbe2ff3-4cb7-497c-95dc-6dbde2ac34beHWRQ1508384715126&vip=false&c=f41b55eb-3095-45d6-ba58-ef205e58f100&&exp_dp=762.15&exp_ts=1508384715401&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
+    url = 'https://www.expedia.com.hk/cn/Salvador-Hotels-Lindo-Village-Em-Itacimirim.h20176166.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=601935&sort=recommended&hwrqCacheKey=aecb76ac-5c80-4031-9121-0e14a862cfc7HWRQ1511793011756&vip=false&c=660706b3-a71d-4608-b43d-6658fab0907a&'
+    url = 'https://www.expedia.com.hk/cn/Phetchabun-Hotels-Tonkaew-Khaokho-Resort.h20575001.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=6131746&sort=recommended&hwrqCacheKey=48693fa5-54ea-4f8d-acff-2658de10c675HWRQ1511793063089&vip=false&c=c0e12fca-078e-43e3-9525-b63c505c4be6&'
+    url = 'https://www.expedia.com.hk/Khao-Kho-Hotels-Raiphuduen-Resort.h20574520.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=6131746&sort=recommended&hwrqCacheKey=48693fa5-54ea-4f8d-acff-2658de10c675HWRQ1511793063089&vip=false&c=c0e12fca-078e-43e3-9525-b63c505c4be6&'
+    url = 'https://www.expedia.com.hk/Hotels-Upscale-3BR-Pad-In-Plateau-Montreal-By-Host-Kick.h20193722.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=178288&sort=recommended&hwrqCacheKey=1b19fce7-f3f9-4a70-8b4d-bfedd0cb3969HWRQ1511802368580&vip=false&c=8978761e-8607-49e8-bc1f-e8a4dbf8c462&'
+    url = 'https://www.expedia.com/Paris-Hotels-Maison-Albar-Hotel-Paris-Champs-Elysees-Formerly-Mac-Mahon.h53564.Hotel-Information?chkin=12%2F1%2F2017&chkout=12%2F2%2F2017&rm1=a2&regionId=179898&hwrqCacheKey=4d9d56dc-f47b-41f2-bde6-8a47ff954388HWRQ1512100403589&vip=false&c=d44429b6-4c6e-408f-bf40-1c35ad4ef1c5&&exp_dp=217.41&exp_ts=1512100404426&exp_curr=USD&swpToggleOn=false&exp_pg=HSR'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'
@@ -434,13 +377,13 @@ if __name__ == '__main__':
     content = page.text
     result = expedia_parser(content, url, other_info)
 
-    # print '#' * 100
-    # keys = ['hotel_name', 'hotel_name_en', 'brand_name', 'address', 'service', 'description', 'accepted_cards']
-    #
-    # for key in keys:
-    #     if not getattr(result, key):
-    #         setattr(result, key, 'NULL')
-    #     setattr(result, key, tradition2simple(getattr(result, key).decode()))
+    print '#' * 100
+    keys = ['hotel_name', 'hotel_name_en', 'brand_name', 'address', 'service', 'description', 'accepted_cards']
+
+    for key in keys:
+        if not getattr(result, key):
+            setattr(result, key, 'NULL')
+        setattr(result, key, tradition2simple(getattr(result, key).decode()))
     # result.hotel_name = tradition2simple(result.hotel_name.decode())
     # result.hotel_name_en = tradition2simple(result.hotel_name_en.decode())
     # result.brand_name = tradition2simple(result.brand_name.decode())
@@ -448,9 +391,9 @@ if __name__ == '__main__':
     # result.service = tradition2simple(result.service.decode())
     # result.description = tradition2simple(result.description.decode())
     # result.accepted_cards = tradition2simple(result.accepted_cards.decode())
-    # for k, v in result.__dict__.items():
-    #     print k, '=>', v
-    # print 'Hello World'
+    for k, v in result.__dict__.items():
+        print k, '=>', v
+    print 'Hello World'
     # try:
     #     session = DBSession()
     #     session.merge(result)
