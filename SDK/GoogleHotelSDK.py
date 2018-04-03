@@ -82,7 +82,7 @@ class GoogleHotelSDK(BaseSDK):
             need_cache=self.task.used_times == 0,
         )
         hotel_urls = values['hotel']
-        insert_sql = "insert into google_hotel2(hotel_name,agoda,booking,ctrip,elong,expedia,hotels,other_source) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+        insert_sql = "insert into google_hotel4(hotel_name,agoda,booking,ctrip,elong,expedia,hotels,other_source) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
         conn = pymysql.connect(**config)
         cursor = conn.cursor()
         temp_dict = {}
