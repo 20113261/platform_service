@@ -465,7 +465,10 @@ def booking_parser(content, url, other_info):
     # print hotel.img_items
     hotel.source = 'booking'
     hotel.hotel_url = url.encode('utf-8')
-    hotel.source_id = other_info['source_id']
+    if other_info.get('hid'):
+        hotel.source_id = re.search('dest_id=(-?\d+)', content).groups()[0]
+    else:
+        hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
     if first_img:
@@ -487,7 +490,7 @@ if __name__ == '__main__':
     # url = 'http://www.booking.com/hotel/hk/m.zh-cn.html'
     # url = 'http://www.booking.com/hotel/hk/bridal-tea-house-hunghom.zh-cn.html'
     # url = 'https://www.booking.com/hotel/de/langerfelder-hof.zh-cn.html'
-    other_info = {'source_id': '1016533', 'city_id': '10067'}
+    other_info = {'source_id': '1016533', 'city_id': '10067', 'hid':1234}
     # headers = {
     #     'User-Agent':
     #         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
