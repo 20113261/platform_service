@@ -70,6 +70,7 @@ def hotel_url_to_database(tid, used_times, source, keyword, spider_tag, need_cac
 
 class GoogleHotelUrl(BaseSDK):
     def _execute(self, **kwargs):
+        hotel_name = kwargs.get('hotel_name')
         spider_tag = kwargs.get('spider_tag')
         source = kwargs.get('source')
         error_code, values,search_result = hotel_url_to_database(
