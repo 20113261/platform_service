@@ -261,3 +261,15 @@ def all_city_suggest(self,task,**kwargs):
 def other_source_hotel_url(self,task,**kwargs):
     _sdk = OthersSourceHotelUrl(task=task)
     return _sdk.execute()
+
+@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='5/m')
+def daodao_detail_hotel(self,task,**kwargs):
+    _sdk = DaodaoHotelDetailSDK(task=task)
+    return _sdk.execute()
+
+@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='8/m')
+def google_hotel_task(self,task,**kwargs):
+    _sdk = GoogleHotelSDK(task=task)
+    return _sdk.execute()
+
+
