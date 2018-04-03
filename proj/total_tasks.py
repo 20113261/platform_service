@@ -16,7 +16,7 @@ from SDK.GTDetailSDK import GTDetailSDK
 from SDK.PoiSourceListSDK import PoiSourceListSDK
 from SDK.PoiSourceDetailSDK import PoiSourceDetailSDK
 from SDK.CtripImageSDK import  CtripImageSDK
-from SDK.GoogleHotelSDK import GoogleHotelUrl
+# from SDK.GoogleHotelSDK import GoogleHotelUrl
 from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 
@@ -270,7 +270,7 @@ def daodao_detail_hotel(self,task,**kwargs):
 
 @app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='8/m')
 def google_hotel_task(self,task,**kwargs):
-    _sdk = GoogleHotelUrl(task=task)
+    _sdk = GoogleHotelSDK(task=task)
     return _sdk.execute()
 
 
