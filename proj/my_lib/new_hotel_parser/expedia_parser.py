@@ -332,7 +332,7 @@ def expedia_parser(content, url, other_info):
     hotel.hotel_url = url
     hotel.source = 'expedia'
     if other_info.get('hid'):
-        hotel.source_id = re.search('regionId: ?"(\d+)"', content).groups()[0]
+        hotel.source_id = re.search("cityRegionId: ?'(\d+)',", content).groups()[0]
     else:
         hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']

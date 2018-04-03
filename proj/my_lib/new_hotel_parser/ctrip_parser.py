@@ -288,7 +288,10 @@ def ctrip_parser(page, url, other_info):
 
     hotel.hotel_url = url
     hotel.source = 'ctrip'
-    hotel.source_id = other_info['source_id']
+    if other_info.get('hid'):
+        hotel.source_id = page_js.eval('hotelDomesticConfig.query.cityId')
+    else:
+        hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
     # others_info_dict = hotel.__dict__
@@ -311,7 +314,8 @@ if __name__ == '__main__':
     # url = 'http://hotels.ctrip.com/international/10146828.html'
     other_info = {
         'source_id': '1039433',
-        'city_id': '10074'
+        'city_id': '10074',
+        'hid': 1234
     }
     page = requests.get(url)
     page.encoding = 'utf8'
