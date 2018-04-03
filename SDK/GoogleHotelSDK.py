@@ -62,7 +62,7 @@ def hotel_url_to_database(tid, used_times, source, keyword, spider_tag, need_cac
         task2.ticket_info['hotel_name'] = keyword
         spider2 = factory.get_spider_by_old_source(spider_tag)
         spider2.task = task2
-        error_code = spider2.crawl(required=['hotel'], cache_config=none_cache_config)
+        error_code2 = spider2.crawl(required=['hotel'], cache_config=none_cache_config)
         for j in spider2.result['hotel']:
             tem_dic['hotel'].append(j)
     return error_code,tem_dic,spider.user_datas['search_result']
@@ -92,10 +92,9 @@ class GoogleHotelSDK(BaseSDK):
             hotel_name,temp_dict.get('agoda',''),temp_dict.get('booking',''),temp_dict.get('ctrip',''),temp_dict.get('elong',''),
             temp_dict.get('expedia',''),temp_dict.get('hotels',''),json.dumps(search_result)
         )
-        cursor.execute(insert_sql,temp_save)
-        conn.commit()
-
-        if error_code == 0:
+        if error_code == 0 or error_code == 1:
+            cursor.execute(insert_sql,temp_save)
+            conn.commit()
             self.task.error_code = 0
         else:
             raise ServiceStandardError.ServiceStandardError(error_code,msg="爬虫出现错误")
