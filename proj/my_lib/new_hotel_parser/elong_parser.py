@@ -289,7 +289,10 @@ def elong_parser(content, url, other_info):
     hotel.country = info_list[-1]
     hotel.source = 'elong'
     hotel.hotel_url = url
-    hotel.source_id = other_info['source_id']
+    if other_info.get('hid'):
+        hotel.source_id = re.search('RegionId:"(\d+)"', content).groups()[0]
+    else:
+        hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
     # others_info_dict = hotel.__dict__
@@ -388,7 +391,7 @@ if __name__ == '__main__':
     url = 'http://ihotel.elong.com/302895/'
     url = 'http://ihotel.elong.com/592426/'
     url = 'http://ihotel.elong.com/590800/'
-    other_info = {u'source_id': u'670847', u'city_id': u'20236'}
+    other_info = {u'source_id': u'670847', u'city_id': u'20236', 'hid':1234}
 
     page = requests.get(url)
     page.encoding = 'utf8'
