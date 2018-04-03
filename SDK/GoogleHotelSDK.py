@@ -92,9 +92,9 @@ class GoogleHotelSDK(BaseSDK):
             hotel_name,temp_dict.get('agoda',''),temp_dict.get('booking',''),temp_dict.get('ctrip',''),temp_dict.get('elong',''),
             temp_dict.get('expedia',''),temp_dict.get('hotels',''),json.dumps(search_result)
         )
+        cursor.execute(insert_sql,temp_save)
+        conn.commit()
         if error_code == 0 or error_code == 1:
-            cursor.execute(insert_sql,temp_save)
-            conn.commit()
             self.task.error_code = 0
         else:
             raise ServiceStandardError.ServiceStandardError(error_code,msg="爬虫出现错误")
