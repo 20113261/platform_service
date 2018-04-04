@@ -201,6 +201,27 @@ class HotelDetailSDK(BaseSDK):
                         content1 = page1.text
                         content2 = page2.text
                         content = (content1, content2)
+                elif source == 'hilton':
+                    detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(
+                        url.split('/')[-2])
+                    enDetail_url = 'http://www3.hilton.com/en/hotels/{}/{}/about/amenities.html'.format(
+                        url.split("/")[-3], url.split("/")[-2])
+                    map_info_url = url + 'maps-directions.html'
+                    desc_url = url + 'about.html'
+                    session = requests.session()
+                    content = session.get(url).text
+                    detail_content = session.get(detail_url).text
+                    map_info_content = session.get(map_info_url).text
+                    desc_content = session.get(desc_url).text
+                    enDetail = session.get(enDetail_url)
+                    enDetail.encoding = 'utf8'
+                    enDetail_content = enDetail.text
+                    other_info = {
+                        'source_id': '1000',
+                        'city_id': '50795'
+                    }
+                    content = [content, detail_content, map_info_content, desc_content, enDetail_content]
+
                 else:
                     session.auto_update_host = False
                     hilton_index = url.find('index.html')

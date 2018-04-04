@@ -1,11 +1,12 @@
 # coding=utf-8
+import traceback
 import agoda_parser
 import booking_parser
 import ctrip_cn_parser
 import ctrip_parser
 import elong_parser
 import expedia_parser
-import hilton_parser
+from proj.my_lib.hotel_parse_new import hilton_parser
 import hotels_parser
 import hoteltravel_parser
 import hrs_parser
@@ -104,8 +105,10 @@ def parse_hotel(content, url, other_info, source, part, retry_count):
     for key in keys:
         if not getattr(result, key):
             setattr(result, key, 'NULL')
-        setattr(result, key, tradition2simple(getattr(result, key).decode()))
-
+        try:
+            setattr(result, key, tradition2simple(getattr(result, key).decode()))
+        except Exception as e:
+            print('****',key, str(getattr(result, key)), traceback.print_exc())
     return result
 
 
