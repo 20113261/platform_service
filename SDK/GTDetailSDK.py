@@ -78,7 +78,7 @@ class GTDetailSDK(BaseSDK):
         )
 
         t2 = time.time()
-        logger.info('抓取耗时：   %s'.format(t2 - t1))
+        self.logger.info('抓取耗时：   %s'.format(t2 - t1))
 
         if source == 'ctrip':
             my_collections = ctrip_collections
@@ -99,7 +99,7 @@ class GTDetailSDK(BaseSDK):
         })
 
         t3 = time.time()
-        logger.info('入库耗时：   %s'.format(t3 - t2))
+        self.logger.info('入库耗时：   %s'.format(t3 - t2))
         # -- detail 2 mysql --
         if len(result) > 0:
             self.task.error_code = 0
