@@ -273,4 +273,8 @@ def google_hotel_task(self,task,**kwargs):
     _sdk = GoogleHotelSDK(task=task)
     return _sdk.execute()
 
+@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='8/m')
+def last_google_task(self,task,**kwargs):
+    _sdk = LastGoogle(task=task)
+    return _sdk.execute()
 
