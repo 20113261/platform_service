@@ -10,6 +10,7 @@
 from __future__ import absolute_import
 import datetime
 import pymongo
+import time
 import mioji.common.logger
 import mioji.common.pages_store
 import mioji.common.pool
@@ -67,6 +68,7 @@ class GTDetailSDK(BaseSDK):
 
     def _execute(self, **kwargs):
         source = self.task.kwargs['source']
+        t1  = time.time()
         error_code, result, page_store_key = GTdetail_to_database(
             tid=self.task.task_id,
             used_times=self.task.used_times,
@@ -74,6 +76,10 @@ class GTDetailSDK(BaseSDK):
             ticket=self.task.kwargs,
             need_cache=self.task.used_times == 0
         )
+
+        t2 = time.time()
+        self.logger.info('抓取耗时：   {}'.format(t2 - t1))
+
         if source == 'ctrip':
             my_collections = ctrip_collections
         elif source == 'tuniu':
@@ -91,6 +97,9 @@ class GTDetailSDK(BaseSDK):
             'args':self.task.kwargs,
             'insert_time': datetime.datetime.now()
         })
+
+        t3 = time.time()
+        self.logger.info('入库耗时：   {}'.format(t3 - t2))
         # -- detail 2 mysql --
         if len(result) > 0:
             self.task.error_code = 0

@@ -36,7 +36,7 @@ db = client['MongoTask']
 HOTEL_SOURCE = (
     'agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
     'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton', 'ihg', 'holiday', 'accor', 'marriott', 'starwood',
-    'hyatt', 'gha', 'shangrila', 'fourseasons')
+    'hyatt', 'gha', 'shangrila', 'fourseasons', 'bestwest')
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 CTRIPPOI_SOURCE = 'ctripPoi'
