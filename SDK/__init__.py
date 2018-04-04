@@ -39,4 +39,4 @@ from .AllSuggestCitySDK import AllSuggestCitySDK
 from .DaodaoOthersSourceHotleUrlSDK import OthersSourceHotelUrl
 from .DaodaoHotelDetailSDK import DaodaoHotelDetailSDK
 from .GoogleHotelSDK import GoogleHotelSDK
-from .LastGoogle import LastGoogle
+from .Last_Google import Last_Google
