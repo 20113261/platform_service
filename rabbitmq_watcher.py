@@ -141,7 +141,7 @@ TASK_CONF = {
     # 'supplement_field': (9000, 40000, 10),
     # 'google_api': (9000, 40000, 10),
     # 'merge_task': (10000, 40000, 11),
-    'grouptravel': (40000, 60000, 10)
+    'grouptravel': (36000, 40000, 5)
 }
 
 MAX_RETRY_TIMES_CONF = {
