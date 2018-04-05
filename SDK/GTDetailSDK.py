@@ -25,7 +25,7 @@ from proj.my_lib.ServiceStandardError import ServiceStandardError
 # from proj.my_lib.Common.Browser import proxy_pool
 from mioji.common.utils import simple_get_proxy
 
-mioji.common.pool.pool.set_size(128)
+mioji.common.pool.pool.set_size(16)
 logger = get_task_logger(__name__)
 mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path
