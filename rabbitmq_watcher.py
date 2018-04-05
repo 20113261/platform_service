@@ -6,7 +6,7 @@
 # @File    : rabbitmq_watcher.py
 # @Software: PyCharm
 import sys
-import os
+import subprocess
 
 sys.path.append('/root/data/lib')
 import json
@@ -90,13 +90,28 @@ import datetime
 
 
 def restart_slave_temp():
+    logger.info('开始')
     try:
-        os.system("pssh -h /root/hosts.txt -i 'service supervisord restart'")
+        p = subprocess.Popen("pssh -h /root/hosts.txt -i 'service supervisord restart'", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        while 1:
+            if p.poll() is not None:
+                stdout = p.stdout.read()
+                logger.info(stdout)
+                break
     except:pass
-    os.system("pssh -h /root/hosts.txt -i 'service supervisord restart'")
+    logger.info('开始2')
+    p2 = subprocess.Popen("pssh -h /root/hosts.txt -i 'service supervisord restart'", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    while 1:
+        if p2.poll() is not None:
+            stdout2 = p2.stdout.read()
+            logger.info(stdout2)
+            break
+
+    logger.info('结束')
+
 schedule.add_job(restart_slave_temp, 'cron', minute='*/10', id='restart_slave_temp')
 
-# schedule.add_job(monitoring_result_list2detail, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
+# schedule.add_job(restart_slave_temp, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
 schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_hotel_list')
 schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/31',
