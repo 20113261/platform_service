@@ -109,7 +109,7 @@ def restart_slave_temp():
 
     logger.info('结束')
 
-schedule.add_job(restart_slave_temp, 'cron', minute='*/10', id='restart_slave_temp')
+schedule.add_job(restart_slave_temp, 'cron', minute='*/6', id='restart_slave_temp')
 
 # schedule.add_job(restart_slave_temp, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
 schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45',
