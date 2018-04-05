@@ -18,7 +18,8 @@ import os
 import sys
 import cachetools.func
 from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task,\
-    send_image_task, send_ctripPoi_detail_task, send_GT_detail_task, send_PoiSource_detail_task
+    send_image_task, send_ctripPoi_detail_task, send_GT_detail_task, send_PoiSource_detail_task, \
+    send_result_detail_task
 from attach_send_task import qyer_supplement_map_info
 from proj.my_lib.logger import get_logger
 from send_email import send_email, SEND_TO, EMAIL_TITLE
@@ -36,7 +37,8 @@ db = client['MongoTask']
 HOTEL_SOURCE = (
     'agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
     'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton', 'ihg', 'holiday', 'accor', 'marriott', 'starwood',
-    'hyatt', 'gha', 'shangrila', 'fourseasons', 'bestwest')
+    'hyatt', 'gha', 'shangrila', 'fourseasons')
+RESULT_SOURCE = ['google', 'daodao']
 POI_SOURCE = 'daodao'
 QYER_SOURCE = 'qyer'
 CTRIPPOI_SOURCE = 'ctripPoi'
@@ -53,6 +55,7 @@ SQL_FILE_TO_SOURCE = {
     'daodao_shop_detail.sql': 'shop',
     'qyer_detail.sql': 'total',
     'list.sql': 'list',
+    'result_list.sql': 'result_list',
     'images_hotel.sql': 'images_hotel',
     'images_poi.sql': 'images_daodao'
 }
@@ -66,6 +69,8 @@ def loads_sql():
         with open(os.path.join(sql_file_path, file_name), 'r') as f:
             source = SQL_FILE_TO_SOURCE[file_name]
             LOAD_FILES[source] = f.read()
+
+    LOAD_FILES['result'] = LOAD_FILES['hotel']
 
 
 loads_sql()
@@ -310,6 +315,44 @@ def monitoring_hotel_list2detail():
                    '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
                    SEND_TO)
 
+
+def monitoring_result_list2detail():
+    sql = """select id, source_list, utime from %s where status = 1 and utime >= '%s' order by utime limit 5000"""
+
+    try:
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+
+        for table_name in table_dict.keys():
+
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'result':
+                continue
+            if tab_args[2] not in RESULT_SOURCE:
+                continue
+            if tab_args[3] == 'test':
+                continue
+
+            timestamp, priority, sequence = get_seek(table_name)
+
+            # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
+            #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
+
+            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
+            if table_dict.get(detail_table_name, True):
+                create_table(detail_table_name)
+
+            timestamp = send_result_detail_task(
+                tab_args[2], execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
+            logger.info('sequence  :  %s' % (timestamp,))
+            if timestamp is not None:
+                update_seek(table_name, timestamp, priority, sequence)
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
 
 def monitoring_hotel_detail2ImgOrComment():
     sql = """select source, source_id, city_id, img_items, id from %s where id >= %d order by id limit 5000"""
