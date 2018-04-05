@@ -6,6 +6,7 @@
 # @File    : rabbitmq_watcher.py
 # @Software: PyCharm
 import sys
+import os
 
 sys.path.append('/root/data/lib')
 import json
@@ -87,6 +88,11 @@ slow_source = 'ihg|holiday|accor|marriott'
 
 import datetime
 
+
+def restart_slave_temp():
+    os.system("pssh -h /root/hosts.txt -i 'service supervisord restart'")
+# schedule.add_job(restart_slave_temp, 'cron', minute='*/10', id='restart_slave_temp')
+
 # schedule.add_job(monitoring_result_list2detail, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
 schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_hotel_list')
@@ -132,7 +138,7 @@ TASK_CONF = {
     'supplement_field': (9000, 40000, 10),
     'google_api': (9000, 40000, 10),
     'merge_task': (10000, 40000, 11),
-    'grouptravel': (36000, 40000, 11)
+    'grouptravel': (36000, 40000, 2)
 }
 
 MAX_RETRY_TIMES_CONF = {
