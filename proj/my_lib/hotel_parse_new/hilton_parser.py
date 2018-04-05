@@ -6,12 +6,12 @@ import sys
 import re
 import requests
 from lxml import etree
-from mioji.common.class_common import Hotel_New
-from mioji.common import parser_except
+from proj.my_lib.models.HotelModel import HotelNewBase
+from proj.my_lib import parser_exception
 
 
 def hilton_parser(total_content, url, other_info):
-    Hotel = Hotel_New()
+    Hotel = HotelNewBase()
     content, detail_content, map_info_content, desc_content, enDetail_content = total_content
     select_detail =etree.HTML(detail_content)
     check_in_time = ''
@@ -82,8 +82,8 @@ def hilton_parser(total_content, url, other_info):
     desc = select_desc.xpath('//div[@class="intro fix"]/p/text()')
     if desc:
         Hotel.description = desc[0].encode('raw-unicode-escape')
-    hotel = Hotel.to_dict()
-    return hotel
+    # hotel = Hotel.to_dict()
+    return Hotel
 
 
 def get_detail(Hotel, content, enDetail_content,hotel_id):
@@ -92,7 +92,7 @@ def get_detail(Hotel, content, enDetail_content,hotel_id):
     if hotel_name:
         Hotel.hotel_name = hotel_name[0]
     else:
-        raise parser_except.ParserException(29, "解析失败")
+        raise parser_exception.ParserException(29, "解析失败")
     pet = select.xpath('//td[@headers="compare_{} compare_pets"]/text()'.format(hotel_id))
     if pet:
         Hotel.pet_type = pet[0].strip()
@@ -151,15 +151,16 @@ def get_detail(Hotel, content, enDetail_content,hotel_id):
     except Exception as e:
         print e
     if u'Complimentary Printing Service' in enDetail_content:
-        Hotel.service["Fax_copy"] = u"免费打印服务、传真"
+        Hotel.service_content["Fax_copy"] = u"免费打印服务、传真"
     if u'Baggage Storage' in enDetail_content:
-        Hotel.service["Luggage_Deposit"] = u'行李寄存'
+        Hotel.service_content["Luggage_Deposit"] = u'行李寄存'
     if u'Concierge Desk' in enDetail_content:
-        Hotel.service["Protocol"] = u"礼宾接待处"
+        Hotel.service_content["Protocol"] = u"礼宾接待处"
     if u'Multi-Lingual Staff' in enDetail_content:
-        Hotel.service["Chinese_front"] = u'多语种工作人员'
+        Hotel.service_content["Chinese_front"] = u'多语种工作人员'
     if u'Safety Deposit Box' in enDetail_content:
-        Hotel.service["Frontdesk_safe"] = u'保险箱'
+        Hotel.service_content["Frontdesk_safe"] = u'保险箱'
+    Hotel.service = str(Hotel.service_content)
     if u'Fitness Room' in enDetail_content:
         Hotel.facility["gym"] = u"健身房"
     if u'Tennis Court' in enDetail_content:
