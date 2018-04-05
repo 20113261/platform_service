@@ -87,29 +87,29 @@ slow_source = 'ihg|holiday|accor|marriott'
 
 import datetime
 
-schedule.add_job(monitoring_result_list2detail, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
-# schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45',
-#                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_hotel_list')
-# schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/90',
-#                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=150), id='monitoring_hotel_detail')
-# schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/45',
-#                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=25), id='monitoring_poi_list')
-# schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/90', id='monitoring_poi_detail')
-# schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/45',
-#                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=2), id='monitoring_qyer_detail')
-# schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2',
-#                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=7),
-#                  id='monitoring_supplement_field')
-# # schedule.add_job(monitoring_ctripPoi_list2detail, 'cron', second='*/45',
-# #                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripPoi_list')
-#
-# schedule.add_job(monitoring_GT_list2detail, 'cron', second='*/45',
-#                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripGT_list')
-# schedule.add_job(monitoring_PoiSource_list2detail, 'cron', second='*/45',
-#                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_PoiSource_list')
-# schedule.add_job(city2list, 'cron', second='*/60', id='city2list')
-# schedule.add_job(monitoring_zombies_task_by_hour, 'cron', second='*/60', id='monitoring_zombies_task_by_hour')
-# schedule.add_job(monitoring_zombies_task_total, 'cron', second='*/60', id='monitoring_zombies_task_total')
+# schedule.add_job(monitoring_result_list2detail, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
+schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_hotel_list')
+schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/90',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=150), id='monitoring_hotel_detail')
+schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/45',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=25), id='monitoring_poi_list')
+schedule.add_job(monitoring_poi_detail2imgOrComment, 'cron', second='*/90', id='monitoring_poi_detail')
+schedule.add_job(monitoring_qyer_list2detail, 'cron', second='*/45',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=2), id='monitoring_qyer_detail')
+schedule.add_job(monitoring_supplement_field, 'cron', hour='*/2',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=7),
+                 id='monitoring_supplement_field')
+# schedule.add_job(monitoring_ctripPoi_list2detail, 'cron', second='*/45',
+#                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripPoi_list')
+
+schedule.add_job(monitoring_GT_list2detail, 'cron', second='*/45',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_ctripGT_list')
+schedule.add_job(monitoring_PoiSource_list2detail, 'cron', second='*/45',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_PoiSource_list')
+schedule.add_job(city2list, 'cron', second='*/60', id='city2list')
+schedule.add_job(monitoring_zombies_task_by_hour, 'cron', second='*/60', id='monitoring_zombies_task_by_hour')
+schedule.add_job(monitoring_zombies_task_total, 'cron', second='*/60', id='monitoring_zombies_task_total')
 
 
 # stream_handler = logging.StreamHandler()
@@ -132,7 +132,7 @@ TASK_CONF = {
     'supplement_field': (9000, 40000, 10),
     'google_api': (9000, 40000, 10),
     'merge_task': (10000, 40000, 11),
-    'grouptravel': (10000, 40000, 11)
+    'grouptravel': (36000, 40000, 11)
 }
 
 MAX_RETRY_TIMES_CONF = {
@@ -217,9 +217,9 @@ def mongo_task_watcher(*args):
         logger.warning('NOW {0} COUNT {1}'.format(queue_name, message_count))
 
 
-# for queue_name, (_min, _max, seconds) in TASK_CONF.items():
-#     schedule.add_job(mongo_task_watcher, 'cron', args=[queue_name], second='*/' + str(seconds),
-#                      id=queue_name + '_queue')
+for queue_name, (_min, _max, seconds) in TASK_CONF.items():
+    schedule.add_job(mongo_task_watcher, 'cron', args=[queue_name], second='*/' + str(seconds),
+                     id=queue_name + '_queue')
 
 if __name__ == '__main__':
     schedule.start()
