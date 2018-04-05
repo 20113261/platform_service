@@ -90,6 +90,9 @@ import datetime
 
 
 def restart_slave_temp():
+    try:
+        os.system("pssh -h /root/hosts.txt -i 'service supervisord restart'")
+    except:pass
     os.system("pssh -h /root/hosts.txt -i 'service supervisord restart'")
 schedule.add_job(restart_slave_temp, 'cron', minute='*/10', id='restart_slave_temp')
 
