@@ -63,7 +63,7 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     # todo 先均分任务，之后考虑不同的阀值分配不同的任务
     for each_collection_name, each_limit in c_list:
 
-        if each_collection_name=='Task_Queue_grouptravel_TaskName_detail_total_GT_20180314a': continue
+        # if each_collection_name=='Task_Queue_grouptravel_TaskName_detail_total_GT_20180314a': continue
         #         or each_collection_name=='Task_Queue_grouptravel_TaskName_detail_total_GT_20180312a' :continue
 
         try:
@@ -158,10 +158,10 @@ def _get_task_total_simple(collection_name, queue, used_times=6, limit=10000, de
                     },
                     hint=[('queue', 1), ('finished', 1), ('used_times', 1), ('priority', 1), ('running', 1)]
                 ).limit(_count)
-                logger.debug(
-                    '[queue: {}][priority: {}][used_times: {}][limit: {}][debug: {}]'.format(queue, each_priority,
-                                                                                             each_used_times, _count,
-                                                                                             debug))
+                # logger.debug(
+                #     '[queue: {}][priority: {}][used_times: {}][limit: {}][debug: {}]'.format(queue, each_priority,
+                #                                                                              each_used_times, _count,
+                #                                                                              debug))
 
                 for line in cursor:
                     _total[(each_priority, each_used_times)] += 1
