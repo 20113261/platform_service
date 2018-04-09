@@ -8,7 +8,7 @@ from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.mysql_pool import service_platform_pool
 from proj.my_lib.logger import func_time_logger
 from mioji.spider_factory import factory
-from proj.my_lib import ServiceStandardError
+from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.Common.Browser import proxy_pool
 from celery.utils.log import get_task_logger
 import mioji.common.logger
@@ -101,10 +101,11 @@ class OthersSourceHotelUrl(BaseSDK):
         if len(temp_save) > 0:
             self.task.error_code = 0
         elif int(error_code) == 0:
+            self.task.error_code = 29
             raise ServiceStandardError(ServiceStandardError.EMPTY_TICKET)
         else:
             raise ServiceStandardError(error_code=error_code)
-        return len(temp_save), error_code, self.task.error_code
+        return len(temp_save), error_code
 
 
 if __name__ == "__main__":
