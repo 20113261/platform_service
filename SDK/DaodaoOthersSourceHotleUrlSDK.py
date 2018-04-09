@@ -98,10 +98,13 @@ class OthersSourceHotelUrl(BaseSDK):
 
         hotel_list_insert_db(table_name, temp_save)
 
-        if error_code == 0:
+        if len(temp_save) > 0:
             self.task.error_code = 0
+        elif int(error_code) == 0:
+            raise ServiceStandardError(ServiceStandardError.EMPTY_TICKET)
         else:
-            raise ServiceStandardError.ServiceStandardError(error_code,msg="爬虫出现错误")
+            raise ServiceStandardError(error_code=error_code)
+        return len(temp_save), error_code, self.task.error_code, self.task.task_name, self.task.kwargs['suggest']
 
 
 if __name__ == "__main__":
