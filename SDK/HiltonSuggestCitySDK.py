@@ -39,7 +39,8 @@ insert_db = None
 get_proxy = proxy_pool.get_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
-SQL = "INSERT IGNORE INTO hilton_suggest_info (source, source_id, city_id, country_id) VALUES (%s,%s,%s,%s,%s)"
+SQL = "INSERT IGNORE INTO hilton_suggest_info (source, sid, sid_md5, s_city, s_country, suggest_type, suggest) VALUES ('{}','{}','{}','{}','{}','{}','{}')"
+# SQL = "INSERT IGNORE INTO hilton_suggest_info (source, sid, sid_md5, s_city, s_country, suggest_type, suggest) VALUES (%s,%s,%s,%s,%s,%d,%s)"
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017')
 collections = client['data_result']['hilton_20180107']
@@ -76,28 +77,18 @@ class HiltonSuggestCitySDK(BaseSDK):
         error_code, result = hilton_to_database(
             tid=self.task.task_id,
             used_times=self.task.used_times,
-            source=self.task.kwargs['source'],
+            source='hilton',
             keyword=self.task.kwargs['keyword'],
-            spider_tag = self.task.kwargs['spider_tag'],
+            spider_tag = 'hiltonSuggest',
             need_cache=self.task.used_times == 0
         )
 
-        # collections.save({
-        #     'collections': self.task.collection,
-        #     'task_id': self.task.task_id,
-        #     'used_times': self.task.used_times[0],
-        #     'stored_page_keys': page_store_key,
-        #     'check_in': self.task.kwargs['check_in'],
-        #     'result': result,
-        #     'insert_time': datetime.datetime.now()
-        # })
 
         conn = pymysql.connect(**config)
         cursor = conn.cursor()
+        save_result = []
 
         self.task.error_code = error_code
-
-        sql = SQL.format(self.task.task_name)
 
         # for sid, url, page_id in result:
         #     data.append(('hilton', sid, city_id, country_id, url))
@@ -112,8 +103,17 @@ class HiltonSuggestCitySDK(BaseSDK):
         #     self.task.list_task_insert_db_count = _res
         # except Exception as e:
         #     raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
-
-        if len(data) > 0:
+        print(result)
+        if len(result) > 0:
+            for i in result:
+                # source, sid, sid_md5, s_city, s_country, suggest_type, suggest
+                # save_result.append(
+                #     (str(i['source']), str(i['sid']), str(i['sid_md5']), str(i['s_city']), str(i['s_country']),
+                #      int(i['suggest_type']), str(i['suggest'])))
+                sql = SQL.format(str(i['source']), str(i['sid']), str(i['sid_md5']), str(i['s_city']), str(i['s_country']),
+                     i['suggest_type'], str(i['suggest']))
+                cursor.execute(sql)
+            # cursor.executemany(SQL, save_result)
             self.task.error_code = 0
         else:
             raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
@@ -124,8 +124,8 @@ if __name__ == "__main__":
     from proj.my_lib.Common.Task import Task as ttt
     args = {
         'keyword': 'zh',
-        'spider_tag':'hiltonSuggest',
-        'source':'hilton',
+        # 'spider_tag':'hiltonSuggest',
+        # 'source':'hilton',
     }
     task = ttt(_worker='', _task_id='demo', _source='', _type='suggest', _task_name='tes',
                 _used_times=0, max_retry_times=6,
