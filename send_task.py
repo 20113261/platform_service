@@ -86,6 +86,26 @@ def send_hotel_detail_task(tasks, task_tag, priority):
             })
         return timestamp
 
+def send_result_detail_task(source, tasks, task_tag, priority):
+    timestamp = None
+    if not tasks:
+        return timestamp
+
+    with InsertTask(worker='proj.total_tasks.hotel_detail_task', queue='hotel_detail', routine_key='hotel_detail',
+                    task_name=task_tag, source=source.title(), _type='Hotel',
+                    priority=priority) as it:
+        for id, source_list, utime in tasks:
+            for source, hotel_url in json.loads(source_list).iteritems():
+                it.insert_task({
+                    'source': source,
+                    'url': hotel_url,
+                    'part': task_tag,
+                    'hid': id,
+                    'city_id': 'NULL',
+                    'country_id': 'NULL'
+                })
+        return timestamp
+
 
 def send_poi_detail_task(tasks, task_tag, priority):
     utime = None

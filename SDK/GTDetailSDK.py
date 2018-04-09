@@ -22,10 +22,10 @@ from mioji.spider_factory import factory
 from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.my_lib.ServiceStandardError import ServiceStandardError
-# from proj.my_lib.Common.Browser import proxy_pool
-from mioji.common.utils import simple_get_proxy
+from proj.my_lib.Common.Browser import proxy_pool
+# from mioji.common.utils import simple_get_proxy
 
-mioji.common.pool.pool.set_size(128)
+mioji.common.pool.pool.set_size(16)
 logger = get_task_logger(__name__)
 mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path
@@ -33,9 +33,9 @@ mioji.common.pages_store.STORE_TYPE = cache_type
 
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
-# get_proxy = proxy_pool.get_proxy
+get_proxy = proxy_pool.get_proxy
 debug = False
-spider_factory.config_spider(insert_db, simple_get_proxy, debug, need_flip_limit=False)
+spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO {} (source, source_id, city_id, country_id, hotel_url) VALUES (%s,%s,%s,%s,%s)"
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')

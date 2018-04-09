@@ -39,7 +39,7 @@ def PoiSource_list_task(self, task, **kwargs):
     return _sdk.execute()
 
 # -- grouptravel all task
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='100/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='200/s')
 def GT_detail_task(self, task, **kwargs):
     _sdk = GTDetailSDK(task=task)
     return _sdk.execute()
