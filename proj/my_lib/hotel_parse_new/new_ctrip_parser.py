@@ -1,20 +1,20 @@
 # #! /usr/bin/env python
 # # coding=UTF8
-
+#
 # '''
 #     @author:fangwang
 #     @date:2014-05-13
 #     @desc: crawl and parse ctrip room data via API
-
+#
 #     @update:jiangzhao
 #     @date:2018-03-27
 #     @desc: add more than one new field
 # '''
-
+#
 # import sys
 # import execjs
 # import traceback
-
+#
 # import re
 # import requests
 # from lxml import html as HTML
@@ -24,47 +24,47 @@
 # import json
 # reload(sys)
 # sys.setdefaultencoding('utf8')
-
+#
 # URL = 'http://openapi.ctrip.com/Hotel/OTA_HotelDescriptiveInfo.asmx?wsdl'
-
+#
 # TASK_ERROR = 12
-
+#
 # PROXY_NONE = 21
 # PROXY_INVALID = 22
 # PROXY_FORBIDDEN = 23
 # DATA_NONE = 24
-
+#
 # pat1 = re.compile(r'HotelName="(.*?)" AreaID=".*?" HotelId="(.*?)">', re.S)
 # pat2 = re.compile(r'Latitude="(.*?)" Longitude="(.*?)"', re.S)
-
-
+#
+#
 # def ctrip_parser(page, url, other_info):
 #     hotel = Hotel_New()
 #     try:
 #         root = HTML.fromstring(page.decode('utf-8'))
 #     except Exception, e:
 #         print str(e)
-
+#
 #     ph_runtime = execjs.get('PhantomJS')
 #     js_str = root.xpath('//script[contains(text(),"hotelDomesticConfig")]/text()')[0]
 #     print js_str
 #     page_js = ph_runtime.compile(js_str[:js_str.index('function  loadCallback_roomList()')])
 #     page_js.eval('hotelDomesticConfig')
 #     page_js.eval('pictureConfigNew')
-
+#
 #     try:
 #         hotel.hotel_name = root.xpath('//*[@class="name"]/text()')[0].encode('utf-8').strip()
 #     except Exception, e:
 #         traceback.print_exc(e)
-
+#
 #     try:
 #         hotel.hotel_name_en = root.xpath('//*[@class="name"]/span/text()')[0].encode('utf8').strip()
 #     except Exception, e:
 #         traceback.print_exc(e)
-
+#
 #     print 'hotel_name =>', hotel.hotel_name
 #     print 'hotel_name_en =>', hotel.hotel_name_en
-
+#
 #     try:
 #         position = page_js.eval('hotelDomesticConfig')['hotel']['position'].split('|')
 #         hotel.map_info = position[1] + ',' + position[0]
@@ -75,16 +75,16 @@
 #         except Exception, e:
 #             print str(e)
 #             hotel.map_info = 'NULL'
-
+#
 #     print 'hotel.map_info => ', hotel.map_info
-
+#
 #     try:
 #         hotel.star = int(int(page_js.eval('hotelDomesticConfig')['hotel']['star']))
 #     except:
 #         hotel.star = -1
-
+#
 #     print 'hotel.star => ', hotel.star
-
+#
 #     try:
 #         grade = root.xpath('//*[@class="score_text"]/text()')[0]
 #         hotel.grade = float(grade.encode('utf-8').strip())
@@ -93,16 +93,16 @@
 #             hotel.grade = float(root.xpath('//*[@class="cmt_summary_num_score"]/text()')[0])
 #         except Exception:
 #             hotel.grade = -1
-
+#
 #     print 'grade =>', hotel.grade
 #     try:
 #         address = root.xpath('//div [@class="adress"]/span/text()')[0]
 #         hotel.address = address.encode('utf-8').strip()
 #     except Exception, e:
 #         print str(e)
-
+#
 #     print 'address =>', hotel.address
-
+#
 #     try:
 #         hotel.review_num = ''.join(re.findall('(\d+)', root.xpath('//*[@id="commnet_score"]/text()')[0]))
 #     except Exception:
@@ -111,9 +111,9 @@
 #             hotel.review_num = review.encode('utf-8').strip()
 #         except Exception, e:
 #             print str(e)
-
+#
 #     print 'review_nums =>', hotel.review_num
-
+#
 #     try:
 #         desc = ''.join(root.xpath('//div[@id="detail_content"]/span/div/div/text()'))
 #         hotel.description = desc.encode(
@@ -121,9 +121,9 @@
 #     except Exception, e:
 #         hotel.description = 'NULL'
 #         print str(e)
-
+#
 #     print 'description => ', hotel.description
-
+#
 #     try:
 #         hotel.img_items = '|'.join(map(lambda x: 'http:' + x['max'], page_js.eval('pictureConfigNew')['hotelUpload']))
 #     except Exception as e:
@@ -137,9 +137,9 @@
 #                 hotel.img_items = img_items[:-1]
 #         except Exception, e:
 #             traceback.print_exc(e)
-
+#
 #     print 'hotel.img_items =>', hotel.img_items
-
+#
 #     # try:
 #     #     p = root.xpath('//div[@id="detail_content"]/div')[2]
 #     #     q = HTML.tostring(p)
@@ -174,7 +174,7 @@
 #     # except Exception, e:
 #     #     # print str(e)
 #     #     traceback.print_exc(e)
-
+#
 #     accepted_cards = []
 #     try:
 #         for card in root.xpath('// *[@class="detail_extracontent layoutfix"]/*[@class="card_cont_img"]/img/@alt'):
@@ -184,10 +184,10 @@
 #                 accepted_cards.append(res[0].lower())
 #     except Exception as exc:
 #         print(exc)
-
+#
 #     hotel.accepted_cards = '|'.join(accepted_cards)
 #     print('hotel.accept_cards =>', hotel.accepted_cards)
-
+#
 #     try:
 #         # items = root.xpath('//*[@id="detail_content"]/div[2]/table/tbody/tr')
 #         # if items:
@@ -287,12 +287,12 @@
 #                 hotel.service['child_care'] = item
 #             elif "送餐服务" in item:
 #                 hotel.service['Food_delivery'] = item
-
+#
 #     except Exception, e:
 #         print str(e)
-
+#
 #     # print 'hotel.service =>', hotel.service
-
+#
 #     #获取酒店城市信息
 #     try:
 #         pattern_str = root.xpath('//form[@id="aspnetForm"]')[0].attrib['action']
@@ -300,8 +300,8 @@
 #         hotel.source_city_id = source_city_id
 #     except Exception as e:
 #         print e
-
-#     print "hotel.source_city_id:",hotel.source_city_id
+#
+#     # print "hotel.source_city_id:",hotel.source_city_id
 #     #获取others_info信息
 #     first_img = None
 #     try:
@@ -309,9 +309,9 @@
 #         hotel.Img_first = first_img
 #     except Exception as e:
 #         print e
-
+#
 #     print 'first_img=>%s' % first_img
-
+#
 #     try:
 #         city_name = page_js.eval('hotelDomesticConfig')['query']['cityName']
 #         # city_name = page_js.eval('hotelDomesticConfig')['query']['cityName'].encode('raw-unicode-escape')
@@ -319,11 +319,11 @@
 #     except Exception as e:
 #         print e
 #     print "city_name",city_name,country_id
-
+#
 #     hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name, 'country_id': country_id})
-
+#
 #     print "hotel.others_info:",hotel.others_info
-
+#
 #     try:
 #         list1 = root.xpath("//div[@id='detail_content']/div[@class='htl_info_table detail_con_3']/table/tbody/tr/th/text()")
 #         index = 1
@@ -352,7 +352,7 @@
 #     print "chiled_bed_type==>%s" % hotel.chiled_bed_type
 #     print 'check_in =>', hotel.check_in_time
 #     print 'check_out =>', hotel.check_out_time
-
+#
 #     try:
 #         address_l = address.split(",")
 #         zip_code = address_l[-2]
@@ -363,7 +363,7 @@
 #     except Exception as e:
 #         print e
 #     print "hotel_zip_code==>%s" % hotel.hotel_zip_code
-
+#
 #     try:
 #         fea_params = root.xpath("//a[@class='icon_crown2']/@data-params")
 #         fea_params2 = root.xpath("//div[@class='htl_info']/div/div[@class='htl_info_tags']/span/text()")
@@ -407,7 +407,7 @@
 #                     hotel.feature['Japanese_Hotel'] = fea
 #                 elif "休闲度假" in fea:
 #                     hotel.feature['Vacation'] = fea
-
+#
 #         print "hotel.feature==>%s" % hotel.feature
 #     except Exception as e:
 #         print e
@@ -415,11 +415,11 @@
 #     hotel.source = 'ctrip'
 #     hotel.source_id = other_info['source_id']
 #     hotel.city_id = other_info['city_id']
-
+#
 #     res = hotel.to_dict()
 #     return res
-
-
+#
+#
 # if __name__ == '__main__':
 #     import threading
 #     import time
@@ -468,7 +468,7 @@
 #         'source_id': '1039433',
 #         'city_id': '10074'
 #     }
-
+#
 #     page = requests.get(url)
 #     page.encoding = 'utf8'
 #     content = page.text
@@ -476,7 +476,7 @@
 #     res = json.loads(result)
 #     res = json.dumps(res, ensure_ascii=False)
 #     print res
-
+#
 #     # def send_request(url):
 #     #     page = requests.get(url)
 #     #     page.encoding = 'utf8'
@@ -487,8 +487,8 @@
 #     # for url in url_list:
 #     #     thread1 = threading.Thread(target=send_request, args=(url,))
 #     #     thread1.start()
-
-
+#
+#
 #     '''
 #     try:
 #         session = DBSession()
