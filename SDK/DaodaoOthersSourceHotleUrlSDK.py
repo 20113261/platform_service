@@ -88,8 +88,8 @@ class OthersSourceHotelUrl(BaseSDK):
                 service_platform_conn = service_platform_pool.connection()
                 cursor = service_platform_conn.cursor()
                 sql = "insert into {} (name, name_en, city_id, country_id, `from`, status, source_list) VALUES (%s,%s,%s,%s,%s,%s,%s)".format(table_name)
-                cursor.executemany(sql, res_data)
-                service_platform_conn.commit()
+                # cursor.executemany(sql, res_data)
+                # service_platform_conn.commit()
                 cursor.close()
                 service_platform_conn.close()
             except Exception as e:
@@ -104,7 +104,7 @@ class OthersSourceHotelUrl(BaseSDK):
             raise ServiceStandardError(ServiceStandardError.EMPTY_TICKET)
         else:
             raise ServiceStandardError(error_code=error_code)
-        return len(temp_save), error_code, self.task.error_code, self.task.task_name, self.task.kwargs['suggest']
+        return len(temp_save), error_code, self.task.error_code
 
 
 if __name__ == "__main__":
