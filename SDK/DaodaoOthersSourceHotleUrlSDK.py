@@ -47,6 +47,10 @@ def hotel_url_to_database(source, keyword, need_cache=False):
 
 
 class OthersSourceHotelUrl(BaseSDK):
+
+    def get_task_finished_code(self):
+        return [0, 106, 107, 109, 29]
+
     def _execute(self, **kwargs):
         url = kwargs.get('url')
         tag = kwargs.get('tag')
@@ -68,15 +72,9 @@ class OthersSourceHotelUrl(BaseSDK):
             for hotel in hotel_result:
                 name = hotel.get('hotel_name', '')
                 name_en = hotel.get('hotel_name_en', '')
-                result = hotel.copy()
-                try:
-                    result.pop('hotel_name')
-                except:pass
-                try:
-                    result.pop('hotel_name_en')
-                except:pass
-                status = 1 if result else 0
-                temp_save.append((name, name_en, city_id, country_id, 'daodao', status, json.dumps(result) if result else None))
+                hotels = hotel.copy()
+                status = 1 if hotels else 0
+                temp_save.append((name, name_en, city_id, country_id, 'daodao', status, json.dumps(hotels) if hotels else None))
 
         elif source == 'google':
             for hotel in hotel_result:
@@ -108,22 +106,22 @@ class OthersSourceHotelUrl(BaseSDK):
 
 if __name__ == "__main__":
     from proj.my_lib.Common.Task import Task as Task_to
-    url = "https://www.tripadvisor.cn/Hotels-g1189702-Tahkovuori_Northern_Savonia-Hotels.html"
-    args = {
-        'url': url,
-        'source': 'daodao',
-        'tag': '20180401a',
-        'name': 'test_chinese',
-        'name_en': 'test_english',
-    }
-    # url = "Domus Art Michelangelo"
+    # url = "https://www.tripadvisor.cn/Hotels-g1189702-Tahkovuori_Northern_Savonia-Hotels.html"
     # args = {
     #     'url': url,
-    #     'source': 'google',
+    #     'source': 'daodao',
     #     'tag': '20180401a',
     #     'name': 'test_chinese',
     #     'name_en': 'test_english',
     # }
+    url = "Domus Art Michelangelo"
+    args = {
+        'url': url,
+        'source': 'google',
+        'tag': '20180401a',
+        'name': 'test_chinese',
+        'name_en': 'test_english',
+    }
 
     task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
                _used_times=0, max_retry_times=6,
