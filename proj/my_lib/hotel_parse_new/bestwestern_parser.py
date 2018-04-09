@@ -73,7 +73,7 @@ def bestwestern_parser(content, url, other_info):
     hotel.check_out_time = html.xpath('//div[@class="phoneNumbers"]/div[contains(@class,"phonesRow")][1]/div[2]/p[2]/text()')[0]
     # 酒店url
     hotel.hotel_url = url
-
+    print hotel.to_dict()
     return hotel.to_dict()
 
 
