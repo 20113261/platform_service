@@ -14,8 +14,8 @@
 # # class HotelBase(object):
 # #     __asd__ = 'asdasd'
 # #     a = '1111'
-#
-#
+
+
 # def holiday_parser(content, url, other_info):
 #     """
 #     酒店详情的爬虫
@@ -37,8 +37,8 @@
 #         content1, content2 = content
 #     re_match = re.search('/hotels/cn/zh/(\w+)/hoteldetail', url)
 #     hotel_code = re_match.group(1) if re_match else ''
-#
-#
+
+
 #     resp = json.loads(content1)['hotelInfo']
 #     hotel.hotel_url = url
 #     hotel.hotel_name = resp.get('profile', '').get('name', '')
@@ -112,11 +112,9 @@
 #         index += 1
 #     hotel.hotel_zip_code = hotel.postal_code
 #     res = hotel.to_dict()
-#     res = json.loads(res)
-#     print json.dumps(res, ensure_ascii=False)
 #     return res
-#
-#
+
+
 # def get_all_street(resp):
 #     country = resp.get('address', '').get('country', '').get('name', '')
 #     street = ''
@@ -124,14 +122,14 @@
 #         if k.startswith('street') and v:
 #             street += v
 #     return country + street
-#
-#
+
+
 # def get_all_pics(tree):
 #     all_pics = tree.xpath("//img[@data-medium-desktop]/@data-desktop")
 #     distinct = list(set([i.split('?', 1)[0] for i in all_pics if '?' in i]))
 #     return '|'.join(['http:' + i for i in distinct])
-#
-#
+
+
 # def judge_xxx_available(tree, *args):
 #     """
 #     这里逻辑爆炸，我的逻辑是，没找到相关元素返回Null，否则返回Yes，No
@@ -149,8 +147,8 @@
 #         return 'Null'
 #     text = ''.join(all_nodes)
 #     return 'Yes' if '免费' in text and '不提供免费' not in text and '不免费' not in text and '收费' not in text else 'No' and any(i in text for i in args)
-#
-#
+
+
 # def get_api_server(resp):
 #     service = '|酒店特色：'
 #     service += ', '.join([i['name'] for i in resp.get('badges') if i.get('name')]).lstrip().rstrip() + '|' + '酒店设施：'
@@ -159,8 +157,8 @@
 #         service += '，'.join([k + ':' + v for k, v in i.items() if v]).lstrip().rstrip() + '|'
 #     service += '酒店可以使用{}'.format(''.join(i['name'] for i in resp['policies'].get('acceptedCurrencies') if i.get('name')).lstrip().rstrip())
 #     return service + '|'
-#
-#
+
+
 # def get_ota_server(tree, *args):
 #     service = []
 #     for i in args:
@@ -178,15 +176,15 @@
 #         if text not in service:
 #             service.append(text)
 #     return '|' + '|'.join(service)
-#
-#
+
+
 # if __name__ == '__main__':
 #     # url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/epatx/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/EPATX/details'
 #     # url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/gsomm/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/GSOMM/details'
 #     # url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/cofks/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/COFKS/details'
 #     # url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/jnljo/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/JNLJO/details'
 #     url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/nlees/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/NLEES/details'
-#
+
 #     url2, url1 = url.split('#####')
 #     # url1 = 'https://apis.ihg.com/hotels/v1/profiles/EMPCD/details'
 #     # url2 = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/empcd/hoteldetail'
@@ -210,4 +208,6 @@
 #     print 'got 3'
 #     result = holiday_parser((content1, content2, content3), url2, {})
 #     # print '\n'.join(['%s:%s' % item for item in result.__dict__.items()])
-#
+#     res = json.loads(result)
+#     print json.dumps(res, ensure_ascii=False)
+

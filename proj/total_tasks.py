@@ -9,6 +9,7 @@ from __future__ import absolute_import
 from SDK import *
 from SDK.SupplementTask import SupplementReMapInfo
 from SDK.HiltonTaxSDK import HiltonTaxSDK
+from SDK.HiltonSuggestCitySDK import HiltonSuggestCitySDK
 from SDK.PoiCtripListSDK import PoiCtripListSDK
 from SDK.PoiCtripDetailSDK import PoiCtripDetailSDK
 from SDK.GTListSDK import GTListSDK
@@ -278,3 +279,8 @@ def last_google_task(self,task,**kwargs):
     _sdk = Last_Google(task=task)
     return _sdk.execute()
 
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/m')
+def hilton_suggest_task(self, task, **kwargs):
+    _sdk = HiltonSuggestCitySDK(task=task)
+    return _sdk.execute()

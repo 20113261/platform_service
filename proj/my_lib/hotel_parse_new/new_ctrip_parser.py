@@ -301,7 +301,7 @@
 #     except Exception as e:
 #         print e
 #
-#     print "hotel.source_city_id:",hotel.source_city_id
+#     # print "hotel.source_city_id:",hotel.source_city_id
 #     #获取others_info信息
 #     first_img = None
 #     try:
@@ -417,9 +417,6 @@
 #     hotel.city_id = other_info['city_id']
 #
 #     res = hotel.to_dict()
-#     res = json.loads(res)
-#     res = json.dumps(res, ensure_ascii=False)
-#     print res
 #     return res
 #
 #
@@ -476,6 +473,9 @@
 #     page.encoding = 'utf8'
 #     content = page.text
 #     result = ctrip_parser(content, url, other_info)
+#     res = json.loads(result)
+#     res = json.dumps(res, ensure_ascii=False)
+#     print res
 #
 #     # def send_request(url):
 #     #     page = requests.get(url)
