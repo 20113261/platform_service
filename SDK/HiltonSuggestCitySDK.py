@@ -15,6 +15,7 @@ import json
 import mioji.common.logger
 import mioji.common.pages_store
 import mioji.common.pool
+import traceback
 from celery.utils.log import get_task_logger
 from mioji import spider_factory
 from mioji.common.task_info import Task
@@ -40,7 +41,7 @@ get_proxy = proxy_pool.get_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 SQL = "INSERT IGNORE INTO hilton_suggest_info (source, sid, sid_md5, s_city, s_country, suggest_type, suggest) VALUES ('{}','{}','{}','{}','{}','{}','{}')"
-# SQL = "INSERT IGNORE INTO hilton_suggest_info (source, sid, sid_md5, s_city, s_country, suggest_type, suggest) VALUES (%s,%s,%s,%s,%s,%d,%s)"
+
 
 client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017')
 collections = client['data_result']['hilton_20180107']
@@ -53,9 +54,10 @@ config = {
         'charset': 'utf8'
 }
 
-def hilton_to_database(tid, used_times, source, keyword, spider_tag, need_cache=True):
+def hilton_to_database(tid, used_times, source, keyword, extra, spider_tag, need_cache=True):
     task = Task()
     task.content = keyword
+    task.extra = extra
     spider = factory.get_spider_by_old_source(spider_tag)
     spider.task = task
     if need_cache:
@@ -79,6 +81,7 @@ class HiltonSuggestCitySDK(BaseSDK):
             used_times=self.task.used_times,
             source='hilton',
             keyword=self.task.kwargs['keyword'],
+            extra=self.task.kwargs['extra'],
             spider_tag = 'hiltonSuggest',
             need_cache=self.task.used_times == 0
         )
@@ -104,16 +107,25 @@ class HiltonSuggestCitySDK(BaseSDK):
         # except Exception as e:
         #     raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
         print(result)
+        self.logger.info('this time, result count of keyword {} is {}'.format(self.task.kwargs['keyword'], len(result)))
         if len(result) > 0:
-            for i in result:
-                # source, sid, sid_md5, s_city, s_country, suggest_type, suggest
-                # save_result.append(
-                #     (str(i['source']), str(i['sid']), str(i['sid_md5']), str(i['s_city']), str(i['s_country']),
-                #      int(i['suggest_type']), str(i['suggest'])))
-                sql = SQL.format(str(i['source']), str(i['sid']), str(i['sid_md5']), str(i['s_city']), str(i['s_country']),
-                     i['suggest_type'], str(i['suggest']))
-                cursor.execute(sql)
-            # cursor.executemany(SQL, save_result)
+            try:
+                for i in result:
+                    # source, sid, sid_md5, s_city, s_country, suggest_type, suggest
+                    # save_result.append(
+                    #     (str(i['source']), str(i['sid']), str(i['sid_md5']), str(i['s_city']), str(i['s_country']),
+                    #      int(i['suggest_type']), str(i['suggest'])))
+
+                    sql = SQL.format(str(i['source']), str(i['sid']), str(i['sid_md5']), str(i['s_city']), str(i['s_country']),
+                         i['suggest_type'], str(i['suggest']))
+                    cursor.execute(sql)
+                # cursor.executemany(SQL, save_result)
+            except Exception as e:
+                conn.rollback()
+                traceback.print_exc(e)
+            finally:
+                conn.commit()
+                conn.close()
             self.task.error_code = 0
         else:
             raise ServiceStandardError(error_code=ServiceStandardError.EMPTY_TICKET)
@@ -122,15 +134,17 @@ class HiltonSuggestCitySDK(BaseSDK):
 
 if __name__ == "__main__":
     from proj.my_lib.Common.Task import Task as ttt
-    args = {
-        'keyword': 'zh',
-        # 'spider_tag':'hiltonSuggest',
-        # 'source':'hilton',
-    }
-    task = ttt(_worker='', _task_id='demo', _source='', _type='suggest', _task_name='tes',
-                _used_times=0, max_retry_times=6,
-                kwargs=args, _queue='supplement_field',
-                _routine_key='supplement_field', list_task_token='test', task_type=0, collection='')
-    ihg = HiltonSuggestCitySDK(task)
+    for keyword in 'abcdefghijklmnopqrstuvwxyz':
+        args = {
+            'keyword': keyword,
+            'spider_tag':'hiltonSuggest',
+            'source':'hilton',
+            'extra': 'foreign'
+        }
+        task = ttt(_worker='', _task_id='demo', _source='', _type='suggest', _task_name='tes',
+                    _used_times=0, max_retry_times=6,
+                    kwargs=args, _queue='supplement_field',
+                    _routine_key='supplement_field', list_task_token='test', task_type=0, collection='')
+        ihg = HiltonSuggestCitySDK(task)
 
-    ihg.execute()
+        ihg.execute()
