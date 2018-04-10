@@ -88,8 +88,8 @@ class OthersSourceHotelUrl(BaseSDK):
                 service_platform_conn = service_platform_pool.connection()
                 cursor = service_platform_conn.cursor()
                 sql = "insert into {} (name, name_en, city_id, country_id, `from`, status, source_list) VALUES (%s,%s,%s,%s,%s,%s,%s)".format(table_name)
-                # cursor.executemany(sql, res_data)
-                # service_platform_conn.commit()
+                cursor.executemany(sql, res_data)
+                service_platform_conn.commit()
                 cursor.close()
                 service_platform_conn.close()
             except Exception as e:
@@ -118,13 +118,13 @@ if __name__ == "__main__":
     #     'name': 'test_chinese',
     #     'name_en': 'test_english',
     # }
-    url = "Domus Art Michelangelo"
+    url = "Le Stanze di Dolly"
     args = {
         'url': url,
         'source': 'google',
         'tag': '20180401a',
-        'name': 'test_chinese',
-        'name_en': 'test_english',
+        'name': '',
+        'name_en': 'Le Stanze di Dolly',
     }
 
     task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
