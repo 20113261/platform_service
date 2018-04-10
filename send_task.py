@@ -115,9 +115,9 @@ def send_result_daodao_filter(source, tasks, daodao_filter_table, priority):
     timestamp = None
     if not tasks:
         return timestamp
-
+    task_name = daodao_filter_table.replace('list', 'filter')
     with InsertTask(worker='proj.total_tasks.result_daodao_filter', queue='hotel_list', routine_key='hotel_list',
-                    task_name=daodao_filter_table, source=source.title(), _type='Hotel',
+                    task_name=task_name, source=source.title(), _type='Hotel',
                     priority=priority) as it:
         for id, source_list, timestamp in tasks:
             for _source, hotel_url in json.loads(source_list).get('hotels', {}).iteritems():
