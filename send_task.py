@@ -94,12 +94,13 @@ def send_result_detail_task(source, tasks, task_tag, priority):
     with InsertTask(worker='proj.total_tasks.hotel_detail_task', queue='hotel_detail', routine_key='hotel_detail',
                     task_name=task_tag, source=source.title(), _type='Hotel',
                     priority=priority) as it:
-        for id, source_list, utime in tasks:
+        for id, source_list, timestamp in tasks:
             for source, hotel_url in json.loads(source_list).iteritems():
                 it.insert_task({
                     'source': source,
                     'url': hotel_url,
                     'part': task_tag,
+                    'source_id': 'NULL',
                     'hid': id,
                     'city_id': 'NULL',
                     'country_id': 'NULL'
