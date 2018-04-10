@@ -376,13 +376,13 @@ def monitoring_result_daodao_filter():
             if tab_args[3] == 'test':
                 continue
 
-            timestamp, priority, sequence = get_seek(table_name)
+            timestamp, priority, sequence = get_seek(table_name+'f')
 
             timestamp = send_result_daodao_filter(
                 tab_args[2], execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name, priority)
             logger.info('sequence  :  %s' % (timestamp,))
             if timestamp is not None:
-                update_seek(table_name, timestamp, priority, sequence)
+                update_seek(table_name+'f', timestamp, priority, sequence)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
