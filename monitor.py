@@ -318,7 +318,7 @@ def monitoring_hotel_list2detail():
 
 def monitoring_result_list2detail():
     sql = """select id, source_list, utime from %s where status = 1 and utime >= '%s' order by utime limit 5000"""
-
+    sources = ['agoda', 'booking', 'ctrip', 'expedia', 'elong', 'hotels']
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
@@ -336,15 +336,20 @@ def monitoring_result_list2detail():
 
             timestamp, priority, sequence = get_seek(table_name)
 
+            flag = 'g' if tab_args[2]=='google' else 'd'
+
             # update_task_statistics(tab_args[-1], tab_args[1], tab_args[2], 'List',
             #                        collections.find({"task_name": table_name}).count(), sum_or_set=False)
 
-            detail_table_name = ''.join(['detail_', table_name.split('_', 1)[1]])
-            if table_dict.get(detail_table_name, True):
-                create_table(detail_table_name)
+            detail_tables = {}
+            for source in sources:
+                detail_table_name = '_'.join(['detail', tab_args[1], flag+source, tab_args[3]])
+                detail_tables[source] = detail_table_name
+                if table_dict.get(detail_table_name, True):
+                    create_table(detail_table_name)
 
             timestamp = send_result_detail_task(
-                tab_args[2], execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_table_name, priority)
+                tab_args[2], execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), detail_tables, priority)
             logger.info('sequence  :  %s' % (timestamp,))
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
@@ -712,7 +717,8 @@ if __name__ == '__main__':
     # while True:
         #monitoring_qyer_list2detail()
         # monitoring_zombies_task_total()
-    city2list()
+    # city2list()
+    monitoring_result_list2detail()
         # get_default_timestramp()
         # get_seek('hotel_list2detail_test')
         # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
