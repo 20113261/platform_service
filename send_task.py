@@ -111,6 +111,27 @@ def send_result_detail_task(source, tasks, detail_tables, priority):
                 })
     return timestamp
 
+def send_result_daodao_filter(source, tasks, daodao_filter_table, priority):
+    timestamp = None
+    if not tasks:
+        return timestamp
+
+    with InsertTask(worker='proj.total_tasks.result_daodao_filter', queue='hotel_list', routine_key='hotel_list',
+                    task_name=daodao_filter_table, source=source.title(), _type='Hotel',
+                    priority=priority) as it:
+        for id, source_list, timestamp in tasks:
+            for _source, hotel_url in json.loads(source_list).get('hotels', {}).iteritems():
+                if hotel_url in ('null', '{}', None, 'http://', '', 'https://'): continue
+                if not hotel_url.startswith('https://www.tripadvisor.cn'): continue
+
+                it.insert_task({
+                    'url': hotel_url.strip(),
+                    'source': source,
+                    'id': id,
+                    'table_name': daodao_filter_table
+                })
+    return timestamp
+
 
 def send_poi_detail_task(tasks, task_tag, priority):
     utime = None

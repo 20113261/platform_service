@@ -37,6 +37,7 @@ from .GoogleDriveSDK import GoogleDriveSDK
 # from .AllHotelSourceSDK import AllHotelSourceSDK
 from .AllSuggestCitySDK import AllSuggestCitySDK
 from .DaodaoOthersSourceHotleUrlSDK import OthersSourceHotelUrl
+from .DaodaoOthersSourceHotleUrlSDK import ConversionDaodaoURL
 from .DaodaoHotelDetailSDK import DaodaoHotelDetailSDK
 from .GoogleHotelSDK import GoogleHotelSDK
 from .Last_Google import Last_Google
