@@ -116,7 +116,7 @@ def send_result_daodao_filter(source, tasks, daodao_filter_table, priority):
     if not tasks:
         return timestamp
     task_name = daodao_filter_table+'f'
-    with InsertTask(worker='proj.total_tasks.result_daodao_filter', queue='hotel_list', routine_key='hotel_list',
+    with InsertTask(worker='proj.total_tasks.result_daodao_filter', queue='hotel_detail', routine_key='hotel_detail',
                     task_name=task_name, source=source.title(), _type='Hotel',
                     priority=priority) as it:
         for id, source_list, timestamp in tasks:
