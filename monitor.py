@@ -331,7 +331,7 @@ def monitoring_result_list2detail():
                 continue
             if tab_args[2] not in RESULT_SOURCE:
                 continue
-            if tab_args[3] == 'test':
+            if tab_args[3] == 'test' or tab_args[3].endswith('f'):
                 continue
 
             timestamp, priority, sequence = get_seek(table_name)
