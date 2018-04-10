@@ -76,13 +76,15 @@ class HotelDetailSDK(BaseSDK):
         url = self.task.kwargs['url']
         source = self.task.kwargs['source']
         source_id = self.task.kwargs['source_id']
+        hid = self.task.kwargs['hid']
         city_id = self.task.kwargs['city_id']
         country_id = self.task.kwargs['country_id']
 
         headers = {}
         other_info = {
             'source_id': source_id,
-            'city_id': city_id
+            'city_id': city_id,
+            'hid': hid
         }
         logger.debug('aaaaaaa  '+source)
         logger.debug('bbbbbbb  '+str(source in ['starwood', 'hyatt', 'gha','shangrila','fourseasons','bestwest']))
