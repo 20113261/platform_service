@@ -67,6 +67,8 @@ class HotelNewBase(BaseModel):
     traffic = Column(Text(), default='NULL')
     chiled_bed_type = Column(Text(), default='NULL')
     pet_type = Column(Text(), default='NULL')
+    facility = Column(Text(), default='NULL')
+
 
     feature = {
         "China_Friendly": "NULL",
@@ -77,7 +79,7 @@ class HotelNewBase(BaseModel):
         "Japanese_Hotel": "NULL",
         "Vacation": "NULL"
     }
-    facility = {
+    facility_content = {
         "Room_wifi": "NULL",
         "Room_wired": "NULL",
         "Public_wifi": "NULL",
