@@ -114,6 +114,8 @@ def restart_slave_temp():
 # schedule.add_job(restart_slave_temp, 'date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10), id='monitoring_hotel_list')
 schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_hotel_list')
+schedule.add_job(monitoring_result_list2detail, 'cron', second='*/47',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_result_list2detail')
 schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/31',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=150), id='monitoring_hotel_detail')
 schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/45',

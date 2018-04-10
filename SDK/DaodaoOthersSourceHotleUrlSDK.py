@@ -8,13 +8,14 @@ from proj.my_lib.Common.BaseSDK import BaseSDK
 from proj.mysql_pool import service_platform_pool
 from proj.my_lib.logger import func_time_logger
 from mioji.spider_factory import factory
-from proj.my_lib import ServiceStandardError
+from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj.my_lib.Common.Browser import proxy_pool
 from celery.utils.log import get_task_logger
 import mioji.common.logger
 import mioji.common.pool
 import mioji.common.pages_store
-mioji.common.pool.pool.set_size(128)
+import time
+mioji.common.pool.pool.set_size(1024)
 
 logger = get_task_logger('daodaoHotel')
 mioji.common.logger.logger = logger
@@ -47,6 +48,10 @@ def hotel_url_to_database(source, keyword, need_cache=False):
 
 
 class OthersSourceHotelUrl(BaseSDK):
+
+    def get_task_finished_code(self):
+        return [0, 106, 107, 109, 29]
+
     def _execute(self, **kwargs):
         url = kwargs.get('url')
         tag = kwargs.get('tag')
@@ -57,26 +62,23 @@ class OthersSourceHotelUrl(BaseSDK):
         country_id = kwargs.get('country_id')
         table_name = 'list_result_{0}_{1}'.format(source, tag)
 
+        t1 = time.time()
         error_code, hotel_result = hotel_url_to_database(
             source=source,
             keyword=url,
             need_cache=self.task.used_times == 0,
         )
+        t2 = time.time()
+        self.logger.info('抓取耗时：   {}'.format(t2 - t1))
         temp_save = []
 
         if source == 'daodao':
             for hotel in hotel_result:
                 name = hotel.get('hotel_name', '')
                 name_en = hotel.get('hotel_name_en', '')
-                result = hotel.copy()
-                try:
-                    result.pop('hotel_name')
-                except:pass
-                try:
-                    result.pop('hotel_name_en')
-                except:pass
-                status = 1 if result else 0
-                temp_save.append((name, name_en, city_id, country_id, 'daodao', status, json.dumps(result) if result else None))
+                hotels = hotel.copy()
+                status = 1 if hotels else 0
+                temp_save.append((name, name_en, city_id, country_id, 'daodao', status, json.dumps(hotels) if hotels else None))
 
         elif source == 'google':
             for hotel in hotel_result:
@@ -99,11 +101,17 @@ class OthersSourceHotelUrl(BaseSDK):
                 raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
 
         hotel_list_insert_db(table_name, temp_save)
+        t3 = time.time()
+        self.logger.info('入库耗时：   {}'.format(t3 - t2))
 
-        if error_code == 0:
+        if len(temp_save) > 0:
             self.task.error_code = 0
+        elif int(error_code) == 0:
+            self.task.error_code = 29
+            raise ServiceStandardError(ServiceStandardError.EMPTY_TICKET)
         else:
-            raise ServiceStandardError.ServiceStandardError(error_code,msg="爬虫出现错误")
+            raise ServiceStandardError(error_code=error_code)
+        return len(temp_save), error_code
 
 
 if __name__ == "__main__":
@@ -116,13 +124,15 @@ if __name__ == "__main__":
         'name': 'test_chinese',
         'name_en': 'test_english',
     }
-    # url = "Domus Art Michelangelo"
+    # url = "格拉波斯克拉科夫公寓式酒店Aparthotel Globus Kraków"
     # args = {
     #     'url': url,
     #     'source': 'google',
     #     'tag': '20180401a',
-    #     'name': 'test_chinese',
-    #     'name_en': 'test_english',
+    #     'name': '格拉波斯克拉科夫公寓式酒店',
+    #     'name_en': 'Aparthotel Globus Kraków',
+    #     'country': '218',
+    #     'city': '10109',
     # }
 
     task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
