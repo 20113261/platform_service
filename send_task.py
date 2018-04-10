@@ -97,6 +97,8 @@ def send_result_detail_task(source, tasks, detail_tables, priority):
             with InsertTask(worker='proj.total_tasks.hotel_detail_task', queue='hotel_detail', routine_key='hotel_detail',
                             task_name=task_tag, source=source.title(), _type='Hotel',
                             priority=priority) as it:
+                if hotel_url.strip() in ('null', '{}', None, 'http://', '', 'https://'): continue
+                if hotel_url.strip().startswith('https://www.tripadvisor.cn'): continue
 
                 it.insert_task({
                     'source': _source,
