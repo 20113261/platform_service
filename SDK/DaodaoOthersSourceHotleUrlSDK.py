@@ -14,7 +14,8 @@ from celery.utils.log import get_task_logger
 import mioji.common.logger
 import mioji.common.pool
 import mioji.common.pages_store
-mioji.common.pool.pool.set_size(128)
+import time
+mioji.common.pool.pool.set_size(1024)
 
 logger = get_task_logger('daodaoHotel')
 mioji.common.logger.logger = logger
@@ -61,11 +62,14 @@ class OthersSourceHotelUrl(BaseSDK):
         country_id = kwargs.get('country_id')
         table_name = 'list_result_{0}_{1}'.format(source, tag)
 
+        t1 = time.time()
         error_code, hotel_result = hotel_url_to_database(
             source=source,
             keyword=url,
             need_cache=self.task.used_times == 0,
         )
+        t2 = time.time()
+        self.logger.info('抓取耗时：   {}'.format(t2 - t1))
         temp_save = []
 
         if source == 'daodao':
@@ -97,6 +101,8 @@ class OthersSourceHotelUrl(BaseSDK):
                 raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
 
         hotel_list_insert_db(table_name, temp_save)
+        t3 = time.time()
+        self.logger.info('入库耗时：   {}'.format(t3 - t2))
 
         if len(temp_save) > 0:
             self.task.error_code = 0
@@ -110,22 +116,24 @@ class OthersSourceHotelUrl(BaseSDK):
 
 if __name__ == "__main__":
     from proj.my_lib.Common.Task import Task as Task_to
-    # url = "https://www.tripadvisor.cn/Hotels-g1189702-Tahkovuori_Northern_Savonia-Hotels.html"
-    # args = {
-    #     'url': url,
-    #     'source': 'daodao',
-    #     'tag': '20180401a',
-    #     'name': 'test_chinese',
-    #     'name_en': 'test_english',
-    # }
-    url = "Le Stanze di Dolly"
+    url = "https://www.tripadvisor.cn/Hotels-g1189702-Tahkovuori_Northern_Savonia-Hotels.html"
     args = {
         'url': url,
-        'source': 'google',
+        'source': 'daodao',
         'tag': '20180401a',
-        'name': '',
-        'name_en': 'Le Stanze di Dolly',
+        'name': 'test_chinese',
+        'name_en': 'test_english',
     }
+    # url = "格拉波斯克拉科夫公寓式酒店Aparthotel Globus Kraków"
+    # args = {
+    #     'url': url,
+    #     'source': 'google',
+    #     'tag': '20180401a',
+    #     'name': '格拉波斯克拉科夫公寓式酒店',
+    #     'name_en': 'Aparthotel Globus Kraków',
+    #     'country': '218',
+    #     'city': '10109',
+    # }
 
     task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
                _used_times=0, max_retry_times=6,
