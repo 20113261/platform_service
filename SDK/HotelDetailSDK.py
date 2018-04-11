@@ -101,7 +101,7 @@ class HotelDetailSDK(BaseSDK):
                 # hotels
                 if source == 'hotels':
                     if other_info.get('hid'):
-                        _source_id_ = re.find('/ho(\d+)/', url)[0]
+                        _source_id_ = re.findall('/ho(\d+)/', url)[0]
                         url = 'https://zh.hotels.com/ho{0}/'.format(_source_id_)
                     else:
                         url = 'https://zh.hotels.com/ho{0}/'.format(source_id)
