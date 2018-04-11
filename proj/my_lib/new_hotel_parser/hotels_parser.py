@@ -324,11 +324,10 @@ def hotels_parser(content, url, other_info):
         hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
 
-    if other_info.get('hid'):
-        hotel.others_info = {'hid':other_info.get('hid', 'NULL')}
+    tmp_others_info = {'hid':other_info.get('hid', 'NULL')}
     if first_img:
-        hotel.others_info['first_img'] = first_img
-    hotel.others_info = json.dumps(hotel.others_info)
+        tmp_others_info['first_img'] = first_img
+    hotel.others_info = json.dumps(tmp_others_info)
 
     return hotel
 
