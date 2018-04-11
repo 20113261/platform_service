@@ -128,9 +128,10 @@ def send_result_daodao_filter(source, tasks, daodao_filter_table, priority):
 
                 it.insert_task({
                     'url': hotel_url.strip(),
-                    'source': source,
+                    'source': _source,
                     'id': id,
-                    'table_name': daodao_filter_table
+                    'table_name': daodao_filter_table,
+                    'date_index': 0
                 })
     return timestamp
 
