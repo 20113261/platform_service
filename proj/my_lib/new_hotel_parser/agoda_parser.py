@@ -227,7 +227,7 @@ def agoda_parser(content, url, other_info):
 
     hotel.others_info = json.dumps(
         {'country_id': country_id, 'country_name': country_name, 'city_name': city_name, 'city_id': city_id,
-         'first_img': first_img, 'hid':other_info.get('hid', 'NULL')})
+         'first_img': first_img, 'hid':other_info.get()})
     hotel.source_city_id = city_id
     hotel.country = page_params['hotelInfo'].get('address', {}).get('countryName', '')
     hotel.city = page_params['hotelInfo'].get('address', {}).get('cityName', '')
@@ -261,7 +261,8 @@ def agoda_parser(content, url, other_info):
     hotel.source = 'agoda'
     hotel.hotel_url = url.encode('utf-8')
     if other_info.get('hid'):
-        hotel.source_id = re.search('cityId: ?(\d+),', content).groups()[0]
+        hotel.source_id = re.search('hotelId: ?(\d+),', content).groups()[0]
+        # hotel.source_id = re.search('cityId: ?(\d+),', content).groups()[0]
     else:
         hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']

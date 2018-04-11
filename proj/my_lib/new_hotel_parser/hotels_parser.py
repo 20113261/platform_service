@@ -319,7 +319,8 @@ def hotels_parser(content, url, other_info):
 
     hotel.hotel_url = url
     if other_info.get('hid'):
-        hotel.source_id = re.search('"cityId": ?(\d+)', content).groups()[0]
+        hotel.source_id = re.search('/ho(\d+)/', url).groups()[0]
+        # hotel.source_id = re.search('"cityId": ?(\d+)', content).groups()[0]
     else:
         hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']

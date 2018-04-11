@@ -289,7 +289,8 @@ def ctrip_parser(page, url, other_info):
     hotel.hotel_url = url
     hotel.source = 'ctrip'
     if other_info.get('hid'):
-        hotel.source_id = page_js.eval('hotelDomesticConfig.query.cityId')
+        hotel.source_id = re.findall('/(\d+)\.html', url)[0]
+        # hotel.source_id = page_js.eval('hotelDomesticConfig.query.cityId')
     else:
         hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
