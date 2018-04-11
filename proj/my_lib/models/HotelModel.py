@@ -36,6 +36,14 @@ class HotelBase(BaseModel):
     continent = Column(String(96), default='NULL')
     country_id = Column(String(512), default='NULL')
     others_info = Column(JSON(), default='{}')
+    Img_first = Column(Text(), default='NULL')
+    hotel_phone = Column(Text(), default='NULL')
+    hotel_zip_code = Column(Text(), default='NULL')
+    traffic = Column(Text(), default='NULL')
+    chiled_bed_type = Column(Text(), default='NULL')
+    pet_type = Column(Text(), default='NULL')
+    facility = Column(Text(), default='NULL')
+    feature = Column(Text(), default='NULL')
 
 class HotelNewBase(BaseModel):
     hotel_name = Column(String(512), default='NULL')
@@ -221,9 +229,9 @@ class HotelNewBase(BaseModel):
                 continue
             item = {"key": value_Num[1], "value": value}
             feature[value_Num[0]] = item
-        self.facility = str(facility)
-        self.feature = str(feature)
-        self.service = str(service)
+        self.facility = str(facility) if facility != {} else 'NULL'
+        self.feature = str(feature) if facility != {} else 'NULL'
+        self.service = str(service) if facility != {} else 'NULL'
         return self
 
 
