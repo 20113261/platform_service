@@ -301,7 +301,7 @@ class HotelDetailSDK(BaseSDK):
             cursor.close()
             service_platform_conn.close()
         except Exception as e:
-            logger.exception(e)
+            self.logger.exception(e)
             raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
 
         logger.debug("[Insert DB][Takes: {}]".format(time.time() - start))
