@@ -69,7 +69,7 @@ def gha_parser(total_content, url, other_info):
     hotel.check_out_time = '12:00'
     reviewsurl = re.compile('<script src="//(.*?)"')
     urls = reviewsurl.findall(total_content)
-    if urls:
+    if urls[0]:
         reviewsurl = "http://" + urls[0]
     else:
         hotel.grade = '0.0'
