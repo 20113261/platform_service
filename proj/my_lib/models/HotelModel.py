@@ -4,6 +4,7 @@ from proj.my_lib.models.column import Column, String, Integer, Datetime, Text, M
 from proj.my_lib.models.base_model import BaseModel
 import datetime
 
+
 class HotelBase(BaseModel):
     hotel_name = Column(String(512), default='NULL')
     hotel_name_en = Column(String(512), default='NULL')
@@ -68,9 +69,9 @@ class HotelNewBase(BaseModel):
     chiled_bed_type = Column(Text(), default='NULL')
     pet_type = Column(Text(), default='NULL')
     facility = Column(Text(), default='NULL')
+    feature = Column(Text(), default='NULL')
 
-
-    feature = {
+    feature_content = {
         "China_Friendly": "NULL",
         "Romantic_lovers": "NULL",
         "Parent_child": "NULL",
@@ -196,7 +197,7 @@ class HotelNewBase(BaseModel):
         facility = {}
         service = {}
         feature = {}
-        for key, value in self.facility.items():
+        for key, value in self.facility_content.items():
             if value == "NULL":
                 continue
             value_Num = self.facility_Num(key)
@@ -204,7 +205,7 @@ class HotelNewBase(BaseModel):
                 continue
             item = {"key": value_Num[1], "value": value}
             facility[value_Num[0]] = item
-        for key, value in self.service.items():
+        for key, value in self.service_content.items():
             if value == "NULL":
                 continue
             value_Num = self.service_Num(key)
@@ -212,7 +213,7 @@ class HotelNewBase(BaseModel):
                 continue
             item = {"key": value_Num[1], "value": value}
             service[value_Num[0]] = item
-        for key, value in self.feature.items():
+        for key, value in self.feature_content.items():
             if value == "NULL":
                 continue
             value_Num = self.feature_Num(key)
@@ -220,11 +221,13 @@ class HotelNewBase(BaseModel):
                 continue
             item = {"key": value_Num[1], "value": value}
             feature[value_Num[0]] = item
-        result = self.__dict__
-        result["facility"] = facility
-        result["feature"] = feature
-        result["service"] = service
-        return dumps(result)
+        self.facility = str(facility)
+        self.feature = str(feature)
+        self.service = str(service)
+        return self
+
+
+
 
 class Hotel_New:
     def __init__(self):
@@ -407,6 +410,7 @@ class Hotel_New:
         result["feature"] = feature
         result["service"] = service
         return dumps(result)
+
 
 class BookingHotel(HotelBase):
     pass
