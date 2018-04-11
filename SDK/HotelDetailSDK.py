@@ -4,6 +4,7 @@ import pymongo
 import requests
 import pymongo.errors
 from copy import deepcopy
+import re
 
 from mioji.spider_factory import factory
 from mioji.common.task_info import Task
@@ -100,7 +101,7 @@ class HotelDetailSDK(BaseSDK):
                 # hotels
                 if source == 'hotels':
                     if other_info.get('hid'):
-                        _source_id_ = url.find('/ho(\d+)/')[0]
+                        _source_id_ = re.find('/ho(\d+)/', url)[0]
                         url = 'https://zh.hotels.com/ho{0}/'.format(_source_id_)
                     else:
                         url = 'https://zh.hotels.com/ho{0}/'.format(source_id)
