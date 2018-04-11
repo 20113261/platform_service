@@ -326,8 +326,7 @@ class FourseasonsListHotel(Spider):
         hotel.check_in_time = check_in_time
         hotel.check_out_time = check_out_time
         hotel.hotel_url = self.task.content
-        print hotel.to_dict()
-        return hotels
+        return json.loads(hotel.to_dict())
 
 
 if __name__ == "__main__":
