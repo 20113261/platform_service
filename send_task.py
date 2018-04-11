@@ -17,6 +17,7 @@ import sys
 import pymysql
 import mock
 from MongoTaskInsert import InsertTask, TaskType
+from collections import defaultdict
 
 import proj.my_lib.my_mongo_insert
 from pymongo.errors import DuplicateKeyError
@@ -91,13 +92,20 @@ def send_result_detail_task(source, tasks, detail_tables, priority):
     if not tasks:
         return timestamp
 
+    convert_data = defaultdict(list)
+
     for id, source_list, timestamp in tasks:
         for _source, hotel_url in json.loads(source_list).get('hotels', {}).iteritems():
             task_tag = detail_tables.get(_source)
             if not task_tag:continue
-            with InsertTask(worker='proj.total_tasks.hotel_detail_task', queue='hotel_detail', routine_key='hotel_detail',
-                            task_name=task_tag, source=source.title(), _type='Hotel',
-                            priority=priority) as it:
+            convert_data[(task_tag, _source)].append((id, hotel_url, timestamp))
+
+
+    for (task_tag, _source), hotel_url_and_hids in convert_data.iteritems():
+        with InsertTask(worker='proj.total_tasks.hotel_detail_task', queue='hotel_detail', routine_key='hotel_detail',
+                        task_name=task_tag, source=_source.title(), _type='Hotel',
+                        priority=priority) as it:
+            for id, hotel_url, timestamp in hotel_url_and_hids:
                 if hotel_url in ('null', '{}', None, 'http://', '', 'https://'): continue
                 if hotel_url.strip().startswith('https://www.tripadvisor.cn'): continue
 
