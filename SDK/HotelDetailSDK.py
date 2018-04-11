@@ -99,7 +99,8 @@ class HotelDetailSDK(BaseSDK):
             with MySession(need_cache=True) as session:
                 # hotels
                 if source == 'hotels':
-                    url = 'https://zh.hotels.com/ho{0}/'.format(source_id)
+                    if not other_info.get('hid'):
+                        url = 'https://zh.hotels.com/ho{0}/'.format(source_id)
 
                 # booking start
                 if source == 'booking':
