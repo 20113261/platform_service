@@ -108,15 +108,15 @@ def get_detail(Hotel, content, enDetail_content,hotel_id):
         if u'不适用' in info_list[1]:
             continue
         if u"客房内有线上网" in info_list[0]:
-            Hotel.facility["Room_wired"] = info_list[0]
+            Hotel.facility_content["Room_wired"] = info_list[0]
         if u"客房内无线上网" in info_list[0]:
-            Hotel.facility["Room_wifi"] = info_list[0]
+            Hotel.facility_content["Room_wifi"] = info_list[0]
         if u"公共区域无线上网" in info_list[0]:
-            Hotel.facility["Public_wifi"] = info_list[0]
+            Hotel.facility_content["Public_wifi"] = info_list[0]
         if u"餐厅" in info_list[0]:
-            Hotel.facility["Restaurant"] = info_list[0]
+            Hotel.facility_content["Restaurant"] = info_list[0]
         if u"酒吧" in info_list[0]:
-            Hotel.facility["Bar"] = info_list[0]
+            Hotel.facility_content["Bar"] = info_list[0]
     servers = select.xpath("//tbody[@id='tbodyservices']/tr")
     for server in servers:
         info = server.xpath('./td/text()|./td/span/text()')
@@ -127,9 +127,9 @@ def get_detail(Hotel, content, enDetail_content,hotel_id):
             else:
                 continue
         if u'商务中心	' in info_list[0]:
-            Hotel.facility["Business_Centre"] = info_list[0]
+            Hotel.facility_content["Business_Centre"] = info_list[0]
         if u'水疗中心	' in info_list[0]:
-            Hotel.facility["Mandara_Spa"] = info_list[0]
+            Hotel.facility_content["Mandara_Spa"] = info_list[0]
     traffics = select.xpath("//tbody[@id='tbodytransportation']/tr")
     for traffic in traffics:
         info = traffic.xpath('./td/text()|./td/span/text()')
@@ -140,7 +140,7 @@ def get_detail(Hotel, content, enDetail_content,hotel_id):
             else:
                 continue
         if u'泊车' in info_list[0]:
-            Hotel.facility["Valet_Parking"] = info_list[1]
+            Hotel.facility_content["Valet_Parking"] = info_list[1]
             # print info_list[1]
     try:
         PARK = select.xpath('//td[@id="compare_parkdist"]/text()')
@@ -162,22 +162,23 @@ def get_detail(Hotel, content, enDetail_content,hotel_id):
         Hotel.service_content["Frontdesk_safe"] = u'保险箱'
     Hotel.service = str(Hotel.service_content)
     if u'Fitness Room' in enDetail_content:
-        Hotel.facility["gym"] = u"健身房"
+        Hotel.facility_content["gym"] = u"健身房"
     if u'Tennis Court' in enDetail_content:
-        Hotel.facility['Tennis_court'] = u'网球场'
+        Hotel.facility_content['Tennis_court'] = u'网球场'
     if u'Laundry/Valet Service' in enDetail_content:
-        Hotel.facility["Laundry"] = u"洗衣/代客服务"
+        Hotel.facility_content["Laundry"] = u"洗衣/代客服务"
     if u'Automated Teller (ATM)' in enDetail_content:
-        Hotel.facility["ATM"] = u"自动柜员机（ATM）"
+        Hotel.facility_content["ATM"] = u"自动柜员机（ATM）"
     if u'Sauna' in enDetail_content:
-        Hotel.facility["Sauna"] = u'桑拿'
+        Hotel.facility_content["Sauna"] = u'桑拿'
     if u'Pool' in enDetail_content:
-        Hotel.facility["Swimming_Pool"] = '水池'
+        Hotel.facility_content["Swimming_Pool"] = '水池'
     enselect = etree.HTML(enDetail_content)
     hotel_name_en = enselect.xpath("//span[@class='property-name']/text()")
     if hotel_name_en:
         Hotel.hotel_name_en = hotel_name_en[0]
-    return Hotel
+    res = Hotel.to_dict()
+    return res
     # print enDetail_content
         # if
         # try:

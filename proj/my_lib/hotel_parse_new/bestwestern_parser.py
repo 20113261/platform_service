@@ -120,7 +120,7 @@ def get_service(hotel, html):
 # 获取酒店设施
 def get_facility(hotel, html):
     hotel_facility= get_hotel_facility(html)
-    facility = hotel.facility
+    facility = hotel.facility_content
     if re.findall(r'有线网络|高速互联网'.decode('utf8'), hotel_facility):
         facility['Room_wired'] = '客房有线网络'
     if re.findall(r'无线网络'.decode('utf8'), hotel_facility):
@@ -174,7 +174,7 @@ def get_facility(hotel, html):
 # 获取酒店特色
 def get_feature(hotel, html):
     description = html.xpath('//div[@class="hotelOverviewDetailSection"]/div[@class="overviewText"]/text()')[0].strip()
-    feature = hotel.feature
+    feature = hotel.feature_content
     if re.findall(r'华人|华人礼遇'.decode('utf8'), description):
         feature['China_Friendly'] = '华人礼遇'
     if re.findall(r'浪漫|浪漫情侣'.decode('utf8'), description):

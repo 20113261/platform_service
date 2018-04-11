@@ -99,6 +99,6 @@ if __name__ == '__main__':
             'source_id': '1039433',
             'city_id': '10074'
         }
-    req = requests.get(url)
+    req = requests.get(url, verify=False)
     content = req.content
     gha_parser(content, url, other_info)
