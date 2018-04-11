@@ -22,7 +22,7 @@ from monitor import monitoring_hotel_detail2ImgOrComment, monitoring_hotel_list2
     monitoring_poi_detail2imgOrComment, monitoring_poi_list2detail, monitoring_qyer_list2detail, \
     monitoring_supplement_field, monitoring_zombies_task_by_hour, city2list, monitoring_zombies_task_total, \
     monitoring_ctripPoi_list2detail, monitoring_GT_list2detail ,monitoring_PoiSource_list2detail, \
-    monitoring_result_list2detail
+    monitoring_result_list2detail, monitoring_result_daodao_filter
 from proj.config import BROKER_URL
 from proj.my_lib.Common.Task import Task
 from rabbitmq_func import detect_msg_num
@@ -116,6 +116,8 @@ schedule.add_job(monitoring_hotel_list2detail, 'cron', second='*/45',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_hotel_list')
 schedule.add_job(monitoring_result_list2detail, 'cron', second='*/47',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_result_list2detail')
+schedule.add_job(monitoring_result_daodao_filter, 'cron', second='*/41',
+                 next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=50), id='monitoring_result_daodao_filter')
 schedule.add_job(monitoring_hotel_detail2ImgOrComment, 'cron', second='*/31',
                  next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=150), id='monitoring_hotel_detail')
 schedule.add_job(monitoring_poi_list2detail, 'cron', second='*/45',

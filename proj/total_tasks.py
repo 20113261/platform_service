@@ -284,3 +284,8 @@ def last_google_task(self,task,**kwargs):
 def hilton_suggest_task(self, task, **kwargs):
     _sdk = HiltonSuggestCitySDK(task=task)
     return _sdk.execute()
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='30/m')
+def result_daodao_filter(self, task, **kwargs):
+    _sdk = ConversionDaodaoURL(task=task)
+    return _sdk.execute()

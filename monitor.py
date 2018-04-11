@@ -19,7 +19,7 @@ import sys
 import cachetools.func
 from send_task import send_hotel_detail_task, send_poi_detail_task, send_qyer_detail_task,\
     send_image_task, send_ctripPoi_detail_task, send_GT_detail_task, send_PoiSource_detail_task, \
-    send_result_detail_task
+    send_result_detail_task, send_result_daodao_filter
 from attach_send_task import qyer_supplement_map_info
 from proj.my_lib.logger import get_logger
 from send_email import send_email, SEND_TO, EMAIL_TITLE
@@ -331,7 +331,7 @@ def monitoring_result_list2detail():
                 continue
             if tab_args[2] not in RESULT_SOURCE:
                 continue
-            if tab_args[3] == 'test':
+            if tab_args[3] == 'test' or tab_args[3].endswith('f'):
                 continue
 
             timestamp, priority, sequence = get_seek(table_name)
@@ -353,6 +353,36 @@ def monitoring_result_list2detail():
             logger.info('sequence  :  %s' % (timestamp,))
             if timestamp is not None:
                 update_seek(table_name, timestamp, priority, sequence)
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
+
+def monitoring_result_daodao_filter():
+    sql = """select id, source_list, utime from %s where JSON_EXTRACT(source_list, "$.hotels") not like "%%{}%%" and JSON_EXTRACT(source_list, "$.hotels") is not null and status = 1 and utime >= '%s' order by utime limit 5000"""
+    try:
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+
+        for table_name in table_dict.keys():
+
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'result':
+                continue
+            if tab_args[2] != 'daodao':
+                continue
+            if tab_args[3] == 'test':
+                continue
+
+            timestamp, priority, sequence = get_seek(table_name+'f')
+
+            timestamp = send_result_daodao_filter(
+                tab_args[2], execute_sql(sql % ('ServicePlatform.' + table_name, timestamp)), table_name, priority)
+            logger.info('sequence  :  %s' % (timestamp,))
+            if timestamp is not None:
+                update_seek(table_name+'f', timestamp, priority, sequence)
     except Exception as e:
         logger.error(traceback.format_exc(e))
         send_email(EMAIL_TITLE,
@@ -718,7 +748,8 @@ if __name__ == '__main__':
         #monitoring_qyer_list2detail()
         # monitoring_zombies_task_total()
     # city2list()
-    monitoring_result_list2detail()
+    # monitoring_result_list2detail()
+    monitoring_result_daodao_filter()
         # get_default_timestramp()
         # get_seek('hotel_list2detail_test')
         # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)

@@ -92,11 +92,14 @@ def send_result_detail_task(source, tasks, detail_tables, priority):
         return timestamp
 
     for id, source_list, timestamp in tasks:
-        for _source, hotel_url in json.loads(source_list).iteritems():
-            task_tag = detail_tables[_source]
+        for _source, hotel_url in json.loads(source_list).get('hotels', {}).iteritems():
+            task_tag = detail_tables.get(_source)
+            if not task_tag:continue
             with InsertTask(worker='proj.total_tasks.hotel_detail_task', queue='hotel_detail', routine_key='hotel_detail',
                             task_name=task_tag, source=source.title(), _type='Hotel',
                             priority=priority) as it:
+                if hotel_url in ('null', '{}', None, 'http://', '', 'https://'): continue
+                if hotel_url.strip().startswith('https://www.tripadvisor.cn'): continue
 
                 it.insert_task({
                     'source': _source,
@@ -106,6 +109,28 @@ def send_result_detail_task(source, tasks, detail_tables, priority):
                     'hid': id,
                     'city_id': 'NULL',
                     'country_id': 'NULL'
+                })
+    return timestamp
+
+def send_result_daodao_filter(source, tasks, daodao_filter_table, priority):
+    timestamp = None
+    if not tasks:
+        return timestamp
+    task_name = daodao_filter_table+'f'
+    task_name = task_name.replace('list', 'detail')
+    with InsertTask(worker='proj.total_tasks.result_daodao_filter', queue='hotel_detail', routine_key='hotel_detail',
+                    task_name=task_name, source=source.title(), _type='Hotel',
+                    priority=priority) as it:
+        for id, source_list, timestamp in tasks:
+            for _source, hotel_url in json.loads(source_list).get('hotels', {}).iteritems():
+                if hotel_url in ('null', '{}', None, 'http://', '', 'https://'): continue
+                if not hotel_url.startswith('https://www.tripadvisor.cn'): continue
+
+                it.insert_task({
+                    'url': hotel_url.strip(),
+                    'source': source,
+                    'id': id,
+                    'table_name': daodao_filter_table
                 })
     return timestamp
 
