@@ -338,7 +338,7 @@ def expedia_parser(content, url, other_info):
     hotel.city_id = other_info['city_id']
 
     if first_img:
-        hotel.others_info = json.dumps({'first_img':first_img})
+        hotel.others_info = json.dumps({'first_img':first_img, 'hid':other_info.get('hid', 'NULL')})
     return hotel
 
 

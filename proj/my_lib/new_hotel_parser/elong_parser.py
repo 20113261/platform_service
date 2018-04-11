@@ -228,7 +228,7 @@ def elong_parser(content, url, other_info):
         print e
     print city_name
     hotel.city = city_name
-    hotel.others_info = json.dumps({'city_name': city_name, 'first_img': first_img})
+    hotel.others_info = json.dumps({'city_name': city_name, 'first_img': first_img, 'hid':other_info.get('hid', 'NULL')})
 
     #获取source_city_id
 
