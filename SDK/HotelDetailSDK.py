@@ -295,7 +295,7 @@ class HotelDetailSDK(BaseSDK):
             sql = result.generation_sql()
             sql = sql.format(table_name=self.task.task_name)
             values = result.values()
-            self.logger.info(result.__dict__)
+            # self.logger.info(result.__dict__)
             cursor.execute(sql, values)
             service_platform_conn.commit()
             cursor.close()
