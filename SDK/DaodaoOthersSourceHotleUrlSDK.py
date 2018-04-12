@@ -91,7 +91,7 @@ class OthersSourceHotelUrl(BaseSDK):
                 status = 1 if hotel_result else 0
                 temp_save.append((name, name_en, city_id, country_id, 'google', status, json.dumps(hotel) if hotel else None))
 
-        print temp_save
+        # print temp_save
         @func_time_logger
         def hotel_list_insert_db(table_name, res_data):
             try:
