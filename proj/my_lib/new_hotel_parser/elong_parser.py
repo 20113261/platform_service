@@ -29,7 +29,7 @@ def elong_parser(content, url, other_info):
         phantom_js = execjs.get('PhantomJS')
         js_str = root.xpath('//script[contains(text(),"window.newDetailController")]/text()')[0]
         page_js = phantom_js.compile(js_str[js_str.index('window.newDetailController'):][:-1])
-    except Exception, e:
+    except:
         #print str(e)
         # return hotel
         pass
@@ -42,11 +42,11 @@ def elong_parser(content, url, other_info):
         j = temp_name.find(')')
         hotel.hotel_name = temp_name[:k]
         hotel.hotel_name_en = temp_name[k + 1:j]
-    except Exception as e:
+    except:
         try:
             hotel.hotel_name = root.find_class('hrela_name-cn')[0].xpath('./text()')[0].strip()
             hotel.hotel_name_en = root.find_class('hrela_name-en')[0].xpath('./text()')[0].strip()
-        except Exception as e:
+        except:
             #print(str(e))
             # return hotel_tuple
             pass
@@ -74,14 +74,14 @@ def elong_parser(content, url, other_info):
         # hotel.address = root.find_class('mr5 left')[0].xpath('./text()')[0].strip().encode('utf-8').spilt(':')[1]
         temp = root.xpath('//span[@class="mr5 left"]/text()')
         hotel.address = temp[0].encode('utf-8').strip().split('：')[1]  # special chinese colon
-    except Exception as e:
+    except:
         #print(e)
         hotel.address = 'NULL'
 
     if hotel.address == 'NULL':
         try:
             hotel.address = root.xpath('//span[@class="icon-address"]/text()')[0].replace('地址：', '').strip()
-        except Exception as e:
+        except:
             #print(e)
             hotel.address = 'NULL'
 
@@ -99,7 +99,7 @@ def elong_parser(content, url, other_info):
             lat = map_infos.get('Lat',None)
             lon = map_infos.get('Long',None)
             hotel.map_info = '{0},{1}'.format(lon,lat)
-        except Exception as e:
+        except:
             hotel.map_info = 'NULL'
             #print traceback.format_exc(e)
 
@@ -119,7 +119,7 @@ def elong_parser(content, url, other_info):
             star_temp = page_js.eval('window.newDetailController').get('RecommendHotelRequest',{}).get('starLevel','')
             if json.loads(star_temp):
                 hotel.star = json.loads(star_temp)[0]
-        except Exception as e:
+        except:
             hotel.star = -1
 
     #print 'star=>%s' % hotel.star
@@ -140,7 +140,7 @@ def elong_parser(content, url, other_info):
                 # t_grade = grade_pat.findall(tp)[0]
                 # #print 't_grade', t_grade
                 hotel.grade = float(tp)  # float(t_grade) * 0.05
-            except Exception as e:
+            except:
                 hotel.grade = 'NULL'
     #print 'grade=>%s' % hotel.grade
     # #print hotel.grade
@@ -149,14 +149,14 @@ def elong_parser(content, url, other_info):
     try:
         review_num_str = page_js.eval('window.newDetailController').get('scoreInfo', {}).get('comment_count', '')
         hotel.review_num = review_num_str
-    except Exception as e:
+    except:
         try:
             # review_num_str = root.find_class('hrela_comt_total')[0]. \
             #     xpath('a/text()')[0].encode('utf-8').strip()
             # #print review_num_str
             review_num_str = root.find_class('fl sum-txt')[0].text_content().strip().encode('utf-8')
             hotel.review_num = int(grade_pat.findall(review_num_str)[0])
-        except Exception as e:
+        except:
             hotel.review_num = -1
 
     #print 'review=>%s' % hotel.review_num
@@ -174,7 +174,7 @@ def elong_parser(content, url, other_info):
         hotel.description = description[:-1].encode('utf-8')
         if hotel.description == '':
             hotel.description = p_tags[0].text_content().strip().encode('utf-8')
-    except Exception as e:
+    except:
         hotel.description = 'NULL'
 
     #print 'description=>%s' % hotel.description
@@ -207,7 +207,7 @@ def elong_parser(content, url, other_info):
             if '卡' in each:
                 accept_card.append(each.strip())
         hotel.service = service[:-1]
-    except Exception, e:
+    except:
         hotel.service = 'NULL'
     if accept_card:
         hotel.accepted_cards = '|'.join(accept_card).encode('utf-8')
@@ -218,7 +218,7 @@ def elong_parser(content, url, other_info):
     try:
         pattern_img = root.xpath('//div[@class="newdetaiL-img imgMore"]/@style')[0]
         first_img = re.search(r'url\(([^)]+)\)', pattern_img).group(1)
-    except Exception as e:
+    except:
         #print e
         pass
     #others_info信息
@@ -227,7 +227,7 @@ def elong_parser(content, url, other_info):
     city_name = 'NULL'
     try:
         city_name = page_js.eval('window.newDetailController')['Region']['RegionName']
-    except Exception as e:
+    except:
         #print e
         pass
     #print city_name
@@ -240,7 +240,7 @@ def elong_parser(content, url, other_info):
     try:
         pattern_city_id = root.xpath('//p[@class="link555 t12"]/a[contains(@href,"region")]/@href')[0]
         source_city_id = re.search(r'[0-9]+',pattern_city_id).group()
-    except Exception as e:
+    except:
         #print e
         pass
     hotel.source_city_id = source_city_id
@@ -285,7 +285,7 @@ def elong_parser(content, url, other_info):
                 img_lists.extend(img_list.values())
         img_lists = [base_url+img for img in img_lists]
         hotel.img_items = '|'.join(img_lists).encode('utf-8')
-    except Exception as e:
+    except:
         hotel.img_items = 'NULL'
 
     #print 'img_items=>%s' % hotel.img_items
@@ -325,7 +325,7 @@ def elong_parser(content, url, other_info):
 #             hotel.hotel_name = re.search(r'(\W+)\(',hotel_name.decode('utf-8')).group(1)
 #             hotel.hotel_name_en = re.search(r'\(([\w ]*)\)',hotel_name.decode('utf-8')).group(1)
 #             #print hotel.hotel_name,hotel.hotel_name_en
-#     except Exception as e:
+#     except:
 #         hotel.hotel_name_en = ''
 #         hotel.hotel_name = ''
 #     #print "hotel_name:",hotel.hotel_name
@@ -333,7 +333,7 @@ def elong_parser(content, url, other_info):
 #     #解析酒店地址
 #     try:
 #         pass
-#     except Exception as e:
+#     except:
 #         #print "address:",hotel.address
 #
 #     #解析酒店经纬度
@@ -347,7 +347,7 @@ def elong_parser(content, url, other_info):
 #             lat = elong_json.get("AjaxHotelInfo",{}).get("HotelGeoInfo",{}).get("Lat",None)
 #             if lon and lat:
 #                 hotel.map_info = lon+','+lat
-#     except Exception as e:
+#     except:
 #         #print e
 #     #print "map_info:",hotel.map_info
 #
@@ -356,7 +356,7 @@ def elong_parser(content, url, other_info):
 #         star = elong_json.get("RecommendHotelRequest",{}).get("starLevel",None)
 #         if star:
 #             hotel.star = re.search(r'[\d\.]+',star).group(0)
-#     except Exception as e:
+#     except:
 #         hotel.star = -1
 #     #print "star:",hotel.star
 #
@@ -365,19 +365,19 @@ def elong_parser(content, url, other_info):
 #         grade = elong_json.get("scoreInfo",{}).get("comment_score",None)
 #         if grade:
 #             hotel.grade = float(grade)
-#     except Exception as e:
+#     except:
 #         hotel.grade = 'NULL'
 #
 #     #解析酒店评论数
 #     try:
 #         pass
-#     except Exception as e:
+#     except:
 #         hotel.review_num = -1
 #
 #     #图片列表解析
 #     try:
 #         pass
-#     except Exception as e:
+#     except:
 #         pass
 
 if __name__ == '__main__':

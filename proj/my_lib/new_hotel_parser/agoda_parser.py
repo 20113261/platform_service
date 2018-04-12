@@ -31,7 +31,7 @@ def agoda_parser(content, url, other_info):
     try:
         content = content.decode('utf-8')
         root = HTML.fromstring(content)
-    except Exception as e:
+    except:
         #print str(e)
         pass
 
@@ -43,10 +43,10 @@ def agoda_parser(content, url, other_info):
     except:
         try:
             hotel_name = root.xpath('//*[@id="hotelname"]/text()')[0].encode('utf-8').strip()
-        except Exception, e:
+        except:
             try:
                 hotel_name = root.xpath('//title/text()')[0].split('-')[0][:-1]
-            except Exception, e:
+            except:
                 #print str(e)
                 pass
 
@@ -54,7 +54,7 @@ def agoda_parser(content, url, other_info):
         k = hotel_name.find('(')
         # #print k
         hotel.hotel_name = hotel_name[:k if k != -1 else None]
-    except Exception, e:
+    except:
         # #print str(e)
         hotel.hotel_name = 'NULL'
     #print 'hotel_name=>%s' % hotel.hotel_name
@@ -62,7 +62,7 @@ def agoda_parser(content, url, other_info):
 
     try:
         hotel.hotel_name_en = hotel_name[k + 1 if k != -1 else None:-1 if k != -1 else None]
-    except Exception, e:
+    except:
         hotel.hotel_name_en = 'NULL'
         # #print str(e)
     #print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
@@ -97,7 +97,7 @@ def agoda_parser(content, url, other_info):
         lon_text = lon_pat.findall(content)[0][1:-1]
         lat_text = lat_pat.findall(content)[0][1:-1]
         hotel.map_info = lon_text + ',' + lat_text
-    except Exception, e:
+    except:
         # #print str(e)
         hotel.map_info = 'NULL'
 
@@ -111,7 +111,7 @@ def agoda_parser(content, url, other_info):
         except:
             try:
                 hotel.grade = page_params['masterRoomInfo'][0]['demographics']['grades'][0]['score']
-            except Exception as e:
+            except:
                 hotel.grade = -1
     #print 'grade=>%s' % hotel.grade
 
@@ -133,7 +133,7 @@ def agoda_parser(content, url, other_info):
     try:
         first_img = page_params.get("mosaicInitData", {}).get('images', [])[0].get('Location', 'NULL')
         first_img = urljoin('http:', first_img)
-    except Exception as e:
+    except:
         first_img = 'NULL'
 
     try:
@@ -158,7 +158,7 @@ def agoda_parser(content, url, other_info):
                     img_list = location_pat.findall(img_json)
                     hotel.img_items = '|'.join(
                         map(lambda x: 'http:' + x, img_list))
-                except Exception as e:
+                except:
                     hotel.img_items = 'NULL'
     #print 'img_items=>%s' % hotel.img_items
 
@@ -224,7 +224,7 @@ def agoda_parser(content, url, other_info):
         country_name = page_params['hotelInfo']['address']['countryName']
         city_name = page_params['hotelInfo']['address']['cityName']
         city_id = page_params['hotelInfo']['address']['cityId']
-    except Exception as e:
+    except:
         #print e
         pass
 

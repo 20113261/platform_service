@@ -31,7 +31,7 @@ def hotels_parser(content, url, other_info):
     try:
         source_city_id = re.findall(r'\"cityId\":(\d+),', content)[0]
         hotel.source_city_id = source_city_id.encode('utf8')
-    except Exception as e:
+    except:
         #print e
         pass
 
@@ -39,7 +39,7 @@ def hotels_parser(content, url, other_info):
 
     try:
         name_temp = root.xpath('//div[@class="property-description"]/div[@class="vcard"]/h1/text()')[0]
-    except Exception as e:
+    except:
         #print(str(e))
         pass
 
@@ -54,14 +54,14 @@ def hotels_parser(content, url, other_info):
         except Exception:
             pass
         #print('hotel_name_en=>%s' % hotel.hotel_name_en)
-    except Exception as e:
+    except:
         #print(str(e))
         pass
 
     if hotel.hotel_name_en == 'NULL' and hotel.hotel_name == 'NULL':
         try:
             name_temp = root.xpath('//*[@class="vcard"]/h1/text()')[0].encode('utf-8')
-        except Exception as e:
+        except:
             #print(str(e))
             pass
 
@@ -74,7 +74,7 @@ def hotels_parser(content, url, other_info):
                 hotel.hotel_name_en = 'NULL'
             # hotel.source_id = root.xpath('//*[@id="roomdesc_mainContainerSize1"]/input[1]/@value')[0]
             #print ('hotel_name_en=>%s' % hotel.hotel_name_en)
-        except Exception as e:
+        except:
             #print (str(e))
             pass
     # -- fengyufei
@@ -114,7 +114,7 @@ def hotels_parser(content, url, other_info):
         temp = root.find_class('visible-on-small map-widget-wrapper')[0].xpath('div/@style')[0].encode('utf-8').strip()
         map_info = map_pat.findall(temp)[0]
         hotel.map_info = map_info.split(',')[1] + ',' + map_info.split(',')[0]
-    except Exception as e:
+    except:
         # #print str(e)
         hotel.map_info = 'NULL'
     #print ('map_info=>%s' % hotel.map_info)
@@ -154,7 +154,7 @@ def hotels_parser(content, url, other_info):
                 grade = root.xpath('//div[@class="logo-wrap"]/span[1]/text()')[0].encode('utf-8')
                 grade = re.search(r'[0-9\.]+', grade).group(0)
                 hotel.grade = float(grade)
-        except Exception as e:
+        except:
             #print(e)
             hotel.grade = -1.0
 
@@ -206,7 +206,7 @@ def hotels_parser(content, url, other_info):
         #     image_url = each_image_ele.xpath('a/@href')[0]
         #     hotel.img_items += image_url + '|'
         # hotel.img_items = hotel.img_items[:-1]
-    except Exception as e:
+    except:
         hotel.img_items = 'NULL'
 
     #print ('hotel_img_items=>%s' % hotel.img_items)
@@ -217,14 +217,14 @@ def hotels_parser(content, url, other_info):
         description_temp = root.get_element_by_id('overview').xpath('b/text()')[0] \
             .encode('utf-8').strip()
         hotel.description = description_temp
-    except Exception as e:
+    except:
         #print (str(e))
         hotel.description = 'NULL'
 
     if hotel.description == 'NULL':
         try:
             hotel.description = root.xpath('// div[@class="tagline"]')[0].text_content().strip()
-        except Exception as e:
+        except:
             #print(str(e))
             hotel.description = 'NULL'
 
@@ -244,7 +244,7 @@ def hotels_parser(content, url, other_info):
             # service_list = root.find_class('main-amenities two-columned')[0].xpath('ul/li')
             # for each in service_list:
             #     service += each.text_content().encode('utf-8').strip() + '|'
-    except Exception as e:
+    except:
         #print (str(e))
         hotel.service = 'NULL'
     hotel.service = service[:-1]
@@ -263,7 +263,7 @@ def hotels_parser(content, url, other_info):
         else:
             hotel.has_wifi = 'No'
             hotel.is_wifi_free = 'NO'
-    except Exception as e:
+    except:
         #print(str(e))
         hotel.has_wifi = 'NULL'
 
@@ -288,7 +288,7 @@ def hotels_parser(content, url, other_info):
             #     hotel.is_parking_free = 'Yes'
             # if car_text.find('停车场'):
             #     hotel.has_parking = 'Yes'
-    except Exception as e:
+    except:
         #print(str(e))
         hotel.has_parking = 'NULL'
         hotel.is_parking_free = 'NULL'
@@ -309,7 +309,7 @@ def hotels_parser(content, url, other_info):
         temp_check_times = temp_titles.xpath('ul')[title_i]
         check_in_time = temp_check_times.xpath('./li[1]/text()')[0]
         check_out_time = temp_check_times.xpath('./li[2]/text()')[0]
-    except Exception as e:
+    except:
         #print(str(e))
         check_in_time = 'NULL'
         check_out_time = 'NULL'
@@ -368,5 +368,5 @@ if __name__ == '__main__':
     #     session.add(result)
     #     session.commit()
     #     session.close()
-    # except Exception as e:
+    # except:
     #     #print str(e)

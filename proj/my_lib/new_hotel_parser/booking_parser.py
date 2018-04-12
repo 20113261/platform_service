@@ -34,14 +34,14 @@ def booking_parser(content, url, other_info):
     try:
         content = str(content).decode('utf-8')
         root = HTML.fromstring(content)
-    except Exception, e:
+    except:
         #print str(e)
         pass
 
     try:
         source_city_id = re.findall(r'params.context_dest_id = \'([-+]?\d+)\'', content)[0]
         hotel.source_city_id = source_city_id.encode('utf8')
-    except Exception as e:
+    except:
         #print e
         pass
 
@@ -65,7 +65,7 @@ def booking_parser(content, url, other_info):
     #         name_en_temp = name_temp[:name_temp.find(zh_name_tmep[0][0])] + name_temp[
     #                                                                         name_temp.find(zh_name_tmep[0][-1])+1:]
     #         hotel.hotel_name_en = name_en_temp.strip(')').strip('(').strip('）').strip('（').strip().encode('utf8')
-    # except Exception as e:
+    # except:
     #     #print e
     try:
         name_temp = root.xpath('//*[@class="hp__hotel-name"]')[
@@ -84,7 +84,7 @@ def booking_parser(content, url, other_info):
             else:
                 hotel.hotel_name = 'NULL'
                 hotel.hotel_name_en = temp_name[0].encode('utf8')
-    except Exception as e:
+    except:
         #print e
         pass
 
@@ -101,7 +101,7 @@ def booking_parser(content, url, other_info):
     #             name_temp = root.xpath('//div[@id="b_mainContent"]/h1/text()')[
     #                 0].strip().encode('utf-8')
     #             hotel.hotel_name = name_temp
-    #         except Exception as e:
+    #         except:
     #             #print '----------', str(e)
     #             # return hotel_tuple
     #             # #print 'vvvvvvvvvvvvvvvvv'
@@ -112,7 +112,7 @@ def booking_parser(content, url, other_info):
     try:
         hotel.brand_name = brand_pat.findall(content)[0].strip().replace('"',
                                                                          '""')
-    except Exception, e:
+    except:
         # #print str(e)
         hotel.brand_name = 'NULL'
     #print 'brad_name=>%s' % hotel.brand_name
@@ -124,7 +124,7 @@ def booking_parser(content, url, other_info):
             map_infos = str(map_pat.findall(pp)[0])
             hotel.map_info = map_infos.split(',')[1] + ',' + map_infos.split(
                 ',')[0]
-        except Exception, e:
+        except:
             #print 'vvvvv\n'
             pass
     except:
@@ -136,7 +136,7 @@ def booking_parser(content, url, other_info):
                 float(float(map_infos[0]) + float(map_infos[2])) /
                 2.0) + ',' + str(
                 float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
-        except Exception, e:
+        except:
             #print str(e)
             try:
                 # map_infos = root.xpath('//span[@itemprop="address"]/@data-bbox')[0].split(',')
@@ -147,7 +147,7 @@ def booking_parser(content, url, other_info):
                     float(float(map_infos[0]) + float(map_infos[2])) /
                     2.0) + ',' + str(
                     float(float(map_infos[1]) + float(map_infos[3])) / 2.0)
-            except Exception, e:
+            except:
                 map_infos = root.xpath('//a[@id="show_map"]/@data-coords')
                 if map_infos:
                     map_infos = str(map_infos[0]).split(',')
@@ -169,7 +169,7 @@ def booking_parser(content, url, other_info):
         strs = root.xpath(
             '//span[contains(@class, "hp_address_subtitle")]/text()')
         hotel.address = strs[0].encode('utf-8').strip().replace('"', '""')
-    except Exception as e:
+    except:
         strs = root.xpath(
             '//span[contains(@class, "hp_location_address_line")]/text()')
         if len(strs):
@@ -180,7 +180,7 @@ def booking_parser(content, url, other_info):
                     '//p[@class="b_hotelAddress"]//text()')
                 adress_temp = ' '.join(map(lambda x: x.replace('\n', ''), adress_temp))
                 hotel.address = adress_temp.replace('显示地图', '')
-            except Exception as e:
+            except:
                 #print e
                 pass
 
@@ -214,7 +214,7 @@ def booking_parser(content, url, other_info):
                 if star_svg:
                     hotel.star = int(re.search(r'\d+', star_svg[0].attrib.get('class')).group(0))
 
-        except Exception as e:
+        except:
             pass
     #print 'star=>%s' % hotel.star
     # #print hotel.star
@@ -229,7 +229,7 @@ def booking_parser(content, url, other_info):
             grade_temp = root.xpath(
                 '//div[@id="review_block_top"]/text()')[1].strip().encode('utf-8')
             hotel.grade = grade_temp
-        except Exception as e:
+        except:
             hotel.grade = 'NULL'
     #print 'grade=>%s' % hotel.grade
     # #print hotel.grade
@@ -241,7 +241,7 @@ def booking_parser(content, url, other_info):
         #     [0].encode('utf-8').strip()
         # hotel.review_num = re_start
         hotel.review_num = score.encode('utf8')
-    except Exception as e:
+    except:
         #print e
         try:
             re_start = root.xpath('//div[@class="location_score_tooltip"]/p[1]/small/strong/text()')[0]
@@ -252,7 +252,7 @@ def booking_parser(content, url, other_info):
                     '//div[@id="review_block_top"]/text()')[0].strip().encode('utf-8')
                 re_num = re.findall(r'\d+', re_num)[0]
                 hotel.review_num = re_num
-            except Exception as e:
+            except:
                 #print e
                 hotel.review_num = -1
     #print 'review_num=>%s' % hotel.review_num
@@ -273,7 +273,7 @@ def booking_parser(content, url, other_info):
             desc = root.xpath('//div[@class="b_hotelDescription"]/p/text()')
             desc = ''.join(desc)
             hotel.description = desc
-        except Exception as e:
+        except:
             hotel.description = 'NULL'
     #print 'description=>%s' % hotel.description
     # #print hotel.description
@@ -294,13 +294,13 @@ def booking_parser(content, url, other_info):
             try:
                 card_list = root.xpath('//div[@class="description"]/ul/li/text()')[:-1]
                 hotel.accepted_cards = '|'.join(card_list)
-            except Exception as e:
+            except:
                 hotel.accepted_cards = 'NULL'
     except:
         try:
             card_list = root.xpath('//div[@class="description"]/ul/li/text()')[:-1]
             hotel.accepted_cards = '|'.join(card_list)
-        except Exception as e:
+        except:
             hotel.accepted_cards = 'NULL'
 
     #print 'accepted_card=>%s' % hotel.accepted_cards
@@ -315,7 +315,7 @@ def booking_parser(content, url, other_info):
             check_in_time = root.xpath(
                 '//div[@class="description"]/p[1]/text()')
             hotel.check_in_time = check_in_time[0].strip().encode('utf-8')
-        except Exception as e:
+        except:
             hotel.check_in_time = 'NULL'
 
     # parse check out time info
@@ -327,7 +327,7 @@ def booking_parser(content, url, other_info):
             check_out_time = root.xpath(
                 '//div[@class="description"]/p[2]/text()')
             hotel.check_out_time = check_out_time[0].strip().encode('utf-8')
-        except Exception as e:
+        except:
             hotel.check_out_time = 'NULL'
 
     #print 'checkintime=>%s' % hotel.check_in_time
@@ -408,7 +408,7 @@ def booking_parser(content, url, other_info):
                         hotel.is_wifi_free = 'Yes'
                 service += temp.encode('utf-8')
             hotel.service = service[:-1]
-        except Exception as e:
+        except:
             hotel.service = 'NULL'
 
     #print 'service=>%s' % hotel.service
@@ -429,7 +429,7 @@ def booking_parser(content, url, other_info):
     #     for each_img_link in image_list:
     #         hotel.img_items += each_img_link.encode('utf-8') + '|'
     #     hotel.img_items = hotel.img_items[:-1].replace('"', '').encode('utf-8')
-    # except Exception, e:
+    # except:
     #     #print "kkkk"
     # new img func
     # if hotel.img_items == '':
@@ -455,14 +455,14 @@ def booking_parser(content, url, other_info):
                 img_items = root.xpath('//div[@id="b_imgList"]/ul/li/a/@href')
                 img_items = '|'.join(img_items)
                 hotel.img_items = img_items
-            except Exception as e:
+            except:
                 hotel.img_items = 'NULL'
 
             try:
                 first_img = root.xpath('//a[contains(@class, "active-image")]/img/@src')[0]
                 if not hotel.img_items:
                     hotel.img_items += first_img
-            except Exception as e:
+            except:
                 #print e
                 pass
 

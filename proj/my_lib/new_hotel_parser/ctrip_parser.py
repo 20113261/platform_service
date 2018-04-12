@@ -38,7 +38,7 @@ def ctrip_parser(page, url, other_info):
     hotel = CtripHotel()
     try:
         root = HTML.fromstring(page.decode('utf-8'))
-    except Exception, e:
+    except:
         #print str(e)
         pass
 
@@ -50,13 +50,13 @@ def ctrip_parser(page, url, other_info):
 
     try:
         hotel.hotel_name = root.xpath('//*[@class="name"]/text()')[0].encode('utf-8').strip()
-    except Exception, e:
-        traceback.print_exc(e)
+    except:pass
+        # traceback.print_exc(e)
 
     try:
         hotel.hotel_name_en = root.xpath('//*[@class="name"]/span/text()')[0].encode('utf8').strip()
-    except Exception, e:
-        traceback.print_exc(e)
+    except:pass
+        # traceback.print_exc(e)
 
     #print 'hotel_name =>', hotel.hotel_name
     #print 'hotel_name_en =>', hotel.hotel_name_en
@@ -68,7 +68,7 @@ def ctrip_parser(page, url, other_info):
         try:
             position_temp = root.xpath('//*[@id="hotelCoordinate"]/@value')[0].encode('utf-8').strip().split('|')
             hotel.map_info = position_temp[1] + ',' + position_temp[0]
-        except Exception, e:
+        except:
             #print str(e)
             hotel.map_info = 'NULL'
 
@@ -94,7 +94,7 @@ def ctrip_parser(page, url, other_info):
     try:
         address = root.xpath('//div [@class="adress"]/span/text()')[0]
         hotel.address = address.encode('utf-8').strip()
-    except Exception, e:
+    except:
         #print str(e)
         pass
 
@@ -106,7 +106,7 @@ def ctrip_parser(page, url, other_info):
         try:
             review = root.xpath('//*[@id="commnet_score"]/span[3]/span/text()')[0]
             hotel.review_num = review.encode('utf-8').strip()
-        except Exception, e:
+        except:
             #print str(e)
             pass
 
@@ -116,7 +116,7 @@ def ctrip_parser(page, url, other_info):
         desc = ''.join(root.xpath('//div[@id="detail_content"]/span/div/div/text()'))
         hotel.description = desc.encode(
             'utf-8').strip().rstrip().replace(' ', '').replace('\n', '。').replace('。。', '。')
-    except Exception, e:
+    except:
         hotel.description = 'NULL'
         #print str(e)
 
@@ -124,7 +124,7 @@ def ctrip_parser(page, url, other_info):
 
     try:
         hotel.img_items = '|'.join(map(lambda x: 'http:' + x['max'], page_js.eval('pictureConfigNew')['hotelUpload']))
-    except Exception as e:
+    except:
         try:
             pic_list = root.xpath('//div[@id="picList"]/div/div/@_src')
             if pic_list:
@@ -133,8 +133,9 @@ def ctrip_parser(page, url, other_info):
                     s = each.encode('utf-8').strip()
                     img_items += s + '|'
                 hotel.img_items = img_items[:-1]
-        except Exception, e:
-            traceback.print_exc(e)
+        except:
+            pass
+            # traceback.print_exc(e)
 
     #print 'hotel.img_items =>', hotel.img_items
 
@@ -169,10 +170,10 @@ def ctrip_parser(page, url, other_info):
 
         hotel.check_in_time = check_in_time.encode('utf-8').strip()
         hotel.check_out_time = check_out_time.encode('utf-8').strip()
-    except Exception, e:
+    except:
         # #print str(e)
-        traceback.print_exc(e)
-
+        # traceback.print_exc(e)
+        pass
     #print 'check_in =>', hotel.check_in_time
     #print 'check_out =>', hotel.check_out_time
 
@@ -185,7 +186,7 @@ def ctrip_parser(page, url, other_info):
     #     for each in card:
     #         temp_name += each.encode('utf-8').strip()[1:-1] + '|'
     #     hotel.accepted_cards = temp_name[:-1]
-    # except Exception, e:
+    # except:
     #     #print str(e)
     # #print 'hotel.accept_cards =>', hotel.accepted_cards
 
@@ -197,7 +198,7 @@ def ctrip_parser(page, url, other_info):
             res = re.findall('\(([\s\S]+?)\)', card)
             if res:
                 accepted_cards.append(res[0].lower())
-    except Exception as exc:
+    except:
         #print(exc)
         pass
 
@@ -219,7 +220,7 @@ def ctrip_parser(page, url, other_info):
                 except:
                     pass
             hotel.service = item_str[:-1]
-    except Exception, e:
+    except:
         #print str(e)
         pass
 
@@ -234,7 +235,7 @@ def ctrip_parser(page, url, other_info):
             hotel.is_parking_free = 'No'
         if '无线上网' in hotel.service:
             hotel.has_wifi = 'Yes'
-    except Exception, e:
+    except:
         #print str(e)
         pass
 
@@ -243,7 +244,7 @@ def ctrip_parser(page, url, other_info):
         pattern_str = root.xpath('//form[@id="aspnetForm"]')[0].attrib['action']
         source_city_id = re.search(r'international/([0-9a-zA-Z]+)',pattern_str).group(1)
         hotel.source_city_id = source_city_id
-    except Exception as e:
+    except:
         #print e
         pass
 
@@ -252,7 +253,7 @@ def ctrip_parser(page, url, other_info):
     first_img = None
     try:
         first_img = urljoin('http:', root.xpath('//div[@id="picList"]/div/div')[0].attrib['_src'])
-    except Exception as e:
+    except:
         #print e
         pass
 
@@ -262,7 +263,7 @@ def ctrip_parser(page, url, other_info):
         city_name = page_js.eval('hotelDomesticConfig')['query']['cityName']
         # city_name = page_js.eval('hotelDomesticConfig')['query']['cityName'].encode('raw-unicode-escape')
         country_id = page_js.eval('hotelDomesticConfig')['query']['country']
-    except Exception as e:
+    except:
         #print e
         pass
     #print "city_name",city_name,country_id
@@ -337,6 +338,6 @@ if __name__ == '__main__':
         session.add(result)
         session.commit()
         session.close()
-    except Exception as e:
+    except:
         #print str(e)
     '''
