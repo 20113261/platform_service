@@ -49,7 +49,7 @@ def hotel_url_to_database(source, keyword, need_cache=False):
     print(error_code)
     # if data_from == 'google':
     #     return error_code,spider.result,spider.user_datas['search_result']
-    print spider.result['hotel']
+    # print spider.result['hotel']
     return error_code, spider.result['hotel']
 
 
