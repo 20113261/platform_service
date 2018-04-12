@@ -7,7 +7,8 @@ from lxml.html import fromstring
 from lxml import etree
 # from mioji.common.utils import setdefaultencoding_utf8
 from proj.my_lib.models.HotelModel import HotelNewBase
-from mioji.common.class_common import Hotel_New
+# from mioji.common.class_common import Hotel_New
+from proj.my_lib.models.HotelModel import HotelNewBase as Hotel_New
 reload(sys)
 sys.setdefaultencoding('utf-8')
 # setdefaultencoding_utf8()

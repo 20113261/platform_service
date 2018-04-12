@@ -12,7 +12,8 @@ import json
 from lxml import html as HTML
 # from data_obj import ExpediaHotel  # DBSession
 from proj.my_lib.models.HotelModel import HotelNewBase
-from mioji.common.class_common import Hotel_New
+# from mioji.common.class_common import Hotel_New
+from proj.my_lib.models.HotelModel import HotelNewBase as Hotel_New
 
 reload(sys)
 sys.setdefaultencoding('utf-8')

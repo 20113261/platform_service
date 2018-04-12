@@ -20,7 +20,8 @@ import requests
 from lxml import html as HTML
 from urlparse import urljoin
 # from data_obj import Hotel, DBSession
-from mioji.common.class_common import Hotel_New
+# from mioji.common.class_common import Hotel_New
+from proj.my_lib.models.HotelModel import HotelNewBase as Hotel_New
 from proj.my_lib.models.HotelModel import HotelNewBase
 import json
 reload(sys)

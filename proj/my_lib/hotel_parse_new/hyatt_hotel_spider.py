@@ -12,7 +12,8 @@ from mioji.common import logger
 from mioji.common import parser_except
 from mioji.common.class_common import Hotel
 from mioji.common.spider import Spider, request, PROXY_REQ, PROXY_NONE, PROXY_FLLOW
-from mioji.common.class_common import Hotel_New
+# from mioji.common.class_common import Hotel_New
+from proj.my_lib.models.HotelModel import HotelNewBase as Hotel_New
 # from proj.my_lib.models.HotelModel import HotelNewBase
 
 class HyattHotelSpider(Spider):
