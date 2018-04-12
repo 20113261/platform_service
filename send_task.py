@@ -139,7 +139,7 @@ def send_result_daodao_filter(source, tasks, daodao_filter_table, priority):
                     'source': _source,
                     'id': id,
                     'table_name': daodao_filter_table,
-                    # 'date_index': 0
+                    'date_index': 0
                 })
     return timestamp
 
