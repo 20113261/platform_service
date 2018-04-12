@@ -121,7 +121,7 @@ def poi_detail_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='2/m')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='10/m')
 def hotel_detail_task(self, task, **kwargs):
     _sdk = HotelDetailSDK(task=task)
     return _sdk.execute()
@@ -285,7 +285,7 @@ def hilton_suggest_task(self, task, **kwargs):
     _sdk = HiltonSuggestCitySDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='30/m')
 def result_daodao_filter(self, task, **kwargs):
     _sdk = ConversionDaodaoURL(task=task)
     return _sdk.execute()
