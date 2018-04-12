@@ -78,7 +78,8 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
                 if t_list[0] == 'list':
                     if t_list[1] == 'result':
                         task_type = TaskType.NORMAL
-                    task_type = TaskType.LIST_TASK
+                    else:
+                        task_type = TaskType.LIST_TASK
                 else:
                     task_type = TaskType.NORMAL
 
