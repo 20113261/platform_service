@@ -121,7 +121,7 @@ def poi_detail_task(self, task, **kwargs):
     return _sdk.execute()
 
 
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='3/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='/s')
 def hotel_detail_task(self, task, **kwargs):
     _sdk = HotelDetailSDK(task=task)
     return _sdk.execute()
@@ -259,7 +259,7 @@ def all_city_suggest(self,task,**kwargs):
     _sdk = AllSuggestCitySDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='5/m')
+@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='3/s')
 def other_source_hotel_url(self,task,**kwargs):
     _sdk = OthersSourceHotelUrl(task=task)
     return _sdk.execute()
