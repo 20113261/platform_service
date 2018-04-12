@@ -26,12 +26,14 @@ def expedia_parser(content, url, other_info):
         html = HTML.fromstring(content.decode('utf-8'))
         html = HTML.make_links_absolute(html, base_url=url)
     except Exception, e:
-        print str(e)
+        #print str(e)
+        pass
 
     try:
         root = html.find_class('hotelInformation')[0]
     except Exception, e:
-        print str(e)
+        #print str(e)
+        pass
 
     try:
         source_city_id = re.findall(r"cityRegionId: '(\d+)',", content)[0]
@@ -40,8 +42,9 @@ def expedia_parser(content, url, other_info):
             source_city_id = json.loads(source_city_id_str.strip()).get('regionId','NULL')
         hotel.source_city_id = source_city_id.encode('utf8')
     except Exception as e:
-        print e
-    print 'source_city_id=>%s' % hotel.source_city_id
+        #print e
+        pass
+    #print 'source_city_id=>%s' % hotel.source_city_id
 
 
     hotel.brand_name = 'NULL'
@@ -76,10 +79,11 @@ def expedia_parser(content, url, other_info):
         hotel.hotel_name = hotel_name
         hotel.hotel_name_en = hotel_name_en
     except Exception, e:
-        print str(e)
-    print 'hotel_brand_name=>%s' % hotel.brand_name
-    print 'hotel_name=>%s' % hotel.hotel_name
-    print 'hotel_name_en=>%s' % hotel.hotel_name_en
+        #print str(e)
+        pass
+    #print 'hotel_brand_name=>%s' % hotel.brand_name
+    #print 'hotel_name=>%s' % hotel.hotel_name
+    #print 'hotel_name_en=>%s' % hotel.hotel_name_en
     try:
         address = ''
         # full_address = root.xpath('//div[@class="full-address"]//span/text()')
@@ -103,24 +107,25 @@ def expedia_parser(content, url, other_info):
         # postal_code = encode_unicode(address_list.find_class('postal-code')[0].text_content().strip())
         # hotel.postal_code = postal_code
     except Exception, e:
-        print str(e)
+        #print str(e)
         hotel.address = 'NULL'
-    print 'postal_code=>%s' % hotel.postal_code
-    print 'address=>%s' % hotel.address
+    #print 'postal_code=>%s' % hotel.postal_code
+    #print 'address=>%s' % hotel.address
     try:
         grade = root.find_class('guest-rating')[0].find_class('rating-number')[0].text_content()
         hotel.grade = float(grade)
     except Exception, e:
-        print str(e)
+        #print str(e)
+        pass
 
-    print 'grade=>%s' % hotel.grade
+    #print 'grade=>%s' % hotel.grade
     try:
         star = root.xpath('//span[contains(@class, "stars-grey value-title")]')[0].attrib['title']
         hotel.star = str(int(float(star)))
     except Exception as e:
-        print e
+        #print e
         hotel.star = -1
-    print 'star=>%s' % hotel.star
+    #print 'star=>%s' % hotel.star
 
     try:
         review_num = re.findall(r'\"totalReviews\":(\d+),', content)
@@ -128,8 +133,9 @@ def expedia_parser(content, url, other_info):
         # review_num = root.find_class('cols-nested')[0].xpath('a/span[@itemprop="reviewCount"]')[0].text_content()
         # hotel.review_num = str(review_num)
     except Exception, e:
-        print str(e)
-    print 'review_num=>%s' % hotel.review_num
+        #print str(e)
+        pass
+    #print 'review_num=>%s' % hotel.review_num
 
     try:
         # info_table = encode_unicode(
@@ -143,7 +149,7 @@ def expedia_parser(content, url, other_info):
     except Exception, e:
         hotel.has_wifi = 'No'
         hotel.is_wifi_free = 'No'
-        print str(e)
+        #print str(e)
     try:
         parking_info = root.xpath('//div[@data-section="parking"]')[0].text_content()
         if '收费' in parking_info or '收費' in parking_info:
@@ -157,11 +163,11 @@ def expedia_parser(content, url, other_info):
     except Exception as e:
         hotel.has_parking = 'No'
         hotel.is_parking_free = 'No'
-        print str(e)
-    print 'has_wifi=>%s' % hotel.has_wifi
-    print 'is_wifi_free=>%s' % hotel.is_wifi_free
-    print 'has_parking=>%s' % hotel.has_parking
-    print 'is_parking_free=>%s' % hotel.is_parking_free
+        #print str(e)
+    #print 'has_wifi=>%s' % hotel.has_wifi
+    #print 'is_wifi_free=>%s' % hotel.is_wifi_free
+    #print 'has_parking=>%s' % hotel.has_parking
+    #print 'is_parking_free=>%s' % hotel.is_parking_free
 
     try:
         info_table = root.find_class('tab-pane')[0].find_class('col')[0].xpath('section')[0]
@@ -178,7 +184,8 @@ def expedia_parser(content, url, other_info):
             service += '|'
             hotel.service = service
         except Exception, e:
-            print str(e)
+            #print str(e)
+            pass
 
         try:
             internet = info_table.xpath('div[@data-section="internet"]')[0]
@@ -191,7 +198,8 @@ def expedia_parser(content, url, other_info):
             service += '|'
             hotel.service = service
         except Exception, e:
-            print str(e)
+            #print str(e)
+            pass
 
         try:
             parking = info_table.xpath('div[@data-section="internet"]')[0]
@@ -205,43 +213,49 @@ def expedia_parser(content, url, other_info):
             service = service.rstrip('|')
             hotel.service = service
         except Exception, e:
-            print str(e)
+            #print str(e)
+            pass
 
         try:
             house_facilities = info_table.xpath('div[@data-section="amenities-family"]/article/section/ul/li/text()')
             facilities = encode_unicode(','.join(facilitie.strip() for facilitie in house_facilities))
             service += '家居型设施：' + facilities + '|'
-            print service
+            #print service
         except Exception as e:
-            print e
+            #print e
+            pass
 
         try:
             guestroom_facilities = info_table.xpath('div[@data-section="room"]/article/section/ul/li/text()')
             facilities = encode_unicode(','.join(facilitie.strip() for facilitie in guestroom_facilities))
             service += '客房设施：' + facilities + '|'
-            print service
+            #print service
         except Exception as e:
-            print e
+            #print e
+            pass
 
         try:
             foods = info_table.xpath('div[@data-section="dining"]/article/section/p/text()')
             facilities = encode_unicode(','.join(facilitie.strip() for facilitie in foods))
             service += '美食佳肴：' + facilities + '|'
-            print service
+            #print service
         except Exception as e:
-            print e
+            #print e
+            pass
 
         try:
             accessibility = info_table.xpath('div[@data-section="accessibility"]/article/section/p/text()')
             facilities = encode_unicode(','.join(facilitie.strip() for facilitie in accessibility))
             service += '无障碍设施：' + facilities + '|'
-            print service
+            #print service
         except Exception as e:
-            print e
+            #print e
+            pass
 
     except Exception as e:
-        print e
-    print 'service=>%s' % hotel.service
+        #print e
+        pass
+    #print 'service=>%s' % hotel.service
     try:
         map_part = root.xpath('// div[@class="map"]/a/figure/@data-src')
         map_str = map_part[-1]
@@ -250,9 +264,9 @@ def expedia_parser(content, url, other_info):
         hotel.map_info = map_info
     except Exception, e:
         map_info = 'NULL'
-        print str(e)
+        #print str(e)
 
-    print 'map_info=>%s' % map_info
+    #print 'map_info=>%s' % map_info
     first_img = None
     try:
         img_list = root.find_class('jumbo-wrapper')[0].find_class('jumbo-hero')[0].xpath('img')
@@ -272,9 +286,10 @@ def expedia_parser(content, url, other_info):
                 img_url_set.add(each_url)
         hotel.img_items = '|'.join(img_url_set)
     except Exception, e:
-        print str(e)
-    print 'img_items=>%s' % hotel.img_items
-    print 'first_img=>%s' % first_img
+        #print str(e)
+        pass
+    #print 'img_items=>%s' % hotel.img_items
+    #print 'first_img=>%s' % first_img
     try:
         # desc = encode_unicode(root.find_class('hotel-description')[0].find_class('visuallyhidden')[0].tail.strip())
         h3s = root.xpath('//div[@class="hotel-description"]/h3//text()')
@@ -282,8 +297,9 @@ def expedia_parser(content, url, other_info):
         desc = '|_|'.join([title + '::' + value for title, value in zip(h3s, ps)])
         hotel.description = desc.encode('utf-8')
     except Exception, e:
-        print str(e)
-    print 'description=>%s' % hotel.description
+        #print str(e)
+        pass
+    #print 'description=>%s' % hotel.description
     try:
         card_list = root.xpath('//div[@class="payment-logos"]/figure/@data-alt')
         accepted_card = ''
@@ -293,8 +309,9 @@ def expedia_parser(content, url, other_info):
         accepted_cards = accepted_card.rstrip('|')
         hotel.accepted_cards = accepted_cards
     except Exception, e:
-        print str(e)
-    print 'accepted_cards=>%s' % hotel.accepted_cards
+        #print str(e)
+        pass
+    #print 'accepted_cards=>%s' % hotel.accepted_cards
     try:
         # policy_table = root.find_class('tab-pane')[0].find_class('col')[1].xpath('section')[0].getchildren()
         policy_table = root.xpath('//div[@data-section="checkIn"]/p/text()')
@@ -310,8 +327,9 @@ def expedia_parser(content, url, other_info):
         #     check_in_time = re.findall(r'(\d+.*)', check_in_text[0])[0]
         hotel.check_in_time = check_in_time
     except Exception, e:
-        print str(e)
-    print 'check_in_time=>%s' % hotel.check_in_time
+        #print str(e)
+        pass
+    #print 'check_in_time=>%s' % hotel.check_in_time
     try:
         policy_table = root.xpath('//div[@data-section="checkOut"]/p/text()')
         for text in policy_table:
@@ -327,8 +345,9 @@ def expedia_parser(content, url, other_info):
         #     check_out_time = check_out_text.split('退房时间为 ')[1]
         hotel.check_out_time = check_out_time
     except Exception, e:
-        print str(e)
-    print 'check_out_time=>%s' % hotel.check_out_time
+        #print str(e)
+        pass
+    #print 'check_out_time=>%s' % hotel.check_out_time
     hotel.hotel_url = url
     hotel.source = 'expedia'
     if other_info.get('hid'):
@@ -381,7 +400,7 @@ if __name__ == '__main__':
     content = page.text
     result = expedia_parser(content, url, other_info)
 
-    print '#' * 100
+    #print '#' * 100
     keys = ['hotel_name', 'hotel_name_en', 'brand_name', 'address', 'service', 'description', 'accepted_cards']
 
     for key in keys:
@@ -397,11 +416,11 @@ if __name__ == '__main__':
     # result.accepted_cards = tradition2simple(result.accepted_cards.decode())
     for k, v in result.__dict__.items():
         print k, '=>', v
-    print 'Hello World'
+    #print 'Hello World'
     # try:
     #     session = DBSession()
     #     session.merge(result)
     #     session.commit()
     #     session.close()
     # except Exception as e:
-    #     print str(e)
+    #     #print str(e)

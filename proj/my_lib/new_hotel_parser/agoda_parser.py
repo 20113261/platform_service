@@ -32,7 +32,8 @@ def agoda_parser(content, url, other_info):
         content = content.decode('utf-8')
         root = HTML.fromstring(content)
     except Exception as e:
-        print str(e)
+        #print str(e)
+        pass
 
     ph_runtime = execjs.get('PhantomJS')
     page_js = ph_runtime.compile(root.xpath('//script[contains(text(),"propertyPageParams")]/text()')[0])
@@ -46,25 +47,26 @@ def agoda_parser(content, url, other_info):
             try:
                 hotel_name = root.xpath('//title/text()')[0].split('-')[0][:-1]
             except Exception, e:
-                print str(e)
+                #print str(e)
+                pass
 
     try:
         k = hotel_name.find('(')
-        # print k
+        # #print k
         hotel.hotel_name = hotel_name[:k if k != -1 else None]
     except Exception, e:
-        # print str(e)
+        # #print str(e)
         hotel.hotel_name = 'NULL'
-    print 'hotel_name=>%s' % hotel.hotel_name
-    # print hotel.hotel_name
+    #print 'hotel_name=>%s' % hotel.hotel_name
+    # #print hotel.hotel_name
 
     try:
         hotel.hotel_name_en = hotel_name[k + 1 if k != -1 else None:-1 if k != -1 else None]
     except Exception, e:
         hotel.hotel_name_en = 'NULL'
-        # print str(e)
-    print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
-    # print hotel.hotel_name_en
+        # #print str(e)
+    #print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
+    # #print hotel.hotel_name_en
 
     try:
         if page_params['hotelInfo']['address']['address'] in page_params['hotelInfo']['address']['full']:
@@ -73,7 +75,7 @@ def agoda_parser(content, url, other_info):
             hotel.address = page_params['hotelInfo']['address']['address'] + page_params['hotelInfo']['address']['full']
     except:
         hotel.address = "NULL"
-    print 'hotel.address=>%s' % hotel.address
+    #print 'hotel.address=>%s' % hotel.address
 
     try:
         hotel.star = int(page_params['hotelInfo']['starRating']['icon'].split('-')[-1])
@@ -86,7 +88,7 @@ def agoda_parser(content, url, other_info):
         else:
             hotel.star = -1
 
-    print 'hotel.star=>%s' % hotel.star
+    #print 'hotel.star=>%s' % hotel.star
 
     try:
         lat_pat = re.compile(r'latitude\" content=(.*?) \/>', re.S)
@@ -96,10 +98,10 @@ def agoda_parser(content, url, other_info):
         lat_text = lat_pat.findall(content)[0][1:-1]
         hotel.map_info = lon_text + ',' + lat_text
     except Exception, e:
-        # print str(e)
+        # #print str(e)
         hotel.map_info = 'NULL'
 
-    print 'map_info=>%s' % hotel.map_info
+    #print 'map_info=>%s' % hotel.map_info
 
     try:
         hotel.grade = float(page_params['reviews']['score'])
@@ -111,7 +113,7 @@ def agoda_parser(content, url, other_info):
                 hotel.grade = page_params['masterRoomInfo'][0]['demographics']['grades'][0]['score']
             except Exception as e:
                 hotel.grade = -1
-    print 'grade=>%s' % hotel.grade
+    #print 'grade=>%s' % hotel.grade
 
     try:
         hotel.review_num = page_params['reviews']['reviewsCount']
@@ -126,7 +128,7 @@ def agoda_parser(content, url, other_info):
             except:
                 hotel.review_num = -1
 
-    print 'hotel.review_num=>%s' % hotel.review_num
+    #print 'hotel.review_num=>%s' % hotel.review_num
 
     try:
         first_img = page_params.get("mosaicInitData", {}).get('images', [])[0].get('Location', 'NULL')
@@ -158,7 +160,7 @@ def agoda_parser(content, url, other_info):
                         map(lambda x: 'http:' + x, img_list))
                 except Exception as e:
                     hotel.img_items = 'NULL'
-    print 'img_items=>%s' % hotel.img_items
+    #print 'img_items=>%s' % hotel.img_items
 
     try:
         hotel.hotel_url = url
@@ -180,13 +182,13 @@ def agoda_parser(content, url, other_info):
         except:
             # hotel.service = '|'.join()
             hotel.service = 'NULL'
-    print 'hotel.service=>%s' % hotel.service
+    #print 'hotel.service=>%s' % hotel.service
 
     try:
         hotel.description = json_data['HotelDesc']['Overview'].strip().replace('<BR>', '').encode('utf-8')
     except:
         hotel.description = 'NULL'
-    print 'hotel.description=>%s' % hotel.description
+    #print 'hotel.description=>%s' % hotel.description
 
     # hotel.check_in_time = None
     # hotel.check_in_time = None
@@ -214,8 +216,8 @@ def agoda_parser(content, url, other_info):
                 "Description")
         except:
             pass
-    print "hotel.check_in_time:", hotel.check_in_time
-    print "hotel.check_out_time:", hotel.check_out_time
+    #print "hotel.check_in_time:", hotel.check_in_time
+    #print "hotel.check_out_time:", hotel.check_out_time
     # 从酒店页面获取城市信息
     try:
         country_id = page_params['hotelSearchCriteria']['countryId']
@@ -223,7 +225,8 @@ def agoda_parser(content, url, other_info):
         city_name = page_params['hotelInfo']['address']['cityName']
         city_id = page_params['hotelInfo']['address']['cityId']
     except Exception as e:
-        print e
+        #print e
+        pass
 
     hotel.others_info = json.dumps(
         {'country_id': country_id, 'country_name': country_name, 'city_name': city_name, 'city_id': city_id,
@@ -231,12 +234,12 @@ def agoda_parser(content, url, other_info):
     hotel.source_city_id = city_id
     hotel.country = page_params['hotelInfo'].get('address', {}).get('countryName', '')
     hotel.city = page_params['hotelInfo'].get('address', {}).get('cityName', '')
-    print "hotel.others_info:", hotel.others_info
-    print "hotel.source_city_id:", hotel.source_city_id
+    #print "hotel.others_info:", hotel.others_info
+    #print "hotel.source_city_id:", hotel.source_city_id
     hotel.accepted_cards = 'NULL'
-    print "accepted_cards:", hotel.accepted_cards
-    print "check_in_time：", hotel.check_in_time
-    print "check_out_time:", hotel.check_out_time
+    #print "accepted_cards:", hotel.accepted_cards
+    #print "check_in_time：", hotel.check_in_time
+    #print "check_out_time:", hotel.check_out_time
 
     if '无线网络' in hotel.service:
         hotel.has_wifi = 'Yes'
@@ -250,13 +253,13 @@ def agoda_parser(content, url, other_info):
     if '停车场免费' in hotel.service or 'parking free' in hotel.service:
         hotel.is_parking_free = 'Yes'
 
-    print 'hotel.has_wifi=>%s' % hotel.has_wifi
-    # print hotel.has_wifi
-    print 'hotel.is_wifi_free=>%s' % hotel.is_wifi_free
-    # print hotel.has_wifi
-    print 'hotel.has_parking=>%s' % hotel.has_parking
-    # print hotel.has_parking
-    print 'hotel.is_parking_free=>%s' % hotel.is_parking_free
+    #print 'hotel.has_wifi=>%s' % hotel.has_wifi
+    # #print hotel.has_wifi
+    #print 'hotel.is_wifi_free=>%s' % hotel.is_wifi_free
+    # #print hotel.has_wifi
+    #print 'hotel.has_parking=>%s' % hotel.has_parking
+    # #print hotel.has_parking
+    #print 'hotel.is_parking_free=>%s' % hotel.is_parking_free
 
     hotel.source = 'agoda'
     hotel.hotel_url = url.encode('utf-8')
@@ -269,7 +272,7 @@ def agoda_parser(content, url, other_info):
 
     # others_info_dict = hotel.__dict__
     # hotel.others_info = json.dumps(others_info_dict)
-    # print hotel
+    # #print hotel
 
     return hotel
 
