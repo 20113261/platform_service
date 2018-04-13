@@ -81,7 +81,7 @@ def poi_list_task(self, task, **kwargs):
 
 #
 #
-@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='100/s')
+@app.task(bind=True, base=BaseTask, max_retries=2, rate_limit='200/s')
 def hotel_img_merge_task(self, task, **kwargs):
     _sdk = HotelImgMergeSDK(task=task)
     return _sdk.execute()
