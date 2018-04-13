@@ -165,8 +165,9 @@ class UpdateHotelValidation(object):
         content = '{}&{}&'.format(each_data["sid"], each_data["name"])
         return workload_key, content, workload_source
 
+    
     @staticmethod
-    def fourseasons(each_data):
+    def shangrila(each_data):
         workload_source = each_data["source"] + "Hotel"
         workload_key = 'NULL|{}|{}'.format(each_data["sid"], workload_source)
         content = '{}&'.format(each_data["hotel_url"])
@@ -183,7 +184,7 @@ class UpdateHotelValidation(object):
             # ep 系，使用 url 类型的
             each_data = self.expedia(line, source=source)
             return each_data
-        elif source in ("hrs", "ctrip", "ihg","gha","hyatt","starwood","shangrila"):
+        elif source in ("hrs", "ctrip", "ihg","gha","hyatt","starwood","fourseasons"):
             # 单纯 sid 的
             each_data = self.sid_only_key_and_content(line)
             return each_data
@@ -215,8 +216,9 @@ class UpdateHotelValidation(object):
             # accor 专用
             each_data = self.accor(line)
             return each_data
-        elif source == 'fourseasons':
-            each_data = self.fourseasons(line)
+
+        elif source == 'shangrila':
+            each_data = self.shangrila(line)
             return each_data
         elif source in (
                 "hoteltravelEN", "hoteltravel", "venere", "venereEN", "agodaApi",
