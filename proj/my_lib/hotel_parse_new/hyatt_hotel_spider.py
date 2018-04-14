@@ -406,12 +406,36 @@ class HyattHotelSpider(Spider):
             one = one.lower()
             if 'faxing' in one:
                 hotel.service['Fax_copy'] = one
-            elif 'postal' in  one:
+            elif 'postal' in one:
                 hotel.service['Postal_Service'] = one
             elif 'laundry' in one:
                 hotel.service['Laundry'] = one
-            elif 'Pool' in one:
+            elif 'room service' in one:
+                hotel.service['Food_delivery'] = one
+            elif 'concierge service' in one:
+                hotel.service['Protocol'] = one
+            elif 'babysitting' in one:
+                hotel.service['child_care'] = one
+            elif 'shoeshine' in one:
+                hotel.service['polish_shoes'] = one
+
+
+            elif 'valet parking' in one:
+                hotel.facility['Valet_Parking'] = one
+            elif 'parking' in one:
+                hotel.facility['Parking'] = one
+            elif 'wifi' in one or 'wi-fi' in one:
+                hotel.facility['Room_wifi'] = one
+            elif 'pool' in one:
                 hotel.facility['Swimming_Pool'] = one
+            elif 'gym' in one:
+                hotel.facility['gym'] = one
+            elif 'bar' in one:
+                hotel.facility['Bar'] = one
+            elif 'coffee' in one:
+                hotel.facility['coffee'] = one
+            elif 'parking' in one:
+                hotel.facility['Parking'] = one
             elif 'spa' in one:
                 hotel.facility['SPA'] = one
             elif 'golf' in one:
@@ -420,12 +444,35 @@ class HyattHotelSpider(Spider):
                 hotel.facility['Restaurant'] = one
             elif 'sauna' in one:
                 hotel.facility['Sauna'] = one
-            elif 'room service' in one:
-                hotel.service['Food_delivery'] = one
-            elif 'concierge service' in one:
-                hotel.service['Protocol'] = one
-            elif 'babysitting' in one:
-                hotel.service['child_care'] = one
+            elif 'service to airport' in one or 'shuttle airport' in one:
+                hotel.facility['Airport_bus'] = one
+            elif 'wedding' in one:
+                hotel.facility['Wedding_hall'] = one
+            elif 'restaurant' in one:
+                hotel.facility['Restaurant'] = one
+            elif 'business centre' in one:
+                hotel.facility['Business_Centre'] = one
+            elif 'sereno Spa' in one:
+                hotel.facility['Mandara_Spa'] = one
+            elif 'tennis' in one:
+                hotel.facility['Tennis_court'] = one
+            elif 'spa' in one:
+                hotel.facility['SPA'] = one
+
+            elif "China_Friendly" in one:
+                hotel.feature['China_Friendly'] = one
+            elif "Romantic_lovers" in one:
+                hotel.feature['Romantic_lovers'] = one
+            elif "Parent_child" in one:
+                hotel.feature['Parent_child'] = one
+            elif "Beach_Scene" in one:
+                hotel.feature['Beach_Scene'] = one
+            elif "Hot_spring" in one:
+                hotel.feature['Hot_spring'] = one
+            elif "Japanese_Hotel" in one:
+                hotel.feature['Japanese_Hotel'] = one
+            elif "Vacation" in one:
+                hotel.feature['Vacation'] = one
 
         hotel.accepted_cards = 'NULL'
         hotel.check_in_time = self.hotel_test['check_in_time']
@@ -487,7 +534,19 @@ if __name__ == "__main__":
     # task.content = 'https://toronto.park.hyatt.com/en/hotel/home.html'
     # task.content = 'https://toronto.park.hyatt.com/en/hotel/home.html'
     # task.content = 'https://seattledowntown.place.hyatt.com/en/hotel/home.html'
-    task.content = 'https://www.hyatt.com/en-US/hotel/italy/park-hyatt-milan/milph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/italy/park-hyatt-milan/milph'
+    task.content = 'https://www.hyatt.com/en-US/hotel/china/park-hyatt-shanghai/shaph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/france/park-hyatt-paris-vendome/parph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/cambodia/park-hyatt-siem-reap/repph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/vietnam/park-hyatt-saigon/saiph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/china/park-hyatt-shanghai/shaph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/saint-kitts-and-nevis/park-hyatt-st-kitts/skbph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/australia/park-hyatt-sydney/sydph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/canada/park-hyatt-toronto/torph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/austria/park-hyatt-vienna/vieph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/washington-dc/park-hyatt-washington-dc/wasph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/tanzania/park-hyatt-zanzibar/znzph'
+    # task.content = 'https://www.hyatt.com/en-US/hotel/switzerland/park-hyatt-zurich/zurph'
 
     spider = HyattHotelSpider(task)
     spider.crawl(required=['hotel'])
