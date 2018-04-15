@@ -77,7 +77,7 @@ class HotelDetailSDK(BaseSDK):
         url = self.task.kwargs['url']
         source = self.task.kwargs['source']
         source_id = self.task.kwargs['source_id']
-        hid = self.task.kwargs['hid']
+        hid = self.task.kwargs.get('hid')
         city_id = self.task.kwargs['city_id']
         country_id = self.task.kwargs['country_id']
 
