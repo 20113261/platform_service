@@ -237,7 +237,7 @@ class HotelListSDK(BaseSDK):
             raise ServiceStandardError(ServiceStandardError.EMPTY_TICKET)
         else:
             raise ServiceStandardError(error_code=error_code)
-        return res_data, error_code, self.task.error_code, self.task.task_name, self.task.kwargs['suggest']
+        return len(res_data), error_code, self.task.error_code, self.task.task_name
 
 
 if __name__ == '__main__':
