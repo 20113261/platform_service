@@ -94,7 +94,7 @@ def booking_parser(content, url, other_info):
             for fac in faci:
                 if fac in value:
                     if keys in hotel.facility_content:
-                        hotel.facility_content[keys] += every
+                        hotel.facility_content[keys] = hotel.facility_content[keys] + ',' +every
                     else:
                         hotel.facility_content[keys] = every
                     parser_list.append(every)
