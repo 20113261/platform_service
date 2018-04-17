@@ -7,8 +7,8 @@ import re
 import requests
 from lxml import etree
 from lxml import html as HTML
-# from proj.my_lib.models.HotelModel import HotelNewBase
-from mioji.common.class_common import Hotel_New as HotelNewBase
+from proj.my_lib.models.HotelModel import HotelNewBase
+# from mioji.common.class_common import Hotel_New as HotelNewBase
 
 from proj.my_lib import parser_exception
 
