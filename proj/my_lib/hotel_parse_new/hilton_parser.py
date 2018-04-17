@@ -6,13 +6,59 @@ import sys
 import re
 import requests
 from lxml import etree
-from proj.my_lib.models.HotelModel import HotelNewBase
+from lxml import html as HTML
+# from proj.my_lib.models.HotelModel import HotelNewBase
+from mioji.common.class_common import Hotel_New as HotelNewBase
+
 from proj.my_lib import parser_exception
+
+
+def process_text(ALL,service):
+    info1 = ''
+    for each in ALL:
+        for e in each.xpath('td'):
+            s= e.text_content()
+            s= s.replace('\n','').replace('\t','').replace('\r','').replace('  ','').replace('   ','')
+            info1 = info1+s+'::'
+
+    service += info1[:-2]+'|'
+    return service
 
 
 def hilton_parser(total_content, url, other_info):
     Hotel = HotelNewBase()
     content, detail_content, map_info_content, desc_content, enDetail_content = total_content
+
+    html_detail = HTML.fromstring(detail_content)
+    service = ''
+    try:
+        service += u'交通：'
+        ALL = html_detail.xpath('//tbody[@id="tbodytransportation"]/tr')
+        service = process_text(ALL, service)
+    except Exception as e:
+        print e
+
+    try:
+        service += u'设施：'
+        ALL = html_detail.xpath('//tbody[@id="tbodyfacilities"]/tr')
+        service = process_text(ALL, service)
+    except Exception as e:
+        print e
+    try:
+        service += u'服务与设施：'
+        ALL = html_detail.xpath('//tbody[@id="tbodyservices"]/tr')
+        service = process_text(ALL, service)
+
+    except Exception as e:
+        print e
+    # try:
+    service += u'家庭：'
+    ALL = html_detail.xpath('//tbody[@id="tbodyfamily"]/tr')
+    service = process_text(ALL, service)
+    # except Exception as e:
+    #     print e
+
+
     select_detail =etree.HTML(detail_content)
     check_in_time = ''
     check_out_time = ''
@@ -66,7 +112,7 @@ def hilton_parser(total_content, url, other_info):
         for img in img_list:
             img_url_set.add(img)
     except Exception, e:
-        print e
+        print e,1
     img_items = ''
     for ima in img_url_set:
         img_items += ima.encode('raw-unicode-escape')
@@ -83,7 +129,8 @@ def hilton_parser(total_content, url, other_info):
     if desc:
         Hotel.description = desc[0].encode('raw-unicode-escape')
     # hotel = Hotel.to_dict()
-    return Hotel
+    Hotel.others_info = {"service":service}
+    return Hotel.to_dict()
 
 
 def get_detail(Hotel, content, enDetail_content,hotel_id):
@@ -145,7 +192,7 @@ def get_detail(Hotel, content, enDetail_content,hotel_id):
     try:
         PARK = select.xpath('//td[@id="compare_parkdist"]/text()')
         if u'泊车' in PARK[0]:
-            Hotel.facility["Parking"] = '停车场'
+            Hotel.facility_content["Parking"] = '停车场'
         else:
             pass
     except Exception as e:
@@ -177,17 +224,9 @@ def get_detail(Hotel, content, enDetail_content,hotel_id):
     hotel_name_en = enselect.xpath("//span[@class='property-name']/text()")
     if hotel_name_en:
         Hotel.hotel_name_en = hotel_name_en[0]
-    res = Hotel.to_dict()
+    res = Hotel
     return res
-    # print enDetail_content
-        # if
-        # try:
-        #     name, value = server.xpath('./td/text()|./td/span/text()')
-        # except:
-        #     print(server.xpath('./td/text()|./td/span/text()'))
-        #     continue
-        # print name,value
-    # print content
+
 
 
 if __name__ == '__main__':
