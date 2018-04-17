@@ -9,7 +9,7 @@ from lxml import etree
 from lxml import html as HTML
 from proj.my_lib.models.HotelModel import HotelNewBase
 # from mioji.common.class_common import Hotel_New as HotelNewBase
-
+import json
 from proj.my_lib import parser_exception
 
 
@@ -129,7 +129,7 @@ def hilton_parser(total_content, url, other_info):
     if desc:
         Hotel.description = desc[0].encode('raw-unicode-escape')
     # hotel = Hotel.to_dict()
-    Hotel.others_info = {"service":service}
+    Hotel.others_info = json.dumps({"service":service})
     return Hotel.to_dict()
 
 
