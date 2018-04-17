@@ -20,8 +20,7 @@ import requests
 from lxml import html as HTML
 from urlparse import urljoin
 # from data_obj import Hotel, DBSession
-# from mioji.common.class_common import Hotel_New
-from proj.my_lib.models.HotelModel import HotelNewBase as Hotel_New
+# from mioji.common.class_common import Hotel_New as HotelNewBase
 from proj.my_lib.models.HotelModel import HotelNewBase
 import json
 reload(sys)
@@ -64,8 +63,8 @@ def ctrip_parser(page, url, other_info):
     except Exception, e:
         traceback.print_exc(e)
 
-    print 'hotel_name =>', hotel.hotel_name
-    print 'hotel_name_en =>', hotel.hotel_name_en
+    # print 'hotel_name =>', hotel.hotel_name
+    # print 'hotel_name_en =>', hotel.hotel_name_en
 
     try:
         position = page_js.eval('hotelDomesticConfig')['hotel']['position'].split('|')
@@ -78,14 +77,14 @@ def ctrip_parser(page, url, other_info):
             print str(e)
             hotel.map_info = 'NULL'
 
-    print 'hotel.map_info => ', hotel.map_info
+    # print 'hotel.map_info => ', hotel.map_info
 
     try:
         hotel.star = int(int(page_js.eval('hotelDomesticConfig')['hotel']['star']))
     except:
         hotel.star = -1
 
-    print 'hotel.star => ', hotel.star
+    # print 'hotel.star => ', hotel.star
 
     try:
         grade = root.xpath('//*[@class="score_text"]/text()')[0]
@@ -96,14 +95,14 @@ def ctrip_parser(page, url, other_info):
         except Exception:
             hotel.grade = -1
 
-    print 'grade =>', hotel.grade
+    # print 'grade =>', hotel.grade
     try:
         address = root.xpath('//div [@class="adress"]/span/text()')[0]
         hotel.address = address.encode('utf-8').strip()
     except Exception, e:
         print str(e)
 
-    print 'address =>', hotel.address
+    # print 'address =>', hotel.address
 
     try:
         hotel.review_num = ''.join(re.findall('(\d+)', root.xpath('//*[@id="commnet_score"]/text()')[0]))
@@ -114,7 +113,7 @@ def ctrip_parser(page, url, other_info):
         except Exception, e:
             print str(e)
 
-    print 'review_nums =>', hotel.review_num
+    # print 'review_nums =>', hotel.review_num
 
     try:
         desc = ''.join(root.xpath('//div[@id="detail_content"]/span/div/div/text()'))
@@ -124,7 +123,7 @@ def ctrip_parser(page, url, other_info):
         hotel.description = 'NULL'
         print str(e)
 
-    print 'description => ', hotel.description
+    # print 'description => ', hotel.description
 
     try:
         hotel.img_items = '|'.join(map(lambda x: 'http:' + x['max'], page_js.eval('pictureConfigNew')['hotelUpload']))
@@ -140,7 +139,7 @@ def ctrip_parser(page, url, other_info):
         except Exception, e:
             traceback.print_exc(e)
 
-    print 'hotel.img_items =>', hotel.img_items
+    # print 'hotel.img_items =>', hotel.img_items
 
     # try:
     #     p = root.xpath('//div[@id="detail_content"]/div')[2]
@@ -179,16 +178,16 @@ def ctrip_parser(page, url, other_info):
 
     accepted_cards = []
     try:
-        for card in root.xpath('// *[@class="detail_extracontent layoutfix"]/*[@class="card_cont_img"]/img/@alt'):
+        for card in root.xpath("//div[@class='card_cont_img']/img/@alt"):
             # re.findall('([\s\S]+?)',cards)
-            res = re.findall('\(([\s\S]+?)\)', card)
-            if res:
-                accepted_cards.append(res[0].lower())
+            # res = re.findall('\(([\s\S]+?)\)', card)
+            # if res:
+            accepted_cards.append(card.lower())
     except Exception as exc:
         print(exc)
 
     hotel.accepted_cards = '|'.join(accepted_cards)
-    print('hotel.accept_cards =>', hotel.accepted_cards)
+    # print('hotel.accept_cards =>', hotel.accepted_cards)
 
     try:
         # items = root.xpath('//*[@id="detail_content"]/div[2]/table/tbody/tr')
@@ -312,7 +311,7 @@ def ctrip_parser(page, url, other_info):
     except Exception as e:
         print e
 
-    print 'first_img=>%s' % first_img
+    # print 'first_img=>%s' % first_img
 
     try:
         city_name = page_js.eval('hotelDomesticConfig')['query']['cityName']
@@ -320,11 +319,6 @@ def ctrip_parser(page, url, other_info):
         country_id = page_js.eval('hotelDomesticConfig')['query']['country']
     except Exception as e:
         print e
-    print "city_name",city_name,country_id
-
-    hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name, 'country_id': country_id})
-
-    print "hotel.others_info:",hotel.others_info
 
     try:
         list1 = root.xpath("//div[@id='detail_content']/div[@class='htl_info_table detail_con_3']/table/tbody/tr/th/text()")
@@ -350,21 +344,23 @@ def ctrip_parser(page, url, other_info):
             index += 1
     except Exception as e:
         print e
-    print "pet_type==>%s" % hotel.pet_type
-    print "chiled_bed_type==>%s" % hotel.chiled_bed_type
-    print 'check_in =>', hotel.check_in_time
-    print 'check_out =>', hotel.check_out_time
+    # print "pet_type==>%s" % hotel.pet_type
+    # print "chiled_bed_type==>%s" % hotel.chiled_bed_type
+    # print 'check_in =>', hotel.check_in_time
+    # print 'check_out =>', hotel.check_out_time
 
     try:
         address_l = address.split(",")
         zip_code = address_l[-2]
         if zip_code[:2].isdigit():
             hotel.hotel_zip_code = zip_code
+            hotel.postal_code = zip_code
         else:
             hotel.hotel_zip_code = "NULL"
+            hotel.postal_code = "NULL"
     except Exception as e:
         print e
-    print "hotel_zip_code==>%s" % hotel.hotel_zip_code
+    # print "hotel_zip_code==>%s" % hotel.hotel_zip_code
 
     try:
         fea_params = root.xpath("//a[@class='icon_crown2']/@data-params")
@@ -410,13 +406,41 @@ def ctrip_parser(page, url, other_info):
                 elif "休闲度假" in fea:
                     hotel.feature_content['Vacation'] = fea
 
-        print "hotel.feature==>%s" % hotel.feature
+        # print "hotel.feature==>%s" % hotel.feature_content
     except Exception as e:
         print e
     hotel.hotel_url = url
     hotel.source = 'ctrip'
     hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
+    hotel_services_info = ""
+    try:
+        items = root.xpath("//*[@id='detail_content']/div[@id='J_htl_facilities']/table/tbody/tr")
+        if items:
+            item_str = ''
+            for each in items:
+                try:
+                    item_name = each.xpath('./th/text()')[0].encode('utf-8').strip()
+                    item = each.xpath('./td/ul/li')
+                    temp = ''
+                    for each1 in item:
+                        temp += each1.xpath('./text()')[0].encode('utf-8').strip() + '|'
+                    item_str += item_name + '::' + temp
+                except:
+                    pass
+            hotel_services_info += item_str
+        if fea_params:
+            fea_str = fea_name
+            hotel_services_info += "特色::" + fea_str + "|"
+        if fea_params2:
+            fea_str2 = "|".join(fea_params2)
+            if "特色::" in hotel_services_info:
+                hotel_services_info += fea_str2
+            else:
+                hotel_services_info += "特色::" + fea_str2
+    except:
+        hotel_services_info = hotel_services_info
+    hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name, 'country_id': country_id, 'hotel_services_info': hotel_services_info})
     # hotel.facility = str(hotel.facility_content)
     # hotel.service = str(hotel.service_content)
     # hotel.feature = str(hotel.feature_content)
@@ -449,7 +473,17 @@ if __name__ == '__main__':
     # url = 'http://hotels.ctrip.com/international/713478.html'  # OK xpath
     # url = 'http://hotels.ctrip.com/international/3084846.html' #  OK
     # url = 'http://hotels.ctrip.com/international/5128857.html'  # OK
-    url = 'http://hotels.ctrip.com/international/684981.html'
+    # url = 'http://hotels.ctrip.com/international/684981.html'
+    # url = 'http://hotels.ctrip.com/international/10000063.html'
+    # url = 'http://hotels.ctrip.com/international/10000124.html'
+    # url = 'http://hotels.ctrip.com/international/10000149.html'
+    # url = 'http://hotels.ctrip.com/international/10000158.html'
+    # url = 'http://hotels.ctrip.com/international/10000165.html'
+    # url = 'http://hotels.ctrip.com/international/10000250.html'
+    # url = 'http://hotels.ctrip.com/international/11494485.html'
+    # url = 'http://hotels.ctrip.com/international/2002721.html'
+    # url = 'http://hotels.ctrip.com/international/2002366.html'
+    url = 'http://hotels.ctrip.com/international/2216831.html'
     url_list = ['http://hotels.ctrip.com/international/992466.html',
                 'http://hotels.ctrip.com/international/2611722.html',
                 'http://hotels.ctrip.com/international/3681269.html',
