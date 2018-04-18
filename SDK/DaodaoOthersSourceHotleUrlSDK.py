@@ -197,7 +197,7 @@ class ConversionDaodaoURL(BaseSDK):
         url = kwargs['url']
         table_name = kwargs['table_name']
         t1 = time.time()
-        # url = url.replace('.cn', '.com')
+        url = url.replace('.cn', '.com')
 
         with MySession(need_cache=False, need_proxies=True) as session:
             resp = session.get(url)
