@@ -259,7 +259,7 @@ def all_city_suggest(self,task,**kwargs):
     _sdk = AllSuggestCitySDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='6/s')
+@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='30/s')
 def other_source_hotel_url(self,task,**kwargs):
     _sdk = OthersSourceHotelUrl(task=task)
     return _sdk.execute()
