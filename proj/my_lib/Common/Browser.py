@@ -28,8 +28,11 @@ from proj.my_lib.Common.ProxyPool import ProxyPool
 # from proj.my_lib.Common import RespStore
 # from proj.my_lib.logger import get_logger
 
+httplib.HTTPConnection._http_vsn = 10
+httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
+
 logger = proj.my_lib.logger.get_logger('Browser')
-httplib.HTTPConnection.debuglevel = 1
+# httplib.HTTPConnection.debuglevel = 1
 requests.packages.urllib3.disable_warnings()
 
 source_list = ['turbojetsail', 'elongHotel', 'ctripHotel', 'tongchengApiHotel', 'expediaHotel', 'bookingHotel',
