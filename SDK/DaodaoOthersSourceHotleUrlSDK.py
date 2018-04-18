@@ -197,7 +197,7 @@ class ConversionDaodaoURL(BaseSDK):
         url = kwargs['url']
         table_name = kwargs['table_name']
         t1 = time.time()
-        url = url.replace('.cn', '.com')
+        # url = url.replace('.cn', '.com')
 
         with MySession(need_cache=False, need_proxies=True) as session:
             resp = session.get(url)
@@ -239,7 +239,7 @@ class ConversionDaodaoURL(BaseSDK):
 
         service_platform_conn = service_platform_pool.connection()
         cursor = service_platform_conn.cursor()
-        sql = "update {0} set source_list = JSON_REPLACE(source_list, '$.hotels.{1}', %s) where id = %s".format(table_name, source);
+        sql = "update {0} set source_list = JSON_REPLACE(source_list, '$.{1}', %s) where id = %s".format(table_name, source);
         cursor.execute(sql, (real_url, id))
         service_platform_conn.commit()
         cursor.close()
