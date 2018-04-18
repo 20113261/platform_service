@@ -69,8 +69,8 @@ class MySession(requests.Session):
         super(MySession, self).__init__()
         headers = {
             'User-Agent': random_useragent(),
-            # 'Connection': 'keep-alive',
-            'Connection': 'close',
+            'Connection': 'keep-alive',
+            # 'Connection': 'close',
         }
         requests.adapters.DEFAULT_RETRIES = 5
         requests.adapters.DEFAULT_POOLSIZE = 100
