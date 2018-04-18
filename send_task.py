@@ -130,7 +130,8 @@ def send_result_daodao_filter(source, tasks, daodao_filter_table, priority):
                     task_name=task_name, source=source.title(), _type='daodaoURLFilter', task_type=TaskType.NORMAL,
                     priority=priority) as it:
         for id, source_list, timestamp in tasks:
-            for _source, hotel_url in json.loads(source_list).get('hotels', {}).iteritems():
+            for _source, hotel_url in json.loads(source_list).iteritems():
+                if _source not in ('agoda', 'booking', 'ctrip', 'elong', 'hotels'):continue
                 if hotel_url in ('null', '{}', None, 'http://', '', 'https://'): continue
                 if not hotel_url.startswith('https://www.tripadvisor.cn'): continue
 

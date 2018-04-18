@@ -361,7 +361,7 @@ def monitoring_result_list2detail():
                    SEND_TO)
 
 def monitoring_result_daodao_filter():
-    sql = """select id, source_list, utime from %s where JSON_EXTRACT(source_list, "$.hotels") not like "%%{}%%" and JSON_EXTRACT(source_list, "$.hotels") is not null and status = 1 and utime >= '%s' order by utime limit 5000"""
+    sql = """select id, source_list, utime from %s where source_list is not null and status = 1 and utime >= '%s' order by utime limit 2000"""
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
 
@@ -376,6 +376,8 @@ def monitoring_result_daodao_filter():
                 continue
             if tab_args[3] == 'test':
                 continue
+            if table_name=='list_result_daodao_20180401a':continue
+            if table_name=='list_result_daodao_20180412b':continue
 
             timestamp, priority, sequence = get_seek(table_name+'f')
 
