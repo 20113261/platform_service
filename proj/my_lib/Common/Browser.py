@@ -72,7 +72,8 @@ class MySession(requests.Session):
             # 'Connection': 'keep-alive',
             'Connection': 'close',
         }
-        requests.adapters.DEFAULT_RETRIES = 3
+        requests.adapters.DEFAULT_RETRIES = 5
+        requests.adapters.DEFAULT_POOLSIZE = 100
         self.headers = headers
         self.verify = False
         self.auto_update_host = auto_update_host
