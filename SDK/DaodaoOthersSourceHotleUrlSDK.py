@@ -206,7 +206,7 @@ class ConversionDaodaoURL(BaseSDK):
             # print content
             real_url = None
             print id, source, url
-            self.logger.info(source, url, content)
+            self.logger.info('%s\n%s\n%s\n' % (source, url, content[-600:]))
             if source == 'agoda':
                 agoda_json = re.search(r'window.searchBoxReact = (.*)(?=;)', content).group(1)
                 agoda_json = json.loads(agoda_json)
@@ -257,16 +257,16 @@ class ConversionDaodaoURL(BaseSDK):
 
 
 if __name__ == "__main__":
-    from proj.my_lib.Common.Task import Task as Task_to
-    url = "https://www.tripadvisor.cn/Hotels-g293938-Bandar_Seri_Begawan_Brunei_Muara_District-Hotels.html"
-    args = {
-        'url': url,
-        'source': 'daodao',
-        'tag': '20180412a',
-        'name': 'test_chinese',
-        'name_en': 'test_english',
-        'source_id': 'g123412',
-    }
+    # from proj.my_lib.Common.Task import Task as Task_to
+    # url = "https://www.tripadvisor.cn/Hotels-g293938-Bandar_Seri_Begawan_Brunei_Muara_District-Hotels.html"
+    # args = {
+    #     'url': url,
+    #     'source': 'daodao',
+    #     'tag': '20180412a',
+    #     'name': 'test_chinese',
+    #     'name_en': 'test_english',
+    #     'source_id': 'g123412',
+    # }
     # url = "格拉波斯克拉科夫公寓式酒店Aparthotel Globus Kraków"
     # args = {
     #     'url': url,
@@ -277,23 +277,23 @@ if __name__ == "__main__":
     #     'country': '218',
     #     'city': '10109',
     # }
-    task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
-               _used_times=0, max_retry_times=6,
-               kwargs=args, _queue='supplement_field',
-               _routine_key='supplement_field', list_task_token='test', task_type=0, collection='')
-    ihg = OthersSourceHotelUrl(task)
-    ihg.execute()
-
-    # args = {
-    #     'id': 302694,
-    #     'source': 'agoda',
-    #     'url': 'https://www.tripadvisor.cn/Commerce?p=Agoda&src=68717693&geo=1469060&from=HotelDateSearch_Hotels&slot=2&matchID=1&oos=0&cnt=4&silo=6420&bucket=773150&nrank=3&crank=3&clt=D&ttype=DesktopMeta&tm=103427381&managed=false&capped=false&gosox=BSUEiZta-eAFHo1JUl7drWMmWxFsaipZOdcAcnr_zltUEYFf0ejMsxGCMs7_pd-9zAYUtCZIlUrF14-AbPzc5CQEC0i_0vaCmwteYzPH90_1DlELVprRE36OYiwnHI65jvoUV-VHh3VOoBlb3_9-XJrEgVgVR-us129PtMfphf0&hac=AVAILABLE&mbl=MEET&mbldelta=0&rate=490.69&fees=49.07&cur=RMB&adults=2&child_rm_ages=&inDay=22&outDay=23&rdex=RDEX_48f77df40bbf2ac07ea786f98a262619&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=49b8f207-4e8e-491f-b6d9-676eaef866df&def_d=true&cs=162ae1058cb86e6e93d2a046ce3eaf293&area=QC_Meta|Text|Available|Main|Desktop&tp=Hotels_MainList&ob=new_tab&ik=694e9975faf34a12b5438f62256914e1&priceShown=540&aok=25ea45fdf5b44a9291aeed7a738c548f',
-    #     'table_name': 'list_result_daodao_20180412a',
-    # }
-    #
     # task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
     #            _used_times=0, max_retry_times=6,
     #            kwargs=args, _queue='supplement_field',
     #            _routine_key='supplement_field', list_task_token='test', task_type=0, collection='')
-    # conversion = ConversionDaodaoURL(task)
-    # conversion.execute()
+    # ihg = OthersSourceHotelUrl(task)
+    # ihg.execute()
+
+    args = {
+        'id': 268324,
+        'source': 'booking',
+        'url': 'https://www.tripadvisor.cn/Commerce?p=BookingCN&src=103635528&geo=578633&from=HotelDateSearch_Hotels&slot=1&matchID=1&oos=0&cnt=3&silo=24029&bucket=840513&nrank=1&crank=1&clt=D&ttype=DesktopMeta&tm=103946189&managed=false&capped=false&gosox=Nax9K52R-5RoSZlQQ9tfzXomD_1FsQWR1EqiB--3UJZw76hFooe4_gJ6IyUy7pBZOA8X2utdoHkSnzYFsWjCk2BXrsbIzXux1vOF-NRK6cAFC81sPOH9tMUv0NQhYOptIXCrcE_qaIgRc822ZBwBUw&hac=AVAILABLE&mbl=MEET&mbldelta=0&rate=415.60&fees=41.56&cur=RMB&adults=2&child_rm_ages=&inDay=29&outDay=30&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=6c7effd1-2a20-4318-8b16-2ea2c4da916f&def_d=true&cs=19ea32efb1eb7499691d8cdd558819d62&area=QC_Meta|Chevron|Available|Main|Desktop&tp=Hotels_ABList&ob=new_tab&ik=32c3c7da2eb64664bd3ad5759cd96761&priceShown=457&aok=8872f6117c8f44d9af1c1ca99438b637',
+        'table_name': 'list_result_daodao_20180412a',
+    }
+
+    task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='list_result_daodao_20180412a',
+               _used_times=0, max_retry_times=6,
+               kwargs=args, _queue='supplement_field',
+               _routine_key='supplement_field', list_task_token='test', task_type=0, collection='')
+    conversion = ConversionDaodaoURL(task)
+    conversion.execute()
