@@ -62,6 +62,7 @@ class OthersSourceHotelUrl(BaseSDK):
         url = kwargs.get('url')
         tag = kwargs.get('tag')
         source = kwargs.get('source')
+        source_id = kwargs.get('source_id')
         name = kwargs.get('name')
         name_en = kwargs.get('name_en')
         city_id = kwargs.get('city_id')
@@ -78,26 +79,71 @@ class OthersSourceHotelUrl(BaseSDK):
         self.logger.info('抓取耗时：   {}'.format(t2 - t1))
         temp_save = []
 
-        if source == 'daodao':
-            for hotel in hotel_result:
-                name = hotel.get('hotel_name', '')
-                name_en = hotel.get('hotel_name_en', '')
-                hotels = hotel.copy()
-                status = 1 if hotels else 0
-                temp_save.append((name, name_en, city_id, country_id, 'daodao', status, json.dumps(hotels) if hotels else None))
-
-        elif source == 'google':
-            for hotel in hotel_result:
-                status = 1 if hotel_result else 0
-                temp_save.append((name, name_en, city_id, country_id, 'google', status, json.dumps(hotel) if hotel else None))
-
         # print temp_save
+        @func_time_logger
+        def hotel_list_insert_daodao(table_name, res_data):
+            try:
+                service_platform_conn = service_platform_pool.connection()
+                cursor = service_platform_conn.cursor()
+                sel_sql = 'select id, localtion_id, source_list from {} where source_id = %s'.format(table_name)
+                rep_sql = "replace into {} (id, name, name_en, city_id, country_id, `from`, source_id, localtion_id, status, source_list) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)".format(
+                    table_name)
+                ins_sql = "insert into {} (name, name_en, city_id, country_id, `from`, source_id, localtion_id, status, source_list) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)".format(
+                    table_name)
+                cursor.execute(sel_sql, source_id)
+                exists_localtion = {}
+                for id, localtion_id, source_list in cursor.fetchall():
+                    print id, localtion_id, source_list
+                    exists_localtion[localtion_id] = (id, json.loads(source_list or "{}"))
+
+                new_hotels_and_not_id = []
+                if exists_localtion:
+                    for _i, line in enumerate(res_data):
+                        new_hotels = {}
+                        mylocaltion_id, myhotels = line[6], line[8]
+                        if exists_localtion.has_key(mylocaltion_id):
+                            yourid, yourhotels = exists_localtion[mylocaltion_id]
+                            mykeys = myhotels.keys()
+                            yourkeys = yourhotels.keys()
+                            if len(mykeys) > len(yourkeys):
+                                for k in mykeys:
+                                    new_hotels[k] = myhotels.get(k) or yourhotels.get(k)
+                            else:
+                                for k in yourkeys:
+                                    new_hotels[k] = yourhotels.get(k) or myhotels.get(k)
+
+                            line[8] = json.dumps(new_hotels)
+                            line.insert(0, yourid)
+                        else:
+                            line[8] = json.dumps(line[8] or {})
+                            new_hotels_and_not_id.append(line)
+                            del res_data[_i]
+
+                    cursor.executemany(rep_sql, res_data)
+                    service_platform_conn.commit()
+
+                if new_hotels_and_not_id:
+                    cursor.executemany(ins_sql, new_hotels_and_not_id)
+                    service_platform_conn.commit()
+                if not exists_localtion:
+                    for line in res_data:
+                        line[8] = json.dumps(line[8])
+                    cursor.executemany(ins_sql, res_data)
+                    service_platform_conn.commit()
+
+                cursor.close()
+                service_platform_conn.close()
+            except Exception as e:
+                self.logger.exception(msg="[mysql error]", exc_info=e)
+                raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
+
         @func_time_logger
         def hotel_list_insert_db(table_name, res_data):
             try:
                 service_platform_conn = service_platform_pool.connection()
                 cursor = service_platform_conn.cursor()
-                sql = "replace into {} (name, name_en, city_id, country_id, `from`, status, source_list) VALUES (%s,%s,%s,%s,%s,%s,%s)".format(table_name)
+                sql = "replace into {} (name, name_en, city_id, country_id, `from`, status, source_list) VALUES (%s,%s,%s,%s,%s,%s,%s)".format(
+                    table_name)
                 cursor.executemany(sql, res_data)
                 service_platform_conn.commit()
                 cursor.close()
@@ -106,7 +152,32 @@ class OthersSourceHotelUrl(BaseSDK):
                 self.logger.exception(msg="[mysql error]", exc_info=e)
                 raise ServiceStandardError(error_code=ServiceStandardError.MYSQL_ERROR, wrapped_exception=e)
 
-        hotel_list_insert_db(table_name, temp_save)
+        if source == 'daodao':
+            for hotel in hotel_result:
+                name = hotel.get('hotel_name', '')
+                name_en = hotel.get('hotel_name_en', '')
+                localtion_id = hotel.get('localtion_id', '')
+                hotels = hotel.get('hotels', {}).copy()
+                if hotels in ('', None, 'NULL', 'null', {}):
+                    status = 0
+                else:
+                    for k, v in hotels.iteritems():
+                        if v not in ('', None, 'NULL', 'null', {}):
+                            status = 1
+                            break
+                    else:
+                        status = 0
+                temp_save.append([name, name_en, city_id, country_id, 'daodao', source_id, localtion_id, status, hotels])
+
+            hotel_list_insert_daodao(table_name, temp_save)
+
+        elif source == 'google':
+            for hotel in hotel_result:
+                status = 1 if hotel_result else 0
+                temp_save.append([name, name_en, city_id, country_id, 'google', source_id, 'localtion_id, ', status, json.dumps(hotel) if hotel else None])
+
+            hotel_list_insert_db(table_name, temp_save)
+
         t3 = time.time()
         self.logger.info('入库耗时：   {}'.format(t3 - t2))
 
@@ -184,15 +255,16 @@ class ConversionDaodaoURL(BaseSDK):
 
 
 if __name__ == "__main__":
-    # from proj.my_lib.Common.Task import Task as Task_to
-    # url = "https://www.tripadvisor.cn/Hotels-g293938-Bandar_Seri_Begawan_Brunei_Muara_District-Hotels.html"
-    # args = {
-    #     'url': url,
-    #     'source': 'daodao',
-    #     'tag': '20180401a',
-    #     'name': 'test_chinese',
-    #     'name_en': 'test_english',
-    # }
+    from proj.my_lib.Common.Task import Task as Task_to
+    url = "https://www.tripadvisor.cn/Hotels-g293938-Bandar_Seri_Begawan_Brunei_Muara_District-Hotels.html"
+    args = {
+        'url': url,
+        'source': 'daodao',
+        'tag': '20180412a',
+        'name': 'test_chinese',
+        'name_en': 'test_english',
+        'source_id': 'g123412',
+    }
     # url = "格拉波斯克拉科夫公寓式酒店Aparthotel Globus Kraków"
     # args = {
     #     'url': url,
@@ -203,23 +275,23 @@ if __name__ == "__main__":
     #     'country': '218',
     #     'city': '10109',
     # }
-    # task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
-    #            _used_times=0, max_retry_times=6,
-    #            kwargs=args, _queue='supplement_field',
-    #            _routine_key='supplement_field', list_task_token='test', task_type=0, collection='')
-    # ihg = OthersSourceHotelUrl(task)
-    # ihg.execute()
-
-    args = {
-        'id': 5703,
-        'source': 'hotels',
-        'url': 'https://www.tripadvisor.cn/Commerce?p=HotelsCom2&src=69175783&geo=7940674&from=HotelDateSearch_Hotels&slot=3&matchID=1&oos=0&cnt=3&silo=6046&bucket=798156&nrank=3&crank=3&clt=D&ttype=DesktopMeta&tm=103267287&managed=false&capped=false&gosox=cgAmL4qe3gHkKQnzi9UKTVcHuZh0CwbiMUMVAh8NNB2poBnVsSGND7oFLmy_U-e3jSsfLxoZEtX3cqtoFCQVpLuwfbLhPBiXe9q736bRjuwsrWAnQzjurz7iIZpT-sIi3hsQXOC12mDIsgioZ3XGqt5ahLFHHUZrOU_t5ic8hQo&hac=AVAILABLE&mbl=LOSE&mbldelta=6641&rate=1255.51&fees=222.22&cur=RMB&adults=2&child_rm_ages=&inDay=22&outDay=23&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=e6412165-3adc-4da1-b24f-86d08e4a8c5c&def_d=true&cs=1ddb974d6b5b29fe43d815bd46fa713ba&area=QC_Meta|Text|Available|Main|Desktop&tp=Hotels_ABList&ob=new_tab&ik=dfa16f9f16254037904013eddc4b2ed8&priceShown=1478&aok=1babeaa3b5b04b1981414fb169a8aa27',
-        'table_name': 'list_aaaaa_daodao_20180401a',
-    }
-
     task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
                _used_times=0, max_retry_times=6,
                kwargs=args, _queue='supplement_field',
                _routine_key='supplement_field', list_task_token='test', task_type=0, collection='')
-    conversion = ConversionDaodaoURL(task)
-    conversion.execute()
+    ihg = OthersSourceHotelUrl(task)
+    ihg.execute()
+
+    # args = {
+    #     'id': 302694,
+    #     'source': 'agoda',
+    #     'url': 'https://www.tripadvisor.cn/Commerce?p=Agoda&src=68717693&geo=1469060&from=HotelDateSearch_Hotels&slot=2&matchID=1&oos=0&cnt=4&silo=6420&bucket=773150&nrank=3&crank=3&clt=D&ttype=DesktopMeta&tm=103427381&managed=false&capped=false&gosox=BSUEiZta-eAFHo1JUl7drWMmWxFsaipZOdcAcnr_zltUEYFf0ejMsxGCMs7_pd-9zAYUtCZIlUrF14-AbPzc5CQEC0i_0vaCmwteYzPH90_1DlELVprRE36OYiwnHI65jvoUV-VHh3VOoBlb3_9-XJrEgVgVR-us129PtMfphf0&hac=AVAILABLE&mbl=MEET&mbldelta=0&rate=490.69&fees=49.07&cur=RMB&adults=2&child_rm_ages=&inDay=22&outDay=23&rdex=RDEX_48f77df40bbf2ac07ea786f98a262619&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=49b8f207-4e8e-491f-b6d9-676eaef866df&def_d=true&cs=162ae1058cb86e6e93d2a046ce3eaf293&area=QC_Meta|Text|Available|Main|Desktop&tp=Hotels_MainList&ob=new_tab&ik=694e9975faf34a12b5438f62256914e1&priceShown=540&aok=25ea45fdf5b44a9291aeed7a738c548f',
+    #     'table_name': 'list_result_daodao_20180412a',
+    # }
+    #
+    # task = Task_to(_worker='', _task_id='demo', _source='daodao', _type='suggest', _task_name='tes',
+    #            _used_times=0, max_retry_times=6,
+    #            kwargs=args, _queue='supplement_field',
+    #            _routine_key='supplement_field', list_task_token='test', task_type=0, collection='')
+    # conversion = ConversionDaodaoURL(task)
+    # conversion.execute()
