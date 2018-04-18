@@ -334,6 +334,9 @@ def monitoring_result_list2detail():
                 continue
             if tab_args[3] == 'test' or tab_args[3].endswith('f'):
                 continue
+            if table_name=='list_result_daodao_20180401a':continue
+            if table_name=='list_result_google_20180401a':continue
+            if table_name=='list_result_daodao_20180412b':continue
 
             timestamp, priority, sequence = get_seek(table_name)
 

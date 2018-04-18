@@ -95,7 +95,7 @@ def send_result_detail_task(source, tasks, detail_tables, priority):
     convert_data = defaultdict(list)
 
     for id, source_list, timestamp in tasks:
-        for _source, hotel_url in json.loads(source_list).get('hotels', {}).iteritems():
+        for _source, hotel_url in json.loads(source_list).iteritems():
             task_tag = detail_tables.get(_source)
             if not task_tag:continue
             convert_data[(task_tag, _source)].append((id, hotel_url, timestamp))
