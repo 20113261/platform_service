@@ -201,7 +201,7 @@ class ConversionDaodaoURL(BaseSDK):
         url = url.replace('.cn', '.com')
 
         with MySession(need_cache=False, need_proxies=True) as session:
-            resp = session.get(url)
+            resp = session.get(url, timeout=(3, 5))
             content = resp.text
             # print content
             real_url = None
