@@ -63,7 +63,7 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     # todo 先均分任务，之后考虑不同的阀值分配不同的任务
     for each_collection_name, each_limit in c_list:
 
-        if each_collection_name=='Task_Queue_hotel_list_TaskName_google_hotel_url_20180409a':continue
+        if each_collection_name in ('Task_Queue_hotel_list_TaskName_google_hotel_url_20180409a', 'Task_Queue_hotel_list_TaskName_list_result_daodao_20180401af'):continue
         if each_collection_name.endswith('20180412g'): continue
         if each_collection_name.endswith('20180416a'):continue
         # if each_collection_name!='Task_Queue_hotel_list_TaskName_list_result_daodao_20180412a':continue
