@@ -285,7 +285,7 @@ def hilton_suggest_task(self, task, **kwargs):
     _sdk = HiltonSuggestCitySDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='3/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='30/s')
 def result_daodao_filter(self, task, **kwargs):
     _sdk = ConversionDaodaoURL(task=task)
     return _sdk.execute()
