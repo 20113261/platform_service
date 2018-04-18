@@ -201,6 +201,7 @@ class ConversionDaodaoURL(BaseSDK):
         url = url.replace('.cn', '.com')
 
         with MySession(need_cache=False, need_proxies=True) as session:
+            session.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'})
             resp = session.get(url, timeout=(3, 5))
             content = resp.text
             # print content
