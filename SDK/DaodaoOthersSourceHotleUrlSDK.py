@@ -206,7 +206,7 @@ class ConversionDaodaoURL(BaseSDK):
             # print content
             real_url = None
             print id, source, url
-            logger.info(source, url, content)
+            self.logger.info(source, url, content)
             if source == 'agoda':
                 agoda_json = re.search(r'window.searchBoxReact = (.*)(?=;)', content).group(1)
                 agoda_json = json.loads(agoda_json)
