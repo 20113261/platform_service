@@ -13,6 +13,7 @@ import traceback
 from itertools import repeat
 import redis
 import pymysql
+import json
 import pymongo
 import os
 import sys
@@ -389,6 +390,74 @@ def monitoring_result_daodao_filter():
                    '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
                    SEND_TO)
 
+
+def monitoring_result_daodao_convergence():
+    sql = "select id, localtion_id, source_list from {} where source_id = '%s'"
+    try:
+        table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+
+        for table_name in table_dict.keys():
+
+            tab_args = table_name.split('_')
+            if tab_args[0] != 'list':
+                continue
+            if tab_args[1] != 'result':
+                continue
+            if tab_args[2] != 'daodao':
+                continue
+            if tab_args[3] == 'test' or tab_args[3].endswith('f'):
+                continue
+            if table_name!='list_result_daodao_20180412a':continue
+            sql = sql.format(table_name)
+            collection_name = 'Task_Queue_hotel_list_TaskName_'+table_name
+            collections = db[collection_name]
+            for line in collections.find({
+                'convergenced': 0,
+                'finished': 1,
+                'used_times': {'$lt': 7}
+            }, {
+                'args': 1,
+                'task_token': 1,
+            }):
+                task_token, source_id = line['task_token'], line['args']['source_id']
+                # source_id = 'g123412'
+                rows = execute_sql(sql % source_id)
+                status = 1
+                for id, localtion_id, hotels in rows:
+                    for k,v in json.loads(hotels or '{}').iteritems():
+                        if k in ('agoda', 'booking', 'ctrip', 'elong', 'hotels') and v in ('', None, 'NULL', 'null'):
+                            status = 0
+                            break
+                    if status == 0:break
+
+                if status == 0:
+                    logger.info('重置任务source_id  :  %s' % (source_id,))
+                    collections.update({
+                        'task_token': task_token
+                    },{
+                        '$set': {
+                            "finished": 0,
+                            'running': 0,
+                            'used_times': 0
+                        }
+                    }, multi=True)
+                else:
+                    logger.info('重置任务source_id  :  %s' % (source_id,))
+                    collections.update({
+                        'task_token': task_token
+                    }, {
+                        '$set': {
+                            "convergenced": 1,
+                        }
+                    }, multi=True)
+
+    except Exception as e:
+        logger.error(traceback.format_exc(e))
+        send_email(EMAIL_TITLE,
+                   '%s   %s \n %s' % (sys._getframe().f_code.co_name, datetime.datetime.now(), traceback.format_exc(e)),
+                   SEND_TO)
+
+
 def monitoring_hotel_detail2ImgOrComment():
     sql = """select source, source_id, city_id, img_items, id from %s where id >= %d order by id limit 5000"""
     try:
@@ -650,6 +719,7 @@ def city2list():
         if not str(collection_name).startswith('City_Queue_'):
             continue
         if collection_name in ('City_Queue_grouptravel_TaskName_city_total_GT_20180312a', 'City_Queue_grouptravel_TaskName_city_total_GT_20180314a'):continue
+        if not collection_name.endswith('0416a'):continue
         collections = db[collection_name]
         _count = 0
 
@@ -749,7 +819,8 @@ if __name__ == '__main__':
         # monitoring_zombies_task_total()
     # city2list()
     # monitoring_result_list2detail()
-    monitoring_result_daodao_filter()
+    # monitoring_result_daodao_filter()
+    monitoring_result_daodao_convergence()
         # get_default_timestramp()
         # get_seek('hotel_list2detail_test')
         # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)
