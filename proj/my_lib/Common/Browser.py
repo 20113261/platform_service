@@ -69,7 +69,8 @@ class MySession(requests.Session):
         super(MySession, self).__init__()
         headers = {
             'User-Agent': random_useragent(),
-            'Connection': 'keep-alive'
+            # 'Connection': 'keep-alive',
+            'Connection': 'close',
         }
         self.headers = headers
         self.verify = False
