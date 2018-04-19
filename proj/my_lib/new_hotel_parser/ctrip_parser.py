@@ -43,8 +43,8 @@ def ctrip_parser(page, url, other_info):
         pass
 
     ph_runtime = execjs.get('PhantomJS')
-    js_str = root.xpath('//script[contains(text(),"hotelDomesticConfig")]/text()')[0]
     try:
+        js_str = root.xpath('//script[contains(text(),"hotelDomesticConfig")]/text()')[0]
         page_js = ph_runtime.compile(js_str[:js_str.index('function  loadCallback_roomList()')])
     except:
         try:
