@@ -44,9 +44,12 @@ def ctrip_parser(page, url, other_info):
 
     ph_runtime = execjs.get('PhantomJS')
     js_str = root.xpath('//script[contains(text(),"hotelDomesticConfig")]/text()')[0]
-    page_js = ph_runtime.compile(js_str[:js_str.index('function  loadCallback_roomList()')])
+    try:
+        page_js = ph_runtime.compile(js_str[:js_str.index('function  loadCallback_roomList()')])
+    except:
+        page_js = ph_runtime.compile(js_str[:js_str.index('function loadCallback()')])
     page_js.eval('hotelDomesticConfig')
-    page_js.eval('pictureConfigNew')
+    # page_js.eval('pictureConfigNew')
 
     try:
         hotel.hotel_name = root.xpath('//*[@class="name"]/text()')[0].encode('utf-8').strip()
@@ -265,7 +268,8 @@ def ctrip_parser(page, url, other_info):
         country_id = page_js.eval('hotelDomesticConfig')['query']['country']
     except:
         #print e
-        pass
+        city_name = 'NULL'
+        country_id = 'NULL'
     #print "city_name",city_name,country_id
 
     hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name, 'country_id': country_id, 'hid':other_info.get('hid', 'NULL')})
@@ -321,6 +325,7 @@ if __name__ == '__main__':
     # url = 'http://hotels.ctrip.com/international/3723551.html?IsReposted=3723551'
     # url = 'http://hotels.ctrip.com/international/2611722.html'
     url = 'http://hotels.ctrip.com/international/3681269.html'
+    url = 'http://hotels.ctrip.com/hotel/2387745.html?isFull=F#ctm_ref=hod_sr_map_dl_txt_1'
     # url = 'http://hotels.ctrip.com/international/747361.html'
     # url = 'http://hotels.ctrip.com/international/10146828.html'
     other_info = {
