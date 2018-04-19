@@ -225,8 +225,12 @@ def agoda_parser(content, url, other_info):
         city_name = page_params['hotelInfo']['address']['cityName']
         city_id = page_params['hotelInfo']['address']['cityId']
     except:
+        country_id = 'NULL'
+        country_name = 'NULL'
+        city_name = 'NULL'
+        city_id = 'NULL'
         #print e
-        pass
+        # pass
 
     hotel.others_info = json.dumps(
         {'country_id': country_id, 'country_name': country_name, 'city_name': city_name, 'city_id': city_id,
@@ -311,6 +315,8 @@ if __name__ == '__main__':
     url = 'https://www.agoda.com/zh-cn/hotel-the-celestine-tokyo-shiba/hotel/tokyo-jp.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=b0293d9f-56be-46ad-998e-3a14b8601594&isMRS=1'
     url = 'https://www.agoda.com/zh-cn/royal-park-hotel-the-shiodome-tokyo/hotel/tokyo-jp.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=35cdc5b6-2e05-4924-b71e-479692ddb593&isMRS=1'
     url = 'https://www.agoda.com/zh-cn/conrad-macao-cotai-central/hotel/macau-mo.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=5bd92238-b4f5-4d41-a958-051575b96f71&dodhotel=1&isMRS=0'
+    url = 'https://www.agoda.com/zh-cn/kakkos-beach-hotel-adults-only/hotel/crete-island-gr.html?selectedproperty=4619813&checkIn=2018-04-29&los=1&rooms=1&adults=2&childs=0&cid=1590325&tag=hid4619813%2cpidWtiG9MCoCx4AAK-P--YAAAAY'
+    url = 'https://www.agoda.com/zh-cn/hotel-gri-mar/hotel/llansa-es.html?selectedproperty=229354&checkIn=2018-04-29&los=1&rooms=1&adults=2&childs=0&cid=1590325&tag=hid229354%2cpidWthg9H8AAAEAAK5YRRQAAAAe'
     page = requests.get(url=url, headers=headers)
     page.encoding = 'utf8'
     content = page.text
