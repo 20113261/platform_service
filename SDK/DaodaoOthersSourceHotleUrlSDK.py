@@ -117,8 +117,8 @@ class OthersSourceHotelUrl(BaseSDK):
                         else:
                             line[8] = json.dumps(line[8] or {})
                             new_hotels_and_not_id.append(line)
-                            del res_data[_i]
 
+                    res_data = filter(lambda x:len(x)==10, res_data)
                     cursor.executemany(rep_sql, res_data)
                     service_platform_conn.commit()
 
@@ -201,13 +201,13 @@ class ConversionDaodaoURL(BaseSDK):
         url = url.replace('.cn', '.com')
 
         with MySession(need_cache=False, need_proxies=True) as session:
-            session.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'})
-            resp = session.get(url, timeout=(3, 5))
+            # session.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'})
+            resp = session.get(url)
             content = resp.text
             # print content
             real_url = None
             print id, source, url
-            self.logger.info('%s\n%s\n%s\n' % (source, url, content[-600:]))
+            # self.logger.info('%s\n%s\n%s\n' % (source, url, content[-600:]))
             if source == 'agoda':
                 agoda_json = re.search(r'window.searchBoxReact = (.*)(?=;)', content).group(1)
                 agoda_json = json.loads(agoda_json)
@@ -226,7 +226,9 @@ class ConversionDaodaoURL(BaseSDK):
                 base_url = "http://hotels.ctrip.com"
                 real_url = ''.join([base_url, url])
             elif source == 'elong':
-                hotel_id = re.search(r'hotelId":"([0-9]+)"', content).group(1)
+                # hotel_id = re.search(r'hotelId":"([0-9]+)"', content).group(1)
+                hotel_id = re.search(r'data-hotelid="(\w+)"', content).group(1)
+
                 real_url = 'http://ihotel.elong.com/{0}/'.format(hotel_id)
             elif source == 'expedia':
                 raise Exception('我是expedia')
@@ -258,7 +260,7 @@ class ConversionDaodaoURL(BaseSDK):
 
 
 if __name__ == "__main__":
-    # from proj.my_lib.Common.Task import Task as Task_to
+    from proj.my_lib.Common.Task import Task as Task_to
     # url = "https://www.tripadvisor.cn/Hotels-g293938-Bandar_Seri_Begawan_Brunei_Muara_District-Hotels.html"
     # args = {
     #     'url': url,
@@ -286,9 +288,9 @@ if __name__ == "__main__":
     # ihg.execute()
 
     args = {
-        'id': 268324,
-        'source': 'booking',
-        'url': 'https://www.tripadvisor.cn/Commerce?p=BookingCN&src=103635528&geo=578633&from=HotelDateSearch_Hotels&slot=1&matchID=1&oos=0&cnt=3&silo=24029&bucket=840513&nrank=1&crank=1&clt=D&ttype=DesktopMeta&tm=103946189&managed=false&capped=false&gosox=Nax9K52R-5RoSZlQQ9tfzXomD_1FsQWR1EqiB--3UJZw76hFooe4_gJ6IyUy7pBZOA8X2utdoHkSnzYFsWjCk2BXrsbIzXux1vOF-NRK6cAFC81sPOH9tMUv0NQhYOptIXCrcE_qaIgRc822ZBwBUw&hac=AVAILABLE&mbl=MEET&mbldelta=0&rate=415.60&fees=41.56&cur=RMB&adults=2&child_rm_ages=&inDay=29&outDay=30&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=6c7effd1-2a20-4318-8b16-2ea2c4da916f&def_d=true&cs=19ea32efb1eb7499691d8cdd558819d62&area=QC_Meta|Chevron|Available|Main|Desktop&tp=Hotels_ABList&ob=new_tab&ik=32c3c7da2eb64664bd3ad5759cd96761&priceShown=457&aok=8872f6117c8f44d9af1c1ca99438b637',
+        'id': 588004,
+        'source': 'elong',
+        'url': 'https://www.tripadvisor.cn/Commerce?p=ELongDaoDao&src=49828623&geo=4405400&from=HotelDateSearch_Hotels&slot=2&matchID=1&oos=0&cnt=2&silo=5216&bucket=788321&nrank=2&crank=2&clt=D&ttype=DesktopMeta&tm=103965318&managed=false&capped=false&gosox=VF_4GV4ZVLXUV145mJrJAOZlJY2xB93FumvGuZoNSTUnVGoVMyOH1pt1E8uLwm6DWTN4rBpcZelUxebmEnF7C476EJJ-pFznFzAiuoirmeiHR1L1VohAOk8sfLg2Y8dHyUZi0rmo67clyCjSvCibSw&hac=AVAILABLE&mbl=MEET&mbldelta=0&rate=85.95&fees=13.05&cur=RMB&adults=2&child_rm_ages=&inDay=29&outDay=30&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=b759a0c4-cabf-41f2-ba64-c2e151b3ce41&def_d=true&cs=14c10a7553055695153e120bde633a56f&area=QC_Meta|Text|Available|Main|Desktop&tp=Hotels_MainList&ob=new_tab&ik=1bc0e89f5f2b4e17888c6d09865623fe&priceShown=99&aok=4ccabae06d52468f84c1551c9c572957',
         'table_name': 'list_result_daodao_20180412a',
     }
 
