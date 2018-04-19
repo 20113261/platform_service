@@ -68,15 +68,21 @@ def ctrip_parser(page, url, other_info):
     #print 'hotel_name_en =>', hotel.hotel_name_en
 
     try:
-        position = page_js.eval('hotelDomesticConfig')['hotel']['position'].split('|')
-        hotel.map_info = position[1] + ',' + position[0]
+        HotelMaiDianData = page_js.eval('HotelMaiDianData')['value']
+        hotellon = HotelMaiDianData.get('hotellon', None)
+        hotellat = HotelMaiDianData.get('hotellat', None)
+        hotel.map_info = hotellon + ',' + hotellat
     except:
         try:
-            position_temp = root.xpath('//*[@id="hotelCoordinate"]/@value')[0].encode('utf-8').strip().split('|')
-            hotel.map_info = position_temp[1] + ',' + position_temp[0]
+            position = page_js.eval('hotelDomesticConfig')['hotel']['position'].split('|')
+            hotel.map_info = position[1] + ',' + position[0]
         except:
-            #print str(e)
-            hotel.map_info = 'NULL'
+            try:
+                position_temp = root.xpath('//*[@id="hotelCoordinate"]/@value')[0].encode('utf-8').strip().split('|')
+                hotel.map_info = position_temp[1] + ',' + position_temp[0]
+            except:
+                #print str(e)
+                hotel.map_info = 'NULL'
 
     #print 'hotel.map_info => ', hotel.map_info
 
@@ -327,8 +333,9 @@ if __name__ == '__main__':
     # url = 'http://hotels.ctrip.com/international/992466.html'
     # url = 'http://hotels.ctrip.com/international/3723551.html?IsReposted=3723551'
     # url = 'http://hotels.ctrip.com/international/2611722.html'
-    url = 'http://hotels.ctrip.com/international/3681269.html'
-    url = 'http://hotels.ctrip.com/hotel/2387745.html?isFull=F#ctm_ref=hod_sr_map_dl_txt_1'
+    # url = 'http://hotels.ctrip.com/international/3681269.html'
+    # url = 'http://hotels.ctrip.com/hotel/2387745.html?isFull=F#ctm_ref=hod_sr_map_dl_txt_1'
+    url = 'http://hotels.ctrip.com/international/1741965.html'
     # url = 'http://hotels.ctrip.com/international/747361.html'
     # url = 'http://hotels.ctrip.com/international/10146828.html'
     other_info = {
