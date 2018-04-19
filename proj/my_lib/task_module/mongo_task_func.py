@@ -66,7 +66,7 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
         if each_collection_name in ('Task_Queue_hotel_list_TaskName_google_hotel_url_20180409a', 'Task_Queue_hotel_list_TaskName_list_result_daodao_20180401af'):continue
         if each_collection_name.endswith('20180412g'): continue
         if each_collection_name.endswith('20180416a'):continue
-        if each_collection_name in ('Task_Queue_hotel_detail_TaskName_detail_result_daodao_20180412af', 'Task_Queue_hotel_list_TaskName_list_result_daodao_20180412a'):continue
+        # if each_collection_name in ('Task_Queue_hotel_detail_TaskName_detail_result_daodao_20180412af', 'Task_Queue_hotel_list_TaskName_list_result_daodao_20180412a'):continue
         # if each_collection_name!='Task_Queue_hotel_list_TaskName_list_result_daodao_20180412a':continue
         # if each_collection_name=='Task_Queue_grouptravel_TaskName_detail_total_GT_20180314a': continue
         #         or each_collection_name=='Task_Queue_grouptravel_TaskName_detail_total_GT_20180312a' :continue
