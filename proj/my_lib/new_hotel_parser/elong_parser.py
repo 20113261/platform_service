@@ -30,8 +30,11 @@ def elong_parser(content, url, other_info):
         js_str = root.xpath('//script[contains(text(),"window.newDetailController")]/text()')[0]
         page_js = phantom_js.compile(js_str[js_str.index('window.newDetailController'):][:-1])
     except:
-        js_str = root.xpath('//script[contains(text(),"HotelDetailController")]/text()')[0]
-        page_js = phantom_js.compile(js_str[js_str.index('HotelDetailController'):][:-1])
+        try:
+            js_str = root.xpath('//script[contains(text(),"HotelDetailController")]/text()')[0]
+            page_js = phantom_js.compile(js_str[js_str.index('HotelDetailController'):][:-1])
+        except:
+            pass
         #print str(e)
         # return hotel
         # pass
