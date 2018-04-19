@@ -246,7 +246,12 @@ class ConversionDaodaoURL(BaseSDK):
                     agoda_json = re.search(r'window.searchBoxReact = (.*)(?=;)', content).group(1)
                     agoda_json = json.loads(agoda_json)
                     url = agoda_json.get('recentSearches', [])[0].get('data', {}).get('url')
-                    base_url = 'https://www.agoda.com/zh-cn'
+                    if url.startswith('/zh-cn'):
+                        base_url = 'https://www.agoda.com'
+                    elif url.startswith('zh-cn'):
+                        base_url = 'https://www.agoda.com/'
+                    else:
+                        base_url = 'https://www.agoda.com/zh-cn'
                     real_url = ''.join([base_url, url])
                 elif source == 'booking':
                     base_url = 'https://www.booking.com'
