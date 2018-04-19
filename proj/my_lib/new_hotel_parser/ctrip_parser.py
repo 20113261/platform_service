@@ -47,8 +47,11 @@ def ctrip_parser(page, url, other_info):
     try:
         page_js = ph_runtime.compile(js_str[:js_str.index('function  loadCallback_roomList()')])
     except:
-        page_js = ph_runtime.compile(js_str[:js_str.index('function loadCallback()')])
-    page_js.eval('hotelDomesticConfig')
+        try:
+            page_js = ph_runtime.compile(js_str[:js_str.index('function loadCallback()')])
+        except:
+            pass
+    # page_js.eval('hotelDomesticConfig')
     # page_js.eval('pictureConfigNew')
 
     try:
