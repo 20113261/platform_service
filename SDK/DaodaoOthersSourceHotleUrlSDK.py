@@ -19,6 +19,7 @@ import urlparse
 from lxml import html
 import re
 import time
+import pymongo
 from proj.my_lib.Common.Task import Task as Task_to
 import requests
 import traceback
@@ -34,6 +35,8 @@ insert_db = None
 get_proxy = proxy_pool.get_proxy
 debug = False
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
+clients = pymongo.MongoClient(host='10.10.231.105')
+SourceIDS = clients['ImagesMD5']['SourceId']
 
 
 def hotel_url_to_database(source, keyword, need_cache=False):
@@ -209,7 +212,13 @@ class ConversionDaodaoURL(BaseSDK):
             print id, source, url
             # self.logger.info('%s\n%s\n%s\n' % (source, url, content[-600:]))
             try:
-                if source == 'booking':
+                if source == 'agoda':
+                    url_obj = urlparse.urlsplit(real_daodao_url)
+                    hid = urlparse.parse_qs(url_obj.query)['hid'][0]
+                    line = SourceIDS.find_one({'source_id': 'agoda'+hid})
+                    assert line, '没找到agoda的hid'
+                    real_url = line['url']
+                elif source == 'booking':
                     real_url = real_daodao_url.replace('http', 'https').replace('.html', '.zh-cn.html').split('?', 1)[0]
                 elif source == 'ctrip':
                     base_url = 'http://hotels.ctrip.com/'
@@ -381,9 +390,9 @@ if __name__ == "__main__":
     # ihg.execute()
 
     args = {
-        'id': 671905,
-        'source': 'elong',
-        'url': 'https://www.tripadvisor.cn/Commerce?p=ELongINTDaoDaoB2V&src=105282450&geo=307611&from=HotelDateSearch_OverlayWidgetAjax&slot=2&matchID=1&oos=0&cnt=8&silo=19442&bucket=807747&nrank=8&crank=8&clt=D&ttype=DesktopMeta&tm=104033080&managed=false&capped=false&gosox=g2PyeWifJCTy_lCtpdk9H1lLXL_O15P-7IjMPQrt4GM-HdpG9H8tvvUSIDb1RZUgYW4NXiYMXCAsi-RktbgPKUfLIHysIaEfxaTdSbqadbnNjazRXbkEe2kK2adzUPxbnU_fWX7w1vQTLuY3OKpH2PkiscrG8gPgs_zg2icIU2Q&hac=AVAILABLE&mbl=LOSE&mbldelta=1258&rate=1197.00&fees=224.00&cur=RMB&adults=2&child_rm_ages=&inDay=29&outDay=30&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=f7a15c2b-0644-4a2e-9a82-c5ab2f58015b&def_d=true&cs=1d8a5c6534d5a0ab6c43373a320715e1b&area=QC_Meta|Text|Available|Unknown|Desktop&tp=Hotels_MainList&ob=new_tab&ik=562d64e7b37e481fb5a949e19a9c0dbb&priceShown=1421&aok=93cf734459964d078528eb687ca92c0f',
+        'id': 849181,
+        'source': 'agoda',
+        'url': 'https://www.tripadvisor.cn/Commerce?p=Agoda&src=81461442&geo=10050728&from=HotelDateSearch_Hotels&slot=1&matchID=1&oos=0&cnt=4&silo=6420&bucket=773150&nrank=2&crank=2&clt=D&ttype=DesktopMeta&tm=104044386&managed=false&capped=false&gosox=CvaPjKtz7l4roXnNkv8jgcAOJutXcprBxhol04L1AKIOBPvoigp2-Du3w6cUHylmM3Fi3w3DOfROZEM63ENuL1-uQAL2jKVZabFMKLgFfuDaOA5vDmHVJFCCj45WDzbOeRFPfzH54RPZAF4YcS4_gJMirYqcwaI0V0d7HyiOj1A&hac=AVAILABLE&mbl=BEAT&mbldelta=0&rate=171.32&fees=28.44&cur=RMB&adults=2&child_rm_ages=&inDay=29&outDay=30&rdex=RDEX_664f1b6faa3728243e71beb23f38f161&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=6257a6a5-571c-42f1-845c-907a916d2150&def_d=true&cs=178b43491ab73d94c618ad4ee6e1c6079&area=QC_Meta|Chevron|Available|Main|Desktop&tp=Hotels_MainList&ob=new_tab&ik=4fef7ff1f3904fce902e47d5e6aa1df6&priceShown=200&aok=8e268bf504d64cdba152648743098b93',
         'table_name': 'list_result_daodao_20180412a',
     }
 
