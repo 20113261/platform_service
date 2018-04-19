@@ -289,3 +289,8 @@ def hilton_suggest_task(self, task, **kwargs):
 def result_daodao_filter(self, task, **kwargs):
     _sdk = ConversionDaodaoURL(task=task)
     return _sdk.execute()
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/m')
+def hilton_list_task(self, task, **kwargs):
+    _sdk = HotelListSDK(task=task)
+    return _sdk.execute()

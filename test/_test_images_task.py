@@ -120,12 +120,12 @@ if __name__ == '__main__':
                 #     "file_prefix": ""
                 # },
                 kwargs={
-                    'file_prefix': 'huantaoyou',
-                    'target_url': "http://img.huantaoyou.com/inc/images/ORDER_NO_EXCHANGE.jpg",
-                    'source_id': "17100",
+                    'file_prefix': 'tuniuGT',
+                    'target_url': "https://m.tuniucdn.com//fb2/t1/G3/M00/3D/0B/Cii_LlloJcyIGfs2AFyrXaRNclAAADnOgNM364AXKt1824_w640_h480_c1_t0.jpg",
+                    'source_id': "210138695",
                     'need_insert_db': True,
-                    'source': "huantaoyou",
-                    'bucket_name': 'mioji-wanle',
+                    'source': "tuniuGT",
+                    'bucket_name': 'mioji-grouptravel',
                     'is_poi_task': True,
                 },
                 _queue='file_downloader', _routine_key='file_downloader',
