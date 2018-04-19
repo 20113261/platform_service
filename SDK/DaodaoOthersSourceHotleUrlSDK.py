@@ -232,10 +232,10 @@ class ConversionDaodaoURL(BaseSDK):
                 elif source == 'expedia':
                     raise Exception('我是expedia')
                 elif source == 'hotels':
-                    base_url = 'https://ssl.hotels.cn/ho'
+                    base_url = 'https://ssl.hotels.cn/ho{0}/'
                     url_obj = urlparse.urlsplit(real_daodao_url)
                     hotel_id = urlparse.parse_qs(url_obj.query)['hotelid'][0]
-                    real_url = base_url + hotel_id
+                    real_url = base_url.format(hotel_id)
                 else:
                     raise Exception('我是别的源')
             except:
