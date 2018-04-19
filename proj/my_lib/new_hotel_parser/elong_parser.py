@@ -30,9 +30,11 @@ def elong_parser(content, url, other_info):
         js_str = root.xpath('//script[contains(text(),"window.newDetailController")]/text()')[0]
         page_js = phantom_js.compile(js_str[js_str.index('window.newDetailController'):][:-1])
     except:
+        js_str = root.xpath('//script[contains(text(),"HotelDetailController")]/text()')[0]
+        page_js = phantom_js.compile(js_str[js_str.index('HotelDetailController'):][:-1])
         #print str(e)
         # return hotel
-        pass
+        # pass
 
     # 解析酒店中英文名，如果没有中文名则置为英文名，如果都解析失败则退出
     try:
@@ -95,10 +97,11 @@ def elong_parser(content, url, other_info):
         hotel.map_info = '{},{}'.format(lon, lat)
     except:
         try:
-            map_infos = page_js.eval('window.newDetailController').get('AjaxHotelInfo',{}).get('HotelGeoInfo',{})
+            map_infos = page_js.eval('HotelDetailController').get('AjaxHotelInfo',{}).get('HotelGeoInfo',{})
             lat = map_infos.get('Lat',None)
             lon = map_infos.get('Long',None)
             hotel.map_info = '{0},{1}'.format(lon,lat)
+            raise hotel.map_info == 'None,None'
         except:
             hotel.map_info = 'NULL'
             #print traceback.format_exc(e)
@@ -290,6 +293,27 @@ def elong_parser(content, url, other_info):
 
     #print 'img_items=>%s' % hotel.img_items
     # #print hotel.img_items
+
+    if url.startswith('http://hotel'):
+        try:
+            hotel_obj = page_js.eval('HotelDetailController')
+            lat = hotel_obj.get('googleLat', None)
+            lon = hotel_obj.get('googleLng', None)
+            hotel.map_info = '{0},{1}'.format(lon, lat)
+            hotel.hotel_name = hotel_obj.get('hotelNameCn')
+            hotel.hotel_name_en = hotel_obj.get('hotelNameEn')
+            hotel.address = hotel_obj.get('hotelAddress')
+            hotel.city = hotel_obj.get('cityNameCn') or hotel_obj.get('cityNameEn')
+            hotel.grade = hotel_obj.get('starLevel')
+            hotel.has_wifi = hotel_obj.get('hasWifi')
+            hotel.source_city_id = hotel_obj.get('cityId')
+            first_img = hotel_obj.get('hasWifi')
+            hotel.others_info['first_img'] = first_img
+        except:
+            pass
+
+
+
     info_list = hotel.address.split(' ')
     hotel.country = info_list[-1]
     hotel.source = 'elong'
@@ -397,6 +421,7 @@ if __name__ == '__main__':
     url = 'http://ihotel.elong.com/302895/'
     url = 'http://ihotel.elong.com/592426/'
     url = 'http://ihotel.elong.com/590800/'
+    url = 'http://hotel.elong.com/02518011/'
     other_info = {u'source_id': u'670847', u'city_id': u'20236', 'hid':1234}
 
     page = requests.get(url)
