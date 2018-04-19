@@ -259,7 +259,7 @@ def all_city_suggest(self,task,**kwargs):
     _sdk = AllSuggestCitySDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='10/s')
+@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='30/s')
 def other_source_hotel_url(self,task,**kwargs):
     _sdk = OthersSourceHotelUrl(task=task)
     return _sdk.execute()
@@ -285,7 +285,7 @@ def hilton_suggest_task(self, task, **kwargs):
     _sdk = HiltonSuggestCitySDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='30/s')
 def result_daodao_filter(self, task, **kwargs):
     _sdk = ConversionDaodaoURL(task=task)
     return _sdk.execute()
