@@ -198,50 +198,71 @@ class ConversionDaodaoURL(BaseSDK):
         url = kwargs['url']
         table_name = kwargs['table_name']
         t1 = time.time()
-        # url = url.replace('.cn', '.com')
 
         with MySession(need_cache=False, need_proxies=True) as session:
-            # session.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'})
             resp_daodao = session.get(url)
             content_daodao = resp_daodao.text
             real_daodao_url = re.findall(r"redirectPage\('(.*)'\)", content_daodao)[0]
-            if source in ('agoda', 'elong'):
-                resp = session.get(real_daodao_url)
-                content = resp.text
+
             # print content
             real_url = None
             print id, source, url
             # self.logger.info('%s\n%s\n%s\n' % (source, url, content[-600:]))
-            if source == 'agoda':
-                agoda_json = re.search(r'window.searchBoxReact = (.*)(?=;)', content).group(1)
-                # root.xpath('//li[@data-selenium="hotel-item"]/a/@href')
-                agoda_json = json.loads(agoda_json)
-                url = agoda_json.get('recentSearches', [])[0].get('data', {}).get('url')
-                base_url = 'https://www.agoda.com/zh-cn'
-                real_url = ''.join([base_url, url])
-            elif source == 'booking':
-                real_url = real_daodao_url.replace('http', 'https').replace('.html', '.zh-cn.html').split('?', 1)[0]
-            elif source == 'ctrip':
-                base_url = 'http://hotels.ctrip.com/'
-                url_obj = urlparse.urlsplit(real_daodao_url)
-                try:
+            try:
+                if source == 'booking':
+                    real_url = real_daodao_url.replace('http', 'https').replace('.html', '.zh-cn.html').split('?', 1)[0]
+                elif source == 'ctrip':
+                    base_url = 'http://hotels.ctrip.com/'
+                    url_obj = urlparse.urlsplit(real_daodao_url)
+                    try:
+                        hotel_id = urlparse.parse_qs(url_obj.query)['hotelid'][0]
+                    except:
+                        jumpUrl = urlparse.parse_qs(url_obj.query)['jumpUrl'][0]
+                        hotel_id = re.findall('/name(\w+)', urlparse.urlsplit(jumpUrl).path)[0]
+                    real_url = base_url + hotel_id
+                elif source == 'expedia':
+                    raise Exception('我是expedia')
+                elif source == 'hotels':
+                    base_url = 'https://ssl.hotels.cn/ho'
+                    url_obj = urlparse.urlsplit(real_daodao_url)
                     hotel_id = urlparse.parse_qs(url_obj.query)['hotelid'][0]
-                except:
-                    jumpUrl = urlparse.parse_qs(url_obj.query)['jumpUrl'][0]
-                    hotel_id = re.findall('/name(\w+)', urlparse.urlsplit(jumpUrl).path)[0]
-                real_url = base_url + hotel_id
-            elif source == 'elong':
-                # hotel_id = re.search(r'hotelId":"([0-9]+)"', content).group(1)
-                hotel_id = re.search(r'data-hotelid="(\w+)"', content).group(1)
+                    real_url = base_url + hotel_id
+                else:
+                    raise Exception('我是别的源')
+            except:
+                resp = session.get(real_daodao_url)
+                content = resp.text
 
-                real_url = 'http://ihotel.elong.com/{0}/'.format(hotel_id)
-            elif source == 'expedia':
-                raise Exception('我是expedia')
-            elif source == 'hotels':
-                base_url = 'https://ssl.hotels.cn/ho'
-                url_obj = urlparse.urlsplit(real_daodao_url)
-                hotel_id = urlparse.parse_qs(url_obj.query)['hotelid'][0]
-                real_url = base_url + hotel_id
+                if source == 'agoda':
+                    agoda_json = re.search(r'window.searchBoxReact = (.*)(?=;)', content).group(1)
+                    agoda_json = json.loads(agoda_json)
+                    url = agoda_json.get('recentSearches', [])[0].get('data', {}).get('url')
+                    base_url = 'https://www.agoda.com/zh-cn'
+                    real_url = ''.join([base_url, url])
+                elif source == 'booking':
+                    base_url = 'https://www.booking.com'
+                    root = html.fromstring(content)
+                    real_url = root.xpath('//div[@id="hotellist_inner"]//a')[0]
+                    real_url = ''.join([base_url, real_url.attrib.get('href').replace('-cn', '-com')])
+                elif source == 'ctrip':
+                    ctrip_json = re.search(r'hotelPositionJSON: (.*)(?=,)', content).group(1)
+                    ctrip_json = json.loads(ctrip_json)
+                    url = ctrip_json[0].get('url')
+                    base_url = "http://hotels.ctrip.com"
+                    real_url = ''.join([base_url, url])
+                elif source == 'elong':
+                    # hotel_id = re.search(r'hotelId":"([0-9]+)"', content).group(1)
+                    hotel_id = re.search(r'data-hotelid="(\w+)"', content).group(1)
+
+                    real_url = 'http://ihotel.elong.com/{0}/'.format(hotel_id)
+                elif source == 'expedia':
+                    raise Exception('我是expedia')
+                elif source == 'hotels':
+                    root = html.fromstring(content)
+                    hotel_id = root.xpath('//div[@id="listings"]//li')[0].attrib.get('data-hotel-id')
+                    real_url = "https://ssl.hotels.cn/ho{0}/?pa=1&q-check-out=2018-04-16&tab=description&q-room-0-adults=2&YGF=7&q-check-in=2018-04-15&MGT=1&WOE=1&WOD=7&ZSX=0&SYE=3&q-room-0-children=0".format(
+                        hotel_id)
+
 
         print real_url
         t2 = time.time()
@@ -312,7 +333,7 @@ class ConversionDaodaoURL(BaseSDK):
 #                 hotel_id = root.xpath('//div[@id="listings"]//li')[0].attrib.get('data-hotel-id')
 #                 real_url = "https://ssl.hotels.cn/ho{0}/?pa=1&q-check-out=2018-04-16&tab=description&q-room-0-adults=2&YGF=7&q-check-in=2018-04-15&MGT=1&WOE=1&WOD=7&ZSX=0&SYE=3&q-room-0-children=0".format(
 #                     hotel_id)
-#
+# #
 #         print real_url
 #         t2 = time.time()
 #         self.logger.info('抓取耗时：   {}'.format(t2 - t1))
@@ -361,8 +382,8 @@ if __name__ == "__main__":
 
     args = {
         'id': 671905,
-        'source': 'booking',
-        'url': 'https://www.tripadvisor.cn/Commerce?p=BookingCN&src=103469471&geo=1090289&from=HotelDateSearch_OverlayWidgetAjax&slot=2&matchID=1&oos=0&cnt=7&silo=24029&bucket=840513&nrank=1&crank=1&clt=D&ttype=DesktopMeta&tm=104026133&managed=false&capped=false&gosox=S_KcWjX0Qi1jVJpvbsE-ffeqZppHgAoNDPS52T60xAPBTXZtZZVqjcvNcq25L2YTggeO-_LmOZUkFbniE3XuR_7OtrHWpMXIljHzqR7cYiLkbUZxdwlO_xvR0q5a07tdGZb45EX_jmbw6qASoh_VL5QWBnumInwD-JGwp2vkhOM&hac=AVAILABLE&mbl=LOSE&mbldelta=8246&rate=1326.51&fees=249.38&cur=RMB&adults=2&child_rm_ages=&inDay=29&outDay=30&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=a906d321-3192-40cc-b1ce-b25e2556b8b8&def_d=true&cs=1113c5ebc4ffd321e10de5336509587dd&area=QC_Meta|Text|Available|Unknown|Desktop&tp=Hotels_MainList&ob=new_tab&ik=df81f1eb09f04822b55bd5231f21821d&priceShown=1576&aok=51f7793633c34be7ac5be3aa595f1867',
+        'source': 'elong',
+        'url': 'https://www.tripadvisor.cn/Commerce?p=ELongINTDaoDaoB2V&src=105282450&geo=307611&from=HotelDateSearch_OverlayWidgetAjax&slot=2&matchID=1&oos=0&cnt=8&silo=19442&bucket=807747&nrank=8&crank=8&clt=D&ttype=DesktopMeta&tm=104033080&managed=false&capped=false&gosox=g2PyeWifJCTy_lCtpdk9H1lLXL_O15P-7IjMPQrt4GM-HdpG9H8tvvUSIDb1RZUgYW4NXiYMXCAsi-RktbgPKUfLIHysIaEfxaTdSbqadbnNjazRXbkEe2kK2adzUPxbnU_fWX7w1vQTLuY3OKpH2PkiscrG8gPgs_zg2icIU2Q&hac=AVAILABLE&mbl=LOSE&mbldelta=1258&rate=1197.00&fees=224.00&cur=RMB&adults=2&child_rm_ages=&inDay=29&outDay=30&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=f7a15c2b-0644-4a2e-9a82-c5ab2f58015b&def_d=true&cs=1d8a5c6534d5a0ab6c43373a320715e1b&area=QC_Meta|Text|Available|Unknown|Desktop&tp=Hotels_MainList&ob=new_tab&ik=562d64e7b37e481fb5a949e19a9c0dbb&priceShown=1421&aok=93cf734459964d078528eb687ca92c0f',
         'table_name': 'list_result_daodao_20180412a',
     }
 
