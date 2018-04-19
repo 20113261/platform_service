@@ -197,12 +197,14 @@ class ConversionDaodaoURL(BaseSDK):
         url = kwargs['url']
         table_name = kwargs['table_name']
         t1 = time.time()
-        url.replace('.cn', '.com')
-        url = url.replace('.cn', '.com')
+        # url = url.replace('.cn', '.com')
 
         with MySession(need_cache=False, need_proxies=True) as session:
             # session.headers.update({'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'})
-            resp = session.get(url)
+            resp_daodao = session.get(url)
+            content_daodao = resp_daodao.text
+            real_daodao_url = re.findall(r"redirectPage\('(.*)'\)", content_daodao)[0]
+            resp = session.get(real_daodao_url)
             content = resp.text
             # print content
             real_url = None
@@ -210,6 +212,7 @@ class ConversionDaodaoURL(BaseSDK):
             # self.logger.info('%s\n%s\n%s\n' % (source, url, content[-600:]))
             if source == 'agoda':
                 agoda_json = re.search(r'window.searchBoxReact = (.*)(?=;)', content).group(1)
+                # root.xpath('//li[@data-selenium="hotel-item"]/a/@href')
                 agoda_json = json.loads(agoda_json)
                 url = agoda_json.get('recentSearches', [])[0].get('data', {}).get('url')
                 base_url = 'https://www.agoda.com/zh-cn'
@@ -288,9 +291,9 @@ if __name__ == "__main__":
     # ihg.execute()
 
     args = {
-        'id': 588004,
-        'source': 'elong',
-        'url': 'https://www.tripadvisor.cn/Commerce?p=ELongDaoDao&src=49828623&geo=4405400&from=HotelDateSearch_Hotels&slot=2&matchID=1&oos=0&cnt=2&silo=5216&bucket=788321&nrank=2&crank=2&clt=D&ttype=DesktopMeta&tm=103965318&managed=false&capped=false&gosox=VF_4GV4ZVLXUV145mJrJAOZlJY2xB93FumvGuZoNSTUnVGoVMyOH1pt1E8uLwm6DWTN4rBpcZelUxebmEnF7C476EJJ-pFznFzAiuoirmeiHR1L1VohAOk8sfLg2Y8dHyUZi0rmo67clyCjSvCibSw&hac=AVAILABLE&mbl=MEET&mbldelta=0&rate=85.95&fees=13.05&cur=RMB&adults=2&child_rm_ages=&inDay=29&outDay=30&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=b759a0c4-cabf-41f2-ba64-c2e151b3ce41&def_d=true&cs=14c10a7553055695153e120bde633a56f&area=QC_Meta|Text|Available|Main|Desktop&tp=Hotels_MainList&ob=new_tab&ik=1bc0e89f5f2b4e17888c6d09865623fe&priceShown=99&aok=4ccabae06d52468f84c1551c9c572957',
+        'id': 373351,
+        'source': 'booking',
+        'url': 'https://www.tripadvisor.cn/Commerce?p=BookingCN&src=103567628&geo=313118&from=HotelDateSearch_Hotels&slot=2&matchID=1&oos=0&cnt=3&silo=24029&bucket=840513&nrank=1&crank=1&clt=D&ttype=DesktopMeta&tm=103948195&managed=false&capped=false&gosox=vU6-Ea7GJVOUhg-31vZ_uQlrIBdmcUFlj19_w6BjxT3JQ6_PbGK_QsBfNJL-kcnC3KFSuJA0GK9jdvbvQZEwZn9hbNFhsy3hIKdfoSPq53jkbUZxdwlO_xvR0q5a07td29mwipvqzgiMhcihSk8h8KtweOn3aClzXcyUf6-BNXI&hac=AVAILABLE&mbl=LOSE&mbldelta=590&rate=625.00&fees=68.75&cur=RMB&adults=2&child_rm_ages=&inDay=29&outDay=30&rooms=1&inMonth=4&inYear=2018&outMonth=4&outYear=2018&auid=c876a806-98aa-45d1-b971-1068b6799609&def_d=true&cs=1567618feee3d60b3ea9b66ff16a5328e&area=QC_Meta|Text|Available|Main|Desktop&tp=Hotels_ABList&ob=new_tab&ik=c6d53244bf0b4efaa42b3e282a1f6f5d&priceShown=663&aok=3246c1f6fe59410399bf35664c824526',
         'table_name': 'list_result_daodao_20180412a',
     }
 
