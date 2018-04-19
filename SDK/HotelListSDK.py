@@ -84,12 +84,14 @@ def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=
             "suggest": suggest,
             "check_in": str(check_in),
             "stay_nights": '1',
+            "city_id": city_id,
             "occ": '2',
             'is_service_platform': True,
             'tid': tid,
             'used_times': used_times,
         }
         task.content = ''
+    print(task.ticket_info)
     if flag:
         old_spider_tag = source+'FilterHotel'
         required = ['filter']
