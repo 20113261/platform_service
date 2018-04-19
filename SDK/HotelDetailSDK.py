@@ -120,6 +120,16 @@ class HotelDetailSDK(BaseSDK):
                     page = session.get(url, timeout=240)
                     page.encoding = 'utf8'
                     content = page.text
+                elif source == 'elong':
+                    try:
+                        page = session.get(url, timeout=240)
+                        page.encoding = 'utf8'
+                        content = page.text
+                    except:
+                        url = url.replace('ihotel', 'hotel')
+                        page = session.get(url, timeout=240)
+                        page.encoding = 'utf8'
+                        content = page.text
                 elif source == 'ihg':
                     url1, url2 = url.split('#####')
                     page1 = session.get(url1, timeout=240)
