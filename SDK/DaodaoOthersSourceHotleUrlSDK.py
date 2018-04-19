@@ -221,14 +221,14 @@ class ConversionDaodaoURL(BaseSDK):
                 elif source == 'booking':
                     real_url = real_daodao_url.replace('http', 'https').replace('.html', '.zh-cn.html').split('?', 1)[0]
                 elif source == 'ctrip':
-                    base_url = 'http://hotels.ctrip.com/'
+                    base_url = 'http://hotels.ctrip.com/international/{0}.html'
                     url_obj = urlparse.urlsplit(real_daodao_url)
                     try:
                         hotel_id = urlparse.parse_qs(url_obj.query)['hotelid'][0]
                     except:
                         jumpUrl = urlparse.parse_qs(url_obj.query)['jumpUrl'][0]
                         hotel_id = re.findall('/name(\w+)', urlparse.urlsplit(jumpUrl).path)[0]
-                    real_url = base_url + hotel_id
+                    real_url = base_url.format(hotel_id)
                 elif source == 'expedia':
                     raise Exception('我是expedia')
                 elif source == 'hotels':
