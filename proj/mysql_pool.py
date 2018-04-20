@@ -76,3 +76,12 @@ db_config = dict(
     database='base_data'
 )
 spider_data_base_data_pool = init_pool(**db_config)
+
+db_config = dict(
+    user='mioji_admin',
+    password='mioji1109',
+    host='10.10.238.148',
+    database='task_db'
+)
+
+task_db_monitor_db_pool = init_pool(**db_config)

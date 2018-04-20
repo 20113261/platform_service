@@ -12,11 +12,15 @@ from proj.my_lib.logger import get_logger, func_time_logger
 from collections import defaultdict
 from proj.my_lib.Common.Task import Task, TaskType
 from cachetools.func import ttl_cache
+from proj.mysql_pool import task_db_monitor_db_pool
 
 logger = get_logger("mongo_task_func")
 
-client = pymongo.MongoClient(host='10.10.231.105')
-db = client['MongoTask']
+# client = pymongo.MongoClient(host='10.10.231.105')
+# db = client['MongoTask']
+
+client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
+db = client['MongoTask_Zxp']
 
 cursor_dict = {}
 
@@ -43,9 +47,9 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     :return: Task
     """
     # type:  (str, int, int, bool) -> Task
-
+    collection_name_list = [i3 for i1, i2, i3, i4 in get_serviceplatform_monitor_info()]
     collection_prefix = 'Task_Queue_{}_TaskName_'.format(queue)
-    c_list = list(filter(lambda x: str(x).startswith(collection_prefix), db.collection_names()))
+    c_list = list(filter(lambda x: str(x).startswith(collection_prefix), collection_name_list))
 
     if queue == 'poi_list':
         c_list = list(filter(lambda x: str(x).split('_')[-1] >= "20171214a", c_list))
@@ -153,57 +157,58 @@ def _get_task_total_simple(collection_name, queue, used_times=6, limit=10000, de
     _id_list = []
     now = datetime.datetime.now()
     try:
-        for each_priority in range(11, MIN_PRIORITY, -1):
-            for each_used_times in range(0, used_times + 1):
-                cursor = collections.find(
-                    {
-                        'queue': queue,
-                        'finished': 0,
-                        # 'used_times': {'$lte': each_used_times},
-                        'used_times': each_used_times,
-                        'priority': each_priority,
-                        'running': 0
-                    },
-                    hint=[('queue', 1), ('finished', 1), ('used_times', 1), ('priority', 1), ('running', 1)]
-                ).limit(_count)
-                # logger.debug(
-                #     '[queue: {}][priority: {}][used_times: {}][limit: {}][debug: {}]'.format(queue, each_priority,
-                #                                                                              each_used_times, _count,
-                #                                                                              debug))
+        # for each_priority in range(11, MIN_PRIORITY, -1):
+        for each_used_times in range(0, used_times + 1):
+            cursor = collections.find(
+                {
+                    'queue': queue,
+                    'finished': 0,
+                    # 'used_times': {'$lte': each_used_times},
+                    'used_times': each_used_times,
+                    # 'priority': each_priority,
+                    'running': 0
+                }
+            ).limit(_count)
+            # ,
+            # hint = [('queue', 1), ('finished', 1), ('used_times', 1), ('priority', 1), ('running', 1)]
+            # logger.debug(
+            #     '[queue: {}][priority: {}][used_times: {}][limit: {}][debug: {}]'.format(queue, each_priority,
+            #                                                                              each_used_times, _count,
+            #                                                                              debug))
 
-                for line in cursor:
-                    _total[(each_priority, each_used_times)] += 1
-                    _count -= 1
+            for line in cursor:
+                _total[each_used_times] += 1
+                _count -= 1
 
-                    if _count == 0:
-                        raise StopException()
+                if _count == 0:
+                    raise StopException()
 
-                    if not debug:
-                        if len(_id_list) == EACH_UPDATE:
-                            collections.update({
-                                '_id': {
-                                    '$in': _id_list
-                                }
-                            }, {
-                                '$set': {
-                                    'utime': now,
-                                    'running': 1
-                                },
-                                '$inc': {'used_times': 1}
-                            }, multi=True)
-                            _id_list = []
-                    else:
-                        if len(_id_list) == 5:
-                            for i in collections.find({
-                                '_id': {
-                                    '$in': _id_list
-                                }
-                            }):
-                                logger.debug(i['_id'])
-                                logger.debug(i)
-                            _id_list = []
-                    _id_list.append(line['_id'])
-                    yield line
+                if not debug:
+                    if len(_id_list) == EACH_UPDATE:
+                        collections.update({
+                            '_id': {
+                                '$in': _id_list
+                            }
+                        }, {
+                            '$set': {
+                                'utime': now,
+                                'running': 1
+                            },
+                            '$inc': {'used_times': 1}
+                        }, multi=True)
+                        _id_list = []
+                else:
+                    if len(_id_list) == 5:
+                        for i in collections.find({
+                            '_id': {
+                                '$in': _id_list
+                            }
+                        }):
+                            logger.debug(i['_id'])
+                            logger.debug(i)
+                        _id_list = []
+                _id_list.append(line['_id'])
+                yield line
     except StopException:
         logger.debug("[end of search][queue: {}][num: {}]".format(queue, _total))
     finally:
@@ -276,6 +281,15 @@ def update_city_list_task(city_collection_name, list_task_token, data_count, tas
     )
     return bool(_res)
 
+def get_serviceplatform_monitor_info():
+    pool = task_db_monitor_db_pool.connection()
+    cursor = pool.cursor()
+    sql = '''select * from task_serviceplatform_monitor  where finished=0  order by priority'''
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    for i in result:
+        yield i[0], i[1], i[2],i[3]
+
 
 if __name__ == '__main__':
     # for line in get_task_total(10):
@@ -299,11 +313,15 @@ if __name__ == '__main__':
     #
     # update_city_list_task("City_Queue_poi_list_TaskName_city_total_qyer_20171120a", "e50ff0261cbd53c8d3e6872a71aa3a97",
     #                       500, True)
-    for line in get_task_total_simple(
-            queue='hotel_list',
-            limit=20,
-            debug=True):
-        print(line)
+
+
+    # for line in get_task_total_simple(
+    #         queue='hotel_list',
+    #         limit=20,
+    #         debug=True):
+    #     print(line)
         # print(quick_task_slow_task_count('hotel_list', 'ihg'))
         # print(quick_task_slow_task_count('hotel_list', 'ihg'))
         # print(quick_task_slow_task_count('hotel_list', 'ihg'))
+
+    get_serviceplatform_monitor_info()

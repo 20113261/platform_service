@@ -816,7 +816,7 @@ if __name__ == '__main__':
 
     #monitoring_hotel_list2detail()
 
-
+    city2list()
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
     # while True:
@@ -825,7 +825,7 @@ if __name__ == '__main__':
     # city2list()
     # monitoring_result_list2detail()
     # monitoring_result_daodao_filter()
-    monitoring_result_daodao_convergence()
+
         # get_default_timestramp()
         # get_seek('hotel_list2detail_test')
         # update_seek('hotel_list2detail_test', datetime.datetime.now(), 9)

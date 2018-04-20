@@ -7,7 +7,8 @@
 # @Software: PyCharm
 import sys
 
-sys.path.append('/data/lib')
+# sys.path.append('/data/lib')
+print(sys.path)
 from proj.my_lib.Common.Task import Task
 from proj.total_tasks import images_task
 
@@ -101,9 +102,9 @@ if __name__ == '__main__':
     #         "task_response": TaskResponse()
     #     }
     # )
-    task = Task(_worker='proj.total_tasks.images_task', _task_id='176ddbc7960c2a6f6d8d7c9baea65617', _source='huantaoyou',
+    task = Task(_worker='proj.total_tasks.images_task', _task_id='176ddbc7960c2a6f6d8d7c9baea65617', _source='tuniuGT',
                 _type='DownloadImages',
-                _task_name='image_wanle_huantaoyou',
+                _task_name='image_GT_tuniu_20180414',
                 _used_times=0, max_retry_times=6,
                 # kwargs={"source": "daodao", "new_part": "detail_attr_daodao_20171122a",
                 #         "target_url": "https://ccm.ddcdn.com/ext/photo-s/0f/dd/44/61/peaceful-time.jpg",
