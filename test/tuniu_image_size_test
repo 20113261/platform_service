@@ -1,0 +1,41 @@
+#coding:utf-8
+import datetime
+import pymongo
+'''
+修改tuniu的图片大小
+'''
+client = pymongo.MongoClient(host='10.10.231.105')
+collections = client['MongoTask']['Task_Queue_file_downloader_TaskName_image_GT_tuniu_20180414']
+
+cursor = collections.find({})
+id_list = (id_dict['_id'] for id_dict in cursor)
+# print(len(id_list))
+i = 0
+for id in id_list:
+    url = collections.find_one({"_id": id}, {"args": 1})['args']['target_url']
+    url_prefix = url.split('_', 1)[0]
+    url_suffix = url.split('.')[-1]
+    url = url_prefix + '_w1024_h0_c0_t0.' + url_suffix
+    url = url.encode('utf-8')
+    print url
+    result = collections.update({
+        '_id': id
+    }, {
+        '$set': {
+            'args.target_url': url,
+            'finished': 0,
+            'used_times': 0,
+            'running': 0
+        }
+    }, multi=True)
+    i += 1
+    print(str(i), '____', result)
+
+# collections = client['MongoTask']['Task_Queue_file_downloader_TaskName_image_GT_tuniu_20180414']
+# cursor = collections.find({"args.url":{"$regex":"www\.(?!marriott)"}}, {"_id":1,"args.url":1}).limit(100)
+# id_list = [id_dict['_id'] for id_dict in cursor]
+# print len(id_list)
+# print cursor
+# for id in id_list:
+#     url = collections.find_one({"_id": id})['args']['url']
+#     print url

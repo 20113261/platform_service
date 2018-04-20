@@ -81,19 +81,6 @@ hotel_slow_source = {
                 'slow_hotel_list',
                 'slow_hotel_list'
             )
-        },
-    'hilton':
-        {
-            'proj.total_tasks.hotel_detail_task': (
-                'proj.total_tasks.hilton_detail_task',
-                'slow_hotel_detail',
-                'slow_hotel_detail'
-            ),
-            'proj.total_tasks.hotel_list_task': (
-                'proj.total_tasks.hilton_list_task',
-                'slow_hotel_list',
-                'slow_hotel_list'
-            )
         }
 }
 
