@@ -294,3 +294,4 @@ def result_daodao_filter(self, task, **kwargs):
 def hilton_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
+
