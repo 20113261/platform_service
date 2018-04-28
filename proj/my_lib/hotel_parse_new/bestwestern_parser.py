@@ -3,8 +3,12 @@ import re
 import json
 import requests
 from lxml import etree
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
 from proj.my_lib.models.HotelModel import HotelNewBase
 from proj.my_lib import parser_exception
+# from mioji.common.class_common import Hotel_New as HotelNewBase
 
 
 def bestwestern_parser(content, url, other_info):
@@ -73,7 +77,11 @@ def bestwestern_parser(content, url, other_info):
     hotel.check_out_time = html.xpath('//div[@class="phoneNumbers"]/div[contains(@class,"phonesRow")][1]/div[2]/p[2]/text()')[0]
     # 酒店url
     hotel.hotel_url = url
+    hotel_service_info = __get_hotel_service(html)
+    hotel.others_info = json.dumps({"hotel_services_info": hotel_service_info})
     print hotel.to_dict()
+    # with open("bestwestren.json", 'a') as f:
+    #     f.write(hotel.to_dict() + "\n")
     return hotel.to_dict()
 
 
@@ -212,18 +220,41 @@ def get_hotel_facility(html):
     return facility
 
 
+# 获取酒店设施、服务原始数据
+def __get_hotel_service(html):
+        hotel_service = ";".join(html.xpath(
+            '//div[@class="hotelAmenities"]//div[contains(@class,"hotelAmenities")]//div[contains(@class,"hotelAmenities")]/ul//li/text()'))
+        room_service = ";".join(html.xpath(
+            '//div[@class="hotelAmenities"]//div[contains(@class,"roomAmenities")]//ul[@id="roomamenities"]/li/text()'))
+        service = hotel_service + ";" + room_service
+        return service
+
+
 if __name__ == '__main__':
     url = "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-victoria-palace-london-83873"
+    url_l = [
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-victoria-palace-london-83873",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-vauxhall-hotel-london-84215",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-delmere-hotel-london-83683",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-mornington-hotel-london-hyde-park-london-83187",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-boltons-hotel-london-kensington-london-83897",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-london-croydon-aparthotel-croydon-84209",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-maitrise-suites-apartment-hotel-london-83925",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-white-house-hotel-watford-83770",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-the-ship-hotel-weybridge-83913",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-welwyn-garden-city-homestead-court-hotel-welwyn-garden-city-83816"
+    ]
     req = requests.session()
-    resp = req.get(url)
-    cookies = resp.cookies
-    # 经纬度
-    lng_lat = [cookies['search_locationLng'], cookies['search_locationLat']]
-    # 页面详情
-    html = resp.content
-    other_info = {
-        "source_id": "best-western-victoria-palace-london-83873",
-        "city_id": ""
-    }
-    content = [lng_lat, html]
-    bestwestern_parser(content, url, other_info)
+    for url in url_l:
+        resp = req.get(url, verify=False)
+        cookies = resp.cookies
+        # 经纬度
+        lng_lat = [cookies['search_locationLng'], cookies['search_locationLat']]
+        # 页面详情
+        html = resp.content
+        other_info = {
+            "source_id": "best-western-victoria-palace-london-83873",
+            "city_id": ""
+        }
+        content = [lng_lat, html]
+        res = bestwestern_parser(content, url, other_info)
