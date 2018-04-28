@@ -39,5 +39,5 @@ if __name__ == '__main__':
 
 
     #一个源一分钟500个
-    insert_task('hotel_list', limit=6000)
+    insert_task('hotel_list', limit=10000)
     # insert_task('file_downloader', limit=500)
