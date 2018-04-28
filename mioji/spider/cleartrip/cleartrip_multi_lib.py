@@ -96,7 +96,7 @@ def parse_content(data, adult):
         fare_info = fare[index]
         fare_key = fare_info['dfd']
         fare_info = fare_info[fare_key]
-        price = fare_info['bp'] # base fare
+        price = fare_info['pr']
         flight_no = ''
         stop_id = ''
         stop_time = ''
@@ -138,7 +138,7 @@ def parse_content(data, adult):
         multiflight.stop_time = stop_time
         multiflight.real_class = real_class
         multiflight.price = float(price / int(adult))
-        multiflight.tax = float(fare_info['t']/int(adult)) # tax
+        multiflight.tax = 0
         multiflight.currency = currency
         multiflight.source = 'cleartrip::cleartrip'
         dept, dest = multiflight.stop_id.split('&')

@@ -25,7 +25,7 @@ class ClearTripCityNameSpider(Spider):
     }
 
     def targets_request(self):
-        @request(retry_count=3, proxy_type=PROXY_REQ, binding=self.parse_City, ip_type="foreign")
+        @request(retry_count=3, proxy_type=PROXY_REQ, binding=self.parse_City)
         def home_page():
             return {
                 'req': {

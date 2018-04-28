@@ -4,7 +4,7 @@
 import json
 import time
 from mioji.common import parser_except
-from mioji.common.spider import Spider, request, PROXY_NONE, PROXY_REQ, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_NONE, PROXY_REQ
 from igola_api import Handler
 from mioji.common.logger import logger
 from mioji.common.check_book.check_book_ratio import use_record_qid
@@ -50,7 +50,7 @@ class igolaFlightSpider(Spider):
         content, ticket_info = self.pre_process()
         create_session_url, headers, post_data = self.api.get_create_parameter(content, ticket_info)
 
-        @request(retry_count=1, proxy_type=PROXY_NEVER)
+        @request(retry_count=1, proxy_type=PROXY_NONE)
         def create_session():
             requests_info = {
                 'req': {
@@ -66,7 +66,7 @@ class igolaFlightSpider(Spider):
             logger.info("建立连接的完整请求为：{0}".format(requests_info))
             return requests_info
 
-        @request(retry_count=1, proxy_type=PROXY_NEVER, binding=['RoundFlight'])
+        @request(retry_count=1, proxy_type=PROXY_NONE, binding=['RoundFlight'])
         def poll():
             self.api.start_time = time.time()
             while True:

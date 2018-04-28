@@ -52,7 +52,7 @@ class ClearTripFlightSpider(Spider):
         referer = cleartrip_oneway_lib.get_referer_url(task_dict)
         json_url, dest_city, dept_city = cleartrip_oneway_lib.get_json_url(task_dict)
 
-        @request(retry_count=3, proxy_type=PROXY_FLLOW, binding=self.parse_Flight, ip_type="foreign")
+        @request(retry_count=3, proxy_type=PROXY_FLLOW, binding=self.parse_Flight)
         def json_page():
             return {
                 'req': {
@@ -68,22 +68,22 @@ class ClearTripFlightSpider(Spider):
         return False
 
     def parse_Flight(self, req, data):
-        if 'fare' in data and 'content' in data:
+        if all(map(lambda x: x in data, ['fare', 'content'])):
             try:
                 return cleartrip_oneway_lib.page_parser(data)
             except Exception:
                 parser_except.ParserException(parser_except.PARSE_ERROR, 'cleartripOneWayFlight::爬虫解析异常')
         else:
-            raise parser_except.ParserException(parser_except.PROXY_INVALID, 'cleartripOneWayFlight::数据中无正常的机票信息,被封禁')
+            raise parser_except.ParserException(parser_except.EMPTY_TICKET, 'cleartripOneWayFlight::数据中无正常的机票信息')
 
 
 if __name__ == '__main__':
     from mioji.common.task_info import Task
-    from mioji.common.utils import simple_get_http_proxy, simple_get_socks_proxy_new
+    from mioji.common.utils import simple_get_http_proxy, simple_get_socks_proxy
     from mioji.common import spider
 
-    spider.slave_get_proxy = simple_get_socks_proxy_new
-    content = 'SFO&CDG&20180123'
+    spider.get_proxy = simple_get_socks_proxy
+    content = 'TXL&PEK&20171230'
     task = Task('cleartrip::cleartrip', content)
     task.ticket_info["flight_no"] = "LH723_LH2456&LH1167_LH720"
 

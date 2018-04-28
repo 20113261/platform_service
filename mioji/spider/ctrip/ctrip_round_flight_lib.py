@@ -225,6 +225,8 @@ def task_parser(task_content):
     try:
         dept_info = suggestion['ctrip'][dept_city]
         dest_info = suggestion['ctrip'][dest_city]
+        dept_city = dept_info['city_en_name']
+        dest_city = dest_info['city_en_name']
     except Exception:
         raise parser_except.ParserException(51, "用三字码无法从网站拿到 suggestion")
     return dept_city, dest_city, dept_info, dest_info, dept_date, dest_date

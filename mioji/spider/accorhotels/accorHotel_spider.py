@@ -10,25 +10,23 @@ from mioji.common.class_common import Room
 setdefaultencoding_utf8()
 
 
-class AccorHotelSpider(Spider):
-    source_type = 'accorHotel'
+class AccorListSpider(Spider):
+    source_type = 'accorListHotel'
     targets = {
         'hotel': {},
-        'room': {'version': 'InsertHotel_room4'}
+        'room': {}
     }
     old_spider_tag = {
-        'accorHotel': {'required': ['room']}
+        'accorListHotel': {'required': ['room']}
     }
 
     def __init__(self, task=None):
-        super(AccorHotelSpider, self).__init__(task=task)
+        super(AccorListSpider, self).__init__(task=task)
         self.page = 1
         self.start_time = ""
         self.hotel_list = []
         self.total = 0
         self.price = ""
-        self._room_id = {}
-        self.room_new_list = dict()
 
     @property
     def content_parser(self):
@@ -47,9 +45,9 @@ class AccorHotelSpider(Spider):
 
     def targets_request(self):
         hotel_id, hotel_name, check_in, check_out, occ, room_count = self.content_parser
-        init_url = 'https://m.accorhotels.cn/api/search/'  # 初始请求
-        url = 'https://m.accorhotels.cn/api/rooms?arrivalDate={}&hotelCode={}'.format(check_in, hotel_id)  # 房间信息
-        room_url = 'https://m.accorhotels.cn/api/rooms?&UseDestinationCurrency=false&adults={}&children=0&currency=RMB&rooms={}'.format(str(occ), str(room_count))  # 房间数量入住人数
+        init_url = 'https://m.accorhotels.cn/api/search/' #初始请求
+        url = 'https://m.accorhotels.cn/api/rooms?arrivalDate={}&hotelCode={}'.format(check_in, hotel_id) # 房间信息
+        room_url = 'https://m.accorhotels.cn/api/rooms?&UseDestinationCurrency=false&adults={}&children=0&currency=RMB&rooms={}'.format(str(occ), str(room_count)) # 房间数量入住人数
 
         data = {"clientCode": "",
                 "clientTimeZoneDifference": -480,
@@ -75,10 +73,12 @@ class AccorHotelSpider(Spider):
             }}
         yield get_init_url
 
-        @request(retry_count=5, proxy_type=PROXY_FLLOW)
+        @request(retry_count=5, proxy_type=PROXY_FLLOW, binding=self.parse_hotel)
         def get_url():
-            return {'req': {'method': 'GET', 'url': url},
-                    'user_handler': [self.parse_hotel]}
+            return {'req': {
+                'method': 'GET',
+                'url': url
+            }}
         yield get_url
 
         @request(retry_count=5, proxy_type=PROXY_FLLOW, binding=self.parse_room)
@@ -91,22 +91,25 @@ class AccorHotelSpider(Spider):
 
     def parse_hotel(self, req, res):
         data = json.loads(res)['hotel']
+        room_new_list = dict()
+        self._room_id = {}
         room = Room()
         room.source_roomid = ""
         room.hotel_name = data['name']
         room.city = "NULL" # data['address'].split(',')[1]
-        room.source = "accor"
+        room.source = "accorHotel"
         room.source_hotelid = data['code']
-        room.real_source = "accor"
+        room.real_source = "accorHotel"
         for content in data['room']:
             room_id = content['code']
-            self.room_new_list[room_id] = dict()
             room.occupancy = content['maxAdultOccupancy']
-            maxoccupancy = content['maxOccupancy']
             room.bed_type = content['title']
             room.source_roomid = content['code']
             room_title = content['title']
-            room.room_type = room_title
+            if not room_title.split('，'):
+                room.room_type = room_title
+            elif room_title.split('，'):
+                room.room_type = room_title.split('，')[0]
             room.size = -1.0
             room.floor = -1
             room.rest = -1
@@ -120,7 +123,6 @@ class AccorHotelSpider(Spider):
                 room.currency = "CNY"
                 room.is_extrabed = "NULL"
                 room.is_extrabed_free = "NULL"
-                breakfastlabel = cont['breakfastLabel']
                 if cont['breakfastLabel'] == "含早餐":
                     room.has_breakfast = 'Yes'
                     room.is_breakfast_free = "Yes"
@@ -144,12 +146,15 @@ class AccorHotelSpider(Spider):
                 room.guest_info = 'NULL'
                 other_info = dict()
                 other_info['extra'] = dict()
-                other_info['extra']['breakfast'] = breakfastlabel
+                other_info['extra']['breakfast'] = room.has_breakfast
                 other_info['extra']['payment'] = room.pay_method
                 other_info['extra']['return_rule'] = room.return_rule
-                other_info['extra']['occ_des'] = '每间客房最多入住人数: {}人'.format(maxoccupancy)
+                if room.room_desc.split("。")[-1] != '':
+                    other_info['extra']['occ_des'] = room.room_desc.split("。")[-1]
+                else:
+                    other_info['extra']['occ_des'] = room.room_desc.split("。")[-2]
                 room.others_info = json.dumps(other_info)
-                self.room_new_list[room_id][_rateplancode] = [room.hotel_name, room.city, room.source, room.source_hotelid,
+                room_new_list[_rateplancode] = [room.hotel_name, room.city, room.source, room.source_hotelid,
                               room.source_roomid, room.real_source, room.room_type, room.occupancy,
                               room.bed_type, room.size, room.floor, room.check_in, room.check_out,
                               room.rest, room.price, room.tax, room.currency, room.pay_method,
@@ -157,7 +162,8 @@ class AccorHotelSpider(Spider):
                               room.is_breakfast_free, room.is_cancel_free, room.extrabed_rule,
                               room.return_rule, room.change_rule, room.room_desc,
                               room.others_info, room.guest_info]
-        return self.room_new_list
+                self._room_id[room_id] = list()
+                self._room_id[room_id].append(room_new_list)
 
     def parse_room(self, req, res):
         room = Room()
@@ -171,25 +177,27 @@ class AccorHotelSpider(Spider):
             for content in data['room']:
                 room_code = content['code']
                 room_dict[room_code] = dict()
+
                 for cont in content['rates']:
                     rateplancode = cont['ratePlanCode']
                     room_dict[room_code][rateplancode] = cont['total']
                     room.price = room_dict[room_code][rateplancode]
-                    _room = self.room_new_list[room_code][rateplancode]
-                    _room[14] = room.price
-                    rooms.append(tuple(_room))
+                    for i in self._room_id[room_code]:
+
+                        i[rateplancode][14] = room.price
+                        rooms.append(tuple(i[rateplancode]))
         return rooms
 
 
 if __name__ == '__main__':
-    from mioji.common.utils import simple_get_socks_proxy_new
+    from mioji.common.utils import simple_get_socks_proxy
     from mioji.common import spider
 
-    spider.slave_get_proxy = simple_get_socks_proxy_new
+    spider.slave_get_proxy = simple_get_socks_proxy
     task = Task()
-    spider = AccorHotelSpider(task)
+    spider = AccorListSpider(task)
     """ 酒店ID&酒店中文名&2&20180315 """
-    task.content = '0351&拉斯拜尔蒙帕纳斯美居酒店&1&20180126'
+    task.content = '1785&伦敦滑铁卢诺富特酒店&3&20180315'
     task.ticket_info = {
         "room_info": [{"occ": 2, "num": 1, "room_count": 1}],
     }

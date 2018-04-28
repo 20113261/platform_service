@@ -125,8 +125,8 @@ class BaseMultiFlightSpider(Spider):
                 }
                 ret.append(ret2)
             return ret
-        if self.paging_url is not None:
-            yield get_tickets_page
+
+        yield get_tickets_page
 
         # if self.verify_urls:
         #     @request(retry_count=1, proxy_type=PROXY_FLLOW, binding=self.parse_MultiFlight, async=True)

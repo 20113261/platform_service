@@ -11,6 +11,7 @@ from analysis_json import *
 from mioji.common import parser_except
 from mioji.common.check_book.check_book_ratio import use_record_qid
 
+
 """
 调用API 时需要对请求参数进行签名验证，服务器也会对该请求参数进行验证是否合法的。方法如下：
 根据参数名称（除签名）将所有请求参数按照字母先后顺序排序:key + value .... key + value

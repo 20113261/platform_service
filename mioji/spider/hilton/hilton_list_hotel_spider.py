@@ -68,7 +68,7 @@ class HiltonHotelSpider(Spider):
 if __name__ == '__main__':
     from mioji.common.task_info import Task
     task = Task()
-    task.content = 'new-york'
+    task.content = 'Beijing'
     spider = HiltonHotelSpider()
     spider.task = task
     print spider.crawl()

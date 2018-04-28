@@ -106,7 +106,12 @@ class ctripHotelSpider(Spider):
         # ctrip 有点奇葩  room_num 是成人的数目， 暂时不支持children
         room_num = str(self.task.ticket_info['room_info'][0].get('occ', 2))  # str(2)  # default
         # guest_num = str(self.task.ticket_info.get('occ', 2))  # str(2)
-        child_num = str(self.task.ticket_info['room_info'][0].get('occ', 2))  # str(2)
+        # child_age = map(lambda x: str(x), self.task.ticket_info['room_info'][0].get('child_age'))
+        # child_num = room_num + '-' + '-'.join(child_age)  # str(2)
+        child_num = room_num
+        url_str = '\"http://hotels.ctrip.com/{0}.html\"'.format(hotel_id)
+        # url_str = '\"' + 'http://hotels.ctrip.com' + pat3.findall(runjs)[0] + '\"'
+        self.headers.setdefault('Referer', url_str.replace('"', "").replace(r'com/', r'com/international/'))
         self.user_datas['infomation'] = (city_id, hotel_id, check_in_form, check_out_form, \
                                          room_num, child_num, cid)
         # 如果没有在获取eleven过程中异常抛出22错误 表示获取的eleven信息不完整
@@ -175,41 +180,23 @@ class ctripHotelSpider(Spider):
         except:
             raise parser_except.ParserException(97, '未配置PhantomJS')
         try:
-            do = 'var Image = function(){}; var window = {}; window.document = {}; ' \
-                 'var document = window.document; ' \
-                 'window.navigator = ' \
-                 '{"appCodeName":"Mozilla", "appName":"Netscape", "language":"zh-CN", "platform":"Win"}; ' \
-                 'var navigator = window.navigator; window.location = {}; ' \
-                 'window.location.href = "http://hotels.ctrip.com/hotel/hotelid.html"; ' \
-                 'var location = window.location; '
-            do = do.replace('hotelid', self.user_datas['infomation'][1])
-            pat = re.compile(r'new Function\(\'return "\' \+ (.+) \+ \'\";\'\)')
-            pat = re.compile(r'new Function\(\'return "\' \+ (.+) \+ \'\";\'\)')
-            # pat2 = re.compile(r'new Function\(\'return "\' \+ .+ \+ \'\";\'\)')
-            pat2 = re.compile(r'new Function\(\'return "\' \+ .+ \+ \'\";\'\)')
-            pat3 = re.compile(r'/international/.+?\.html')
-            jscontent = data
-            jscontent = jscontent.replace('eval(', '')[:-1]  # 加密的javaScript
-            runjs = ph_runtime.eval(jscontent)
-            # print runjs
-            eleven_str = pat.findall(runjs)
-            need_to_replace = pat2.findall(runjs)
-            url_str = '\"http://hotels.ctrip.com/{0}.html\"'.format(hotel_id)
-            # url_str = '\"' + 'http://hotels.ctrip.com' + pat3.findall(runjs)[0] + '\"'
-            self.headers.setdefault('Referer', url_str.replace('"', "").replace(r'com/', r'com/international/'))
-            replace_str = self.callback_param + '(' + need_to_replace[0] + ')'  # 需要替代的javaScript
-            # print replace_str
-            js = runjs.replace(replace_str, 'return ' + eleven_str[0])  # 原本调用函数返回，这个直接把eleven参数返回
-            # print js
-            js = do + js
-            # js = js.replace(r'window.location.href', url_str).replace('document',
-            #                                                           '\"xyz\"')  # 更改href参数，然后替代nodejs不支持的document参数
-            js = js.replace(r'!!window.Script', 'false').replace(';!function()',
-                                                                 'function run()')  # 先替代nodejs不支持的window参数，然后更改function的名称
-            js = js[:-3]  # 删除js的自调用
-            # print js
-            # print '(' * 100
-            eleven = ph_runtime.compile(js).call('run')
+            encode_js_list = eval(re.findall('\[\d.+\d\]', data)[0])
+            sub_key = int(re.findall('fromCharCode.+-\d+', data)[0].split('-')[1])
+            encode_js_list = [x - sub_key for x in encode_js_list]
+            encode_js = ''.join(chr(x) for x in encode_js_list)
+
+            func_err = re.findall('\w+\(new Function', encode_js)[0]  # 替换最后return的内容
+            href = re.findall('/international/.+?\"', encode_js)[0][:-1]  # 替换判断的href地址
+
+            pat3 = re.compile(r'\'length\';(.*?&&.*?&&.*?&&.*?\);).*')  # 删掉判断模拟器会进入的错误分支代码
+            replace_str2 = pat3.findall(encode_js)
+
+            encode_js = encode_js.replace(';!function()', 'function run()') \
+                            .replace(func_err, 'return(')[:-3] \
+                .replace(replace_str2[0], '') \
+                .replace(href, '')
+            res = ph_runtime.compile(encode_js).call('run')
+            eleven = re.search(r'"(.*?)"', res).group(1)
             if eleven == None:
                 parser_except.ParserException(parser_except.PROXY_INVALID, 'ctripHotel :: 获取eleven失败')
         except Exception as e:
@@ -277,6 +264,8 @@ class ctripHotelSpider(Spider):
     #         self.code = 95
 
     def parse_room(self, req, data):
+
+        da = json.dumps(data)
         city_id, hotel_id, check_in_form, check_out_form, room_num, child_num, cid = self.user_datas['infomation']
         rooms = []
         if data['LoadStatus'] != 'Success':
@@ -294,6 +283,7 @@ class ctripHotelSpider(Spider):
         for rl in con_dict['roomList']:
             print rl['id']
             room_type_list[rl['id']] = rl
+
         all_p = con_dict['subRoomList']
         lll = len(all_p)
         print lll, "F<lll>"
@@ -301,6 +291,7 @@ class ctripHotelSpider(Spider):
             if not each['canBook']:
                 continue
             room = Room()
+
             room.hotel_name = re.sub('(\([\s\S]+?\))', '', con_dict['name']).encode('utf8')
             room.source = 'ctrip'.encode('utf-8')
             room.check_in = check_in_form.encode('utf-8')
@@ -327,8 +318,36 @@ class ctripHotelSpider(Spider):
             except Exception, e:
                 # print e
                 pass
-            # print 2323
-            # img_urls
+            is_booking_num = each['roomVendorID']
+            tag = ""
+            tag_desc_str = ""
+            if is_booking_num == 32:
+                tag_desc_str = each['name']
+                tag = "booking"
+                # tag_desc = each['name']
+                # em_str = ""
+                # kuohao_str = ""
+                # zhongkuohao_str = ""
+                # clean_str = ""
+                # try:
+                #     em_str = re.search(r">(.*)</em>", tag_desc).group(1)
+                # except Exception as e:
+                #     pass
+                # try:
+                #     kuohao_str_l = re.findall(r"\((.*)\)", tag_desc)
+                #     kuohao_str = ",".join(filter(lambda x: len(x) < 100, kuohao_str_l))
+                # except Exception as e:
+                #     pass
+                # try:
+                #     zhongkuohao_str_l = re.findall(r"\[(.*)]", tag_desc)
+                #     zhongkuohao_str = ",".join(zhongkuohao_str_l)
+                # except Exception as e:
+                #     pass
+                # try:
+                #     clean_str = re.findall(r"(.*)\(", tag_desc)[0]
+                # except Exception as e:
+                #     pass
+                # tag_desc_str += em_str + kuohao_str + zhongkuohao_str + clean_str
             try:
                 img_urls = ''
                 img_urls = '|'.join(room_type['roomInfoDetails']['images'])
@@ -336,6 +355,10 @@ class ctripHotelSpider(Spider):
                 img_urls = ''
             # print img_urls.encode('utf-8'), 'img_urls'
             room_details = ''.join(room_type['roomInfoDetails']['details']).encode('utf-8')
+            try:
+                real_size = room_type['roomInfoDetails']['roomDetails']['roomArea']
+            except Exception as e:
+                real_size = -1
             try:
                 # print room_details
                 size = re.findall(r'(\d+?\.?\d+?)平方米', room_details)[0]
@@ -394,8 +417,10 @@ class ctripHotelSpider(Spider):
                     room.is_cancel_free = "NULL".encode('utf-8')
                 else:
                     room.is_cancel_free = "No".encode('utf-8')
+                room.is_cancel_free = each['policyInfo']['title']
             except:
                 pass
+
             try:
                 room.rest = each['last']
                 # with open('each.json', 'w') as f:
@@ -409,17 +434,48 @@ class ctripHotelSpider(Spider):
             except:
                 pass
             try:
-
+                bed_type_list = ['特大床', '大床', '双人床', '单人床', '沙发床']
                 bed_type = each['facilityInfo']['bed']
+                real_bed = bed_type
+                bed_num = []
                 # print bed_type.encode('utf-8'), 'bed_type'
+                room.bed_type = []
                 if bed_type != '':
-                    room.bed_type = bed_type.encode('utf-8')
-                    # print room.bed_type, '21212121212121'*50
+                    # room.bed_type = bed_type.encode('utf-8')
+                    # if ',' in bed_type.encode('utf-8'):
+                    #     bed_num = ','.join(map(lambda x: re.findall(r'\d', x)[0], bed_type.encode('utf-8').split(',')))
+                    # elif '或' in bed_type.encode('utf-8'):
+                    #     bed_num = ','.join(map(lambda x: re.findall(r'\d', x)[0], bed_type.encode('utf-8').split('或')))
+                    # else:
+                    if "和" in bed_type.encode('utf-8'):
+                        bed_num_str = ','.join(map(lambda x: re.findall(r'\d', x)[0], bed_type.encode('utf-8').split('和')))
+                        bed_num_l = map(lambda x: int(x), bed_num_str.split(','))
+                        bed_num = bed_num_l
+                        bed_type_str = ",".join(map(lambda x: re.findall(r'张(.*)', x)[0], bed_type.encode('utf-8').split('和')))
+                        bed_type_l = bed_type_str.split(",")
+                        for bed in bed_type_list:
+                            for bed_str in bed_type_l:
+                                if bed in bed_str:
+                                    room.bed_type.append(bed)
+                    else:
+                        bed_nums = re.findall(r'\d', bed_type.encode('utf-8'))[0]
+                        bed_num.append(int(bed_nums))
+                        # print room.bed_type, '21212121212121'*50
+                        for bed in bed_type_list:
+                            if bed in bed_type:
+                                room.bed_type.append(bed)
+                                break
+
+                if not bed_type:
+                    break
+
             except Exception, e:
                 # print 33
                 # traceback.print_exc()
                 # print str(e), '12', 'ds'
-                pass
+                bed_num = []
+                room.bed_type = []
+                real_bed = "NULL"
             try:
                 breakfast_info = each['breakfast']
                 if '免费' in breakfast_info and '早' in breakfast_info:
@@ -445,16 +501,29 @@ class ctripHotelSpider(Spider):
             except:
                 pass
             # print room.others_info
-            roomtuple = (str(room.hotel_name), str(room.city), str(room.source), \
-                         str(room.source_hotelid), str(room.source_roomid), \
-                         str(room.real_source), str(room.room_type), int(room.occupancy), \
-                         str(room.bed_type), float(room.size), int(room.floor), str(room.check_in), \
-                         str(room.check_out), int(room.rest), float(room.price), float(room.tax), \
-                         str(room.currency), str(room.pay_method), str(room.is_extrabed), str(room.is_extrabed_free), \
-                         str(room.has_breakfast), str(room.is_breakfast_free), \
-                         str(room.is_cancel_free), str(room.extrabed_rule), str(room.return_rule),
-                         str(room.change_rule), \
-                         str(room.room_desc), str(room.others_info), str(room.guest_info))
+            # roomtuple = (str(room.hotel_name), str(room.city), str(room.source), \
+            #              str(room.source_hotelid), str(room.source_roomid), \
+            #              str(room.real_source), str(room.room_type), int(room.occupancy), \
+            #              str(room.bed_type), float(room.size), int(room.floor), str(room.check_in), \
+            #              str(room.check_out), int(room.rest), float(room.price), float(room.tax), \
+            #              str(room.currency), str(room.pay_method), str(room.is_extrabed), str(room.is_extrabed_free), \
+            #              str(room.has_breakfast), str(room.is_breakfast_free), \
+            #              str(room.is_cancel_free), str(room.extrabed_rule), str(room.return_rule),
+            #              str(room.change_rule), \
+            #              str(room.room_desc), str(room.others_info), str(room.guest_info))
+            # room.has_breakfast = breakfast_info
+
+            en_room_name = 'NULL'
+            has_dinner = 'NULL'
+            max_adult = room.occupancy
+            max_child = 0
+            # max_child = len(self.task.ticket_info['room_info'][0]['child_age'])
+            # room.occupancy = int(max_adult) + max_child
+            # room.room_type = each['bed']
+            roomtuple = (str(room.source), str(room.hotel_name), str(room.room_type), en_room_name, room.bed_type, real_bed,
+                         bed_num, float(room.size), real_size, str(room.has_breakfast), has_dinner,
+                         int(max_adult), max_child, int(room.occupancy),
+                         str(room.is_cancel_free), str(room.room_desc), tag, tag_desc_str, breakfast_info, float(room.price),)
             rooms.append(roomtuple)
 
         return rooms
@@ -462,18 +531,28 @@ class ctripHotelSpider(Spider):
 
 if __name__ == "__main__":
     import httplib
+    from mioji.common.utils import simple_get_socks_proxy, httpset_debug, simple_get_socks_proxy_new
+    from mioji.common import spider
 
+    # spider.slave_get_proxy = simple_get_socks_proxy_new
     httplib.HTTPConnection.debuglevel = 1
     httplib.HTTPSConnection.debuglevel = 1
     task1 = Task()
     # task1.content = 'PAR&375666&1&20150328&5&2&23_24_2|43_0.5'
     # task1.content = 'PAR&37566&1&20150820'
     # task1.content = 'PAR&2157992&1&20160616'
-    task1.content = '994990&1&20171213'
+    task1.ticket_info = {'room_info': [{'occ': 2}]}
+    # task1.content = '5128857&1&20180407'
+    # task1.content = '7201394&1&20180417'
+    # task1.content = '11494485&1&20180417'
+    # task1.content = '2192890&1&20180417'
+    task1.content = '771662&&1&20180629'
+    # task1.content = '7081460&1&20180417'
     spider = ctripHotelSpider(task1)
     result = spider.crawl()
     # result = spider.result
     print result, spider.result
+    print json.dumps(spider.result, ensure_ascii=False)
     # for ta in task_list:
     #     task1.content = ta
     #     task1.ticket_info = {'cid': 1, 'occ': 3}

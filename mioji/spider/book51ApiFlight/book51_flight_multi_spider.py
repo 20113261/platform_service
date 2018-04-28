@@ -9,8 +9,7 @@ author: lw
 import re
 import json
 from mioji.common import parser_except
-from mioji.common.check_book.check_book_ratio import use_record_qid
-from mioji.common.spider import Spider, request, PROXY_FLLOW, PROXY_REQ, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_FLLOW, PROXY_REQ
 
 from mioji.common.mioji_struct import MFlightSegment, MFlightLeg, MFlight
 FOR_FLIGHT_DAY = '%Y-%m-%d'
@@ -86,12 +85,7 @@ class BookMultiFlightSpider(Spider):
 
     def set_value(self):
         # 任务信息
-        auth_str = self.task.ticket_info.get("auth", '')
-        resources = self.task.ticket_info.get("is_start_china", 1)
-        if auth_str:
-            auth = json.loads(self.task.ticket_info["auth"])
-        else:
-            raise parser_except.ParserException(121, '认证信息有误')
+        auth = json.loads(self.task.ticket_info["auth"])
         self.header = {
             "USERNAME": auth["agencyCode"]
         }
@@ -133,7 +127,6 @@ class BookMultiFlightSpider(Spider):
                                      {"cabinClass": cabin[tmp_cabin],
                                       "directFlight": TF,
                                       "routeType": "MS",
-                                      "resourceChannel": resources,
                                       "passengerNumberVo": [
                                           {"passengerType": "ADT", "passengerNumber": passengerNumber}],
                                       "segmentList": [
@@ -196,8 +189,8 @@ class BookMultiFlightSpider(Spider):
         print "-"*80
         print "postdata",self.postdata
         self.header['USERNAME'] = auth["agencyCode"]
-        use_record_qid(unionKey='51book', api_name="FlightSearchRequest", task=self.task, record_tuple=[1, 0, 0])
-        @request(retry_count=3, proxy_type=PROXY_NEVER,binding=self.parse_MultiFlight)
+
+        @request(retry_count=3, proxy_type=PROXY_REQ,binding=self.parse_MultiFlight)
         def first_page():
             return {
                 # header 需要两个字段
@@ -205,7 +198,7 @@ class BookMultiFlightSpider(Spider):
                 'methods': 'req',
             }
         # return [first_page]
-        @request(retry_count=1, proxy_type=PROXY_NEVER, binding=self.parse_MultiFlight)
+        @request(retry_count=1, proxy_type=PROXY_REQ, binding=self.parse_MultiFlight)
         def req_rule():
             self.set_value()
             return {
@@ -245,33 +238,17 @@ class BookMultiFlightSpider(Spider):
         task_info.cabin = seat_type_to_queryparam(seat_type)
         self.task_info = task_info
 
-    def parse_zero(self, flight):
-        if '_' in flight:
-            a = flight.split('_')[0]
-            b = flight.split('_')[1]
-            pipre = re.compile('[0]*')
-            len1 = len(pipre.match(a[2:]).group())
-            fl_fir = a[:2] + a[2+len1:]
-            len2 = len(pipre.match(b[2:]).group())
-            fl_end = b[:2] + b[2+len2:]
-            return fl_fir + '_' + fl_end
-        else:
-            pipre = re.compile('[0]*')
-            len3 = len(pipre.match(flight[2:]).group())
-            return flight[:2] + flight[2+len3:]
-
     def parse_MultiFlight(self, req, data):
         if req['methods']=='req_rule':
             response = json.loads(data)
             tickets = self.user_datas['tickets']
             temp_tickets = []
             for i in tickets:
-                if self.parse_zero(i[0]) == self.user_datas['flight_no']:
+                if i[0] == self.user_datas['flight_no']:
                     i = list(i)
                     i[-1] = i[-1].split('&')[1]
-                    # change_ru = response['RSData']['adtRule'][0].split('</b>')[2].split('</p>')[0].replace('<p style=\'text-indent: 2em\'>','')
-                    # return_ru = response['RSData']['adtRule'][0].split('</b>')[3].split('</p>')[0].replace('<p style=\'text-indent: 2em\'>','')
-                    rule_string = '成人改签规定' + response['RSData']['adtRule'][0] + response['RSData']['adtRule'][1]
+                    pepi = re.compile('\'text-indent: 2em\'>(.*)')
+                    rule_string ="改签："+ pepi.findall(response['RSData']['adtRule'][0].split('</p>')[2])[0]+"退票:"+pepi.findall(response['RSData']['adtRule'][0].split('</p>')[3])[0] #退票
                     # i[-10] = pepi.findall(response['RSData']['adtRule'][0].split('</p>')[2])[0] #改签
                     # i[-11] = pepi.findall(response['RSData']['adtRule'][0].split('</p>')[3])[0] #退票
                     i[22] = i[23] = rule_string
@@ -317,14 +294,14 @@ class BookMultiFlightSpider(Spider):
                             des_date = seg["arriveTime"].replace(" ","T")
                             mfseg.set_dept_date(dep_date, FOR_FLIGHT_DATE)
                             mfseg.set_dest_date(des_date, FOR_FLIGHT_DATE)
-                            mfseg.seat_type = cabin[self.task.ticket_info['v_seat_type']].replace('_', ' ')
+                            mfseg.seat_type = cabin[self.task.ticket_info['v_seat_type']]
                             mfseg.real_class = self.task.ticket_info['v_seat_type']
                             mflightleg.append_seg(mfseg)
                         mflight.append_leg(mflightleg)
                     tickets.append(mflight.convert_to_mioji_flight().to_tuple())
 
                     for ticket in tickets:
-                        if self.parse_zero(ticket[0]) == self.user_datas['flight_no']:
+                        if ticket[0] == self.user_datas['flight_no']:
                             self.user_datas["itineraryId"] = flight["itineraryID"]
                             self.user_datas['fare_id'] = fare_id
                             self.verify_ticket = True
@@ -346,7 +323,6 @@ if __name__=="__main__":
 
     task = Task()
     task.redis_key = "123"
-    task.other_info = {}
     task.content = "HKG&ICN&20180217|ICN&SIN&20180221"
     task.ticket_info = {"flight_no":'OZ722&OZ751',"v_count":2,'v_seat_type': 'E',"auth":'{"agencyCode":"MIAOJI","safe_code":"a3bQQ7s^","host":"http://interws.51book.com/"}'}
     # task = {"task_data": "", "crawl_day": None, "master_info": {"spider_mq_port": "5672", "spider_mq_routerKey": "scv101", "spider_mq_exchangeType": "direct", "spider_mq_queue": "spider_callback_data", "spider_mq_user": "writer", "spider_mq_vhost": "test", "spider_mq_exchange": "spiderToVerify", "redis_db": 0, "spider_mq_passwd": "miaoji1109", "master_addr": "10.10.135.140:92", "spider_mq_host": "10.19.131.242", "redis_passwd": "MiojiRedisOrzSpiderVerify", "redis_addr": "10.10.55.126:6379"}, "create_time": 1512443927.881395, "id": 0, "other_info": {"request_begin_time": "1512443927771", "adults": 2, "qid": "1512443926438", "norm_flight_information": {"flight_type": "flightmulti", "appointed_source_list": "", "adults": 2, "section": [{"dest_iata_id": "SIN", "from_city_tri_code": "HKG", "flight_no": "CX739", "seat_type_id_str": "1", "to_cid": "20087", "stop_cid": "20043_20087", "router_src": "", "to_city_tri_code": "SIN", "dest_time": "20180209_15:30", "dept_iata_id": "HKG", "dept_day": "20180209", "stop_id": "HKG_SIN", "stop_time": "20180209_11:35#20180209_15:30", "dept_time": "20180209_11:35", "seat_type_str": "E", "from_cid": "20043"}, {"dest_iata_id": "SEA", "from_city_tri_code": "SIN", "flight_no": "DL166_DL166", "seat_type_id_str": "1_1", "to_cid": "50019", "stop_cid": "20087_20071|20071_50019", "router_src": "", "to_city_tri_code": "SEA", "dest_time": "20180212_09:55", "dept_iata_id": "SIN", "dept_day": "20180212", "stop_id": "SIN_NRT|NRT_SEA", "stop_time": "20180212_06:45#20180212_14:35|20180212_17:30#20180212_09:55", "dept_time": "20180212_06:45", "seat_type_str": "E_E", "from_cid": "20087"}]}, "journey_redis_key": "journey_1512443926438_664f065c76f08339e72ce281bc8734b6_1512443927771", "ticket_index": 0, "uid": "0c7y1bpt5a20b10506cb4wxlid19xg6i", "redis_key": "flightmulti|HKG_SIN_20180209|SIN_SEA_20180212|51book|E|10.10.95.29:8090|1512443926438|104f894a784c6f6cd3d2c326b4c2d63f|0", "all_cache_key": "all_flightmulti|20043|20087|20180209|20087|50019|20180212|E", "ticket_redis_key": "traffic_1512443926438_104f894a784c6f6cd3d2c326b4c2d63f", "journey_md5": "664f065c76f08339e72ce281bc8734b6", "source": "51bookMultiFlight", "ticket_info": {"uid": "0c7y1bpt5a20b10506cb4wxlid19xg6i", "flight_no": "CX739&DL166_DL166", "seat_type": "E", "v_count": 2, "auth": "{\"acc_mj_uid\":\"51book_001\",\"agencyCode\":\"MIAOJI\",\"host\":\"http://interws.51book.com/\",\"safe_code\":\"a3bQQ7s^\"}", "env_name": "test", "qid": "1512443926438", "dest_time": "20180209_11:35", "v_seat_type": "E", "verify_type": "verify", "csuid": "17ukjpya5a0da7d0bdbd2ttv6111c5x4", "tid": "lm73q1pt5a20eac69e652fpoid12bgqc", "dept_time": "20180209_11:35", "ptid": "ulwy", "md5": "104f894a784c6f6cd3d2c326b4c2d63f"}, "csuid": "17ukjpya5a0da7d0bdbd2ttv6111c5x4", "ptid": "ulwy", "content": "HKG&SIN&20180209|SIN&SEA&20180212", "callback_type": "scv101", "req_type": "b107", "tid": "lm73q1pt5a20eac69e652fpoid12bgqc", "ticket_redis_lock_key": "traffic_1512443926438_104f894a784c6f6cd3d2c326b4c2d63f_lock", "productId": "interline|20043|20087|20180209|20180209|CX739|20087|50019|20180212|20180212|DL166_DL166", "data_type": "flightmulti", "api_acc": 1, "spd_src": "51book_E", "src": "51book", "machine_ip": "10.10.95.29", "journey_redis_lock_key": "journey_1512443926438_664f065c76f08339e72ce281bc8734b6_1512443927771_lock", "cache_key": "flightmulti|HKG|SIN|20180209|SIN|SEA|20180212|CX739|DL166_DL166|51book|E", "ticket_md5": "104f894a784c6f6cd3d2c326b4c2d63f", "machine_port": 8090}, "proxy_info": {}, "redis_key": "flightmulti|HKG_SIN_20180209|SIN_SEA_20180212|51book|E|10.10.95.29:8090|1512443926438|104f894a784c6f6cd3d2c326b4c2d63f|0", "content": "HKG&SIN&20180209|SIN&SEA&20180212", "task_type": 3, "callback_type": "scv101", "ticket_info": {"uid": "0c7y1bpt5a20b10506cb4wxlid19xg6i", "flight_no": "CX739&DL166_DL166", "seat_type": "E", "v_count": 2, "auth": "{\"acc_mj_uid\":\"51book_001\",\"agencyCode\":\"MIAOJI\",\"host\":\"http://interws.51book.com/\",\"safe_code\":\"a3bQQ7s^\"}", "env_name": "test", "qid": "1512443926438", "dest_time": "20180209_11:35", "v_seat_type": "E", "verify_type": "verify", "csuid": "17ukjpya5a0da7d0bdbd2ttv6111c5x4", "tid": "lm73q1pt5a20eac69e652fpoid12bgqc", "dept_time": "20180209_11:35", "ptid": "ulwy", "md5": "104f894a784c6f6cd3d2c326b4c2d63f"}, "verify": {"type": "pre", "set_type": "E"}, "priority": 0, "source": "51bookMultiFlight", "redis_db": 0, "update_time": None, "success_times": 0, "new_task_id": "022543b2-d96b-11e7-83f1-5254000eda2c", "redis_port": "6379", "req_qid": "1512443926438", "host": "10.10.135.140:92", "req_uid": "0c7y1bpt5a20b10506cb4wxlid19xg6i", "crawl_hour": 0, "req_qid_md5": "1512443926438-104f894a784c6f6cd3d2c326b4c2d63f", "redis_passwd": "MiojiRedisOrzSpiderVerify", "update_times": 0, "redis_host": "10.10.55.126", "req_md5": "104f894a784c6f6cd3d2c326b4c2d63f", "timeslot": -1}

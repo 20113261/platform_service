@@ -87,7 +87,7 @@ class ClearTripMultiFlightSpider(Spider):
         #         }
         #     }
 
-        @request(retry_count=3, proxy_type=PROXY_REQ, binding=self.parse_Flight, ip_type="foreign")
+        @request(retry_count=3, proxy_type=PROXY_REQ, binding=self.parse_Flight)
         def json_page():
             # referer = cleartrip_multi_lib.get_referer_url(self.task_dict)
             header = {'Accept': '*/*',
@@ -139,9 +139,9 @@ class ClearTripMultiFlightSpider(Spider):
 if __name__ == '__main__':
     from mioji.common.task_info import Task
     import mioji.common.spider
-    from mioji.common.utils import simple_get_http_proxy, simple_get_socks_proxy, simple_get_socks_proxy_new
+    from mioji.common.utils import simple_get_http_proxy, simple_get_socks_proxy
 
-    mioji.common.spider.slave_get_proxy = simple_get_socks_proxy_new
+    mioji.common.spider.get_proxy = simple_get_socks_proxy
 
     #content = 'ORD&PEK&20170713|PEK&NYC&20170722'
     content = 'BJS&PAR&20170826|PAR&LON&20170830'

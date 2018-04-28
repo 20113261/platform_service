@@ -296,7 +296,7 @@ def hilton_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/s')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
 def bestwest_suggest_map_task(self, task, **kwargs):
     _sdk = BestwestSuggestMapSDK(task=task)
     return _sdk.execute()

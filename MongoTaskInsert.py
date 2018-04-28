@@ -147,8 +147,8 @@ class InsertTask(object):
         # 数据游标前置偏移量，用于在入库时恢复游标位置
         self.pre_offset = 0
 
-        client = pymongo.MongoClient(host='10.10.231.105')
-        self.db = client['MongoTask']
+        client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
+        self.db = client['MongoTask_Zxp']
 
         # 建立所需要的全部索引
         self.create_mongo_indexes()

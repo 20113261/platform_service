@@ -2,7 +2,6 @@
 import re
 import json
 import datetime
-import logging
 from mioji.common import parser_except
 from mioji.common.spider import Spider, request, PROXY_FLLOW, PROXY_REQ
 from mioji.common.class_common import Room
@@ -11,231 +10,190 @@ default_dict = {'01':'00','02':'01','03':'02','04':'03','05':'04','06':'05','07'
 
 class IhgHotelSpider(Spider):
     source_type = 'ihgHotel'
-    # targets = {'room': {'version': 'InsertHotel_room3'}}
+    targets = {'room': {'version': 'InsertHotel_room3'}}
     old_spider_tag = {'ihgHotel': {'required': ['room']}}
-    targets = {
-        'room': {'version': 'InsertHotel_room4'}
-    }
-
-    def fetch_ticket_info(self):
-            """
-            得到查询的data
-            """
-            hotel_id, nights, check_in = self.task.content.split('&')
-            hotel_id = hotel_id.upper()
-            check_in_date = datetime.datetime.strptime(check_in, '%Y%m%d')
-            days = datetime.timedelta(days=int(nights))
-            room_info = self.task.ticket_info.get('room_info', [])
-            room_info = room_info[0] if room_info else {}
-            room = self.task.ticket_info.get('room_count') or room_info.get('num', 1)
-            adult = self.task.ticket_info.get('occ') or room_info.get('occ', 1)
-            check_out_date = check_in_date + days
-            check_in, check_out = str(check_in_date).split(' ')[0], str(check_out_date).split(' ')[0]
-            self.query_data = dict(check_in=check_in, check_out=check_out, hotel_id=hotel_id, adults=adult, room=room)
-
 
     def __init__(self, task=None):
         super(IhgHotelSpider, self).__init__(task)
-        self.query_data = {}
-        self.city_info = {}
-        self.redis_key = 'Null'
-        self.hotels = {}
-
-    def response_error(self,req, resp, error):
-        # 在这里处理29信息，暂时还没找到
-        pass
+        self.rooms = []
+        self.rooms_count = 1
+        self.adult = 2
+        self.hotel_id = ''
+        self.check_in = ''
+        self.check_out = ''
+        self.dept_day = ''
+        self.dept_my = ''
+        self.dest_day = ''
+        self.dest_my = ''
 
     def targets_request(self):
-        self.fetch_ticket_info()
+        room_info = self.task.ticket_info.get('room_info', [])
+        self.rooms_count = room_info[0].get('num', 1)
+        self.adult = int(room_info[0].get('occ', 1)) * int(self.rooms_count)
+        content = self.task.content.split('&')
+        if len(content) != 3:
+            raise parser_except.ParserException(12, '任务参数有误')
+        self.hotel_id = content[0]
+        self.check_in = datetime.datetime(int(content[2][:4]), int(content[2][4:6]), int(content[2][6:])).strftime(
+            '%Y-%m-%d')
+        self.check_out = (
+        datetime.datetime(int(content[2][:4]), int(content[2][4:6]), int(content[2][6:])) + datetime.timedelta(
+            days=int(content[1]))).strftime('%Y-%m-%d')
+        self.dept_day = self.check_in[-2:]
+        self.dept_my = default_dict[self.check_in[5:7]] + self.check_in[:4]
+        self.dest_day = self.check_out[-2:]
+        self.dest_my = default_dict[self.check_out[5:7]] + self.check_out[:4]
 
-        if hasattr(self.task, 'redis_key'):
-            self.redis_key = self.task.redis_key
+        @request(retry_count=3, proxy_type=PROXY_REQ, async=False)
+        def get_hotel_data():
+            return{'req': {'url': 'https://www.ihg.com/hotels', 'method': 'get'}}
 
-        @request(retry_count=3, proxy_type=PROXY_REQ)
-        def get_hotel_detail():
-            return {
-                'req': {
-                    'url': 'https://apis.ihg.com/hotels/v1/profiles/{}/details'.format(self.query_data['hotel_id']),
-                    'method': 'get',
-                    'headers': {
-                        'accept': 'application/json, text/plain, */*',
-                        'Content-Type': 'application/json; charset=UTF-8',
-                        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
-                        'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y',
-                        'ihg-language': 'zh-CN',
-                    }
-                },
-                'user_handler': [self.parse_hotel_name],
-                'data': {'content_type': 'json'}
-            }
+        @request(retry_count=3, proxy_type=PROXY_FLLOW, async=False)
+        def get_hotel3_data():
+            url = 'https://www.ihg.com/hotels/cn/zh/reservation/book?method=roomRate&qAAR=6CBARC' \
+                  '&qRtP=6CBARC&qAdlt=%s&qChld=0&qCiD=%s&qCiMy=%s&qCoD=%s&qCoMy=%s&qRms=%s&qSlH=%s&srb_u=1' % (
+                  self.adult, self.dept_day, self.dept_my, self.dest_day, self.dest_my, self.rooms_count, self.hotel_id)
+            return {'req': {'url': url,'method': 'get',},
+                    'user_handler': [self.parse_first]}
 
-        @request(retry_count=3, proxy_type=PROXY_FLLOW, binding=self.parse_room)
-        def get_room_data():
-            post_data = {"hotelCode":"PEGDZ","adults":2,"children":0,"rateCode":"6CBARC","showPointsRate":False,"rooms":2,"version":"1.2","corporateId":"","travelAgencyId":"99602392","dateRange":{"start":"2018-01-21","end":"2018-01-23"},"memberID":None}
-            post_data['adults'], post_data['rooms'] = self.query_data['adults'], self.query_data['room']
-            post_data['hotelCode'] = self.query_data['hotel_id']
-            post_data['dateRange']['start'], post_data['dateRange']['end'] = self.query_data['check_in'], self.query_data['check_out']
-            return {
-                'req': {
-                    'url': 'https://apis.ihg.com/guest-api/v1/ihg/cn/zh/rates',
-                    'method': 'post',
-                    'headers': {
-                        'ihg-language':'zh-CN',
-                        'accept-language': 'zh-CN,zh;q=0.9',
-                        'accept':'application/json, text/plain, */*',
-                        'Content-Type':'application/json; charset=UTF-8',
-                        'user-agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
-                        'x-ihg-api-key':'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y',
-                        'x-ihg-mws-api-token':'58ce5a89-485a-40c8-abf4-cb70dba4229b',
-                    },
-                    'data': json.dumps(post_data)
-                },
-                'data': {'content_type': 'json'}
-            }
-        yield get_hotel_detail
-        yield get_room_data
+        yield get_hotel_data
+        yield get_hotel3_data
 
-    def parse_hotel_name(self, req, data):
-        self.hotels['hotel_name'] = data['hotelInfo']['profile']['name']
-        self.hotels['city'] = data['hotelInfo']['address']['city']
+        selecte_types = self.html.xpath(u'//input[contains(@value,"预订此客房")]')
+        common_list = []
+        for selecte_type in selecte_types:
+            selecte_type_name = re.findall(r'selectedRoom_(.*?)_', selecte_type.xpath('./@name')[0])
+            if selecte_type_name:
+                selecte_type_name = selecte_type_name[0]
+                url = 'https://www.ihg.com/hotels/cn/zh/reservation/reservation/roomdescription?qAAR=6CBARC&qAdlt=%s&qChld=0&qCiD=%s&qCiMy=%s&qCoD=%s&qCoMy=%s&qRms=%s&qSlH=%s' \
+                      '&srb_u=1' % (self.adult, self.dept_day, self.dept_my, self.dest_day, self.dest_my, self.rooms_count, self.hotel_id)
+                common_list.append({'req': {'url': url, 'method': 'post', 'data': {'roomCode': selecte_type_name}, 'select_type': selecte_type}})
+        res_list = self.list_of_groups(common_list, 10)
+        for pro_list in res_list[:min(len(res_list),5)]:
+            @request(retry_count=3, proxy_type=PROXY_FLLOW, async=True, binding=['room'])
+            def get_price_page():
+                return pro_list[:min(len(pro_list),5)]
+            yield get_price_page
 
-    def parse_room(self, req, data):
+    def parse_first(self, req, resp):
+        self.html = etree.HTML(resp)
+
+    def list_of_groups(self, lia, lena):
+        list_of_groups = zip(*(iter(lia),) * lena)
+        end_list = [list(i) for i in list_of_groups]
+        count = len(lia) % lena
+        end_list.append(lia[-count:]) if count != 0 else end_list
+        return end_list
+
+    def parse_room(self, req, resp):
+        # print resp.decode('utf-8')
         rooms = []
-        hotel_code = data['hotelCode']
-        room_index = 0
-        for i in data['rooms']:
-            rate_code = i['rateCode']
-            rate = data['rates'][rate_code]
-            room = Room()
-            room.hotel_name = self.hotels.get('hotel_name', '')
-            room.city = self.hotels.get('city', '')
-            room.source = 'ihg'
-            room.source_hotelid = hotel_code
-            room.source_roomid = i.get('roomCode', '')
-            room.room_type = i.get('description', '')
-            room.real_source = 'ihg'
-            room.occupancy = i.get('maxPeople', self.query_data['adults'])
-            room.bed_type = 'NULL'
-            room.floor = -1
-            room.check_in = self.query_data['check_in']
-            room.check_out = self.query_data['check_out']
-            room.rest = i.get('numRoomsAvailable')
-            # 每晚含税的价格
-            room.price = i['charges'].get('priceTotal') or i['charges'].get('total')
-            room.tax = .0
-            room.currency = i.get('currencyCode', '')
-            room.is_extrabed = 'NULL'
-            room.is_extrabed_free = 'NULL'
-            room_desc = ''
-            if i['charges'].get('serviceCharges'):
-                room.room_desc += '包含服务费：{} |'.format(i['charges'].get('serviceCharges'))
-            for j in rate['rateInfos']:
-                if '不可退' in j['description']:
-                    room.is_cancel_free = 'No'
-                if '含早餐' in j['description']:
-                    room.is_breakfast_free = 'Yes'
-                    room.has_breakfast = 'Yes'
-                if '不含早餐' in j['description']:
-                    room.is_breakfast_free = 'No'
-                    room.has_breakfast = 'No'
-                else:
-                    room_desc += j['description'] + '|'
-
-            room.room_desc = room_desc + i['longDescription']
-            com = re.search('面积为(\d+)', room.room_desc)
-            room.size = int(com.group(1)) if com else -1
-            room.return_rule = rate['cancellationPolicy']
-            if '需要定金' in room.room_desc or rate['aliPayAvailable'] or '罚收您的订金' in room.return_rule:
-                room.pay_method = '在线支付'
+        html = etree.HTML(resp)
+        select_type = req['req']['select_type']
+        room = Room()
+        hotel_name = select_type.xpath('./ancestor::body//a[@class="sel_hoteldetail_link"]/@title')
+        if hotel_name:
+            room.hotel_name = hotel_name[0]
+        room.source = 'ihg'
+        room.source_hotelid = self.hotel_id
+        selecte_type_name = re.findall(r'selectedRoom_(.*?)_', select_type.xpath('./@name')[0])
+        if selecte_type_name:
+            room.source_roomid = selecte_type_name[0]
+        room.real_source = 'ihg'
+        room_type = select_type.xpath('./ancestor::div[@class="ratesListing roomsView "]//a[@class="roomTypeDescriptionToggle"]/text()')
+        if room_type:
+            room.room_type = room_type[0]
+        occupancy = select_type.xpath('./ancestor::div[@class="ratesListing roomsView "]//span[contains(@class, "maxPeoplePerRoom")]//span[@class="notranslate"]/text()')
+        if occupancy:
+            room.occupancy = int(occupancy[0])
+        size = select_type.xpath('./ancestor::div[@class="ratesListing roomsView "]//span[@class="roomLongDescription"]/text()')
+        if size:
+            size = re.findall(r'(\d+\s*)平方米', str(size[0]))
+            if size:
+                room.size = size[0]
+        room.check_in = self.check_in
+        room.check_out = self.check_out
+        tables = html.xpath(u'//*[contains(text(),"估算总额")]/ancestor::table')
+        for table in tables:
+            # print d.xpath('string(.)')
+            taxs = table.xpath(u'.//*[contains(text(), "税费")]')
+            total_price = html.xpath(u'//*[contains(text(),"估算总额")]/text()')
+            if taxs:
+                prices = table.xpath(u'.//*[contains(text(), "房价")]/following-sibling::td[1]/text()')
+                if prices:
+                    room.price = prices[0].strip().replace(',', '')
+                    room.price = re.findall(r'\d+\.*\d+', room.price)[0]
+                    room.tax = taxs[0].xpath('./following-sibling::td[1]/text()')[0].strip()
+                    room.tax = re.findall(r'\d+\.*\d+', room.tax)[0]
+            elif total_price:
+                room.price = total_price[0].strip().replace(',', '')
+                room.price = re.findall(r'\d+\.*\d+', room.price)[0]
+        currency = select_type.xpath('./ancestor::div[@class="ratesListing roomsView "]//span[@class="curCode cc_code"]/text()')
+        if currency:
+            room.currency = currency[0]
+        room.pay_method = '在线支付'
+        is_extrabed = html.xpath(u'//li[contains(text(), "加床")]')
+        if is_extrabed:
+            room.is_extrabed = 'Yes'
+            is_extrabed = is_extrabed[0].xpath('string(.)').replace(' ', '')
+            if '未包含' in is_extrabed:
+                room.is_extrabed_free = 'No'
             else:
-                if not rate['aliPayAvailable']:
-                    room.pay_method = '到店支付'
-                else: room.pay_method = '支付方式'
-            room.extrabed_rule = 'NULL'
-            room.change_rule = 'NULL'
-            room.others_info = {}
-            if room.has_breakfast == 'Yes':
-                breakfast = '含早餐'
-            elif room.has_breakfast == 'No':
-                breakfast = '不含早餐'
-            else:
-                breakfast = ''
-            room.others_info['payInfo'] = i.get('charges', {})
-            room.others_info['extra'] = {
-                'breakfast': breakfast,
-                'payment': room.pay_method,
-                'return_rule':room.return_rule,
-                'occ_des': '可支持最多' + str(room.occupancy) + '人入住'
-            }
-            room_index += 1
-            pay_key = {
-                'redis_key': self.redis_key,
-                'id': room_index,
-                'room_num': self.query_data['room']
-            }
-            if room.return_rule == '预订需要预先支付整个住宿的全额费用，费用将于预订之日起至抵达日之前从您的信用卡上扣取。 如果您取消预订或无法抵达酒店，我们将罚收您的预付款但去除酒店节省的开支部分（通常为预订价格的 10%），节省部分的款项将偿还到您的信用卡上。 可能附加税收。 在预订住宿第二天的规定退房时间前仍未能露面或打电话取消预订，酒店将不再保留您预订的客房。':
-                room.return_rule = '取消预订或未能抵达，酒店将罚收您的订金。 可能附加税收。'
-
-            room.others_info['pay_key'] = pay_key
-            room.guest_info = 'NULL'
-            room.hotel_url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/{}/hoteldetail'.format(room.source_hotelid)
-            room.others_info = json.dumps(room.others_info)
-            room_tuple = (room.hotel_name, room.city, room.source, room.source_hotelid,
-                          room.source_roomid, room.real_source, room.room_type, room.occupancy,
-                          room.bed_type, room.size, room.floor, room.check_in, room.check_out,
-                          room.rest, room.price, room.tax, room.currency, room.pay_method,
-                          room.is_extrabed, room.is_extrabed_free, room.has_breakfast, room.is_breakfast_free,
-                          room.is_cancel_free, room.extrabed_rule, room.return_rule, room.change_rule, room.room_desc,
-                          room.others_info, room.guest_info, room.hotel_url)
+                room.extrabed_rule = is_extrabed
+        else:
+            room.is_extrabed = 'No'
+            room.is_extrabed_free = 'No'
+        if '含早餐' in html.xpath('string(.)'):
+            room.has_breakfast = 'Yes'
+            room.is_breakfast_free = 'Yes'
+        else:
+            room.has_breakfast = 'No'
+            room.is_breakfast_free = 'No'
+        return_rule= html.xpath(u'//*[text()="取消政策："]/following-sibling::*[1]/span/text()')
+        if "取消预订不会收费" in return_rule:
+            room.is_cancel_free = 'Yes'
+        else:
+            room.is_cancel_free = 'No'
+        room.return_rule = return_rule
+        room.room_desc = ''
+        dt_desc = html.xpath('//div[@class="fullDescription"]//dd/preceding-sibling::dt[1]')
+        for desc in dt_desc:
+            if desc.xpath('./text()'):
+                room.room_desc = room.room_desc + desc.xpath('./text()')[0].strip() + ' '
+                dd_desc = desc.xpath('./following-sibling::dd[1]')
+                room.room_desc = room.room_desc + dd_desc[0].xpath('string(.)').strip() + '|'
+        room_tuple = (str(room.hotel_name), str(room.city), str(room.source), \
+                      str(room.source_hotelid), str(room.source_roomid), \
+                      str(room.real_source), str(room.room_type), int(room.occupancy), \
+                      str(room.bed_type), float(room.size), int(room.floor), str(room.check_in), \
+                      str(room.check_out), int(room.rest), float(room.price), float(room.tax), \
+                      str(room.currency), str(room.pay_method), str(room.is_extrabed), str(room.is_extrabed_free), \
+                      str(room.has_breakfast), str(room.is_breakfast_free), \
+                      str(room.is_cancel_free), str(room.extrabed_rule), str(room.return_rule),
+                      str(room.change_rule), \
+                      str(room.room_desc), str(room.others_info), str(room.guest_info))
+        if room.price:
             rooms.append(room_tuple)
         return rooms
 
-    def parse_city(self, req, resp):
-        self.city_info = json.loads(resp)[0]
+    def get_first(self, data, str):
+        if len(data) > 0:
+            return data[0]
+        else:
+            return str
 
 if __name__ == '__main__':
     from mioji.common.task_info import Task
-    from mioji.common.utils import simple_get_socks_proxy_new
+    from mioji.common.utils import simple_get_socks_proxy
     from mioji.common import spider
-    spider.slave_get_proxy = simple_get_socks_proxy_new
-
-    from threading import Thread
+    # spider.slave_get_proxy = simple_get_socks_proxy
 
     task = Task()
     # task.content = 'TYOHC&20180018&20180019'
-    #QNLVH
-    lists = ['TYOHC']
-    ts = []
-    r = []
-
-
-    for i in lists:
-
-        task.content = '{}&1&20180301'.format(i)
-        # task.ticket_info = {"room_info": [{"occ": 2, "num": 1}]}
-        task.ticket_info = {
-            'occ': '2',
-            'room_count': 2
-        }
-        task.source = 'ihg'
-        spider = IhgHotelSpider()
-        spider.task = task
-
-        def wrap_craw(func):
-            global r
-
-            def wrap(*args, **kwargs):
-                res = func(*args, **kwargs)
-                r.append((res, spider.task.content))
-                print spider.result
-            return wrap
-        spider.crawl = wrap_craw(spider.crawl)
-        t = Thread(target=spider.crawl)
-        t.setDaemon(True)
-        t.start()
-        ts.append(t)
-    for t1 in ts:
-        t1.join()
-    print r
-
-
+    task.content = 'LAXCA&1&20180412'
+    task.ticket_info = {"room_info": [{"occ": 2, "num": 1}]}
+    task.source = 'ihg'
+    spider = IhgHotelSpider()
+    spider.task = task
+    print spider.crawl()
+    print json.dumps(spider.result, ensure_ascii=False)

@@ -60,8 +60,8 @@ class cheapticketsHotelHotelSpider(BaseHotelSpider):
         self.check_out_new = self.check_out[5:7] + "%2F" + self.check_out[8:10] + '%2F' + self.check_out[0:4]
         self.children = 0
         self.room_info = self.task.ticket_info.get('room_info', [])
-        self.occ = self.task.ticket_info['room_info'][0].get('occ', 2)
-        self.room_count = self.task.ticket_info['room_info'][0].get('num', 1)
+        self.occ = self.task.ticket_info.get('occ', 2)
+        self.room_count = self.room_info[0].get('room_count', 1)
         self.json_url = 'http://www.cheaptickets.com/api/infosite/{0}/getOffers?token={1}&brandId={2}&isVip=false&chid=&chkin={3}&chkout={4}&ts={5}{6}'
         self.cid = self.task.ticket_info.get('cid', None)
 

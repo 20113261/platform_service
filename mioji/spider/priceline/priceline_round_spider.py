@@ -280,9 +280,6 @@ class PricelineRoundFlightSpider(Spider):
         json_data = data
         if json_data["resultMessage"] != "Success" or "slice" not in json_data['airSearchRsp']:
             self.user_datas['has_next'] = False
-        if not json_data.get('airSearchRsp').get('pricedItinerary'):
-            raise parser_except.ParserException(29, "现在无航班")
-
 
         count = len(json_data['airSearchRsp']['pricedItinerary'])
         if count < self.offset or self.end_id + self.offset > 200:
@@ -426,15 +423,7 @@ if __name__ == '__main__':
     task = Task()
     # task.content = 'CKG&HAM&20170702&20170714'
 
-    # task.content = 'CAN&TXL&20170702&20170714'
-    # task.content = 'CGO&PER&20180603&20180615'
-    # task.content = 'NKG&DCF&20180527&20180606'
-    # task.content = 'NKG&DCF&20180617&20180630'
-    # task.content = 'CGO&DAM&20180520&20180527'
-    # task.content = 'NKG&DIL&20180617&20180622'
-    # task.content = 'CSX&KGD&20180624&20180705'
-    # task.content = 'TSN&DIL&20180427&20180503'
-    task.content = 'NKG&DCF&20180617&20180630'
+    task.content = 'CAN&TXL&20170702&20170714'
     task.source = 'pricelineround'
     # task.ticket_info = {
     #     "ret_flight_no": "TK1724_TK72",
@@ -458,5 +447,5 @@ if __name__ == '__main__':
     s = PricelineRoundFlightSpider()
     s.task = task
     s.crawl()
-    print(s.crawl())
-    print(s.result)
+    print s.crawl()
+    print s.result

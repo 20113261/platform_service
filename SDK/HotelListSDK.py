@@ -77,6 +77,14 @@ def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=
             'tid': tid,
             'used_times': used_times
         }
+        if source == 'bestwest':
+            description = suggest.split('&')[0]
+            map_info = suggest.split('&')[1]
+            map_info = map_info.split(',')
+            task.content = '&{}&{}&2'.format(description, check_in)
+            task.ticket_info = {'locationLng': float(map_info[0]), 'locationLat': float(map_info[1])}
+            # task.content = '&印度喀拉拉邦恰拉库德伊&20180525&2'
+            # task.ticket_info = {'locationLng': '13.404954', 'locationLat': '52.5200066'}
     else:
         task.ticket_info = {
             "is_new_type": True,

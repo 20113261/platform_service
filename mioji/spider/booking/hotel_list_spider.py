@@ -17,10 +17,14 @@ from mioji.common.task_info import creat_hotelParams
 from mioji.common.spider import Spider, request, PROXY_FLLOW, PROXY_REQ
 from mioji.models.city_models import get_suggest_city
 from mioji.common.logger import logger
+import hotellist_tag_parse
 import hotellist_parse
 import datetime
 from datetime import timedelta
 import re
+from mioji.common import spider
+spider.NEED_FLIP_LIMIT = False
+# spider.pool.set_size(256)
 
 url = 'http://www.booking.com/searchresults.zh-cn.html'
 DATE_YEAR = '%Y'
@@ -82,6 +86,7 @@ class HotelListSpider(Spider):
     # 基础数据城市酒店列表 & 例行城市酒店
     targets = {
         'hotel': {},
+        'filter': {},
         'room': {'version': 'InsertHotel_room4'}
     }
 
@@ -90,8 +95,51 @@ class HotelListSpider(Spider):
     # 关联原爬虫
     #   对应多个原爬虫
     old_spider_tag = {
-        'bookingListHotel': {'required': ['room']}
+        'bookingListHotel': {'required': ['room']},
+        'bookingFilterHotel': {'required': ['filter']}
     }
+
+    def __init__(self, task=None):
+        Spider.__init__(self, task=task)
+
+        self.task_info = None
+
+        if self.task is not None:
+            self.process_task_info()
+
+    def process_task_info(self):
+        """
+        这个函数是为了将self.task的格式转换为咱们自己习惯的格式，总之就是为了方便自己，格式如下：
+        self.ticket_info = {
+        'is_new_type': False,
+        'suggest_type':1,
+        'suggest': "https://www.booking.com/searchresults.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBA-gBAZICAXmoAgQ;sid=217af32acbc64a9dc8db8fd7d2f7aca9;checkin_month=9;checkin_monthday=27;checkin_year=2017;checkout_month=9;checkout_monthday=29;checkout_year=2017;class_interval=1;dest_id=20126162;dest_type=city;dtdisc=0;group_adults=2;group_children=0;inac=0;index_postcard=0;label_click=undef;no_rooms=1;offset=0;postcard=0;qrhpp=6398c3e46b4d2e9cdb31f60b0b675b4b-city-0;room1=A%2CA;sb_price_type=total;search_pageview_id=dea71cc5e6d1003f;search_selected=0;src=index;src_elem=sb;ss=%E9%98%BF%E6%AF%94%E6%9E%97%EF%BC%8C%E5%BE%B7%E5%85%8B%E8%90%A8%E6%96%AF%E5%B7%9E%EF%BC%8C%E7%BE%8E%E5%9B%BD;ss_all=0;ss_raw=%E9%98%BF%E6%AF%94%E6%9E%97%EF%BC%8C%E5%BE%B7%E5%85%8B%E8%90%A8%E6%96%AF%E5%B7%9E%EF%BC%8C%E7%BE%8E%E5%9B%BD;ssb=empty;sshis=0;origin=search;srpos=1",
+        'check_in': '20180330',
+        'stay_nights': '2',
+        'occ': '2',
+        'section_page':{'start_page':'5','end_page':'10'}
+        }
+        :return:
+        """
+        if hasattr(self.task,'ticket_info'):
+            if isinstance(self.task.ticket_info, dict):
+                self.task_info = dict()
+                self.task_info['is_new_type'] = self.task.ticket_info.get('is_new_type',False)
+                self.task_info['suggest_type'] = self.task.ticket_info.get('suggest_type',1)
+                self.task_info['suggest'] = self.task.ticket_info.get('suggest',"https://www.booking.com/searchresults.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBA-gBAZICAXmoAgQ;sid=217af32acbc64a9dc8db8fd7d2f7aca9;checkin_month=9;checkin_monthday=27;checkin_year=2017;checkout_month=9;checkout_monthday=29;checkout_year=2017;class_interval=1;dest_id=20126162;dest_type=city;dtdisc=0;group_adults=2;group_children=0;inac=0;index_postcard=0;label_click=undef;no_rooms=1;offset=0;postcard=0;qrhpp=6398c3e46b4d2e9cdb31f60b0b675b4b-city-0;room1=A%2CA;sb_price_type=total;search_pageview_id=dea71cc5e6d1003f;search_selected=0;src=index;src_elem=sb;ss=%E9%98%BF%E6%AF%94%E6%9E%97%EF%BC%8C%E5%BE%B7%E5%85%8B%E8%90%A8%E6%96%AF%E5%B7%9E%EF%BC%8C%E7%BE%8E%E5%9B%BD;ss_all=0;ss_raw=%E9%98%BF%E6%AF%94%E6%9E%97%EF%BC%8C%E5%BE%B7%E5%85%8B%E8%90%A8%E6%96%AF%E5%B7%9E%EF%BC%8C%E7%BE%8E%E5%9B%BD;ssb=empty;sshis=0;origin=search;srpos=1")
+                self.task_info['check_in'] = self.task.ticket_info.get('check_in', '20180330')
+                self.task_info['stay_nights'] = self.task.ticket_info.get('stay_nights','2')
+                self.task_info['occ'] = self.task.ticket_info.get('occ','2')
+                if self.task.ticket_info.get('section_page',{}).get("start_page","") and self.task.ticket_info.get('section_page',{}).get("end_page",""):
+                    self.task_info['section_page'] = self.task.ticket_info.get('section_page',False)
+                else:
+                    self.task_info['section_page'] = False
+            else:
+                raise parser_except.ParserException(parser_except.TASK_ERROR,
+                                                    'parse task occur some error:[{0}]'.format('task.ticket_info is not a dict.'))
+        else:
+            raise parser_except.ParserException(parser_except.TASK_ERROR,
+                                                'parse task occur some error:[{0}]'.format('task.ticket_info is not exist.'))
 
     def suggest_params(self,suggest_json,check_in,check_out):
 
@@ -118,9 +166,9 @@ class HotelListSpider(Spider):
             "selected_currency": "CNY",
             'src': 'searchresults',
             'offset': 0,
-
         }
         return params
+
     def process_url(self,hotel_url,check_in,check_out,adult=2,room_type=None):
         hotel_url = re.sub(r'(checkin_month=)[0-9]*','\g<1>'+str(check_in.month),hotel_url)
         hotel_url = re.sub(r'(checkin_monthday=)[0-9]*','\g<1>'+str(check_in.day),hotel_url)
@@ -132,6 +180,8 @@ class HotelListSpider(Spider):
         return hotel_url
 
     def targets_request(self):
+        if self.task_info is None:
+            self.process_task_info()
         if self.task.ticket_info.get('is_new_type'):
             self.user_datas['night'] = self.task.ticket_info.get('stay_nights')
             self.user_datas['adult'] = self.task.ticket_info.get('occ')
@@ -175,7 +225,7 @@ class HotelListSpider(Spider):
             self.user_datas['night'] = task_p.night
 
 
-        @request(retry_count=3, proxy_type=PROXY_REQ, binding=['hotel', 'room'])
+        @request(retry_count=3, proxy_type=PROXY_REQ, binding=['hotel', 'room', 'filter'])
         def first_page():
             '''
             data 如需要保存结果，指定data.key
@@ -223,10 +273,14 @@ class HotelListSpider(Spider):
                         'req': {'url': url, 'params': page_p},
                         'data': {'content_type': 'html'}
                     })
+
             return pages
 
         yield first_page
-        yield hotel_pages
+        if isinstance(self._crawl_targets_required,list) and len(self._crawl_targets_required) == 1 and 'filter' in self._crawl_targets_required:
+            pass
+        else:
+            yield hotel_pages
 
     def parse_page_count(self, req, data):
         '''
@@ -235,8 +289,7 @@ class HotelListSpider(Spider):
         try:
             dom = data
             page_num = int(dom.find_class('sr_pagination_link')[-1].xpath('./text()')[0])
-            print
-            'parse_page', page_num
+            print 'parse_page', page_num
             self.user_datas['page_num'] = page_num
             self.user_datas['page_size'] = 15
         except:
@@ -255,36 +308,77 @@ class HotelListSpider(Spider):
                                                  self.user_datas['mjcity_id'])
 
     def parse_hotel(self, req, data):
+        print req['resp'].url
         # 计算页数
         # print 'parse_hotels', req, data
         return hotellist_parse.parse_hotels_url(data)
 
+    def parse_filter(self, req, data):
+        return hotellist_tag_parse.parse_hotel_list_tag(req,data,self.user_datas['mjcity_id'])
+
 
 if __name__ == '__main__':
     from mioji.common.utils import simple_get_socks_proxy
+    from my_mongo import mongo_handle
     from mioji.common import spider
+    spider.NEED_FLIP_LIMIT = False
+    spider.pool.set_size(256)
 
     spider.slave_get_proxy = simple_get_socks_proxy
     from mioji.common.task_info import Task
+    from new_booking.single_city_id import city_id_list
 
-    task = Task()
-    task.content = '10006&2&1&20171126'
-    data_j = json.loads("""{"label_highlighted": "威尼斯, 威尼托大区, 意大利", "__part": 0, "type": "ci", "lc": "zh", "genius_hotels": "379", "rtl": 0, "label_multiline": "<span>威尼斯</span> 威尼托大区, 意大利", "dest_id": "-132007", "cc1": "it", "_ef": [{"name": "ac_popular_badge", "value": 1}], "nr_hotels_25": "3119", "label": "威尼斯, 威尼托大区, 意大利", "labels": [{"text": "威尼斯", "required": 1, "type": "city", "hl": 1}, {"text": "威尼托大区", "required": 1, "type": "region", "hl": 1}, {"text": "意大利", "required": 1, "type": "country", "hl": 1}], "__query_covered": 9, "flags": {"popular": 1}, "nr_hotels": "1953", "region_id": "914", "city_ufi": null, "label_cjk": "<span class='search_hl_cjk'>威尼斯</span> <span class='search_hl_cjk'>威尼托大区</span>, <span class='search_hl_cjk'>意大利</span>", "dest_type": "city", "hotels": "1953"}""")
-    task.ticket_info = {
-        'is_new_type': False,
-        'suggest_type':1,
-        'suggest': "https://www.booking.com/searchresults.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBA-gBAZICAXmoAgQ;sid=217af32acbc64a9dc8db8fd7d2f7aca9;checkin_month=9;checkin_monthday=27;checkin_year=2017;checkout_month=9;checkout_monthday=29;checkout_year=2017;class_interval=1;dest_id=20126162;dest_type=city;dtdisc=0;group_adults=2;group_children=0;inac=0;index_postcard=0;label_click=undef;no_rooms=1;offset=0;postcard=0;qrhpp=6398c3e46b4d2e9cdb31f60b0b675b4b-city-0;room1=A%2CA;sb_price_type=total;search_pageview_id=dea71cc5e6d1003f;search_selected=0;src=index;src_elem=sb;ss=%E9%98%BF%E6%AF%94%E6%9E%97%EF%BC%8C%E5%BE%B7%E5%85%8B%E8%90%A8%E6%96%AF%E5%B7%9E%EF%BC%8C%E7%BE%8E%E5%9B%BD;ss_all=0;ss_raw=%E9%98%BF%E6%AF%94%E6%9E%97%EF%BC%8C%E5%BE%B7%E5%85%8B%E8%90%A8%E6%96%AF%E5%B7%9E%EF%BC%8C%E7%BE%8E%E5%9B%BD;ssb=empty;sshis=0;origin=search;srpos=1",
-        'check_in': '20171230',
-        'stay_nights': '2',
-        'occ': '2'
-    }
-    # task.extra['hotel'] = {'check_in':'20170503', 'nights':1, 'rooms':[{}] }
-    spider = HotelListSpider()
-    spider.task = task
-    print
-    spider.crawl()
-    result = spider.result
-    # room和hotel数量不一致时因为hotel 没有去除推荐
-    print
-    len(result['hotel']), len(result['room'])
-    print result
+    count = 0
+    # mongo_handle.open()
+
+    for city_id_tuple in city_id_list:
+        count += 1
+        if count > 1:
+            break
+        city_id = city_id_tuple[0]
+        temp_dict = {"city_id": city_id, "suggestion": None}
+
+        task = Task()
+        # task.content = city_id + '&2&1&20180330'
+        task.content = '10006&2&1&20180330'
+        # data_j = json.loads("""{"label_highlighted": "威尼斯, 威尼托大区, 意大利", "__part": 0, "type": "ci", "lc": "zh", "genius_hotels": "379", "rtl": 0, "label_multiline": "<span>威尼斯</span> 威尼托大区, 意大利", "dest_id": "-132007", "cc1": "it", "_ef": [{"name": "ac_popular_badge", "value": 1}], "nr_hotels_25": "3119", "label": "威尼斯, 威尼托大区, 意大利", "labels": [{"text": "威尼斯", "required": 1, "type": "city", "hl": 1}, {"text": "威尼托大区", "required": 1, "type": "region", "hl": 1}, {"text": "意大利", "required": 1, "type": "country", "hl": 1}], "__query_covered": 9, "flags": {"popular": 1}, "nr_hotels": "1953", "region_id": "914", "city_ufi": null, "label_cjk": "<span class='search_hl_cjk'>威尼斯</span> <span class='search_hl_cjk'>威尼托大区</span>, <span class='search_hl_cjk'>意大利</span>", "dest_type": "city", "hotels": "1953"}""")
+        task.ticket_info = {
+            'is_new_type': False,
+            'suggest_type': 1,
+            'suggest': "https://www.booking.com/searchresults.zh-cn.html?label=gen173nr-1DCAEoggJCAlhYSDNiBW5vcmVmcgV1c19jYYgBAZgBMsIBA2FibsgBDNgBA-gBAZICAXmoAgQ;sid=217af32acbc64a9dc8db8fd7d2f7aca9;checkin_month=9;checkin_monthday=27;checkin_year=2017;checkout_month=9;checkout_monthday=29;checkout_year=2017;class_interval=1;dest_id=20126162;dest_type=city;dtdisc=0;group_adults=2;group_children=0;inac=0;index_postcard=0;label_click=undef;no_rooms=1;offset=0;postcard=0;qrhpp=6398c3e46b4d2e9cdb31f60b0b675b4b-city-0;room1=A%2CA;sb_price_type=total;search_pageview_id=dea71cc5e6d1003f;search_selected=0;src=index;src_elem=sb;ss=%E9%98%BF%E6%AF%94%E6%9E%97%EF%BC%8C%E5%BE%B7%E5%85%8B%E8%90%A8%E6%96%AF%E5%B7%9E%EF%BC%8C%E7%BE%8E%E5%9B%BD;ss_all=0;ss_raw=%E9%98%BF%E6%AF%94%E6%9E%97%EF%BC%8C%E5%BE%B7%E5%85%8B%E8%90%A8%E6%96%AF%E5%B7%9E%EF%BC%8C%E7%BE%8E%E5%9B%BD;ssb=empty;sshis=0;origin=search;srpos=1",
+            'check_in': '20180330',
+            'stay_nights': '2',
+            'occ': '2',
+            'section_page': {'start_page': '0', 'end_page': '5'},
+            'hotel_info':{
+                "hotel_sort":"P+", # "P"以价格排序，"L"以距离排序，"R"按推荐排序 字符"+" or "-" 表示升序 or 降序排列, 如, "P+" 按价格升序排列, "L-" 按距离降序排列
+                "has_breakfast": "Y", #str 是否有早餐"Y"表示有，"N"表示没有，
+                "hotel_star": [1,2,5], # 1-5表示星级， 只有0表示不限
+                "index_free": [1,13], # 爬取页码范围[1,13]只有两个数字，起始页 and 终止页
+                "score":["9,10","8,9","7,8","0,7"], # 评分范围
+                "bedtype":"O", # str "O"表示大床，"D"表示双床， "A"表示不限，
+                "hotel_type":["E"], # "E"经济连锁，"B"品牌连锁，"L"客栈，"C"特色酒店，"A"不限
+                "hotel_acilities": [], # 酒店设施
+                "city_id": "", # 城市id
+                "check_in": "", # "yyyymmdd"
+                "check_out": "", # "yyyymmdd"
+                "Landmark_Id": [], # 商圈 [] 源可以直接使用的商圈id
+            }
+        }
+        spider = HotelListSpider()
+        spider.task = task
+        # print spider.crawl(required=['filter','hotel'])
+        print spider.crawl(required=['filter'])
+        result = spider.result
+        # room和hotel数量不一致时因为hotel 没有去除推荐
+        print len(result['hotel']), len(result['room']),len(result['filter'])
+        if result['filter']:
+            temp_result = result['filter']
+            # mongo_handle.insert_one_to(temp_dict)
+            print temp_result
+        for hotel_result in result['hotel']:
+            print hotel_result
+
+        for room_result in result['room']:
+            print room_result
+

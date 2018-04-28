@@ -11,6 +11,7 @@ reload(sys)
 sys.setdefaultencoding("utf-8")
 
 __author__ = 'fan bowen'
+
 """
 调用API 时需要对请求参数进行签名验证，服务器也会对该请求参数进行验证是否合法的。方法如下：
 如何签名？

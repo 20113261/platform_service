@@ -14,17 +14,18 @@ import logging
 from ucloud.ufile import putufile, downloadufile, postufile, deleteufile
 from ucloud.compact import BytesIO
 from ucloud.ufile import config
-# from service_platform_logger import get_logger
-from logger import logger
+from service_platform_logger import get_logger
 
 u_logger = logging.getLogger("UCLOUD")
 u_logger.setLevel(logging.ERROR)
-# logger = get_logger("ufile_uploader")
+logger = get_logger("ufile_uploader")
 
 config.set_default(uploadsuffix='.ufile.cn-north-03.ucloud.cn')
 config.set_default(downloadsuffix='.ufile.cn-north-03.ucloud.cn')
 config.set_default(connection_timeout=60)
 
+# public_key = 'vCuKhG6UcHvB1UswK/q5zjMMHxt7PjKIu3/6q1JtxiZHtAuv'
+# private_key = 'fdfbdf9cb0ebfeed522f664efc44f752694b15f6'
 public_key = 'M7jIsudUE4Nvn6zQGjNMWxReCrSpc8HcWdBztizB38qvbXkS'
 private_key = '3fe4dbb2f16a86a8a58c6c9aac061d83c43ff468'
 put_handler = putufile.PutUFile(public_key, private_key)
@@ -122,7 +123,7 @@ def upload_stream(key, data):
 if __name__ == '__main__':
     print(upload_stream('test', json.dumps({'status': 'OK', 'data': 'Hello World', 'test': '中文测试'})))
     print(has_file('service_platform_cdfdb55def0b654eadba37812bfc66bd'))
-    print(get_ufile_and_info('store_name_city_first_page@func_name_city_first@index_1@retry_count_0')[0])
+    print(get_ufile_and_info('store_name_city_branch_pages_dabb6f2e4bb1c45a3d543a38e727e4e2_(0.0,)@func_name_branch_pages@index_1@retry_count_0@page_hash_4b82ae0fd59796229a352d8d147bf235')[0])
     # print(delete_ufile('test'))
     # print(get_ufile('test'))
     # print(get_file_info('test'))

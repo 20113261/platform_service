@@ -10,7 +10,6 @@ Created on 2016年12月27日
 import re
 import json
 from mioji.common.class_common import Room
-from mioji.common import parser_except
 from mioji.common.func_log import func_time_logger
 
 room_dict = {1: '单人间', 2: '双人间', 3: '三人间', 4: '四人间'}
@@ -50,8 +49,6 @@ def parse_hotels_hotel(content):
     #                   room.hotel_url)
     #     rooms.append(room_tuple)
     tree = content['searchResults']
-    if not tree['retailHotelModels']:
-        raise parser_except.ParserException(22, "爬虫被封禁")
     for i in xrange(len(tree['retailHotelModels'])):
         room = Room()
         room.source_hotelid = tree['retailHotelModels'][i]['hotelId']

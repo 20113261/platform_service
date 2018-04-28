@@ -14,7 +14,7 @@ import hashlib
 import json
 import time
 import datetime
-from mioji.common.spider import Spider, request, PROXY_REQ, PROXY_NONE, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_REQ, PROXY_NONE
 from mioji.common.task_info import Task
 from mioji.common import parser_except
 from mioji.common.class_common import Room
@@ -29,12 +29,11 @@ from mioji.common import parser_except
 # from mioji.common.check_book.check_book_ratio import use_record_qid
 
 
+
 class DOTW_Spider(Spider):
     source_type = 'DOTW'
     targets = {
-        'hotel': {},
         'room': {'version': 'InsertHotel_room4'},
-
     }
     old_spider_tag = {
         'dotwApiHotel': {'required': ['room']}
@@ -54,11 +53,7 @@ class DOTW_Spider(Spider):
 
     def make_data(self, task):
         # use_record_qid(unionKey='dotwApi', api_name="Search Hotels", task=task, record_tuple=[1, 0, 0])
-        try:
-            auth = json.loads(self.task.ticket_info["auth"])
-        # except parser_except.ParserException:
-        except Exception:
-            raise parser_except.ParserException(121,msg='API认证信息错误')
+        auth = json.loads(task.ticket_info['auth'])
         self.check_auth(auth)
         URL = auth['URL']
         username = auth['username']
@@ -79,7 +74,6 @@ class DOTW_Spider(Spider):
             .format(**{'check_in': self.check_in, 'check_out': self.check_out, 'currency': currency})
         rooms_info = ''
         len_rooms = ticket_info['room_info'][0]["num"]
-        self.room_num = len_rooms
         logger.info("同时预定{0}间房".format(len_rooms))
         # roomInfox需提供国籍信息,默认中国168
         for i in range(len_rooms):
@@ -101,93 +95,14 @@ class DOTW_Spider(Spider):
             .format(**{'time_Currency': time_Currency, 'rooms': rooms, 'product_id': product_id})
         data = '''<customer>{user_info}{room_request_info}</customer>''' \
             .format(**{'user_info': user_info, 'room_request_info': room_request_info})
+        print '=='*20
+        print data
         return data, URL
-
-    def make_hotel_data(self, task):
-        try:
-            auth = json.loads(self.task.ticket_info["auth"])
-        except Exception:
-            raise parser_except.ParserException(121, msg='API认证信息错误')
-        self.check_auth(auth)
-        url = auth['URL']
-        username = auth['username']
-        password = hashlib.md5(auth['password']).hexdigest()
-        company_code = auth['company_code']
-        ticket_info = task.ticket_info
-        content = task.content
-        self.hotel_code, self.check_in, self.check_out, self.cityID = self.content_parser(
-            content)
-        room = ""
-        num = ticket_info['room_info'][0]["num"]
-        occ = ticket_info['room_info'][0]["occ"]
-        for i in range(num):
-            room += """<room runno="{0}"><adultsCode>{1}</adultsCode><children no="0"></children>  <rateBasis>-1</rateBasis>  <passengerNationality>168</passengerNationality>  <passengerCountryOfResidence>168</passengerCountryOfResidence>""".format(i, occ)
-        _data = {
-            'username': username,
-            'password': password,
-            'id': company_code,
-            'fromDate': self.check_in,
-            'toDate': self.check_out,
-            'num': ticket_info['room_info'][0]["num"],
-            'room': room,
-            'city': self.cityID,
-        }
-        data = """
-        <customer>  
-    <username>{username}</username>  
-    <password>{password}</password>  
-    <id>{id}</id>  
-    <source>1</source>    
-    <product>hotel</product>  
-    <request command="searchhotels">  
-        <bookingDetails>  
-            <fromDate>{fromDate}</fromDate>  
-            <toDate>{toDate}</toDate>  
-            <currency>520</currency>  
-            <rooms no="{num}">  
-                <room runno="0">  
-                    <adultsCode>2</adultsCode>  
-                    <children no="0"></children>  
-                    <rateBasis>-1</rateBasis>  
-                    <passengerNationality>81</passengerNationality>  
-                    <passengerCountryOfResidence>72</passengerCountryOfResidence>  
-                </room>  
-                <room runno="1">  
-                    <adultsCode>2</adultsCode>  
-                    <children no="0">   
-                    </children>  
-                    <rateBasis>-1</rateBasis>  
-                    <passengerNationality>168</passengerNationality>  
-                    <passengerCountryOfResidence>168</passengerCountryOfResidence>  
-                </room>
-            </rooms>  
-        </bookingDetails>  
-        <return>  
-            <filters xmlns:a="http://us.dotwconnect.com/xsd/atomicCondition" xmlns:c="http://us.dotwconnect.com/xsd/complexCondition">  
-                <city>{city}</city>  
-                <nearbyCities>false</nearbyCities>  
-                <c:condition>  
-                    <a:condition>  
-                        <fieldName>price</fieldName>  
-                        <fieldTest>between</fieldTest>  
-                        <fieldValues>  
-                            <fieldValue>0</fieldValue>  
-                            <fieldValue>100000000</fieldValue>  
-                        </fieldValues>  
-                    </a:condition>  
-                </c:condition>  
-            </filters>  
-        </return>  
-    </request>  
-</customer>
-        """.format(**_data)
-        return data, url
 
     def content_parser(self, content):
         content = content
         content_list = content.split('&')
         hotel_code = content_list[1]
-        self.user_datas['hotel_code'] = hotel_code
         cityID = content_list[0]
         night = int(content_list[2])
         checkin = datetime.datetime.strptime(content_list[3], "%Y%m%d")
@@ -204,19 +119,8 @@ class DOTW_Spider(Spider):
     def targets_request(self):
         task = self.task
         data, URL = self.make_data(task)
-        hotel_data, url = self.make_hotel_data(task)
 
-        @request(retry_count=3, proxy_type=PROXY_NEVER, binding=self.parse_hotel)
-        def hotel_request():
-            return {'req': {
-                'method': 'POST',
-                'url': url,
-                'headers': self.header,
-                'data': hotel_data
-            },
-            }
-
-        @request(retry_count=3, proxy_type=PROXY_NEVER, binding=self.parse_room)
+        @request(retry_count=3, proxy_type=PROXY_NONE, binding=self.parse_room)
         def pages_request():
             return {'req': {
                 'method': 'POST',
@@ -225,32 +129,19 @@ class DOTW_Spider(Spider):
                 'data': data
             }, }
 
-        return [hotel_request, pages_request]
+        return [pages_request, ]
 
     def get_property_info(self, root, name):
         for i in root.iter(name):
             pruduct = i
             return pruduct
 
-    def parse_hotel(self, req, data):
-        try:
-            flag = False
-            root = ET.fromstring(data)
-            for i in root.iter():
-                if i.tag == 'hotel':
-                    hotel_id = i.get('hotelid')
-                    if str(hotel_id) == str(self.user_datas['hotel_code']) and str(i.find('availability').text) == 'available':
-                        flag = True
-            if not flag:
-                raise parser_except.ParserException(29, "无房")
-        except Exception as why:
-            raise parser_except.ParserException(29, "无房")
-
     def parse_room(self, req, data):
         # 认证失败
         if "Wrong customer username or password or no access rights" in data:
             raise parser_except.ParserException(122, "认证失败")
 
+        print '进入解析'
         # w = open('response_01.xml', 'w')
         # w.write(data)
         # w.close()
@@ -305,13 +196,14 @@ class DOTW_Spider(Spider):
         room = []
         roomtypecodes = []
         if rooms_len != 1:
+            print "同时订了多间房"
             for i in room_1[1:]:
                 room_ids = []
                 room_123 = i.xpath("./roomType")
                 for room_info in room_123:
                     room_ids.append(room_info.attrib['roomtypecode'])
                 rooms_id_list.append(room_ids)
-
+            
             room_id_list_1 = room_1[0].xpath("./roomType")
             for i1 in room_id_list_1:
                 bowen = 1
@@ -328,13 +220,17 @@ class DOTW_Spider(Spider):
             room = root.xpath("/result/hotel/rooms/room/roomType")
             for i in room:
                 roomtypecodes.append(i.attrib['roomtypecode'])
-
+        print roomtypecodes
+        print len(room)
+        print "____"
+        
         # print room
         # for i in room:
         #     print i.tag,i.attrib,i.text
         for room_info in room:
             # 给others_info 中
-            rateBasis = room_info.xpath('./rateBases/rateBasis[1]')[0].attrib['id']
+            rateBasis = room_info.xpath(
+                './rateBases/rateBasis[1]')[0].attrib['id']
             mioji_hotel.source_roomid = room_info.attrib['roomtypecode']
             mioji_hotel.room_type = room_info.findtext('name')
             roomInfo = room_info.xpath('./roomInfo')
@@ -357,53 +253,38 @@ class DOTW_Spider(Spider):
             mioji_hotel.is_cancel_free = 'NULL'
             try:
                 cancellationRules = room_info.xpath('.//cancellationRules')
-                mioji_hotel.return_rule = ''
+                str_change_1, str_change_2, str_change_3, str_change_4 = '', '', '', ''
+                str_return_1, str_return_2, str_return_3, str_return_4 = '', '', '', ''
                 for i in cancellationRules:
-                    for a in i.findall('rule'):
-                        if a.items()[0][0] == 'runno' and a.items()[0][1] == '0':
-                            if mioji_hotel.return_rule == '免费退改截止时间:' + a.find('toDate').text + '<br/>':
-                                pass
-                            else:
-                                mioji_hotel.return_rule += '免费退改截止时间:' + a.find('toDate').text + '<br/>'
-                        elif a.items()[0][0] == 'runno' and a.items()[0][1] == '1':
-                            mioji_hotel.return_rule += a.find('fromDate').text + '起' + \
-                                                       ',改单费用:' + a.find('amendCharge').text + '元,退单费用:' + \
-                                                       a.find('cancelCharge').text + '元<br/>'
-                        elif a.items()[0][0] == 'runno' and a.items()[0][1] == '2':
-                            if mioji_hotel.return_rule == '自' + a.find('fromDate').text + '之后不可退改':
-                                pass
-                            else:
-                                mioji_hotel.return_rule += '自' + a.find('fromDate').text + '之后不可退改'
-                mioji_hotel.change_rule = mioji_hotel.return_rule
-                #     miki_Date = i[0].tag
-                #     if miki_Date == 'toDate':
-                #         str_change_1 = '如果您在%s之前修改您的预定，我们将扣除您%s元的房款。' % (
-                #             i[0].text, i[2].text)
-                #         str_return_1 = '如果您在%s之前退订您的房间，我们将扣除您%s元的房款。' % (
-                #             i[0].text, i[3].text)
-                #         if i[3].text == '0':
-                #             mioji_hotel.is_cancel_free = 'Yes'
-                #         else:
-                #             mioji_hotel.is_cancel_free = 'No'
-                #     if miki_Date == 'fromDate':
-                #         if i[2].text == 'true':
-                #             str_change_2 = '在%s之后，您的预定将不可修改。' % (i[0].text)
-                #         if i[3].text == 'true':
-                #             str_return_2 = '在%s之后，您的预定将不可取消。' % (i[0].text)
-                #         if i[2].tag == 'toDate':
-                #             str_change_3 = '如果您在%s至%s之间修改您的预定，我们将扣除您%s元的房款。' % (
-                #                 i[0].text, i[2].text, i[4][0].text)
-                #             str_return_3 = '如果您在%s至%s之间退订您的房间，我们将扣除您%s元的房款。' % (
-                #                 i[0].text, i[2].text, i[5][0].text)
-                #         if i[2].tag == 'amendCharge':
-                #             str_change_4 = '如果您在%s之后修改您的预定，我们将扣除您%s元的房款。' % (
-                #                 i[0].text, i[2].text)
-                #             str_return_4 = '如果您在%s之后退订您的房间，我们将扣除您%s元的房款。' % (
-                #                 i[0].text, i[3].text)
-                # mioji_hotel.change_rule = str_change_1 + \
-                #     str_change_3 + str_change_4 + str_change_2
-                # mioji_hotel.return_rule = str_return_1 + \
-                #     str_return_3 + str_return_4 + str_return_2
+                    miki_Date = i[0].tag
+                    if miki_Date == 'toDate':
+                        str_change_1 = '如果您在%s之前修改您的预定，我们将扣除您%s元的房款。' % (
+                            i[0].text, i[2].text)
+                        str_return_1 = '如果您在%s之前退订您的房间，我们将扣除您%s元的房款。' % (
+                            i[0].text, i[3].text)
+                        if i[3].text == '0':
+                            mioji_hotel.is_cancel_free = 'Yes'
+                        else:
+                            mioji_hotel.is_cancel_free = 'No'
+                    if miki_Date == 'fromDate':
+                        if i[2].text == 'true':
+                            str_change_2 = '在%s之后，您的预定将不可修改。' % (i[0].text)
+                        if i[3].text == 'true':
+                            str_return_2 = '在%s之后，您的预定将不可取消。' % (i[0].text)
+                        if i[2].tag == 'toDate':
+                            str_change_3 = '如果您在%s至%s之间修改您的预定，我们将扣除您%s元的房款。' % (
+                                i[0].text, i[2].text, i[4][0].text)
+                            str_return_3 = '如果您在%s至%s之间退订您的房间，我们将扣除您%s元的房款。' % (
+                                i[0].text, i[2].text, i[5][0].text)
+                        if i[2].tag == 'amendCharge':
+                            str_change_4 = '如果您在%s之后修改您的预定，我们将扣除您%s元的房款。' % (
+                                i[0].text, i[2].text)
+                            str_return_4 = '如果您在%s之后退订您的房间，我们将扣除您%s元的房款。' % (
+                                i[0].text, i[3].text)
+                mioji_hotel.change_rule = str_change_1 + \
+                    str_change_3 + str_change_4 + str_change_2
+                mioji_hotel.return_rule = str_return_1 + \
+                    str_return_3 + str_return_4 + str_return_2
             except:
                 mioji_hotel.change_rule = 'NULL'
                 mioji_hotel.return_rule = 'NULL'
@@ -439,19 +320,13 @@ class DOTW_Spider(Spider):
                 if roomtypecode in allocations.keys():
                     pay_infos = allocations[roomtypecode]
             others_info['rate_key'] = pay_infos
-            others_info['payKey'] = {'redis_key': redis_key,
-                                     'id': offer_count,
-                                     'room_num':self.room_num}
             others_info['paykey'] = {'redis_key': redis_key,
-                                     'id': offer_count,
-                                     'room_num':self.room_num}
+                                        'id': offer_count}
+            others_info['payKey'] = {'redis_key': redis_key,
+                                        'id': offer_count}
             others_info['roomtypecode'] = mioji_hotel.source_roomid
             others_info['selectedRateBasis'] = rateBasis
             others_info['productId'] = self.hotel_code
-            others_info['extra'] = {'breakfast':'',
-                                    'payment':'',
-                                    'return_rule': mioji_hotel.return_rule,
-                                    'occ_des':''}
             offer_count += 1
             mioji_hotel.others_info = json.dumps(others_info)
             mioji_hotel.bed_type = 'NULL'
@@ -466,12 +341,13 @@ class DOTW_Spider(Spider):
             mioji_hotel.guest_info = 'NULL'
             room = mioji_hotel
             roomtuple = (room.hotel_name, room.city, room.source, room.source_hotelid, room.source_roomid,
-                         room.real_source, room.room_type, room.occupancy, room.bed_type, room.size, room.floor,
-                         room.check_in, room.check_out, room.rest, room.price, room.tax, room.currency,
-                         room.pay_method, room.is_extrabed, room.is_extrabed_free, room.has_breakfast,
-                         room.is_breakfast_free, room.is_cancel_free, room.extrabed_rule, room.return_rule,
-                         room.change_rule, room.room_desc, room.others_info, room.guest_info)
+                            room.real_source, room.room_type, room.occupancy, room.bed_type, room.size, room.floor,
+                            room.check_in, room.check_out, room.rest, room.price, room.tax, room.currency,
+                            room.pay_method, room.is_extrabed, room.is_extrabed_free, room.has_breakfast,
+                            room.is_breakfast_free, room.is_cancel_free, room.extrabed_rule, room.return_rule,
+                            room.change_rule, room.room_desc, room.others_info, room.guest_info)
             rooms.append(roomtuple)
+        print rooms
         return rooms
         # except Exception as e:
         #     print traceback.format_exc()
@@ -481,14 +357,16 @@ if __name__ == '__main__':
     task = Task()
     task.source = 'DOTW'
     task.other_info= {}
-    auth = {"URL":"https://xmldev.DOTWconnect.com/gatewayV3.dotw",
-            "username":"MiojiXML",
-            "password":"aAkD0b$A",
-            "company_code":1439065
-            }
+    auth = {
+        'URL': 'https://xmldev.DOTWconnect.com/gatewayV3.dotw',
+        'username': 'MiojiXML',
+        'password': 'Mioji2017',
+        'company_code': 1439065,
+    }
+    auth = {"URL":"https://xmldev.DOTWconnect.com/gatewayV3.dotw","username":"MiojiXML","password":"Mioji2017","company_code":1439065}
 
     task.ticket_info = {
-        "room_info": [{"num":3,"occ":2,"room_count":3}],
+        "room_info": [{"num":1,"occ":2,"room_count":1}],
         # "room_info": [{"occ": 2, "num": 1}],
         'auth': json.dumps(auth)
     }
@@ -496,7 +374,7 @@ if __name__ == '__main__':
     content_list = [
         # 33084,
         # 33094,
-        # # 304,
+        33104,
         # 33114,
         # 33124,
         # 33134,
@@ -507,30 +385,19 @@ if __name__ == '__main__':
         # 33184,
         # 33194,
         # 1598908,
-        904985
 
     ]
-
-    # task.content = "304&904985&4&20180330"
-    # spider = DOTW_Spider(task)
-    # spider.crawl()
-    # print spider.code
-
-
     result = []
     for i in content_list:
-        task.content = '''304&{num}&1&20180519'''.format(**{'num': i})
-        # task.content = "304&904985&4&20180330"
+        task.content = '''20142&{num}&1&20171220'''.format(**{'num': i})
+        task.content = "10009&33104&4&20171222"
         spider = DOTW_Spider(task)
         if spider.crawl() == 0:
-            print spider.result
-        print spider.code
+            result.append(i)
 
+    print result
+        # result.append(spider.result)
+        # print spider.result
 
-
-
-    # result.append(spider.result)
-    # print spider.result
-
-    # print len(spider.result)
-    # print i
+        # print len(spider.result)
+        # print i

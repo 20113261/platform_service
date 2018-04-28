@@ -1,10 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+from mioji.common.utils import setdefaultencoding_utf8
+
+setdefaultencoding_utf8()
 import re
 import json
 from mioji.common import parser_except
 from mioji.common.spider import Spider, request, PROXY_FLLOW, PROXY_REQ
 from mioji.common.class_common import Flight
+
+# 关闭神烦的warning
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 header = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
@@ -43,7 +53,7 @@ class PricelineFlightSpider(Spider):
     }
 
     def __init__(self, task=None):
-        Spider.__init__(self, task=task)
+        Spider.__init__(self, task=None)
         # 任务信息
         self.adults = 1
         self.header = {
@@ -105,7 +115,7 @@ class PricelineFlightSpider(Spider):
             self.end_id = offset
 
             pages = []
-            for p in range(3):
+            for p in xrange(3):
                 postdata = self.get_postdata()
                 self.end_id += offset
                 self.head_id = self.end_id - offset + 1
@@ -375,12 +385,12 @@ if __name__ == '__main__':
     task = Task()
     task.ticket_info = {}
     # task.content = 'PEK&ORD&20170919'
-    task.content = 'KIX&XIY&20170910'
+    task.content = 'KIX&XIY&20170610'
     spider = PricelineFlightSpider()
     spider.task = task
-    print(spider.source_type)
-    print(spider.crawl())
-    print(spider.result)
+    print spider.source_type
+    print spider.crawl()
+    print spider.result
     # print len(spider.tickets)
     # for item in spider.tickets:
     #     print item

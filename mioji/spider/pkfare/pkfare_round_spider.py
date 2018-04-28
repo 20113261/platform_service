@@ -3,7 +3,7 @@
 import json
 from mioji.common import parser_except
 
-from mioji.common.spider import Spider, request, PROXY_NONE, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_NONE
 from pkfare_oneway_spider import PKfareFlightSpider
 from mioji.common.check_book.check_book_ratio import use_record_qid
 
@@ -37,7 +37,7 @@ class PKfareRoundSpider(PKfareFlightSpider):
     def targets_request(self):
         req = self.process_task()
 
-        @request(retry_count=1, proxy_type=PROXY_NEVER, binding=['RoundFlight'])
+        @request(retry_count=1, proxy_type=PROXY_NONE, binding=['RoundFlight'])
         def do_request():
             return {
                 'req': req,

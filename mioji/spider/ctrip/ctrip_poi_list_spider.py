@@ -39,7 +39,7 @@ class CtripViewSpider(Spider):
     }
 
     old_spider_tag = {
-        'ctripPOI': {'required': ['POIlist']}
+        'ctripPoi_list': {'required': ['POIlist']}
     }
 
     def __init__(self):
@@ -58,7 +58,7 @@ class CtripViewSpider(Spider):
         tid = 'demo'
         used_times =3
 
-        @request(retry_count=5, proxy_type=PROXY_REQ)
+        @request(retry_count=5, proxy_type=PROXY_REQ,store_page_name="num_first_{}_{}".format(tid, used_times))
         def num_first():
             cont = self.task.content
             url1 = self.page_sight_url.format(cont)
@@ -74,7 +74,7 @@ class CtripViewSpider(Spider):
             return urls
         yield num_first
 
-        @request(retry_count=5, binding=['POIlist'],proxy_type=PROXY_REQ,async = True)
+        @request(retry_count=5, binding=['POIlist'],proxy_type=PROXY_REQ,async = True,store_page_name="get_info_{}_{}".format(tid, used_times))
         def get_info():
             all_page = []
             num = int(self.page)

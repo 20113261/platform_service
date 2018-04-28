@@ -5,7 +5,7 @@ import time
 import sys
 sys.path.insert(0, '/Users/miojilx/Desktop/git/Spider/src')
 import pdb
-from mioji.common.spider import Spider, request, PROXY_REQ, PROXY_NONE, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_REQ, PROXY_NONE
 from mioji.common.task_info import Task
 from mioji.common import parser_except
 from mioji.common.class_common import Room
@@ -52,7 +52,8 @@ class Miki_Spider(Spider):
         checkIn = check_in[0:4] + '-' + check_in[4:6] + '-' + check_in[6:]
         # 总共请求的房间数
         miojiRoomNo = task.ticket_info['room_info'][0]['num']
-        # print miojiRoomNo        
+        # print miojiRoomNo
+        
         # print occ
         # 账号信息认证模块
         requestAuditInfo = '''<requestAuditInfo><agentCode>{agentCode}</agentCode><requestPassword>{requestPassword}</requestPassword><requestID>0</requestID><requestDateTime>{requestDateTime}</requestDateTime></requestAuditInfo>'''\
@@ -100,7 +101,7 @@ class Miki_Spider(Spider):
         data = ctx['data']
         header = ctx['header']
 
-        @request(retry_count=3, proxy_type=PROXY_NEVER, binding=self.parse_room)
+        @request(retry_count=3, proxy_type=PROXY_NONE, binding=self.parse_room)
         def token_request():
             a = {'req': {
                     'method': 'POST',
@@ -196,17 +197,27 @@ class Miki_Spider(Spider):
                 # print mioji_hotel.price
                 cancellationPolicies = root.xpath(
                     '//cancellationPolicies/cancellationPolicy')
-                
+                Mioji_others_info = dict()
+                Mioji_others_info = {
+                    'paykey': {'redis_key': redis_key,
+                               'id': offer_count},
+                    'roomTypeCode': mioji_hotel.source_roomid,
+                    'rate_key': rateIdentifier,
+                    'payKey': {'redis_key': redis_key,
+                               'id': offer_count},
+                }
+                mioji_hotel.others_info = json.dumps(Mioji_others_info)
+                offer_count += 1
                 refunds_info = []
-                # for cancellationPolicy in cancellationPolicies:
-                #     refunds_list = dict()
-                #     refunds_list['appliesFrom'] = cancellationPolicy.findtext(
-                #         'appliesFrom')
-                #     refunds_list['fullStay'] = cancellationPolicy.findtext(
-                #         'fullStay')
-                #     refunds_list['Percentage'] = cancellationPolicy.xpath(
-                #         './cancellationCharge/percentage')[0].text
-                #     refunds_info.append(refunds_list)
+                for cancellationPolicy in cancellationPolicies:
+                    refunds_list = dict()
+                    refunds_list['appliesFrom'] = cancellationPolicy.findtext(
+                        'appliesFrom')
+                    refunds_list['fullStay'] = cancellationPolicy.findtext(
+                        'fullStay')
+                    refunds_list['Percentage'] = cancellationPolicy.xpath(
+                        './cancellationCharge/percentage')[0].text
+                    refunds_info.append(refunds_list)
                 occ_dict = {
                     '00001': 2,
                     '00002': 1,
@@ -227,48 +238,28 @@ class Miki_Spider(Spider):
                     '93039': self.occ}
                 try:
                     mioji_cancel_strs = ''
-                    if root.xpath('//percentage')[0].text and root.xpath('//fullStay')[0].text == 'true':
-                        mioji_cancel_strs = '取消订单时间:' + root.xpath('//appliesFrom')[0].text + '起<br />退单费用：全部住宿金*'+root.xpath('//percentage')[0].text+'%<br /><br />'
-                    elif root.xpath('//percentage')[0].text and root.xpath('//fullStay')[0].text == 'false':
-                        mioji_cancel_strs = '取消订单时间:' + root.xpath('//appliesFrom')[0].text + '起<br />退单费用：首晚住宿金*'+root.xpath('//percentage')[0].text + '%<br /><br />'
+                    cancellationPolicies = root.xpath(
+                        '//cancellationPolicies')[0]
+                    # cancellationPolicies = self.get_property_info(root, 'cancellationPolicies')
+                    refundable = cancellationPolicies.attrib['refundable']
+                    if refundable == '0' or refundable == '1':
+                        mioji_hotel.is_cancel_free = 'No'
                     else:
-                        mioji_cancel_strs = ''
-                    # cancellationPolicies = root.xpath(
-                    #     '//cancellationPolicies')[0]
-                    # # cancellationPolicies = self.get_property_info(root, 'cancellationPolicies')
-                    # refundable = cancellationPolicies.attrib['refundable']
-                    # if refundable == '0' or refundable == '1':
-                    #     mioji_hotel.is_cancel_free = 'No'
-                    # else:
-                    #     mioji_hotel.is_cancel_free = 'Yes'
-                    # for cancellationPolicy in cancellationPolicies.getchildren():
-                    #     if cancellationPolicy[1].text == 'false':
-                    #         cancel_str = '第一晚房款的'
-                    #     elif cancellationPolicy[1].text == 'true':
-                    #         cancel_str = '所有房款的'
-                    #     cancel_time = cancellationPolicy[0].text
-                    #     cancellationCharge = cancellationPolicy[2][0].text
-                    #     print cancellationCharge
-                    #     mioji_cancel_str = '从您预订时间开始，到%s,如果您取消您的预定，我们将扣除您%s,百分之%s;|' % (
-                    #         cancel_time, cancel_str, cancellationCharge)
-                    #     mioji_cancel_strs += mioji_cancel_str
+                        mioji_hotel.is_cancel_free = 'Yes'
+                    for cancellationPolicy in cancellationPolicies.getchildren():
+                        if cancellationPolicy[1].text == 'false':
+                            cancel_str = '第一晚房款的'
+                        elif cancellationPolicy[1].text == 'true':
+                            cancel_str = '所有房款的'
+                        cancel_time = cancellationPolicy[0].text
+                        cancellationCharge = cancellationPolicy[2][0].text
+                        print cancellationCharge
+                        mioji_cancel_str = '从您预订时间开始，到%s,如果您取消您的预定，我们将扣除您%s,百分之%s;|' % (
+                            cancel_time, cancel_str, cancellationCharge)
+                        mioji_cancel_strs += mioji_cancel_str
                 except:
                     mioji_hotel.is_cancel_free = 'NULL'
                     mioji_cancel_strs = 'NULL'
-                Mioji_others_info = dict()
-                Mioji_others_info = {
-                    'paykey': {'redis_key': redis_key,
-                               'id': offer_count},
-                    'roomTypeCode': mioji_hotel.source_roomid,
-                    'rate_key': rateIdentifier,
-                    'payKey': {'redis_key': redis_key,
-                               'id': offer_count},
-                    'extra': {'breakfast':'',
-                              'payment':'',
-                              'return_rule':mioji_cancel_strs,
-                              'occ_des':''}
-                }
-                mioji_hotel.others_info = json.dumps(Mioji_others_info)
                 mioji_hotel.return_rule = mioji_cancel_strs
                 mioji_hotel.occupancy = occ_dict[mioji_hotel.source_roomid]
                 mioji_hotel.bed_type = 'NULL'
@@ -292,8 +283,7 @@ class Miki_Spider(Spider):
                              room.pay_method, room.is_extrabed, room.is_extrabed_free, room.has_breakfast,
                              room.is_breakfast_free, room.is_cancel_free, room.extrabed_rule, room.return_rule,
                              room.change_rule, room.room_desc, room.others_info, room.guest_info)
-                rooms.append(roomtuple) 
-                offer_count += 1
+                rooms.append(roomtuple)
             return rooms
         except Exception as e:
             print traceback.format_exc()

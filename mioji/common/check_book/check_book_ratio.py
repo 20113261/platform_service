@@ -57,12 +57,11 @@ class CheckBookRatio(object):
                                                qid=self.qid,
                                                api=self.api_name, check=self.record_tuple[0],
                                                book=self.record_tuple[1], refund=self.record_tuple[2])
-
+            logger.info("[插入查定比][sql][{0}]".format(sql))
             self._mysql.exec_sql(sql)
-            logger.info("[插入查定比记录成功][sql][{0}]".format(sql))
         except Exception as why:
+            logger.info("[插入查定比记录失败]：{0}".format(why))
             
-            logger.info("[插入查定比记录失败]")
         finally:
             self._mysql.close()
 

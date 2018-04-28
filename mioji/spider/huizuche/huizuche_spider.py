@@ -6,7 +6,7 @@ setdefaultencoding_utf8()
 
 import urlparse
 from mioji.common import parser_except
-from mioji.common.spider import Spider, request, PROXY_NONE, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_NONE
 from huizucheAPI import HuizucheApi
 from common.class_common import Car
 from mioji.common.check_book.check_book_ratio import use_record_qid
@@ -40,7 +40,7 @@ class huizucheSpider(Spider):
         self.get_requests_data()
         task = self.task
         use_record_qid(unionKey='惠租车 API', api_name="Vehicle List", task=task, record_tuple=[1, 0, 0])
-        @request(retry_count=1, proxy_type=PROXY_NEVER, binding=self.parse_Car)
+        @request(retry_count=1, proxy_type=PROXY_NONE, binding=self.parse_Car)
         def make_request():
             """
             data 如需要保存结果，指定data.key
@@ -86,10 +86,10 @@ class huizucheSpider(Spider):
             resp = self.api_object.analysis_json(resp)
             return resp
         else:
-            if int(resp['errors'][0]['code']) == 100002 or int(resp['errors'][0]['code']) == 100004:
+            if int(resp['errors'][0]['code']) == 100002:
                 raise parser_except.ParserException(122, '认证信息错误')
             else:
-                raise parser_except.ParserException(90, '返回信息报错')
+                raise parser_except.ParserException(12, '任务信息有错')
         
 
 

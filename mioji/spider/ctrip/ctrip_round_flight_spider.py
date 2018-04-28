@@ -46,7 +46,7 @@ class CtripRoundFlightSpider(Spider):
         query_cabin = seat_type_to_queryparam(seat_type)
 
         Search = 'http://flights.ctrip.com/international/round-%s-%s-%s-%s?%s&%s&%s' % (
-            dept_id, dest_id, dept_id.lower(), dest_id.lower(), dept_date, dest_date, query_cabin)
+            dept_id, dest_id, dept_info['code'].lower(), dest_info['code'].lower(), dept_date, dest_date, query_cabin)
         Search_1 = 'http://flights.ctrip.com/international/AjaxRequest/SearchFlights/AsyncSearchHandlerSOAII.ashx'
         Referer = 'http://flights.ctrip.com/international/'
         post_data_0 = {'FlightWay': 'D', 'homecity_name': homecity_name, 'destcity1_name': destcity_name,

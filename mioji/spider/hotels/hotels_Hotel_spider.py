@@ -53,11 +53,11 @@ def parse_string(st):
 
 
 class test_room(Room):
-    # def __str__(self):
-    #     for k,v in self.__dict__.items():
-    #         print k,'=>',v
-    #     return 'testEND'
-    pass
+    def __str__(self):
+        for k,v in self.__dict__.items():
+            print k,'=>',v
+        return 'testEND'
+
 
 def hasNumbers(s):
     '''
@@ -82,7 +82,7 @@ class hotelsSpider(Spider):
     }
 
     def targets_request(self):
-        self.has_cbreakfast = None
+
         cid = self.task.ticket_info.get('cid', None)
         booking_info = ''
         taskcontent = self.task.content
@@ -92,8 +92,8 @@ class hotelsSpider(Spider):
         # if city_name_zh == 'NULL':
         #     raise parser_except.ParserException(parser_except.TASK_ERROR, "任务错误")
 
-        adults = self.task.ticket_info['room_info'][0].get("occ", 2)
-        room_num = self.task.ticket_info['room_info'][0].get("num", 1)
+        adults = self.task.ticket_info.get('occ', '2')
+        room_num = self.task.ticket_info.get('room_count', '1')
         children = 0
         for i in range(0, int(room_num)):
             booking_info += '&q-room-' + str(i) + '-adults=' + str(adults)
@@ -143,26 +143,7 @@ class hotelsSpider(Spider):
                                self.user_datas['cid'])
 
     def get_price(self, content):
-        root = HTML.fromstring(content)
-        self.has_cbreakfast = ''
-        try:
-            sheet = root.xpath("//*[@class='fact-sheets in-the-property-module']")[0].text_content()
-            if '自助式早餐（收费）' in sheet:
-                self.has_cbreakfast = '自助式早餐（收费）'
-            elif '早餐(收费)' in sheet:
-                self.has_cbreakfast = '早餐(收费)'
-            elif '每天提供欧陆式早餐（收费）' in sheet:
-                self.has_cbreakfast = '每天提供欧陆式早餐（收费）'
-        except:
-            self.has_cbreakfast = False
-            pass
-
-        if "var commonDataBlock" not in content:
-            raise parser_except.ParserException(29, "现在无房")
-
-
         price_json = re.findall(r'var commonDataBlock = (.*?),"event"', content, re.S)[0] + '}'
-
         all_price = json.loads(price_json)['property']
         online_method = "网上付款"
         local_method = "到店付款"
@@ -183,8 +164,6 @@ class hotelsSpider(Spider):
 
     def parseRoom(self, content, hotel_id, check_in, check_out, nights, city_name, cid):
         rooms = []
-        # with open('hotel.html') as f:
-        #     content = f.read()
         content = content.decode('utf-8')
         room = test_room()
         page = content
@@ -308,9 +287,11 @@ class hotelsSpider(Spider):
 
                             if '免费取消' in feature_content:
                                 room.is_cancel_free = 'Yes'
+
                             if '早餐' in feature_content:
                                 room.has_breakfast = 'Yes'
-                            if '包含早餐' in feature_content or '双早' in feature_content:
+
+                            if '包含早餐' in feature_content:
                                 room.has_breakfast = 'Yes'
                                 room.is_breakfast_free = 'Yes'
                         except:
@@ -349,8 +330,6 @@ class hotelsSpider(Spider):
             all_infos[rateplan_id] = dict()
             try:
                 return_rule = each.find_class('cancellation')[0].xpath('strong/span/text()')[0].strip()
-                if return_rule == '':
-                    return_rule = each.find_class('cancellation')[0].text_content()
             except Exception, e:
                 return_rule = 'NULL'
             room.return_rule = return_rule
@@ -363,24 +342,20 @@ class hotelsSpider(Spider):
             except:
                 text = 'NULL'
             if '免费取消' in text:
-                room.is_cancel_free = 'NULL'
-            if '不可退款' in text:
-                room.is_cancel_free = 'No'
+                room.is_cancel_free = 'Yes'
             if '不会获得任何退款' in text:
                 room.is_cancel_free = 'No'
-            if '早餐' in text or '双早' in text:
+            if '早餐' in text:
                 room.has_breakfast = 'Yes'
-                if '早餐' in text and '包含早餐' in text:
-                    room.is_breakfast_free = 'Yes'
-                if '双早' in text:
-                    room.is_breakfast_free = 'Yes'
-                    all_infos[rateplan_id]['breakfast_infor'] = '双早'
-                if "包含早餐住宿期间提供早餐" in text:
-                    breakfast_infor = "包含早餐住宿期间提供早餐"
-                    all_infos[rateplan_id]['breakfast_infor'] = breakfast_infor
             else:
                 room.has_breakfast = 'No'
-                all_infos[rateplan_id]['breakfast_infor'] = self.has_cbreakfast if self.has_cbreakfast else ""
+            if '早餐' in text and '包含早餐' in text:
+                room.is_breakfast_free = 'Yes'
+            if "包含早餐住宿期间提供早餐" in text:
+                breakfast_infor = "包含早餐住宿期间提供早餐"
+                all_infos[rateplan_id]['breakfast_infor'] = breakfast_infor
+            else:
+                all_infos[rateplan_id]['breakfast_infor'] = ""
             cancel = each.find_class('cancellation')[0]
             cancelcontent = cancel.xpath('./strong/text()')[0].encode('utf-8')
             all_infos[rateplan_id]["is_cancel_free"] = room.is_cancel_free
@@ -552,7 +527,7 @@ class hotelsSpider(Spider):
             related_clauses_detail = ""
             if eacha[0] in ll.keys():
                 if eacha[2] == '\xe7\xbd\x91\xe4\xb8\x8a\xe4\xbb\x98\xe6\xac\xbe':
-                    room.pay_method = "在线支付"
+                    room.pay_method = "网上支付"
                     pay_method = room.pay_method
                     room.price = float(eacha[1]) * int(nights)
                     related_clauses = ll[eacha[0]]['related_clauses']
@@ -590,11 +565,11 @@ class hotelsSpider(Spider):
                 other_info_dict['room_detail'] = room_detail
                 other_info_dict['related_clauses'] = related_clauses
                 other_info_dict['related_clauses_detail'] = related_clauses_detail
-                other_info_dict['extra'] = {}
-                other_info_dict['extra']['breakfast'] = breakfast_infor
-                other_info_dict['extra']['payment'] = pay_method
-                other_info_dict['extra']['return_rule'] = room.return_rule
-                other_info_dict['extra']['occ_des'] = occupas + occupac
+                other_info_dict['extra'] = list()
+                other_info_dict['extra'].append({'breakfast': breakfast_infor})
+                other_info_dict['extra'].append({'payment': pay_method})
+                other_info_dict['extra'].append({'return_rule': room.return_rule})
+                other_info_dict['extra'].append({'occ_des': occupas + occupac})
                 room.others_info = json.dumps(other_info_dict)
                 room.city = cid
                 # print room.city
@@ -620,10 +595,8 @@ if __name__ == '__main__':
     #              '马赛&&法国&&510502&&227700&&1&&20171206',
     #              'NULL&&NULL&&NULL&&142983&&1&&20171220',
     #              ]
-    # task.content = 'NULL&&NULL&&NULL&&169401&&1&&20180114'
-    task.content = 'NULL&&NULL&&NULL&&105772&&1&&20180711'
-
-    task.ticket_info = {'room_info':[{'occ':2}]}
+    task.content = 'NULL&&NULL&&NULL&&142983&&3&&20171219'
+    task.ticket_info = {'cid': 1}
     spider = hotelsSpider()
     spider.task = task
     spider.crawl()

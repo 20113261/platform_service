@@ -3,9 +3,10 @@
 
 import json
 from mioji.common import parser_except
-from mioji.common.spider import Spider, request, PROXY_NONE, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_NONE
 from PKFareAPI import Handler
 from mioji.common.check_book.check_book_ratio import use_record_qid
+
 
 g_partner_id = 'TkgRsQ9kS+onyJy9VnSCl+Sj9PE='
 g_partner_key = 'YmQzNTMxZDg1NzM1YTdhM2Y5ZWZlNzVkMmUzM2VhNWY='
@@ -45,7 +46,7 @@ class PKfareFlightSpider(Spider):
     def targets_request(self):
         req = self.process_task()
 
-        @request(retry_count=1, proxy_type=PROXY_NEVER, binding=['Flight'])
+        @request(retry_count=1, proxy_type=PROXY_NONE, binding=['Flight'])
         def do_request():
             return {
                 'req': req,
@@ -96,3 +97,5 @@ if __name__ == '__main__':
     print spider.source_type
     print spider.crawl()
     print spider.result
+
+

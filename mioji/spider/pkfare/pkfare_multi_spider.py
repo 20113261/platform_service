@@ -4,7 +4,7 @@ import json
 from mioji.common import parser_except
 
 from pkfare_oneway_spider import PKfareFlightSpider
-from mioji.common.spider import Spider, request, PROXY_NONE, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_NONE
 from mioji.common.check_book.check_book_ratio import use_record_qid
 
 
@@ -42,7 +42,7 @@ class PKfareMultiSpider(PKfareFlightSpider):
     def targets_request(self):
         req = self.process_task()
 
-        @request(retry_count=1, proxy_type=PROXY_NEVER, binding=['MultiFlight'])
+        @request(retry_count=1, proxy_type=PROXY_NONE, binding=['MultiFlight'])
         def do_request():
             return {
                 'req': req,
@@ -78,3 +78,4 @@ if __name__ == '__main__':
     s.crawl()
     print s.crawl()
     print s.result
+

@@ -63,14 +63,7 @@ class MechanizeCrawler(object):
                         'hooks', 'stream', 'verify', 'cert', 'json']}
         ts = int(1000 * time.time())
         req_func = self.req_bind.get(method.lower())
-        try:
-            logger.debug(current_log_tag() + 'browser req start {1} {0}'.format(url, method))
-            logger.debug(current_log_tag() + 'browser req data {0}'.format(data))
-            logger.debug(current_log_tag() + 'browser req json {0}'.format(json))
-            logger.debug(current_log_tag() + 'browser req other_data {0}'.format(new_kw))
-            logger.debug(current_log_tag() + 'browser req session_cookie {0}'.format(req_func.im_self.cookies._cookies))
-        except:
-            logger.debug(current_log_tag() + '请求前获取部分参数失败')
+        logger.debug(current_log_tag() + 'browser req start {1} {0}'.format(url, method))
         try:
             self.resp = req_func(url, params=params, data=data, json=json, timeout=timeout, verify=verify, **new_kw)
             logger.debug(current_log_tag() + 'browser response headers:{0}'.format(self.resp.headers))
@@ -180,3 +173,4 @@ if __name__ == '__main__':
     req = {'url': url}
     print mc.req('http://maps.google.cn/maps/api/geocode/json?language=zh-CN&address=Sekinchan,雪兰莪,马来西亚',
                  header={}, asdfasdf={}).content
+    print mc.headers

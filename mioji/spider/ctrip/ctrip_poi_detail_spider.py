@@ -36,7 +36,7 @@ class CtripPoiSpider(Spider):
     }
 
     old_spider_tag = {
-        'CtripPoi': {'required': ['POIdetail']}
+        'ctripPoi_detail': {'required': ['POIdetail']}
     }
     page_type_dict={'sight':'Sight','food':'Restaurant','shopping':'Shopping'}
 
@@ -56,7 +56,7 @@ class CtripPoiSpider(Spider):
         self.tag = self.task.content.split('/')[-3]
         self.poi_id = self.task.content.split('.html')[0].split('/')[-1]
 
-        @request(retry_count=5,proxy_type=PROXY_REQ)
+        @request(retry_count=5,proxy_type=PROXY_REQ,store_page_name="traffic_info_{}_{}".format(tid, used_times))
         def traffic_info():
             url = self.task.content.split('.html')[0]+ '-traffic.html'
             return {
@@ -67,7 +67,7 @@ class CtripPoiSpider(Spider):
         if self.tag == 'sight':
             yield traffic_info
 
-        @request(retry_count=5, proxy_type=PROXY_REQ)
+        @request(retry_count=5, proxy_type=PROXY_REQ,store_page_name="map_info_{}_{}".format(tid, used_times))
         def map_info():
             url = self.task.content.split('.html')[0] + '-map.html'
             return {
@@ -79,7 +79,7 @@ class CtripPoiSpider(Spider):
         #if self.tag != 'food':
         yield map_info
 
-        @request(retry_count=5, proxy_type=PROXY_REQ)
+        @request(retry_count=5, proxy_type=PROXY_REQ,store_page_name="ShowGowant_{}_{}".format(tid, used_times))
         def ShowGowant():
             url = 'http://you.ctrip.com/Destinationsite/SharedComm/ShowGowant'
             return {
@@ -89,7 +89,7 @@ class CtripPoiSpider(Spider):
                     }
         yield ShowGowant
 
-        @request(retry_count=5, binding=['POIdetail'], proxy_type=PROXY_REQ)
+        @request(retry_count=5, binding=['POIdetail'], proxy_type=PROXY_REQ,store_page_name="detail_info_{}_{}".format(tid, used_times))
         def detail_info():
             url = self.task.content
             return {
@@ -105,7 +105,10 @@ class CtripPoiSpider(Spider):
 
     def get_traffic_info(self, req, data):
         try:
-            self.traffic = data.xpath('//div[@class="detailcon"]/div/p/text()')[0]
+            lis = data.xpath('//div[@class="detailcon"]/div/p')
+            for li in lis:
+                self.traffic += li.text_content() +'|'
+            self.traffic = self.traffic[:-1]
         except:
             pass
 
@@ -117,6 +120,15 @@ class CtripPoiSpider(Spider):
     def data_parse(self,data):
         s= ''.join(''.join(''.join(data.split('\r')).split('\n')).split(' '))
         return s
+    def fix(self,data):
+        aa = re.findall('&#\d+;',data)
+        xx = [html.fromstring(i).text_content() for i in aa]
+        yy = re.sub('&#\d+;','{}',data)
+        yy = yy.split('{}')
+        res = yy[0]
+        for i in range(len(xx)):
+            res += xx[i]+yy[i+1]
+        return res
 
     def parse_POIdetail(self, req, data):
         root = data
@@ -287,12 +299,16 @@ class CtripPoiSpider(Spider):
             address = mapp['address']
             map_info = ','.join([str(mapp['lat']),str(mapp['lng'])])
 
+            if '&amp;' in address:
+                address = address.replace('&amp;','&')
+            if '&#' in address:
+                address = self.fix(address)
+
             temp = [name, name_en, beentocounts, plantocounts, city, grade, commentcounts, image_url, image_num, grade_detail, staff, introduction ,map_info,address,types,highlight,times,telephone,web,worktime, ticket,price, self.traffic,tips]
 
             #for i in temp:
             #    print i,'----end'
             #    print '==='
-
             return temp
 
         except Exception as e:
@@ -324,6 +340,9 @@ if __name__ == "__main__":
     #task.content = 'http://you.ctrip.com/shopping/centralvalley43112/1356615.html'
     #task.content = 'http://you.ctrip.com/sight/newyork248/133112.html'
     #task.content = 'http://you.ctrip.com/sight/otsu57061/110510.html'
+
+    task.content = 'http://you.ctrip.com/sight/istanbul258/110120.html'
+    task.content = 'http://you.ctrip.com/sight/pattaya208/133202.html'
     spider.task = task
     spider.crawl()
     print spider.code

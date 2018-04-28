@@ -27,22 +27,10 @@ if __name__ == '__main__':
     import mioji.common.spider
     from mioji.common.utils import simple_get_http_proxy, httpset_debug
 
-    from mioji.common.task_info import Task
-    import mioji.common.spider
-    from mioji.common.utils import simple_get_socks_proxy_new
-
-    mioji.common.spider.slave_get_proxy = simple_get_socks_proxy_new
-
     # mioji.common.spider.get_proxy = simple_get_http_proxy
-    content = 'PEK&YYZ&20180210|YVR&PEK&20180220'
+    content = 'PEK&YYZ&20170610|YVR&PEK&20170620'
     task = Task('expediamultiFlight', content)
-    task.ticket_info = {
-        'v_count': '1',
-        'v_seat_type': 'E',
-        # 'v_age': '-1_1',
-        'flight_no':'MU521_AA182&AA186',
-        # 'ret_flight_no': 'AA187'
-    }
+    task.ticket_info["flight_no"] = "HU7975&CA992"
 
     spider = expediaMultiFlightSpider()
     spider.task = task
@@ -50,5 +38,3 @@ if __name__ == '__main__':
     import json
 
     print json.dumps(spider.result['MultiFlight'], ensure_ascii=False)
-    print len(spider.result['MultiFlight'])
-    print len(set(spider.result['MultiFlight']))

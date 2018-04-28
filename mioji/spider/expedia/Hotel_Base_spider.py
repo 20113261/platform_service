@@ -9,7 +9,7 @@ Created on 2017年1月12日
 from __future__  import division
 from mioji.common.parser_except import ParserException
 from mioji.common.utils import setdefaultencoding_utf8
-from mioji.common.logger import logger
+
 setdefaultencoding_utf8()
 
 from mioji.common.spider import Spider, request, PROXY_FLLOW, PROXY_REQ
@@ -33,14 +33,13 @@ availabilityErrors = {
     'roomsUnavailableForSelectedDates':"29&&在您旅行期间，Expedia 智游网 上的客房已经订满。您可以选择新的日期，查看预订情况。",
     'currencyChanged':"25&&因为酒店更改了他们的货币，我们无法更新您的预订。",
     'currencyCoversionFailed':"25&&真的很抱歉。我们无法转换该酒店的货币。请稍后再试一次。",
-    'unavailableForCheckoutDate':"29&&该酒店在该时段不办理退房手续。请输入其他退房日期，或尝试附近的酒店。",
-    'unavailableForCheckinDate':"29&&该酒店在该时段不办理入住手续。请输入其他入住日期，或尝试附近的酒店。",
+    'unavailableForCheckoutDate':"12&&该酒店在该时段不办理退房手续。请输入其他退房日期，或尝试附近的酒店。",
+    'unavailableForCheckinDate':"12&&该酒店在该时段不办理入住手续。请输入其他入住日期，或尝试附近的酒店。",
     'minLimitOnNumberOfNights':"96&&延长住宿天数。该酒店对住宿天数有最低要求。更新天数以查看价格以及是否可以入住。",
     'limitOnMinimumLengthOfStay':"96&&延长住宿天数。该酒店对住宿天数有最低要求（未指定）。",
-    'exceededNumberOfGuests':"29&&住客人数超出了房间能够接待的最大人数。",
-    'onlyIndividualRoomBookingsAllowed':"29&&该酒店要求您每次预订一间房。",
-    'maxLimitOnNumberOfNights':"96&&入住时间过长。减少晚数，或者尝试搜索附近的其他酒店。",
-    'exceedsMaximumRooms': "29&&超过了最大预订房间数",
+    'exceededNumberOfGuests':"12&&住客人数超出了房间能够接待的最大人数。",
+    'onlyIndividualRoomBookingsAllowed':"12&&该酒店要求您每次预订一间房。",
+    'maxLimitOnNumberOfNights':"96&&入住时间过长。减少晚数，或者尝试搜索附近的其他酒店。"
 }
 
 
@@ -124,23 +123,16 @@ class BaseHotelSpider(Spider):
     def parse_room(self, req, data):
         """ 将data中的信息拿出来， 如果有错误信息 根据data直接抛出对应的错误吗"""
         # data = data['offers']
-        print 123
-        logger.info("进入parser_room, availabilityErrors.keys:{0}".format(availabilityErrors))
-        logger.info("data:{0}".format(data))
-        
         for error in availabilityErrors.keys():
             if error in str(data):
                 err_num = re.findall('(\d+)&&.*?', availabilityErrors[error])[0]
                 err_str = re.findall("\d+&&(.+)", availabilityErrors[error])[0]
-                logger.info("err_num: {0}{1}, err_str: {2}{3}".format(err_num, type(err_num), err_str, type(err_str)))
+                print err_str
                 raise ParserException(int(err_num), str(err_str))
-                logger.info("err_num, err_str 格式正确")
         data = data['offers']
 
-        expedia_room_parse = self.expedia_room_parse(self.html_page, data, self.source_id, self.city, self.check_in, self.check_out,
+        return self.expedia_room_parse(self.html_page, data, self.source_id, self.city, self.check_in, self.check_out,
                                        self.dur, self.hotel_name, self.task_list, self.occ, self.cid)
-        logger.info("expedia_room_parse: {0}".format(expedia_room_parse))
-        return expedia_room_parse
 
     def expedia_room_parse(self, html_page, json_page, hotel_id, city, check_in, check_out, dur, hotel_name, task_list,
                            occ_info, cid):
@@ -330,7 +322,7 @@ class BaseHotelSpider(Spider):
                     room.has_breakfast = "Yes".encode('utf-8')
                     room.is_breakfast_free = 'Yes'.encode('utf-8')
                 elif b_descript is not None:
-                    room.has_breakfast = "NULL".encode('utf-8') # 收费早餐的信息
+                    room.has_breakfast = "Yes".encode('utf-8') # 收费早餐的信息
                     room.is_breakfast_free = 'No'.encode('utf-8')
                 else:
                     pass

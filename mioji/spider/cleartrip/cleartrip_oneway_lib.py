@@ -100,19 +100,13 @@ def get_json_url(task_dict):
     spider = cleartrip_city_name_spider.ClearTripCityNameSpider()
     spider.task = task
     spider.crawl(cache_config={'lifetime_sec': 10 * 24 * 60 * 60, 'enable': False})
-    try:
-        dept_city_unescaped = spider.result['City'][0].get('v', '')
-    except Exception:
-        raise parser_except.ParserException(parser_except.PROXY_INVALID, 'cleartripOneWayFlight::数据中无正常的机票信息,被封禁')
+    dept_city_unescaped = spider.result['City'][0].get('v', '')
     dept_city = urllib.quote_plus(dept_city_unescaped, safe='()')
     task = Task('cleartrip::cleartrip', dest_id)
     spider = cleartrip_city_name_spider.ClearTripCityNameSpider()
     spider.task = task
     spider.crawl(cache_config={'lifetime_sec': 10 * 24 * 60 * 60, 'enable': False})
-    try:
-        dest_city_unescaped = spider.result['City'][0].get('v', '')
-    except Exception:
-        raise parser_except.ParserException(parser_except.PROXY_INVALID, 'cleartripOneWayFlight::数据中无正常的机票信息,被封禁')
+    dest_city_unescaped = spider.result['City'][0].get('v', '')
     dest_city = urllib.quote_plus(dest_city_unescaped, safe='()')
     #dept_daystr = dept_datetime.strftime('%d%%2F%m%%2F%Y')
     dept_daystr = dept_datetime.strftime('%d/%m/%Y')
@@ -197,8 +191,8 @@ def page_parser(page_dict):
         flight.dept_time = stop_times[0]
         flight.dest_time = stop_times[-1]
         flight.dur = sum(map(int, durs))
-        flight.price = fare[ticket_i][fare[ticket_i]['dfd']]['bp'] # base fare
-        flight.tax = fare[ticket_i][fare[ticket_i]['dfd']]['t'] # tax
+        flight.price = fare[ticket_i][fare[ticket_i]['dfd']]['pr']
+        flight.tax = 0
         flight.currency = currency
         flight.seat_type = '_'.join(seat_types)
         flight.real_class = '_'.join(real_classes)
@@ -222,6 +216,6 @@ def page_parser(page_dict):
 
 
 if __name__ == '__main__':
-    task_dict = content_parser('SFO&CDG&20180123')
+    task_dict = content_parser('TXL&PEK&20170415')
     print get_referer_url(task_dict)
     print get_json_url(task_dict)

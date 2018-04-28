@@ -22,7 +22,9 @@ def parse_hotels_room(dom, check_in, check_out, night, person_num, city):
     rooms = []
     cont = 0
     try:
-        total_num = dom.find_class('sr_header')[0].xpath('./h1/text()')[0]
+        # total_num = dom.find_class('sr_header')[0].xpath('./h1/text()')[0]
+        # 2018-03-13 修改列表页解析逻辑--本次任务酒店列表页共有多少家住宿
+        total_num = dom.find_class('sr_header')[0].text_content()
         total_num = total_num.split('共')[1].split('家')[0].replace(',', '').strip()
         total_num = int(total_num.replace(',',''))
         print total_num
@@ -30,7 +32,9 @@ def parse_hotels_room(dom, check_in, check_out, night, person_num, city):
         print e
         total_num = 15
     try:
-        currency = dom.find_class('user_center_option')[1].xpath('./input/@value')[0]
+        # currency = dom.find_class('user_center_option')[1].xpath('./input/@value')[0]
+        # 2018-03-13 修改列表页解析逻辑--取到货币的类型如CNY
+        currency = dom.find_class('user_center_nav')[0].getchildren()[0].getchildren()[0].attrib['value']
     except Exception, e:
         logger.debug('parse currency 1 error:{0}'.format(e))
         print 'try...'
@@ -44,12 +48,21 @@ def parse_hotels_room(dom, check_in, check_out, night, person_num, city):
 
 
 
-    for tree in dom.find_class('sr_item sr_item_new'):
+    try:
+        hotel_room_list = dom.get_element_by_id("hotellist_inner")
+    except:
+        hotel_room_list = []
+    for tree in hotel_room_list:
         #// *[ @ id = "hotellist_inner"] / div[2]
         room = Room()
         room.check_in = str(check_in)[:10].replace('/', '-')
         room.check_out = str(check_out)[:10].replace('/', '-')
-        room.source_hotelid = str(tree.xpath('./@data-hotelid')[0])
+        try:
+            # room.source_hotelid = str(tree.xpath('./@data-hotelid')[0])
+            # 2018-03-30 添加修改酒店列表页room解析逻辑
+            room.source_hotelid = tree.attrib['data-hotelid']
+        except:
+            continue
 
         room.source = 'booking'
         room.real_source = 'booking'
@@ -58,12 +71,14 @@ def parse_hotels_room(dom, check_in, check_out, night, person_num, city):
         except:
             pass
         try:
-            room.hotel_url = 'http://www.booking.com' + tree.find_class('hotel_name_link url')[0].xpath('./@href')[0]
+            room.hotel_url = 'http://www.booking.com' + tree.find_class('hotel_name_link url')[0].attrib['href']
             # print room.hotel_url, 'hhh'
         except:
             pass
         try:
-            room.hotel_name = tree.find_class('sr-hotel__name')[0].xpath('./text()')[0].strip()
+            # room.hotel_name = tree.find_class('sr-hotel__name')[0].xpath('./text()')[0].strip()
+            # 2018-03-30 修改酒店列表页room解析逻辑
+            room.hotel_name = tree.find_class('sr-hotel__name')[0].text.strip()
         except:
             pass
         room.room_type = room_dict[int(person_num)]
@@ -77,6 +92,7 @@ def parse_hotels_room(dom, check_in, check_out, night, person_num, city):
             pass
         try:
             dd = tree.find_class('sr_max_occupancy')[0].xpath('./i/@data-title')
+            # 拿不到最多人数 2018-03-30
             room.occupancy = occ_pat.findall(dd[0])[0]
         except:
             try:
@@ -195,7 +211,9 @@ def parse_hotels_url(dom):
     hotel_list = []
     result = []
     try:
-        total_num = dom.find_class('sr_header')[0].xpath('./h1/text()')[0]
+        # total_num = dom.find_class('sr_header')[0].xpath('./h1/text()')[0]
+        # 2018-03-13 修改列表页解析逻辑
+        total_num = dom.find_class('sr_header')[0].text_content()
         total_num = total_num.split('共')[1].split('家')[0]
         total_num = int(total_num.replace(',',''))
         print total_num
@@ -203,7 +221,9 @@ def parse_hotels_url(dom):
         print e
         total_num = 15
     try:
-        hotel_ele_list = dom.find_class('sr_item sr_item_new')
+        # hotel_ele_list = dom.find_class('sr_item sr_item_new')
+        # 2018-03-13 修改列表页获取酒店list——div逻辑
+        hotel_ele_list = dom.get_element_by_id("hotellist_inner").getchildren()
         if hotel_ele_list == []:
             return hotel_list
     except Exception, e:
@@ -212,7 +232,10 @@ def parse_hotels_url(dom):
 
     for each_hotel_ele in hotel_ele_list:
         try:
-            hotel_id = each_hotel_ele.xpath('@data-hotelid')
+            hotel_id = each_hotel_ele.attrib['data-hotelid']
+        except:
+            continue
+        try:
             if hotel_id is None or hotel_id == []:
                 continue
             try:
@@ -220,7 +243,7 @@ def parse_hotels_url(dom):
                 # print hotel_url, 'xxx'
             except Exception, e:
                 raise e
-            result.append((str(hotel_id[0]), hotel_url))
+            result.append((str(hotel_id), hotel_url))
         except Exception, e:
             import traceback
             print 'ss', traceback.format_exc()

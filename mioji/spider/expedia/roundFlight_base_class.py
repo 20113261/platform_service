@@ -6,18 +6,13 @@ from mioji.common.utils import setdefaultencoding_utf8
 setdefaultencoding_utf8()
 import re
 import json
-import sys
 import urllib
 from mioji.common import parser_except
 from mioji.common.spider import Spider, request, PROXY_FLLOW, PROXY_REQ
 from mioji.common.class_common import Flight, RoundFlight
 from mioji.common.logger import logger
 from flight_lib import process_ages, process_passenger_info
-from functools import partial
 from mioji.common.func_log import current_log_tag
-from operator import attrgetter
-from Queue import deque
-
 cabin = {'E': 'economy', 'P': 'premium', 'F': 'first', 'B': 'business'}
 cabin_dict = {'5': '超级经济舱', '1': '头等舱', '2': '商务舱', '3': '经济舱'}
 passenger_type_dict = {  # 详情票类型的字典
@@ -100,16 +95,9 @@ class BaseRoundFlightSpider(Spider):
         self.verify_tickets = []
         self.dept_flight_naturalkey = ''
 
-        self.first_flight = None
-        self.top_5 = [0, 0, 0, 0, 0]
-
     def targets_request(self):
         if self.dept_day is None:
             self.process_task_info()
-
-        # flag 控制解析方法的逻辑
-        # 1 第一程预验证, 2 第一程验证, 0 第二程验证
-        flag = 1 if not self.dept_flight_no else 2
 
         @request(retry_count=3, proxy_type=PROXY_REQ, new_session=True)
         def get_dept_list_page():
@@ -125,75 +113,71 @@ class BaseRoundFlightSpider(Spider):
             return {
                 'req': {'url': self.paging_url},
                 'data': {'content_type': 'json'},
-                'flag': flag,
-                # 'user_handler': [self.assert_ticket, partial(self.parse_tickets, first=True),self.parse_tickets_verify],
-                'user_handler': [self.assert_ticket],
+                'user_handler': [self.assert_ticket, self.parse_tickets,self.parse_tickets_verify],
             }
-        if self.paging_url is not None:
-            yield get_dept_list_data
+        yield get_dept_list_data
 
-        if flag == 2 and self.first_flight:
-            url = 'https://www.expedia.com/Flight-Search-Paging?c=' + self.ids + '&is=0&fl0=' + self.first_flight.first_id + '&sp=asc&cz=200&cn=0&ul=1'
-            page = {
-                'req': {'url': url, 'flight':self.first_flight},
-                'data': {'content_type': 'json'},
-                # 'user_handler': [self.assert_ticket, partial(self.parse_tickets, first=True),self.parse_tickets_verify],
-                'user_handler': [self.assert_ticket],
-            }
-            yield request(retry_count=5, proxy_type=PROXY_FLLOW, binding=self.parse_RoundFlight, async=True)(lambda :page)
+        # if self.dept_flight_no:
+        #     # @request(retry_count=3, proxy_type=PROXY_REQ)
+        #     # def get_ret_list_page():
+        #     #     return {
+        #     #         'req': {'url': self.request_url + '#leg/' + self.dept_flight_naturalkey},
+        #     #         'user_handler': [self.process_paging_url]
+        #     #     }
+        #     # yield get_ret_list_page
 
-        # 当为预验证的时候取第一程航班飞行时长前5的飞机进行第二程的验证
-        elif flag == 1 and self.top_5:
-            pages = []
-            for i in self.top_5:
-                url = 'https://www.expedia.com/Flight-Search-Paging?c=' + self.ids + '&is=0&fl0=' + i.first_id + '&sp=asc&cz=200&cn=0&ul=1'
-                pages.append(
-                    {
-                        'req': {'url': url, 'flight': i},
-                        'data': {'content_type': 'json'},
-                        # 'user_handler': [self.assert_ticket, partial(self.parse_tickets, first=True),self.parse_tickets_verify],
-                        'user_handler': [self.assert_ticket],
-                    }
-                )
-            yield request(retry_count=5, proxy_type=PROXY_FLLOW, binding=self.parse_RoundFlight, async=True)(
-                lambda: pages)
+        #     # 修改 paging_url
+        #     self.process_paging_url_ret()
+        #     @request(retry_count=5, proxy_type=PROXY_FLLOW, binding=self.parse_RoundFlight)
+        #     def get_ret_list_data():
+        #         return {
+        #         'req': {'url': self.paging_url},
+        #         'data': {'content_type': 'json'},
+        #         'user_handler': [self.assert_ticket, self.parse_tickets],
+        #         }
+        #     yield get_ret_list_data
+
+        #     @request(retry_count=3, proxy_type=PROXY_FLLOW, binding=self.parse_RoundFlight)
+        #     def get_verify_page():
+        #         reqs = [{
+        #                     'req': {'url': url},
+        #                     'user_handler': [self.parse_VerifyFlight],
+        #                 } for url in self.verify_urls]
+        #         return reqs
+        #     yield get_verify_page
 
     def respon_callback(self, req, resp):
         pass
     """
-    修改注解：如果是预验证，会返回已有的最优价格航班和飞行时间前五的第二程航班
-    如果是验证，只会返回对应的航班
+    修改注解：以前的时候只要给出了出发的航班号，那么结果保存的就只有验证回来的机票，
+    及时得到数据也没有保存下来,现在只有发出验证请求时才返回验证的机票信息
     """
     def parse_RoundFlight(self, req, json_data):
-        # flag 为1为预验证，返回所有第一次的票(这个票是所有第二程里面的最低价)，否则根据航班返回第二次的票
-        flag = req.get('flag', 1)
-        if req.get('flight'):
-            # 说明已经进入验证第二航班
-            flag = 0
-        return self.parse_tickets(req, json_data, flag)
+        if 'fl0' in req['req']['url']:
+            if self.dept_flight_no:
+                return self.verify_tickets
+        else:
+            return self.tickets
 
-    def parse_tickets(self, req, json_data, flag=1):
+    def parse_tickets(self, req, json_data):
         legs = json_data['content']['legs']
         legs_detail_dict = {}
         for leg in legs.values():
             legs_detail_dict[leg['naturalKey']] = self.parse_leg(leg)
 
         offers = json_data['content']['offers']
-        return self.get_ticket(offers, legs_detail_dict, flag)
+        self.get_ticket(offers, legs_detail_dict)
 
-    # def parse_tickets_verify(self, req, json_data):
-    #     legs = json_data['content']['legs']
-    #     for leg in legs.values():
-    #         flight_no = '_'.join(x['carrier']['airlineCode'] + x['carrier']['flightNumber']
-    #                              for x in leg['timeline'] if x['segment'])
-    #         if flight_no == self.dept_flight_no:
-    #             self.dept_flight_naturalkey = leg['naturalKey']
-    #             break
+    def parse_tickets_verify(self, req, json_data):
+        legs = json_data['content']['legs']
+        for leg in legs.values():
+            flight_no = '_'.join(x['carrier']['airlineCode'] + x['carrier']['flightNumber']
+                                 for x in leg['timeline'] if x['segment'])
+            if flight_no == self.dept_flight_no:
+                self.dept_flight_naturalkey = leg['naturalKey']
+                break
 
-    def get_ticket(self, offers, legs_detail_dict, flag=1):
-        r = []
-        if flag == 1:
-            self.top_5, min_seconds = deque(maxlen=5), sys.maxint
+    def get_ticket(self, offers, legs_detail_dict):
         for offerid, offer in offers.items():
             price = offer['price']['exactPrice']
             if not price:
@@ -209,10 +193,6 @@ class BaseRoundFlightSpider(Spider):
                 if k.startswith('_'):
                     continue
                 flight.__dict__[k + '_B'] = v
-            if flag == 2 and self.dept_flight_no in flight.flight_no_A:
-                flight.first_id = offer['legIds'][0]
-                self.first_flight = flight
-                return
             flight.dept_id = flight_A.dept_id
             flight.dest_id = flight_A.dest_id
             flight.dept_day = flight_A.dept_day
@@ -224,18 +204,12 @@ class BaseRoundFlightSpider(Spider):
             flight.return_rule = 'Free CancellationOpens within 24 hours of booking!' if offer['price']['feesMessage'][
                 'isShowFreeCancellation'] else 'No Free Cancellation.'
 
-            # if flight_A.flight_no == self.dept_flight_no and flight_B.flight_no == self.ret_flight_no:
-            #     url = self.host + '/Flight-Search-Details?c=' + self.ids + '&tripId1=%20&offerId=' + urllib.quote(
-            #         offerid) + '&xsellchoice=normal&isSplitTicket=false'
-            #     self.verify_urls.append(url)
-            #     self.verify_flights.append(flight)
-            r.append(flight.to_tuple())
-            # 预验证取飞行秒数前5的飞机打第二次返程的请求,self.top_5是一个有最大长度的双端队列
-            if flag == 1 and flight_A.fly_seconds < min_seconds or len(self.top_5) < 5:
-                flight.first_id = offer['legIds'][0]
-                self.top_5.append(flight)
-                min_seconds = flight_A.fly_seconds if flight_A.fly_seconds < min_seconds else min_seconds
-        return r
+            if flight_A.flight_no == self.dept_flight_no and flight_B.flight_no == self.ret_flight_no:
+                url = self.host + '/Flight-Search-Details?c=' + self.ids + '&tripId1=%20&offerId=' + urllib.quote(
+                    offerid) + '&xsellchoice=normal&isSplitTicket=false'
+                self.verify_urls.append(url)
+                self.verify_flights.append(flight)
+            self.tickets.append(flight.to_tuple())
 
     def parse_leg(self, leg):
         flight = Flight()
@@ -248,7 +222,6 @@ class BaseRoundFlightSpider(Spider):
                 plane_nos.append(x['carrier']['planeCode'] if x['carrier']['planeCode'] else 'NULL')
         flight.tax = 0
         flight.plane_no = '_'.join(plane_nos)
-        flight.fly_seconds = leg['arrivalTime']['dateTime'] - leg['departureTime']['dateTime']
         flight.dept_time = pat_time.search(leg['departureTime']['isoStr']).group()
         flight.dest_time = pat_time.search(leg['arrivalTime']['isoStr']).group()
         flight.dur = get_dur(leg['duration'])
@@ -273,9 +246,7 @@ class BaseRoundFlightSpider(Spider):
         content = self.task.content
         self.seat_code = ticket_info.get('v_seat_type', 'E')
         self.seat_type = cabin[self.seat_code]
-        self.dept_flight_no = self.task.ticket_info.get('flight_no', '')
-        if '&' in self.dept_flight_no:
-            self.dept_flight_no, _ = self.dept_flight_no.split('&')
+        self.dept_flight_no = self.task.ticket_info.get('flight_no', None)
         self.ret_flight_no = self.task.ticket_info.get('ret_flight_no', None)
         self.dept_id, self.dest_id, dept_day, return_day = str(content).split('&')
         self.dept_day = self.format_time(dept_day, '/')

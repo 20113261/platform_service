@@ -114,8 +114,7 @@ class BaseFlightSpider(Spider):
         #     } for url in self.verify_urls]
         #     return reqs
         yield first_page
-        if self.paging_url is not None:
-            yield get_tickets_page
+        yield get_tickets_page
         # if self.flight_no:
         #     yield get_verify_page
 

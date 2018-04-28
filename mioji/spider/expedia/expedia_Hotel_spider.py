@@ -66,8 +66,8 @@ class expediaHotelSpider(BaseHotelSpider):
         self.check_out_new = self.check_out[0:4] + "%2F" + self.check_out[5:7] + '%2F' + self.check_out[8:10]
         self.children = 0
         self.room_info = self.task.ticket_info.get('room_info', [])
-        self.occ = self.task.ticket_info['room_info'][0].get('occ', 2)
-        self.room_count = self.task.ticket_info['room_info'][0].get('num', 1)
+        self.occ = self.task.ticket_info.get('occ', 2)
+        self.room_count = self.room_info[0].get('room_count', 1)
 
         # 需要注意参数顺序
         # 新的session requests；需要第一步的 cookies['MC1']
@@ -80,12 +80,12 @@ class expediaHotelSpider(BaseHotelSpider):
 
     def process_paging_url(self, req, data):
         #print data
-        print "process_paging_url"
+        self.hotel_name = re.findall("<title>.*?\((.*?)\).*?</title>", data, re.S)[0]
+        print self.hotel_name
         BaseHotelSpider.process_paging_url(self, req, data)
         # print self.browser.resp.cookies
         try:
-            # self.mc1 = self.browser.resp.cookies['MC1']
-            self.mc1 = req['resp'].history[0].cookies._cookies['.expedia.com.hk']['/']['MC1'].value
+            self.mc1 = self.browser.resp.cookies['MC1']
         except Exception as e:
             # res = guid = '12d0fa2ed6544078a8b92124bdcd904c'
             res = re.findall('guid = \'[a-z0-9]+?\'', data)
@@ -124,12 +124,11 @@ class expediaHotelSpider(BaseHotelSpider):
 
 if __name__ == '__main__':
     from mioji.common.task_info import Task
-    from mioji.common.utils import simple_get_socks_proxy, simple_get_socks_proxy_new
-    from mioji.common import spider
-    spider.slave_get_proxy = simple_get_socks_proxy_new
+    # from mioji.common.utils import simple_get_socks_proxy
+    # from mioji.common import spider
+    # spider.slave_get_proxy = simple_get_socks_proxy
     
     task = Task()
-
     task.ticket_info = {"count": 6, "room_info": [{"occ": 2, "num": 1, "room_count": 6}], "room_count": 6, "uid": "o949kgym5a115c432cb93179be19oy2v", "cid": "10004", "env_name": "online", "occ": 2, "num": 6, "qid": "1511150042274", "pay_method": "mioji", "md5": "a7abd666b2d5690e0df1414908bbf57e"}
     # task.content = 'http://www.expedia.com.hk/cn/Yokohama-Hotels-Sotetsu-Fresa-Inn-Yokohama-Totsuka.h4482717.Hotel-Information?&7&20171010'
     #task.content = 'https://www.expedia.com.hk/cn/Yokohama-Hotels-Yokohama-Royal-Park-Hotel.h15450.Hotel-Information?&1&20171214'
@@ -138,9 +137,7 @@ if __name__ == '__main__':
     # task.content = "https://www.expedia.com.hk/h2039863.Hotel-Information?&1&20180119"
     # task.content = "https://www.expedia.com.hk/cn/Hotels-Holiday-Inn-Vancouver-Airport.h63501.Hotel-Information?&1&20180210"
     # task.content = 'https://www.expedia.com.hk/cn/Hotels-Residence-Inn-By-Marriott-Montreal-Downtown.h65939.Hotel-Information?&1&20171205'
-    # task.content = 'https://www.expedia.com.hk/cn/Hotels-Ibis-Styles-Paris-Place-DItalie-Butte-Aux-Cailles-Hotel.h2628.Hotel-Information?&3&20180213'
-    task.content = "https://www.expedia.com.hk/cn/Hotels-Ibis-Paris-Place-DItalie-13th.h34643.Hotel-Information?&3&20180213"
-    task.content = "https://www.expedia.com.hk/cn/Hotels-Hotel-Du-Prince-Eugene.h2523435.Hotel-Information?&3&20180418"
+    task.content = 'https://www.expedia.com.hk/cn/Luxor-Hotels-Eatabe-Luxor-Hotel.h525107.Hotel-Information?&2&20180218'
     task.source = 'expedia'
     spider = expediaHotelSpider()
     spider.task = task

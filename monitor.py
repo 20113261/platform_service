@@ -33,8 +33,8 @@ from rabbitmq_func import detect_msg_num
 logger = get_logger('monitor')
 
 task_statistics = redis.Redis(host='10.10.180.145', db=9)
-client = pymongo.MongoClient(host='10.10.231.105')
-db = client['MongoTask']
+client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
+db = client['MongoTask_Zxp']
 HOTEL_SOURCE = (
     'agoda', 'booking', 'ctrip', 'elong', 'expedia', 'hotels', 'hoteltravel', 'hrs', 'cheaptickets', 'orbitz',
     'travelocity', 'ebookers', 'tripadvisor', 'ctripcn', 'hilton', 'ihg', 'holiday', 'accor', 'marriott', 'starwood',
@@ -724,7 +724,7 @@ def city2list():
         if not str(collection_name).startswith('City_Queue_'):
             continue
         if collection_name in ('City_Queue_grouptravel_TaskName_city_total_GT_20180312a', 'City_Queue_grouptravel_TaskName_city_total_GT_20180314a'):continue
-        if not collection_name.endswith('0416a'):continue
+        # if not collection_name.endswith('0416a'):continue
         collections = db[collection_name]
         _count = 0
 

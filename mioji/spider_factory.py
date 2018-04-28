@@ -18,7 +18,7 @@ from mioji.common.utils import simple_get_http_proxy
 from mioji.common.logger import logger
 
 
-def config_spider(insert_db, get_proxy, debug=False, need_flip_limit=True, is_service_platform=False):
+def config_spider(insert_db, get_proxy, debug=False, need_flip_limit=True, is_service_platform=True):
     """
     :param insert_db: 为原框架 common.insert_db 引用
     :param get_proxy: 获取代理方法 like get_proxy(source,a=None,b='ss')， 原框架 common.common get_proxy 方法引用 或 其他获取代理方法 
@@ -235,25 +235,14 @@ def create_task_info(source, content=None, extra={}):
 
 if __name__ == '__main__':
     from mioji.common.task_info import Task
-    import common.insert_db
-    from common.common import get_proxy
-    from mioji import spider_factory
-    from mioji.spider_factory import factory
-
-    insert_db = common.insert_db
-    get_proxy = get_proxy
-    debug = False
-    print "spider——adapter  " * 20
-    spider_factory.config_spider(insert_db, get_proxy, debug, is_service_platform=True)
 
     task = Task()
     li = ['OKA&ASB&20170720', 'LXR&LBV&20170510', 'CHI&GUM&20170520', 'MMK&AKL&20170510']
     # task.content = "KIX&XIY&20170910"
     # task.source = 'pricelineFlight'
-    task.content = 'PAR&BJS&20180921'
+    task.content = 'PAR&BJS&20170921'
     task.source = 'expediaFlight'
-    task.ticket_info = {"env_name":"test"}
-    # task.req_qid = 111111
+    task.ticket_info = {}
 
 
     def entry_test(task):

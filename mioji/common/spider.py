@@ -21,8 +21,8 @@ import datetime
 import urllib
 import uuid
 import store_utils
-import pika
 # import pickle
+import mioji.common.UFileHandler
 
 from mioji.common.func_log import func_time_logger
 from pool import pool
@@ -33,11 +33,11 @@ from logger import logger
 from collections import Iterable
 from pool_event_lock import block_async
 from collections import defaultdict
+
 try:
     from mioji.common.ufile_handler import multi_part_upload_stream
 except:
     pass
-# from mioji.common.conf_manage import ConfigHelper
 from mioji.common.utils import get_md5, get_local_ip, current_log_tag
 from greenlet import getcurrent
 
@@ -49,7 +49,6 @@ get_proxy = None
 # 新的
 slave_get_proxy = None
 need_write_file = False
-is_service_platform = False
 
 requests.packages.urllib3.disable_warnings()
 update_proxy_pool = gevent.pool.Pool(20)
@@ -69,7 +68,6 @@ PROXY_NEVER = 4
 MAX_FLIP = 15
 NEED_FLIP_LIMIT = True
 
-# config_helper = ConfigHelper()
 debug = True
 
 schedule_cache = {'lifetime_sec': 10 * 24 * 60 * 60, 'enable': True}
@@ -131,22 +129,18 @@ class Spider(object):
         # 记录当前抓取步骤
         self.chain_count = 0
 
-        self.is_service_platform = is_service_platform
         # 是否时验证机器
         self.is_verify = False
         self.verify_data = {'data': []}
 
         # 暂时没用
         self.__datas = {}
-        
-        #记录代理信息
-        self.proxy = None
-
-        #记录代理的所有回调
-        self.update_info_list = []
 
         self.__targets_parser_func_dict = {}
         self.__cache_config = schedule_cache
+
+        # 如果有页面保存方法，用于存放最终页面保存的结果
+        self.page_store_key_list = []
 
         for t in self.targets.keys():
             self.__compute_cache(self.__cache_config, TARGETS_LIST_CONFIG.get(t, {}).get('cache', verify_cache))
@@ -192,7 +186,7 @@ class Spider(object):
         """
         pass
 
-    def response_error(self,req, resp, error):
+    def response_error(self, req, resp, error):
         """
         请求异常
         :param resp requests response
@@ -320,7 +314,7 @@ class Spider(object):
                 current_log_tag() + '[ResponseServer MJOPObserver,type=sp001_{6},uid=,csuid=,qid={0},ts={1},ip={2}, '
                                     'refer_id=, cur_id={5},resp={3},cost={4}]'.format(
                     self.task.req_qid, time.time() * 1000, local_ip, urllib.quote(json.dumps(self.verify_data)),
-                    cost_time, cur_id, self.task.source, 
+                    cost_time, cur_id, self.task.source,
                 )
             )
 
@@ -330,7 +324,6 @@ class Spider(object):
                              ',crawl end,crawl_dur={0},total={1},crawl_cost={2},code={3},crawled={4}'
                              .format(start_crawl_dur, total, cost_time, self.code, self._crawled_count()))
 
-        
         return self.code
 
     def _crawled_count(self):
@@ -745,6 +738,32 @@ class Spider(object):
 
                     self.verify_data['data'].append(verify_task_info)
 
+                # 如果有需要上传保存的页面
+                if isinstance(reqParse.store_page_name, str):
+                    # 这个就不走池了，一般使用这个内容的时候都是必须上传页面的，如果有一条缺失的话，记作任务失败
+                    md5_key = get_md5(res)
+                    page_result = {
+                        'func_name': reqParse.request_func.__name__,
+                        'page_index': page_count,
+                        'retry_count': reqParse.req_count - 1,
+                        'req_info': request_template['req'],
+                        'md5_key': md5_key,
+                        'page': res,
+                        'browser_headers': self.browser.headers
+                    }
+
+                    result_key = 'store_name_{}@func_name_{}@index_{}@retry_count_{}@page_hash_{}'.format(
+                        reqParse.store_page_name,
+                        page_result['func_name'],
+                        page_result['page_index'],
+                        page_result['retry_count'],
+                        md5_key
+                    )
+
+                    mioji.common.UFileHandler.upload_stream(result_key, json.dumps(page_result))
+
+                    self.page_store_key_list.append(result_key)
+
                 # 数据转换
                 try:
                     convert_data = reqParse.convert(request_template, res)
@@ -830,8 +849,10 @@ class Spider(object):
 
 
 def request(retry_count=3, proxy_type=PROXY_REQ, async=False, binding=None, user_retry_count=0,
-            user_retry=False, multi=False, content_length=0, new_session=False, ip_type="test", ip_num=1):
+            user_retry=False, multi=False, content_length=0, new_session=False, store_page_name=None):
     """
+    :param store_page_name: 如果需要保存抓取页面信息，使用当前方法进行保存
+    :param user_retry_count:
     :param retry_count: 请求重试次数
     :param proxy_type: 代理类型
     :param async: 多个req是否需要同步
@@ -841,12 +862,11 @@ def request(retry_count=3, proxy_type=PROXY_REQ, async=False, binding=None, user
     :param content_length: 是否需要判断 content_length 合法，None 不需要判断，0 或其他正整数，content_length 需要大于设置值
     :param new_session: 新的browser session
     :return: 返回 ReqParse 类型
-    :ip_type: 决定使用国内代理(internal)还是国外(foreign)的
     """
 
     def call(func):
         req = ReqParse(func, retry_count, proxy_type, async, binding, user_retry_count,
-                       user_retry, multi, content_length, new_session, ip_type, ip_num)
+                       user_retry, multi, content_length, new_session, store_page_name)
         return req
 
     return call
@@ -871,7 +891,7 @@ def mioji_data(version=0):
 # data request and parse
 class ReqParse(object):
     def __init__(self, func, retry_count=3, proxy_type=PROXY_REQ, async=False, binding=None, user_retry_count=0,
-                 user_retry=False, multi=False, content_length=0, new_session=False, ip_type="test", ip_num=1):
+                 user_retry=False, multi=False, content_length=0, new_session=False, store_page_name=None):
         self.__request_func = func
         if user_retry_count:
             self.retry_count = user_retry_count
@@ -900,17 +920,11 @@ class ReqParse(object):
         self.proxy = None
         self.content_length = 0
 
-        #代理ip所需类型，国内or国外
-        self.ip_type = ip_type
-
-        #代理ip请求数量
-        self.ip_num = ip_num
-
-        #此处存放代理回调信息
-        self.proxy_update_info_list = []
-
         # session browser
         self.new_session = new_session
+
+        # 保存页面的名称
+        self.store_page_name = store_page_name
 
     @property
     def request_func(self):
@@ -940,7 +954,8 @@ class ReqParse(object):
             content_length = len(resp.content)
             if isinstance(self.need_content_length, int):
                 logger.debug(
-                    current_log_tag() + '[爬虫 content_length={1} 检测][页面长度需要大于 {0}]'.format(self.need_content_length, content_length))
+                    current_log_tag() + '[爬虫 content_length={1} 检测][页面长度需要大于 {0}]'.format(self.need_content_length,
+                                                                                          content_length))
                 if content_length <= self.need_content_length:
                     raise parser_except.ParserException(parser_except.PROXY_INVALID, msg='data is empty')
             elif self.need_content_length is None:
@@ -982,29 +997,15 @@ class ReqParse(object):
             logger.debug(current_log_tag() + 'crawl %s, retry_count: %s', self.__request_func.__name__, self.req_count)
             # 代理装配
             # 不使用代理、永远不使用代理
-            # if self.proxy_type == PROXY_NONE or self.proxy_type == PROXY_NEVER:
-            #     browser.set_proxy(None)
-            # # 请求代理 或 "被封禁 且 不是永远不使用代理" 主动设置代理
-            # if self.proxy_type == PROXY_REQ or self.is_forbidden:
-            #     verify_info = "master"
-            #     is_recv_real_time_request = config_helper.is_recv_real_time_request
-            #     if is_recv_real_time_request:
-            #         verify_info = "verify"
-            #     if not self.spider.is_verify and self.spider.is_service_platform:
-            #         verify_info = "platform"
-            #     # import pdb
-            #     # pdb.set_trace()
-            #     proxy_info = w_get_proxy(source=source_name, task=self.spider.task, ip_type=self.ip_type, ip_num=self.ip_num, verify_info=verify_info)
-            #
-            #     if proxy_info != "REALTIME" and proxy_info:
-            #         self.proxy = proxy_info
-            #         self.spider.proxy = self.proxy
-            #         proxy = proxy_info[0]
-            #     else:
-            #         proxy = proxy_info
-            #     browser.set_proxy(proxy)
+            if self.proxy_type == PROXY_NONE or self.proxy_type == PROXY_NEVER:
+                browser.set_proxy(None)
+
+            # 请求代理 或 "被封禁 且 不是永远不使用代理" 主动设置代理
+            if self.proxy_type == PROXY_REQ or (self.is_forbidden and self.proxy_type != PROXY_NEVER):
+                proxy = w_get_proxy(source_name)
+                browser.set_proxy(proxy)
+
             resp, self.content_length = self.__crawl_data_str(request_template, browser)
-           
             # todo 修改 user_retry 返回的结果
             if self.user_retry:
                 try:
@@ -1039,24 +1040,8 @@ class ReqParse(object):
             else:
                 code = 0
             # 代理反馈
-            # import pdb
-            # pdb.set_trace()
-            try:
-                if self.proxy and self.proxy_type != PROXY_FLLOW and self.proxy != "REALTIME":            
-                    proxy_update_info = (
-                        {
-                            "proxy_info": self.proxy,
-                            "code": code,
-                            "task": self.spider.task
-                        }
-                    )
-                    logger.info("本步抓取代理回调信息：{0}".format(proxy_update_info))
-                    w_update_proxy_test(self.proxy, code, self.spider.task)
-            except:
-                logger.debug("代理回调写入失败")
-                # else:
-                #     w_update_proxy_online(source_name, self.proxy[0], code, 0, self.content_length)
-                
+            if self.proxy:
+                w_update_proxy(source_name, self.proxy, code, 0, self.content_length)
 
         if self.req_exception:
             raise self.req_exception
@@ -1156,11 +1141,11 @@ class ReqParse(object):
 
 
 # other
-def w_get_proxy(source, task, ip_type, ip_num, verify_info):
+def w_get_proxy(source):
     if debug and not slave_get_proxy:
         print 'debug，and not define get_proxy，so can’t get proxy '
         return None
-    p = slave_get_proxy(source=source, task=task, ip_type=ip_type, ip_num=ip_num, verify_info=verify_info)
+    p = slave_get_proxy(source)
     if not p:
         raise parser_except.ParserException(parser_except.PROXY_NONE, 'get {0} proxy None'.format(source))
     return p
@@ -1170,56 +1155,11 @@ def w_block_update_proxy(source, proxy, code, speed, length):
     requests.get(FORMAT_UPDATE_PROXY_URL.format(source, proxy, code, speed, length))
 
 
-def w_update_proxy_online(source, proxy, code, speed, length):
+def w_update_proxy(source, proxy, code, speed, length):
     if debug:
         return None
     update_proxy_pool.apply_async(w_block_update_proxy, (source, proxy, code, speed, length))
 
-def w_update_proxy_test(proxy_infos, code, task):
-
-    update_proxy_pool.apply_async(w_update_proxy_test_info, (proxy_infos,code, task))
-
-
-def w_update_proxy_test_info(proxy_infos, code, task):
-    logger.debug('[rabbitmq 入库开始]')
-    try:
-        res = None
-        credentials = pika.PlainCredentials(username="writer", password="miaoji1109")
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host="10.10.160.200", port=5672, virtual_host='offline', credentials=credentials
-            )
-        )
-        channel = connection.channel()
-        channel.queue_declare(queue="spiderToProxy", durable=True)
-
-        channel.exchange_declare(exchange='spider', durable=True)
-        req_info = proxy_infos[1][2]
-        proxy_info = json.loads(proxy_infos[1][0])
-        proxy_time = proxy_infos[1][1]
-        source = proxy_info['resp'][0]['source']
-        external_ip = proxy_info['resp'][0]['ips'][0]['external_ip']
-        inner_ip = proxy_info['resp'][0]['ips'][0]['inner_ip']
-
-        qid = str(task.ticket_info.get('qid',0))
-
-        args = {"source": source,
-            "external_ip": external_ip,
-            "inner_ip": inner_ip,
-            "error_code": str(code),
-            "cost": str(int(proxy_time)),
-            "qid": qid,
-            "req_info":req_info
-            }
-        msg = json.dumps({"callback": args}, ensure_ascii=True)
-        logger.info("mq入库信息：{0}".format(msg))
-        res = channel.basic_publish(exchange='spider', routing_key="spider_proxy", body=msg, properties=pika.BasicProperties(delivery_mode=2))
-        connection.close()
-    except Exception as e:
-        logger.error("爬虫代理回调写mq出错，{0},".format(e))
-    if not res:
-        logger.error("爬虫代理回调写mq出错,res为空")
-    logger.info("mq入库成功")
 
 def task_wrapper(func):
     """

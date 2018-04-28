@@ -47,21 +47,23 @@ class CitripGrouptravelListSpider(Spider):
         # search_url = "http://vacations.ctrip.com/tours/d-phuket-364/grouptravel/dc144"
         search_url = "http://vacations.ctrip.com/tours/d-{0}-{1}/{2}/".format(dest_name, dest_id, vacation_type)
         # search_url = "http://vacations.ctrip.com/tours/d-paris-308/around/dc250"
+        tid = 0
+        used_times = 0
 
-        @request(retry_count=3, proxy_type=PROXY_REQ)
+        @request(retry_count=3, proxy_type=PROXY_REQ, store_page_name="base_request_{}_{}".format(tid, used_times))
         def base_request():
             return {'req': {'url': base_url},
                     # 'data': {'content_type': 'html'},
                     }
 
-        @request(retry_count=3, proxy_type=PROXY_REQ, binding=self.parse_list)
+        @request(retry_count=3, proxy_type=PROXY_REQ, binding=self.parse_list, store_page_name="first_request_{}_{}".format(tid, used_times))
         def first_request():
             return {'req': {'url': search_url},
                     # 'data': {'content_type': 'html'},
                     'user_handler': [self.get_total_page, self.get_api_info]
                     }
 
-        @request(retry_count=3, proxy_type=PROXY_FLLOW, binding=self.parse_list, async=True)
+        @request(retry_count=3, proxy_type=PROXY_FLLOW, binding=self.parse_list, async=True, store_page_name="second_request_{}_{}".format(tid, used_times))
         def second_request():
             total_page = self.total_page
             list_a = []
@@ -105,10 +107,12 @@ class CitripGrouptravelListSpider(Spider):
         payload = {'params': id_new_list}
         payload = urllib.urlencode(payload)
         proxies = dict()
-        proxy_info = requests.get(
-            "http://10.10.32.22:48200/?type=px001&qid=0&query={%22req%22:%20[{%22source%22:%20%22ctripFlight%22,%20%22num%22:%201,%20%22type%22:%20%22verify%22,%20%22ip_type%22:%20%22test%22}]}&ptid=test&uid=test&tid=tid&ccy=spider_test").content
-        proxy = json.loads(proxy_info)['resp'][0]['ips'][0]['inner_ip']
-        proxies['socks'] = "socks5://" + proxy.encode('utf-8')
+        # proxy_info = requests.get(
+        #     "http://10.10.32.22:48200/?type=px001&qid=0&query={%22req%22:%20[{%22source%22:%20%22ctripFlight%22,%20%22num%22:%201,%20%22type%22:%20%22verify%22,%20%22ip_type%22:%20%22test%22}]}&ptid=test&uid=test&tid=tid&ccy=spider_test").content
+        # proxy = json.loads(proxy_info)['resp'][0]['ips'][0]['inner_ip']
+        proxy_info = requests.get("http://10.10.239.46:8087/proxy?source=pricelineFlight&user=crawler&passwd=spidermiaoji2014").content
+        # proxies['socks'] = "socks5://" + proxy.encode('utf-8')
+        proxies['socks'] = "socks5://" + proxy_info.encode('utf-8')
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.323132 Safari/537.36",
             'content-type': "application/x-www-form-urlencoded; charset=UTF-8",
@@ -120,15 +124,23 @@ class CitripGrouptravelListSpider(Spider):
         try:
             for resp in response:
                 pic = resp.get('ImageUrl')
-                pic = pic.replace("_C_125_70", "")
-                pic_list.append(pic)
+                if pic:
+                    pic = pic.replace("_C_125_70", "")
+                    pic_list.append(pic)
+                else:
+                    pic_list.append("")
                 dept_id_list.append(resp.get('DepartureCityId'))
                 dept_list.append(resp.get('DepartureCityName'))
                 supplier4.append(resp.get('ProviderFullName'))
                 if resp.get('Tags'):
                     h_list = []
                     for resp2 in resp.get('Tags'):
-                        h_list.append(resp2.get('Name'))
+                        tag = resp2.get('Name')
+                        if tag != "":
+                            h_list.append(tag)
+                        else:
+                            tag2 = "免费WIFI"
+                            h_list.append(tag2)
                     highlight.append(h_list)
                 else:
                     h_list = []
@@ -234,7 +246,7 @@ class CitripGrouptravelListSpider(Spider):
                            dept_city=dept_city, dept_id=str(dept_id), url=url, pid_3rd=pid_3rd, brand=brand, first_image=first_image,
                            supplier=supplier, highlight=highlight)
             travel.append(p_tuple)
-            # with open("beijing2balidao.json", "a") as f:
+            # with open("beijing2turkey.json", "a") as f:
             #     f.write(json.dumps(p_tuple, ensure_ascii=False) + "\n")
         return travel
 
@@ -256,8 +268,8 @@ if __name__ == '__main__':
             "name": "北京",
             "name_en": "Beijing"},
         "dest_info": {
-            "id": "56709",
-            "name": "川崎市",
+            "id": "308",
+            "name": "巴黎",
             "name_en": "tour"},
         "vacation_type": "grouptravel"
     }

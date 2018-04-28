@@ -3,7 +3,7 @@
 import json
 import sys
 from TravelzenFlightParser import Handler
-from mioji.common.spider import Spider, request, PROXY_NONE, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_NONE
 from travelzen_oneway_spider import TravelzenFlightSpider
 from mioji.common import parser_except
 from mioji.common.check_book.check_book_ratio import use_record_qid
@@ -46,7 +46,7 @@ class TravelzenRoundSpider(TravelzenFlightSpider):
         req = self.api.get_post_parameters(self.mode, section, self.task.ticket_info)
         api_handler = self.api
 
-        @request(retry_count=1, proxy_type=PROXY_NEVER, binding=['RoundFlight'])
+        @request(retry_count=1, proxy_type=PROXY_NONE, binding=['RoundFlight'])
         def do_request():
             return {
                 'req': req,
@@ -59,7 +59,7 @@ class TravelzenRoundSpider(TravelzenFlightSpider):
                 }
             }
 
-        @request(retry_count=1, proxy_type=PROXY_NEVER, binding=['RoundFlight'])
+        @request(retry_count=1, proxy_type=PROXY_NONE, binding=['RoundFlight'])
         def req_rule():
             for ticket in self.verify_ticket:
                 ticket[-2] = json.loads(ticket[-2])
@@ -80,8 +80,6 @@ class TravelzenRoundSpider(TravelzenFlightSpider):
     def parse_RoundFlight(self, req, resp):
         if req['extra']['method'] == 'req_rule':
             t = req['extra']['ticket']
-            t[10] += '<br/>' + resp['EndorsementQueryResponse']['freightRuleLimitInfo'][0]['ruleTitle'] +'<br/>' + resp['EndorsementQueryResponse']['freightRuleLimitInfo'][0]['ruleLimitContent']
-            t[35] += '<br/>' + resp['EndorsementQueryResponse']['freightRuleLimitInfo'][0]['ruleTitle'] +'<br/>' + resp['EndorsementQueryResponse']['freightRuleLimitInfo'][0]['ruleLimitContent']
             others_info = t[-2]
             others_info['dev_change_rule'] = resp
             t[-2] = json.dumps(others_info)

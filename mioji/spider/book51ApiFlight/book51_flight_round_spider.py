@@ -9,8 +9,7 @@ author: lw
 import re
 import json
 from mioji.common import parser_except
-from mioji.common.check_book.check_book_ratio import use_record_qid
-from mioji.common.spider import Spider, request, PROXY_FLLOW, PROXY_REQ, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_FLLOW, PROXY_REQ
 
 from mioji.common.mioji_struct import MFlightSegment, MFlightLeg, MFlight
 FOR_FLIGHT_DAY = '%Y-%m-%d'
@@ -71,8 +70,10 @@ def test_(age_info, count):
 
 class BookRoundFlightSpider(Spider):
     source_type = "51bookRoundFlight"
+
     targets = {
         'RoundFlight': {'version': 'InsertRoundFlight2'}}
+
     old_spider_tag = {
         '51bookRoundFlight': {'required': ['RoundFlight']}
     }
@@ -82,31 +83,10 @@ class BookRoundFlightSpider(Spider):
         self.verify_ticket = False
         self.index = 0
 
-    def check_auth(self,ticket_info):
-        # 检查auth信息
-        auth = ticket_info.get('auth', '')
-        if auth == '':
-            raise parser_except.ParserException(121, '无auth信息')
-        else:
-            auth_arg = ["agencyCode", "safe_code", "host"]
-            auth = json.loads(auth)
-            for i in auth_arg:
-                if i not in auth:
-                    raise parser_except.ParserException(121, '缺少auth中的' + i + '信息')
-                else:
-                    if auth[i] == '':
-                        raise parser_except.ParserException(121, 'auth中的' + i + '信息为空')
 
     def set_value(self):
-        #添加验证auth信息逻辑
-        self.check_auth(self.task.ticket_info)
-        resources = self.task.ticket_info.get("is_start_china", 1)
         # 任务信息
-        auth_str = self.task.ticket_info.get("auth", '')
-        if auth_str:
-            auth = json.loads(self.task.ticket_info["auth"])
-        else:
-            raise parser_except.ParserException(121, '认证信息有误')
+        auth = json.loads(self.task.ticket_info["auth"])
         self.header = {
             "USERNAME": auth["agencyCode"]
         }
@@ -122,9 +102,9 @@ class BookRoundFlightSpider(Spider):
         import time
         current_milli_time = lambda: int(round(time.time() * 1000))
         timeStamp = current_milli_time()
-        tmp_seat = self.task.ticket_info.get('v_seat_type', 'E')
-        tmp_flight_no = self.task.ticket_info.get('flight_no', '')
-        tmp_ret_flight_no = self.task.ticket_info.get('ret_flight_no', '')
+        tmp_seat = self.task.ticket_info['seat_type']
+        tmp_flight_no = self.task.ticket_info.get('flight_no','')
+        tmp_ret_flight_no = self.task.ticket_info.get('ret_flight_no','')
         self.user_datas['flight_no'] = "_".join([tmp_flight_no,tmp_ret_flight_no])
         a = tmp_flight_no.split("_")
         b = tmp_ret_flight_no.split("_")
@@ -135,6 +115,7 @@ class BookRoundFlightSpider(Spider):
             TF = False
         airline = tmp_flight_no[:2]
         passengerNumber = self.task.ticket_info['v_count']  # 人数
+
         departureAirport, arrivalAirport, departureTime, departureTime2 = self.task.content.split("&")
         try:
             agencyCode = auth['agencyCode']
@@ -145,7 +126,6 @@ class BookRoundFlightSpider(Spider):
                                      {"cabinClass": cabin[tmp_seat],
                                       "directFlight": TF,
                                       "routeType": "RT",
-                                      "resourceChannel": resources,
                                       "passengerNumberVo": [
                                           {"passengerType": "ADT", "passengerNumber": passengerNumber}],
                                       "segmentList": [
@@ -182,8 +162,11 @@ class BookRoundFlightSpider(Spider):
         # 加密之后的数据
         req_param2 = sign2.hexdigest()
         self.header2["SIGN"] = req_param2
+
+
         if self.task is not None:
             self.process_task_info()
+
 
     def targets_request(self):
         self.set_value()
@@ -213,8 +196,8 @@ class BookRoundFlightSpider(Spider):
         print "-"*80
         print "postdata",self.postdata
         self.header['USERNAME'] = auth["agencyCode"]
-        use_record_qid(unionKey='51book', api_name="searchFlight", task=self.task, record_tuple=[1, 0, 0])
-        @request(retry_count=3, proxy_type=PROXY_NEVER,binding=self.parse_RoundFlight)
+
+        @request(retry_count=3, proxy_type=PROXY_REQ,binding=self.parse_RoundFlight)
         def first_page():
             return {
                 # header 需要两个字段
@@ -223,7 +206,7 @@ class BookRoundFlightSpider(Spider):
                 # 'user_handler': [self.process_post_data]
             }
         # return [first_page]
-        @request(retry_count=1, proxy_type=PROXY_NEVER, binding=self.parse_RoundFlight)
+        @request(retry_count=1, proxy_type=PROXY_REQ, binding=self.parse_RoundFlight)
         def req_rule():
             self.set_value()
             return {
@@ -262,21 +245,6 @@ class BookRoundFlightSpider(Spider):
 
         self.task_info = task_info
 
-    def parse_zero(self, flight):
-        if '_' in flight:
-            a = flight.split('_')[0]
-            b = flight.split('_')[1]
-            pipre = re.compile('[0]*')
-            len1 = len(pipre.match(a[2:]).group())
-            fl_fir = a[:2] + a[2+len1:]
-            len2 = len(pipre.match(b[2:]).group())
-            fl_end = b[:2] + b[2+len2:]
-            return fl_fir + '_' + fl_end
-        else:
-            pipre = re.compile('[0]*')
-            len3 = len(pipre.match(flight[2:]).group())
-            return flight[:2] + flight[2+len3:]
-
     def parse_RoundFlight(self, req, data):
         if req['methods']=='req_rule':
             response = json.loads(data)
@@ -284,12 +252,11 @@ class BookRoundFlightSpider(Spider):
             temp_tickets = []
             for i in tickets:
                 tmp_fli_no = "_".join([i[11],i[23]])
-                if self.parse_zero(tmp_fli_no) == self.user_datas['flight_no']:
+                if tmp_fli_no == self.user_datas['flight_no']:
                     i = list(i)
                     i[-2] = i[-2].split('&{')[0]
-                    # change_ru = response['RSData']['adtRule'][0].split('</b>')[2].split('</p>')[0].replace('<p style=\'text-indent: 2em\'>','')
-                    # return_ru = response['RSData']['adtRule'][0].split('</b>')[3].split('</p>')[0].replace('<p style=\'text-indent: 2em\'>','')
-                    rule_string = '成人改签规定' + response['RSData']['adtRule'][0] + response['RSData']['adtRule'][1]
+                    pepi = re.compile('\'text-indent: 2em\'>(.*)')
+                    rule_string ="改签："+ pepi.findall(response['RSData']['adtRule'][0].split('</p>')[2])[0]+"退票:"+pepi.findall(response['RSData']['adtRule'][0].split('</p>')[3])[0] #退票
                     # i[-10] = pepi.findall(response['RSData']['adtRule'][0].split('</p>')[2])[0] #改签
                     # i[-11] = pepi.findall(response['RSData']['adtRule'][0].split('</p>')[3])[0] #退票
                     i[10] = i[35] = rule_string
@@ -335,7 +302,7 @@ class BookRoundFlightSpider(Spider):
                             des_date = seg["arriveTime"].replace(" ","T")
                             mfseg.set_dept_date(dep_date, FOR_FLIGHT_DATE)
                             mfseg.set_dest_date(des_date, FOR_FLIGHT_DATE)
-                            mfseg.seat_type = cabin[self.task.ticket_info['v_seat_type']].replace('_', ' ')
+                            mfseg.seat_type = cabin[self.task.ticket_info['v_seat_type']]
                             mfseg.real_class = self.task.ticket_info['v_seat_type']
                             mflightleg.append_seg(mfseg)
                         mflight.append_leg(mflightleg)
@@ -343,7 +310,7 @@ class BookRoundFlightSpider(Spider):
 
                     for ticket in tickets:
                         tmp_fli_no = "_".join([ticket[11],ticket[23]])
-                        if self.parse_zero(tmp_fli_no) ==self.user_datas['flight_no']:
+                        if tmp_fli_no==self.user_datas['flight_no']:
                             self.user_datas["itineraryId"] = flight["itineraryID"]
                             self.user_datas['fare_id'] = fare_id
                             self.verify_ticket = True
@@ -365,14 +332,7 @@ if __name__=="__main__":
     task = Task()
     task.content = "PEK&HKG&20180206&20180209"
     task.redis_key = "123"
-    task.other_info = {}
-    task.ticket_info = {
-                        "ret_flight_no":"CA102",
-                        "flight_no":"CA115",
-                        "v_count":2,
-                        "seat_type": 'E',
-                        "auth":json.dumps({"agencyCode": "MIAOJI", "safe_code": "a3bQQ7s^", "host": "http://interws.51book.com/"})
-                        }
+    task.ticket_info = {"ret_flight_no":"CA102","flight_no":"CA115","v_count":2,'seat_type': 'E',"auth":'{"agencyCode":"MIAOJI","safe_code":"a3bQQ7s^","host":"http://interws.51book.com/"}'}
     spider = BookRoundFlightSpider()
     spider.task = task
     print spider.crawl()

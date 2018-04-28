@@ -130,6 +130,12 @@ class WhListSpider(Spider):
         for hotel_old_id in hotel_old_id_list:
             hotel_id = re.search(r"-([A-Z]+)", hotel_old_id).group(1)
             hotel_id_list.append(hotel_id)
+        longtitude_list = html_obj.xpath("//input[@name='pushpin-long']/@value")
+        latitude_list = html_obj.xpath("//input[@name='pushpin-lat']/@value")
+        hotel_en_name_list = []
+        hotel_en_name_node = html_obj.xpath("//span[@class='l-display-none']/text()")
+        for hotel_en_name in hotel_en_name_node:
+            hotel_en_name_list.append(hotel_en_name)
         hotel_url_list = []
         hotel_old_url_list = html_obj.xpath("//h3[@class='m-result-hotel-title t-font-s']/a/@href")
         for hotel_node in hotel_old_url_list:
@@ -139,12 +145,12 @@ class WhListSpider(Spider):
                 hotel_url = "https://www.marriott.com.cn" + hotel_node
                 hotel_url_list.append(hotel_url)
         hotel_info_list = []
-        for hotel_info_tuple in zip(hotel_id_list, hotel_url_list):
+        for hotel_info_tuple in zip(hotel_id_list, hotel_url_list, hotel_en_name_list, longtitude_list, latitude_list):
             hotel_info_list.append(list(hotel_info_tuple))
         for hotel_info in hotel_info_list:
             room = Room()
             room.source_hotelid = hotel_info[0]
-            room.hotel_url = hotel_info[1]
+            room.hotel_url = hotel_info[1] + "#####" + hotel_info[2] + "#####" + "longtitude=" + hotel_info[3] + "#####" + "latitude=" + hotel_info[4]
             hotel_tuple = (room.source_hotelid, room.hotel_url)
             rooms.append(hotel_tuple)
 

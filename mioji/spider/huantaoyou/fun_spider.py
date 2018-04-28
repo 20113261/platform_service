@@ -7,7 +7,7 @@ import copy
 setdefaultencoding_utf8()
 from util import SkipException
 from mioji.common import parser_except
-from mioji.common.spider import Spider, request, PROXY_NONE, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_NONE
 from huantaoyouAPI import HuantaoyouApi
 
 
@@ -38,7 +38,7 @@ class huantaoyouSpider(Spider):
         self.api_object = HuantaoyouApi(self.task)
         url = self.api_object.prepare_request(self.req_id)
 
-        @request(retry_count=1, proxy_type=PROXY_NEVER, binding=self.parse_Fun)
+        @request(retry_count=1, proxy_type=PROXY_NONE, binding=self.parse_Fun)
         def make_request():
             return {
                 'req': {

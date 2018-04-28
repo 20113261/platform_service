@@ -12,7 +12,7 @@ import json
 import dateutil.parser
 import types
 import sys
-from mioji.common.spider import Spider, request, PROXY_NONE, PROXY_NEVER
+from mioji.common.spider import Spider, request, PROXY_NONE
 from mioji.common import parser_except
 from common.class_common import Room
 from itertools import groupby
@@ -36,6 +36,7 @@ def include_breakfast(board_code):
 
 class HotelBedsSpider(Spider):
     source_type = 'hotelbedsApiHotel'
+
     targets = {
         'room': {}
     }
@@ -98,7 +99,7 @@ class HotelBedsSpider(Spider):
         if hasattr(self.task, 'redis_key'):
             self.redis_key = self.task.redis_key
 
-        @request(retry_count=3, proxy_type=PROXY_NEVER)
+        @request(retry_count=3, proxy_type=PROXY_NONE)
         def auth_request():
             return {
                 'req': {
@@ -117,7 +118,7 @@ class HotelBedsSpider(Spider):
                 ]
             }
 
-        @request(retry_count=3, proxy_type=PROXY_NEVER, binding=self.parse_room)
+        @request(retry_count=3, proxy_type=PROXY_NONE, binding=self.parse_room)
         def get_hotel():
             return {
                 'req': {
@@ -205,8 +206,7 @@ class HotelBedsSpider(Spider):
         # if "breakfast" in attr('boardName').lower():
         board_cd = attr('boardCode')
 
-        room.has_breakfast = 'Yes' if self.include_breakfast(board_cd) else 'No'
-        room.is_breakfast_free = room.has_breakfast
+        room.is_breakfast_free = 'Yes' if self.include_breakfast(board_cd) else 'No'
 
         gross_price = attr('sellingRate')
         # sometimes sellingRate is not given, use net price + taxes instead
@@ -227,9 +227,8 @@ class HotelBedsSpider(Spider):
         cancellation = attr('cancellationPolicies')
         if cancellation:
             room.return_rule = ''.join(['%s后取消收取%s%s;' % (x["from"], x["amount"], room.currency) for x in cancellation])
-            room.is_cancel_free = 'NULL'
-        else:
-            room.is_cancel_free = 'No'
+            charge_from = min([dateutil.parser.parse(x["from"]) for x in cancellation])
+            room.is_cancel_free = 'Yes' if charge_from > datetime.datetime.now(charge_from.tzinfo) else 'No'
 
         # important message regarding price from hotel master as per document
         comments["remarks"] = attr('rateComments') or ''
@@ -247,13 +246,12 @@ class HotelBedsSpider(Spider):
 
         comments['rateType'] = attr("rateType")
 
-        comments['extra'] = {
-            'breakfast': '包含早餐' if room.has_breakfast == 'Yes' else '不包含早餐',
-            'payment': '',
-            'return_rule': room.return_rule,
-            'occ_des': '可支持' + str(room.occupancy) + '名成人入住'
-        }
-
+        comments['extra'] = [
+            {'breakfast': '包含早餐' if room.is_breakfast_free == 'Yes' else '不包含早餐'},
+            {'payment': '在线支付'},
+            {'return_rule': room.return_rule},
+            {'occ_des': '可支持' + str(room.occupancy) + '名成人入住'}
+        ]
 
         room.others_info = json.dumps(comments)
 
@@ -333,7 +331,7 @@ if __name__ == '__main__':
 
     # test
     task.ticket_info = {"room_info": [{"room_count": 1, "occ": 2}], "env_name": "offline",
-                        "auth": auth, 'room_count': 1
+                        "auth": auth
                         }
 
     # online

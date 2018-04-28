@@ -330,7 +330,7 @@ def page_parser(page_dict, task_dict):
         ticket_i = mapping['f']  # 这是这种选择的价格的编号
         global total_passengers  # 需要用这个全局变量来算平均价格，和平均的税
         roundflight.price = fare[ticket_i][fare[ticket_i]
-        ['dfd']]['bp'] / total_passengers # base fare
+        ['dfd']]['pr'] / total_passengers
         roundflight.tax = fare[ticket_i][fare[ticket_i]
         ['dfd']]['t'] / total_passengers
 

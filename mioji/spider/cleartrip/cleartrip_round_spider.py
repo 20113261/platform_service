@@ -86,7 +86,7 @@ class ClearTripRoundFlightSpider(Spider):
         #         }
         #     }
 
-        @request(retry_count=3, proxy_type=PROXY_FLLOW, binding=self.parse_RoundFlight, user_retry=True, ip_type="foreign")
+        @request(retry_count=3, proxy_type=PROXY_FLLOW, binding=self.parse_RoundFlight, user_retry=True)
         def json_page():
             referer = cleartrip_round_lib.get_referer_url(self.task_dict)
             header = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',

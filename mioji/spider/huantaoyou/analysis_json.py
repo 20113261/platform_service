@@ -486,63 +486,31 @@ def tickets_fun_analysis(response_json, val_):
         ticket_3rd = str(ticket.get('id', -1))
         sell_code = ticket.get('sell_code', None)
         # TODO info 应该是一个list
-        if sell_code.find('1adult1child') != -1:
-            info = [{"type": 0, "num": 1}, {"type": 1, "num": 1}]
-        elif sell_code.find('2adult1child') != -1:
-            info = [{"type": 0, "num": 2}, {"type": 1, "num": 1}]
-        elif sell_code.find("child") != -1:
-            info = [{"type": 1, "num": 1}, ]
-        elif sell_code.find('adult') != -1:
-            info = [{"type": 0, "num": 1}, ]
-        elif sell_code.find('2adult') != -1:
-            info = [{"type": 0, "num": 2}, ]
-        elif sell_code.find('youth') != -1:
-            info = [{"type": 10, "num": 1}, ]
-        elif sell_code.find('general') != -1:
-            info = [{"type": 4, "num": 1}, ]
-        elif sell_code.find('people_beginner') != -1:
-            info = [{"type": 5, "num": 1}, ]
-        elif sell_code.find('people_experienced') != -1:
-            info = [{"type": 6, "num": 1}, ]
-        elif sell_code.find('people_kid') != -1:
-            info = [{"type": 7, "num": 1}, ]
-        elif sell_code.find('people_pupil') != -1:
-            info = [{"type": 8, "num": 1}, ]
-        elif sell_code.find('people_student') != -1:
-            info = [{"type": 9, "num": 1}, ]
-        elif sell_code.find('people_infant') != -1:
-            info = [{"type": 2, "num": 1}, ]
-        elif sell_code.find("old") != -1:
-            info = [{"type": 3, "num": 1}, ]
-        else:
-            info = [{"type": 0, "num": 1}, ]
-        price = join_keyword('price', ticket.get('schedule', [{}]))
-        price = price.split('|')
-        price = [int(i) for i in price]
-        price = min(price)
+        if sell_code.split(',')[0] == 'child':
+            info = [
+                {"type": 1, "num": 1},
+            ]
+            price = join_keyword('price', ticket.get('schedule', [{}]))
+            price = price.split('|')
+            price = [int(i) for i in price]
+            price = min(price)
+        elif sell_code.split(',')[0] == 'old':
+            info = [
+                {"type": 3, "num": 1},
+            ]
+            price = join_keyword('price', ticket.get('schedule', [{}]))
+            price = price.split('|')
+            price = [int(i) for i in price]
+            price = min(price)
 
-        # if sell_code.split(',')[0] == 'child':
-        #     info = [
-        #         {"type": 1, "num": 1},
-        #     ]
-        #
-        # elif sell_code.split(',')[0] == 'old':
-        #     info = [
-        #         {"type": 3, "num": 1},
-        #     ]
-        #     price = join_keyword('price', ticket.get('schedule', [{}]))
-        #     price = price.split('|')
-        #     price = [int(i) for i in price]
-        #     price = min(price)
-        #
-        # else:
-        #     info = [
-        #         {"type": 0, "num": 1},
-        #     ]
-        #     price = join_keyword('price', ticket.get('schedule', [{}]))
-        #     price = price.split('|')
-        #     price = [int(i) for i in price]
-        #     price = min(price)
+        else:
+            info = [
+                {"type": 0, "num": 1},
+            ]
+            price = join_keyword('price', ticket.get('schedule', [{}]))
+            price = price.split('|')
+            price = [int(i) for i in price]
+            price = min(price)
         #if not val_['activity_ticket']:
         #    return {}
         times = [{"dur": "", "t": ""}]

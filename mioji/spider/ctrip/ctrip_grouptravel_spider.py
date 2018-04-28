@@ -158,19 +158,22 @@ class CitripGrouptravelSpider(Spider):
         # u can get task info from self.task
         task = self.task
         self.count = 0
+        self.pid = "gty" + datetime.datetime.now().strftime('%Y-%m-%d') + '%s' % int(time.time() * 100)
         base_url = self.task.ticket_info['vacation_info']['url']
         product_id = self.task.ticket_info['vacation_info']['pid_3rd']
         referer = self.task.ticket_info['vacation_info']['url']
         referer_url = self.task.ticket_info['vacation_info']['url']
         self.price_list = []
+        tid = 0
+        used_times = 0
 
-        @request(retry_count=3, proxy_type=PROXY_REQ)
+        @request(retry_count=3, proxy_type=PROXY_REQ, store_page_name="base_request_{}_{}".format(tid, used_times))
         def base_request():
             return {'req': {'url': base_url},
                     'user_handler': [self.get_static_data]
                     }
 
-        @request(retry_count=3, proxy_type=PROXY_FLLOW)
+        @request(retry_count=3, proxy_type=PROXY_FLLOW, store_page_name="first_request_{}_{}".format(tid, used_times))
         def first_request():
             first_url = "http://vacations.ctrip.com/bookingnext/CalendarV2/CalendarInfo?ProductID={5}&StartCity={0}" \
                         "&SalesCity={1}&EffectDate={2}&ExpireDate={3}&ClientSource=Online&uid=&TourGroupProductIds=%5B{4}%5D" \
@@ -180,7 +183,7 @@ class CitripGrouptravelSpider(Spider):
                     'user_handler': [self.get_calendar]
                     }
 
-        @request(retry_count=3, proxy_type=PROXY_FLLOW, binding=self.parse_vacation, async=True)
+        @request(retry_count=3, proxy_type=PROXY_FLLOW, binding=self.parse_vacation, store_page_name="second_request_{}_{}".format(tid, used_times))
         def second_request():
             calendar_list = self.calendar_list
             req_list = []
@@ -197,7 +200,7 @@ class CitripGrouptravelSpider(Spider):
                 d1 = datetime.datetime.strptime(now_time_str, '%Y-%m-%d')
                 d2 = datetime.datetime.strptime(calendar['Date'], '%Y-%m-%d')
                 days = (d2 - d1).days
-                if days <= 90:
+                if days <= 30:
                     for product_id in calendar['TourGroupCalenderInfo']:
                         product_id_list.append(product_id['ProductID'])
                         price_list.append(product_id['MinPrice'])
@@ -218,7 +221,7 @@ class CitripGrouptravelSpider(Spider):
                         self.count += 1
             return req_list
 
-        @request(retry_count=3, proxy_type=PROXY_FLLOW)
+        @request(retry_count=3, proxy_type=PROXY_FLLOW, store_page_name="third_request_{}_{}".format(tid, used_times))
         def third_request():
             # product_id = self.task.ticket_info['vacation_info']['id']
             # referer = self.task.ticket_info['vacation_info']['url']
@@ -238,7 +241,7 @@ class CitripGrouptravelSpider(Spider):
                     'user_handler': [self.process_decsription]
                     }
 
-        @request(retry_count=3, proxy_type=PROXY_FLLOW, async=True)
+        @request(retry_count=3, proxy_type=PROXY_FLLOW, async=True, store_page_name="get_price_{}_{}".format(tid, used_times))
         def get_price():
             req_list = []
             calendar_list = self.calendar_list
@@ -249,13 +252,13 @@ class CitripGrouptravelSpider(Spider):
                 d1 = datetime.datetime.strptime(now_time_str, '%Y-%m-%d')
                 d2 = datetime.datetime.strptime(calendar['Date'], '%Y-%m-%d')
                 days = (d2 - d1).days
-                if days <= 90:
+                if days <= 30:
                     for calendar2 in calendar['TourGroupCalenderInfo']:
                         proid = calendar2['ProductID']
                         departid = self.task.ticket_info['vacation_info']['dept_id']
                         salesid = self.task.ticket_info['vacation_info']['dept_id']
                         payload = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; " \
-                                  "name=\"query\"\r\n\r\n{\"DepartCityId\":%s,\"SalesCityId\":%s,\"ProductId\":%s,\"Adults\":5,\"Childs\":1,\"DepartDate\":\"%s\"}\r\n" \
+                                  "name=\"query\"\r\n\r\n{\"DepartCityId\":%s,\"SalesCityId\":%s,\"ProductId\":%s,\"Adults\":1,\"Childs\":1,\"DepartDate\":\"%s\"}\r\n" \
                                   "------WebKitFormBoundary7MA4YWxkTrZu0gW--" % (departid, salesid, proid, date)
                         req_list.append({'req': {'url': "http://vacations.ctrip.com/bookingnext/Resource/RecommendSearchWithXResource",
                                                  'method': 'post',
@@ -361,14 +364,16 @@ class CitripGrouptravelSpider(Spider):
         Price_list = data['data']['PriceInfo']['PriceList']
         single_price_list = data['data']['Resource']['OtherItems']
         price_list = []
-        for source in single_price_list:
-            if source['ResourceName'] == "单房差":
-                price = source['Inventory'][0]['Price']
-                price_list.append(price)
-        single_price = price_list[0]
+        single_price = 0.0
+        if single_price_list:
+            for source in single_price_list:
+                if source['ResourceName'] == "单房差" or source['ResourceName'] == "单人房差":
+                    price = source['Inventory'][0]['Price']
+                    price_list.append(price)
+                    single_price = price_list[0]
         if Price_list:
             price_list = Price_list[0]['TotalPrice']
-            adult_price = price_list['AdultPrice'] / 5
+            adult_price = price_list['AdultPrice']
             chlid_price = price_list['ChildPrice']
             list1.append(adult_price)
             list1.append(chlid_price)
@@ -445,10 +450,12 @@ class CitripGrouptravelSpider(Spider):
             plans = []
             for hotel_id in hotel_id_list:
                 proxies = dict()
-                proxy_info = requests.get(
-                    "http://10.10.32.22:48200/?type=px001&qid=0&query={%22req%22:%20[{%22source%22:%20%22ctripFlight%22,%20%22num%22:%201,%20%22type%22:%20%22verify%22,%20%22ip_type%22:%20%22test%22}]}&ptid=test&uid=test&tid=tid&ccy=spider_test").content
-                proxy = json.loads(proxy_info)['resp'][0]['ips'][0]['inner_ip']
-                proxies['socks'] = "socks5://" + proxy.encode('utf-8')
+                # proxy_info = requests.get(
+                #     "http://10.10.32.22:48200/?type=px001&qid=0&query={%22req%22:%20[{%22source%22:%20%22ctripFlight%22,%20%22num%22:%201,%20%22type%22:%20%22verify%22,%20%22ip_type%22:%20%22test%22}]}&ptid=test&uid=test&tid=tid&ccy=spider_test").content
+                # proxy = json.loads(proxy_info)['resp'][0]['ips'][0]['inner_ip']
+                # proxies['socks'] = "socks5://" + proxy.encode('utf-8')
+                proxy_info = requests.get("http://10.10.239.46:8087/proxy?source=pricelineFlight&user=crawler&passwd=spidermiaoji2014").content
+                proxies['socks'] = "socks5://" + proxy_info.encode('utf-8')
                 data = {"HotelID": hotel_id,
                         "showComment": 1}
                 html = requests.post(url=url, data=data, headers=headers, proxies=proxies).content
@@ -503,12 +510,12 @@ class CitripGrouptravelSpider(Spider):
             day_dict['citys'] = [{'id': 'NULL', 'name': city_str}]
             desc_list = days.xpath(".//i[contains(@class, 'icon_ms icon_ms_other')]/../p/text()")
             desc_str = ""
-            if desc_list:
-                for desc in desc_list:
-                    desc_str += desc
-                day_dict['desc'] = desc_str
-            else:
-                day_dict['desc'] = desc_str
+            # if desc_list:
+            #     for desc in desc_list:
+            #         desc_str += desc
+            #     day_dict['desc'] = desc_str
+            # else:
+            day_dict['desc'] = desc_str
             detail_list = []
             detail_node = days.xpath("./div[@class='day_content']/ul/li")
             # 节点类型 0:其他 10:交通 11:飞机 20:景点 21:用餐 22:玩乐 23:自由活动 30:酒店
@@ -544,7 +551,16 @@ class CitripGrouptravelSpider(Spider):
                 name_list1 = detail_info.xpath(".//h6/a/text()")
                 name_list2 = detail_info.xpath(".//h6/text()")
                 name_str = ""
-                if name_list1:
+                name_str2 = ""
+                if name_list1 and name_list2:
+                    for name in name_list1:
+                        name_str += name + " "
+                    for name2 in name_list2:
+                        name2 = name2.replace("\n", "").replace("\t", "").replace("\r", "").replace(" ", "")
+                        if name2 != "":
+                            name_str2 += name2
+                    detail_dict['name'] = name_str + name_str2
+                elif name_list1:
                     # detail_dict['name'] = name_list[0]
                     for name in name_list1:
                         name_str += name + " "
@@ -559,18 +575,33 @@ class CitripGrouptravelSpider(Spider):
                     detail_dict['name'] = name_str
                 li_desc1 = detail_info.xpath("./div[@class='day_detail']/div/p/text()")
                 li_desc2 = detail_info.xpath("./div[@class='day_detail']//*/text()")
-                if li_desc1:
+                li_desc3 = detail_info.xpath("./div[@class='day_detail']/p[2]/text()")
+                if li_desc1 and li_desc3:
                     li_str = ""
                     for li in li_desc1:
-                        li_str += li + " "
+                        li_str += li + "<br/>"
+                    li_str.replace("\n", "").replace("\t", "").replace("\r", "").replace(" ", "")
+                    for li2 in li_desc3:
+                        li_str += li2.replace("\n", "").replace("\t", "").replace("\r", "").replace(" ", "") + "<br/>"
+                    detail_dict['desc'] = li_str
+                elif li_desc1:
+                    li_str = ""
+                    for li in li_desc1:
+                        li_str += li + "<br/>"
                     li_str.replace("\n", "").replace("\t", "").replace("\r", "").replace(" ", "")
                     detail_dict['desc'] = li_str
-                else:
+                elif li_desc2:
                     li_str = ""
                     for li in li_desc2:
                         li_str += li
                     li_str.replace("\n", "").replace("\t", "").replace("\r", "").replace(" ", "")
                     detail_dict['desc'] = li_str
+                elif li_desc3:
+                    li3_str = ""
+                    for li3 in li_desc3:
+                        li3_str += li3 + "<br/>"
+                    li3_str.replace("\n", "").replace("\t", "").replace("\r", "").replace(" ", "")
+                    detail_dict['desc'] = li3_str
                 # else:
                 #     detail_dict['desc'] = ""
                 img_list = detail_info.xpath("./div[@class='day_detail']/div/div/a/img/@_src")
@@ -600,6 +631,7 @@ class CitripGrouptravelSpider(Spider):
             ctrip_vacation = CtripGrouptravel()
             ctrip_vacation.sid = ""
             ctrip_vacation.name = self.name
+            ctrip_vacation.sell_date_late = self.price_list[-1].keys()[0]
             ctrip_vacation.first_image = self.task.ticket_info['vacation_info']['first_image']
             ctrip_vacation.star_level = self.star
             ctrip_vacation.rec = self.rec
@@ -640,7 +672,7 @@ class CitripGrouptravelSpider(Spider):
             ctrip_vacation.ctime = int(time.time())
             ctrip_vacation.highlight = self.task.ticket_info['vacation_info']['highlight']
             ctrip_vacation.pid_3rd = str(self.task.ticket_info['vacation_info']['pid_3rd'])
-            ctrip_vacation.pid = "gty" + datetime.datetime.now().strftime('%Y-%m-%d') + '%s' % time.time()
+            ctrip_vacation.pid = self.pid
             ctrip_vacation.ccy = "CNY"
             ctrip_vacation.dest = [{"id": self.task.ticket_info['vacation_info']['dest_id'],
                                     "name": self.task.ticket_info['vacation_info']['search_dest_city'],
@@ -741,11 +773,11 @@ if __name__ == '__main__':
     #   print json.dumps(spider.result, ensure_ascii=False)
     task = Task()
     task.ticket_info['vacation_info'] = {
-        "pid_3rd": "5681231",
+        "pid_3rd": "15714215",
         "dept_id": "1",
         "search_dept_city": "北京",
         "dest_id": "",
-        "search_dest_city": "奥地利",
+        "search_dest_city": "巴黎",
         "dept_city": "北京",
         "highlight": [
                 "春季旅游节",
@@ -754,7 +786,7 @@ if __name__ == '__main__':
                 "独栋别墅"
             ],
         "first_image": "列表页传入",
-        "url": "http://vacations.ctrip.com/grouptravel/p5681231s1.html",
+        "url": "http://vacations.ctrip.com/grouptravel/p15714215s1.html",
         "supplier": "列表页传入",
         "brand": "列表页出传入"
     }

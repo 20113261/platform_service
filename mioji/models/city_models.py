@@ -45,7 +45,6 @@ def __suggest_dict(source):
             sug_dic = {'id': sug[0], 'mcity_id': sug[1], 'suggest': json.loads(sug[3])[int(sug[4]) - 1],'is_new_type':sug[8]}
             s[sug[1]] = sug_dic
         except Exception as e:
-            print type(sug), sug
             sug_dic = {'id': sug[0], 'mcity_id': sug[1], 'suggest': json.loads(sug[3].decode('string_escape'))[int(sug[4]) - 1],'is_new_type':sug[8]}
             s[sug[1]] = sug_dic
 
