@@ -92,7 +92,7 @@ def hotel_img_merge_task(self, task, **kwargs):
 #
 
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='20/s')
 def hotel_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
@@ -291,13 +291,27 @@ def result_daodao_filter(self, task, **kwargs):
     _sdk = ConversionDaodaoURL(task=task)
     return _sdk.execute()
 
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='30/s')
+def result_youzhan_filter(self, task, **kwargs):
+    _sdk = ConversionYouzhanURL(task=task)
+    return _sdk.execute()
+
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='1/m')
 def hilton_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
 
-@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/s')
 def bestwest_suggest_map_task(self, task, **kwargs):
     _sdk = BestwestSuggestMapSDK(task=task)
     return _sdk.execute()
 
+@app.task(bind=True,base=BaseTask,max_retires=3,rate_limit='3/s')
+def youzhan_hotel_url(self,task,**kwargs):
+    _sdk = YouZhanSDK(task=task)
+    return _sdk.execute()
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
+def bestwest_list_task(self, task, **kwargs):
+    _sdk = HotelListSDK(task=task)
+    return _sdk.execute()

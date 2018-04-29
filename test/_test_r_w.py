@@ -19,9 +19,9 @@ def hilton_recover():
 
 
 if __name__ == '__main__':
-    client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
-    db = client['MongoTask_Zxp']
-    collections = db['Task_Queue_hotel_detail_TaskName_detail_hotel_hilton_20180420a']
+    # client = pymongo.MongoClient('mongodb://root:miaoji1109-=@10.19.2.103:27017/')
+    # db = client['MongoTask_Zxp']
+    # collections = db['Task_Queue_hotel_detail_TaskName_detail_hotel_hilton_20180420a']
 
     # client_from = pymongo.MongoClient(host='10.10.231.105')
     # db_from = client_from['MongoTask']
