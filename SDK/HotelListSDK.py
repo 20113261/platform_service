@@ -22,6 +22,7 @@ import pymongo
 import datetime
 import mioji.common
 import pymongo.errors
+import json
 from proj.my_lib.logger import func_time_logger
 from proj.list_config import cache_config, list_cache_path, cache_type, none_cache_config
 from proj.my_lib.Common.BaseSDK import BaseSDK
@@ -29,6 +30,7 @@ from proj.my_lib.ServiceStandardError import ServiceStandardError
 from proj import config
 from mongo_pool import mongo_data_client
 from proj.my_lib.Common.Browser import proxy_pool
+from zxp_utils import get_zxp_proxy
 
 mioji.common.pool.pool.set_size(2024)
 logger = get_task_logger('hotel_list')
@@ -46,8 +48,10 @@ filter_collections = client['data_result']['hotel_filter']
 # 初始化工作 （程序启动时执行一次即可）
 insert_db = None
 # get_proxy = simple_get_socks_proxy
-get_proxy = proxy_pool.get_proxy
-debug = False
+# get_proxy = proxy_pool.get_proxy
+get_proxy = None
+
+debug = True
 spider_factory.config_spider(insert_db, get_proxy, debug, need_flip_limit=False)
 client = pymongo.MongoClient(host=config.MONGO_DATA_HOST)
 
@@ -106,6 +110,8 @@ def hotel_list_database(tid, used_times, source, city_id, check_in, is_new_type=
     else:
         old_spider_tag = source + 'ListHotel'
         required = ['hotel']
+    # mioji.common.spider.slave_get_proxy = get_zxp_proxy
+    # mioji.common.spider.get_proxy = get_zxp_proxy()
     spider = factory.get_spider_by_old_source(old_spider_tag)
     spider.task = task
     if need_cache:
