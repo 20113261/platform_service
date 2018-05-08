@@ -325,3 +325,4 @@ def holiday_list_task(self, task, **kwargs):
 def zxp_slow_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
+
