@@ -1,0 +1,412 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from mioji.common.utils import setdefaultencoding_utf8
+setdefaultencoding_utf8()
+import time
+import datetime
+import json
+import re
+from lxml import etree
+
+from mioji.common import logger
+from mioji.common import parser_except
+from mioji.common.class_common import Hotel
+from mioji.common.spider import Spider, request, PROXY_REQ, PROXY_NONE, PROXY_FLLOW
+
+
+class HyattHotelSpider(Spider):
+    source_type = 'hyattDetailHotel'
+
+    targets = {
+        'hotel': {},
+    }
+
+    old_spider_tag = {
+        'hyattDetailHotel': {'required': ['room']}
+    }
+
+    def __init__(self, task=None):
+        self.hotel_test = {}
+        super(HyattHotelSpider, self).__init__(task)
+        self.url_newUrl = {
+            'https://abudhabi.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/united-arab-emirates/park-hyatt-abu-dhabi-hotel-and-villas/abuph',
+            'https://beavercreek.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/colorado/park-hyatt-beaver-creek-resort-and-spa/beave',
+            'https://bangkok.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/thailand/park-hyatt-bangkok/bkkph',
+            'https://buenosaires.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/argentina/palacio-duhau-park-hyatt-buenos-aires/bueph',
+            'https://canberra.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/australia/hyatt-hotel-canberra-a-park-hyatt-hotel/canbe',
+            'https://chennai.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/india/park-hyatt-chennai/cheph',
+            'https://chicago.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/illinois/park-hyatt-chicago/chiph',
+            'https://playadelcarmen.grand.hyatt.com/en/hotel/home.html': 'https://playadelcarmen.grand.hyatt.com/en/hotel/home.html',
+            'https://dubai.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/united-arab-emirates/park-hyatt-dubai/dxbph',
+            # 'https://macae.place.hyatt.com/en/hotel/home.html': 'https://macae.place.hyatt.com/en/hotel/home.html',
+            'https://goa.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/india/park-hyatt-goa-resort-and-spa/goarg',
+            'https://hamburg.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/germany/park-hyatt-hamburg/hamph',
+            'https://hyderabad.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/india/park-hyatt-hyderabad/hydph',
+            'https://istanbul.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/turkey/park-hyatt-istanbul-macka-palas/istph',
+            'https://jeddah.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/saudi-arabia/park-hyatt-jeddah-marina-club-and-spa/jedph',
+            'https://mallorca.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/spain/park-hyatt-mallorca/malph',
+            'https://mendoza.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/argentina/park-hyatt-mendoza-hotel-casino-and-spa/menph',
+            'https://milan.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/italy/park-hyatt-milan/milph',
+            'https://maldiveshadahaa.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/maldives/park-hyatt-maldives-hadahaa/mldph',
+            'https://moscow.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/russia/ararat-park-hyatt-moscow/mosph',
+            'https://newyork.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/new-york/park-hyatt-new-york/nycph',
+            'https://parisvendome.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/france/park-hyatt-paris-vendome/parph',
+            'https://siemreap.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/cambodia/park-hyatt-siem-reap/repph',
+            'https://saigon.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/vietnam/park-hyatt-saigon/saiph',
+            'https://shanghai.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/china/park-hyatt-shanghai/shaph',
+            'https://stkitts.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/saint-kitts-and-nevis/park-hyatt-st-kitts/skbph',
+            'https://sydney.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/australia/park-hyatt-sydney/sydph',
+            'https://toronto.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/canada/park-hyatt-toronto/torph',
+            'https://vienna.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/austria/park-hyatt-vienna/vieph',
+            'https://washingtondc.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/washington-dc/park-hyatt-washington-dc/wasph',
+            'https://zanzibar.park.hyatt.com/en/hotel/home.html': 'https://www.hyatt.com/en-US/hotel/tanzania/park-hyatt-zanzibar/znzph',
+            'https://zurich.park.hyatt.com/en/hotel/home.html':'https://www.hyatt.com/en-US/hotel/switzerland/park-hyatt-zurich/zurph',
+
+        }
+
+    def targets_request(self):
+        self.url_en = self.task.content
+        self.url = self.url_en.split('/en')[0]
+        self.url_cn = self.url_en.replace('/en/hotel/', '/zh-Hans/hotel/abridged/')
+        self.url_cn_2 = self.url_en.replace('/en-US/', '/zh-CN/')
+
+        self.url_en = self.url_newUrl.get(self.url_en, self.url_en)
+        if 'www.hyatt.com' in self.url_en:
+            # 酒店首页1
+            @request(retry_count=3, proxy_type=PROXY_REQ)
+            def get_hotel_data():
+                return {
+                    'req': {
+                        'url': self.url_en,
+                        'method': 'get',
+                        'headers': {
+                            'ihg-language': 'zh-CN',
+                            'accept': 'application/json, text/plain, */*',
+                            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+                        },
+                    },
+                    'user_handler': [self.parse_www_com1],
+                }
+
+            @request(retry_count=3, proxy_type=PROXY_REQ,binding=self.parse_hotel)
+            def get_hotel_data_rooms():
+                return {
+                    'req': {
+                        'url': self.url_en+'/rooms',
+                        'method': 'get',
+                        'headers': {
+                            'ihg-language': 'zh-CN',
+                            'accept': 'application/json, text/plain, */*',
+                            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+                        },
+                    },
+                    'user_handler': [self.parse_www_com_rooms],
+                }
+
+
+            yield get_hotel_data
+            yield get_hotel_data_rooms
+
+        else:
+            #酒店首页1
+            @request(retry_count=3, proxy_type=PROXY_REQ)
+            def get_hotel_data():
+                return {
+                    'req': {
+                        'url': self.url_en,
+                        'method': 'get',
+                        'headers': {
+                            'ihg-language': 'zh-CN',
+                            'accept': 'application/json, text/plain, */*',
+                            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+                        },
+                    },
+                    'user_handler': [self.parse_hotel_key],
+                }
+            # 获取英文酒店页面
+            @request(retry_count=3, proxy_type=PROXY_REQ, binding=self.parse_hotel)
+            def get_English_data():
+                return {
+                    'req': {
+                        'url': self.url_en,
+                        'method': 'get',
+                        'headers': {
+                            'ihg-language': 'zh-CN',
+                            'accept': 'application/json, text/plain, */*',
+                            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+                        },
+                    },
+                    'user_handler': [self.parse_English_hotel],
+                }
+            # 获取评论条数和评分
+            @request(retry_count=3, proxy_type=PROXY_REQ)
+            def get_grade():
+                return {
+                    'req': {
+                        'url': self.url+'/bin/tripadvisorreviews?service=getAggregatedReviewRatingAndTotalReviews&locationKey='+self.locationKey,
+                        'method': 'get',
+                        'headers': {
+                            'ihg-language': 'zh-CN',
+                            'accept': 'application/json, text/plain, */*',
+                            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+                        },
+                    },
+                    # 'data': {'content_type': 'json'},
+                    'user_handler': [self.parse_hotel_grade_review_num],
+                }
+
+            # 获取入住退房时间
+            @request(retry_count=3, proxy_type=PROXY_REQ)
+            def get_time():
+                return {
+                    'req': {
+                        'url': self.url + '/en/hotel/our-hotel.html',
+                        'method': 'get',
+                        'headers': {
+                            'ihg-language': 'zh-CN',
+                            'accept': 'application/json, text/plain, */*',
+                            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+                        },
+                    },
+                    'user_handler': [self.parse_hotel_time],
+                }
+
+            # 获取服务页面
+
+            yield get_hotel_data
+            yield get_time
+            yield get_grade
+            yield get_English_data
+
+    def parse_hotel_key(self,req ,resp):
+        try:
+            self.locationKey = re.findall(r'locationKey="(.*?)"', resp, re.S)[0]
+        except:
+            self.locationKey = ''
+
+    def parse_hotel_time(self, req, resp):
+        data = etree.HTML(resp)
+        try:
+            self.hotel_test['check_in_time'] = data.xpath("//span[@class='checkinoutTime'][1]/text()")[0]
+            self.hotel_test['check_out_time'] = data.xpath("//span[@class='checkinoutTime'][2]/text()")[0]
+        except :
+            self.hotel_test['check_in_time'] = 'NUll'
+            self.hotel_test['check_out_time'] = 'NULL'
+
+    def parse_hotel_grade_review_num(self,req, resp):
+        try:
+            resp = json.loads(resp)
+            a = resp['totalReview']
+            b = resp['aggregatedReviewRating']
+            self.hotel_test['grade'] = b
+            self.hotel_test['review_num'] = a
+        except:
+            self.hotel_test['grade'] = 'NULL'
+            self.hotel_test['review_num'] = 'NULL'
+
+
+    def parse_English_hotel(self, req, resp):
+        data = etree.HTML(resp)
+        try :
+            self.hotel_test['hotel_name_en'] = data.xpath("//p[@class='homePropertyName']//text()")[0]
+        except:
+            raise parser_except.ParserException(22,'代理失效，重试')
+        self.hotel_test['source'] = 'hyatt'
+        self.hotel_test['brand_name'] = '凯悦'
+        self.hotel_test['source_id'] = re.findall(r"var spiritCode='(.*?)'", resp, re.S)[0].encode('utf8')
+
+        latitude = re.findall(r'"latitude" : "(.*?)"', resp, re.S)[0].encode('utf8')
+        longitude = re.findall(r'"latitude" : "(.*?)"', resp, re.S)[0].encode('utf8')
+        self.hotel_test['map_info'] = longitude + ',' + latitude
+        self.hotel_test['address'] = data.xpath("//p[@class='address']//text()")[0]
+        self.hotel_test['hotel_city'] = data.xpath("//p[@class='address'][2]/text()[1]")[0]
+        while r'\xa0' in self.hotel_test['hotel_city']:
+            self.hotel_test['hotel_city'].remove(r'\xa0')
+        self.hotel_test['hotel_country'] = data.xpath("//p[@class='address']/span[1]/text()")[0]
+        try :
+            self.hotel_test['hotel_postal_code'] = data.xpath("//p[@class='address']/span[2]/text()")[0]
+        except:
+            self.hotel_test['hotel_postal_code'] = 'NULL'
+        self.hotel_test['star'] = 5
+        self.hotel_test['grade'] = self.hotel_test['grade']
+        self.hotel_test['review_num'] = self.hotel_test['review_num']
+
+        wifi = data.xpath(
+            "//img[@src='/content/dam/PropertyWebsites/andaz/nycaw/Media/All/xBHSG_RightRail_Four_101216.png.pagespeed.ic.1FAby01L8_.png']")
+        if len(wifi):
+            self.hotel_test['has_wifi'] = 'YES'
+            self.hotel_test['is_wifi_free'] = 'YES'
+        else:
+            self.hotel_test['has_wifi'] = 'NULL'
+            self.hotel_test['is_wifi_free'] = 'NULL'
+
+        self.hotel_test['has_parking'] = 'NULL'
+        self.hotel_test['is_parking_free'] = 'NULL'
+        self.hotel_test['services'] = 'NULL'
+
+        imgs = data.xpath("//div[@class='carousel fullWidth floatL']//a/img/@src")[0]
+        url = self.url_en.split('/en')[0]
+        self.hotel_test['img_items'] = url + imgs
+
+
+
+        self.hotel_test['description'] = data.xpath("//div[@class='readMoreContent']//text()")
+
+        while '\n' in self.hotel_test['description']:
+            self.hotel_test['description'].remove('\n')
+        self.hotel_test['accepted_cards'] = 'NULL'
+        self.hotel_test['check_in_time'] = self.hotel_test['check_in_time']
+        self.hotel_test['check_out_time'] = self.hotel_test['check_out_time']
+        self.hotel_test['hotel_url'] = self.url_en
+
+
+    # 第二种页面
+    def parse_www_com1(self, req, resp):
+        data = etree.HTML(resp)
+        self.hotel_test['hotel_name_en'] = re.findall(r'hotel_name: "(.*?)"', resp, re.S)[0].encode('utf8')
+        try:
+            latitude = re.findall(r'"latitude": "(.*?)"', resp, re.S)[0].encode('utf8')
+            longitude = re.findall(r'"longitude": "(.*?)"', resp, re.S)[0].encode('utf8')
+        except:
+            latitude = re.findall(r'"latitude":"(.*?)"', resp, re.S)[0].encode('utf8')
+            longitude = re.findall(r'"longitude":"(.*?)"', resp, re.S)[0].encode('utf8')
+        self.hotel_test['map_info'] = str(longitude) + ',' + str(latitude)
+
+        try:
+            addressLine1 = re.findall(r'"addressLine1": "(.*?)"', resp, re.S)[0].encode('utf8')
+            addressLine2 = re.findall(r'"addressLine2": "(.*?)"', resp, re.S)[0].encode('utf8')
+            self.hotel_test['address'] = addressLine1 + addressLine2
+        except:
+            self.hotel_test['address'] = re.findall(r'"streetAddress":"(.*?)"',resp, re.S)[0].encode('utf-8')
+        try:
+            self.hotel_test['source_id'] = re.findall(r'name="spiritCode" value="(.*?)"', resp, re.S)[0].encode('utf8')
+        except:
+            self.hotel_test['source_id'] = re.findall(r'hotel_spirit_code: "(.*?)"', resp, re.S)[0].encode('utf8')
+        self.hotel_test['hotel_city'] = re.findall(r'hotel_city: "(.*?)"', resp, re.S)[0].encode('utf8')
+        self.hotel_test['hotel_country'] = re.findall(r'hotel_country: "(.*?)"', resp, re.S)[0].encode('utf8')
+        self.hotel_test['hotel_postal_code'] = re.findall(r'hotel_postal_code: "(.*?)"', resp, re.S)[0].encode('utf8')
+
+        try:
+            self.hotel_test['has_wifi'] = re.findall('Wi-F', resp ,re.S)[0].encode('utf8')
+            if self.hotel_test['has_wifi']:
+                self.hotel_test['has_wifi'] = 'YES'
+        except:
+            self.hotel_test['has_wifi'] = 'NULL'
+
+        try:
+            is_wifi_free = re.findall('Complimentary Wi-Fi', resp,re.S)[0].encode('utf8')
+            if is_wifi_free:
+                self.hotel_test['is_wifi_free'] = 'YES'
+        except:
+            self.hotel_test['is_wifi_free'] = 'NULL'
+
+        # a = data.xpath("//div[@class='cq-dd-fragment']/div/p/text()")[0]
+        # self.hotel_test['description'] = a
+        try:
+            self.hotel_test['description'] = re.findall('"description":"(.*?)"', resp, re.S)[0].encode('utf-8')
+        except:
+            self.hotel_test['description'] = 'NULL'
+        services = data.xpath("//div[@class='titled-list Business Services']//li/text()")
+        try:
+            for one in services:
+                ser = one+'|'
+            self.hotel_test['services'] = 'Business Services::'+ser
+        except:
+            self.hotel_test['services'] = 'NULL'
+        self.hotel_test['img_items'] = data.xpath("//div[@class='banner js-object-fit']//img/@src")[0]
+        self.hotel_test['accepted_cards'] = 'NULL'
+
+    def parse_www_com_rooms(self,req, resp):
+        data = etree.HTML(resp)
+        try:
+            self.hotel_test['check_in_time'] = data.xpath("//div[@class='check-in']//span[@class='time']/text()")[0]
+            self.hotel_test['check_out_time'] = data.xpath("//div[@class='check-out']//span[@class='time']/text()")[0]
+        except:
+            self.hotel_test['check_in_time'] = 'NULL'
+            self.hotel_test['check_out_time'] = 'NULL'
+
+    # 返回数据
+    def parse_hotel(self,req, resp):
+        hotels = []
+        hotel = Hotel()
+        hotel.hotel_name = 'NULL'
+        hotel.hotel_name_en = self.hotel_test['hotel_name_en']
+        hotel.source = 'hyatt'
+        hotel.source_id = self.hotel_test['source_id']
+        hotel.brand_name = 'NULL'
+        hotel.map_info = self.hotel_test['map_info']
+        hotel.address = self.hotel_test['address']
+        hotel.city = self.hotel_test['hotel_city']
+        hotel.country = self.hotel_test['hotel_country']
+        hotel.postal_code = self.hotel_test['hotel_postal_code']
+        hotel.star = 5
+        hotel.grade = 'NULL'
+        hotel.review_num = 'NULL'
+        hotel.has_wifi = self.hotel_test['has_wifi']
+        hotel.is_wifi_free = self.hotel_test['is_wifi_free']
+        hotel.has_parking = 'NULL'
+        hotel.is_parking_free = 'NULL'
+        hotel.service = self.hotel_test['services']
+        hotel.img_items = self.hotel_test['img_items']
+        hotel.description = ''.join(self.hotel_test['description'])
+
+        hotel.accepted_cards = 'NULL'
+        hotel.check_in_time = self.hotel_test['check_in_time']
+        hotel.check_out_time = self.hotel_test['check_out_time']
+        hotel.hotel_url = self.url_en
+
+        hotel_tuple = dict(
+            hotel_name=hotel.hotel_name,
+            hotel_name_en=hotel.hotel_name_en,
+            source=hotel.source,
+            source_id=hotel.source_id,
+            brand_name=hotel.brand_name,
+            map_info=hotel.map_info,
+            address=hotel.address,
+            city=hotel.city,
+            country=hotel.country,
+            postal_code=hotel.postal_code,
+            star=hotel.star,
+            grade=hotel.grade,
+            review_num=hotel.review_num,
+            has_wifi=hotel.has_wifi,
+            is_wifi_free=hotel.is_wifi_free,
+            has_parking=hotel.has_parking,
+            is_parking_free=hotel.is_parking_free,
+            service=hotel.service,
+            img_items=hotel.img_items,
+            description=hotel.description,
+            accepted_cards=hotel.accepted_cards,
+            check_in_time=hotel.check_in_time,
+            check_out_time=hotel.check_out_time,
+            hotel_url=hotel.hotel_url,
+        )
+        hotels.append(hotel_tuple)
+        return hotels
+
+
+
+if __name__ == "__main__":
+    from mioji.common.task_info import Task
+    from mioji.common.utils import simple_get_socks_proxy_new
+    from mioji.common import spider
+    #
+    spider.slave_get_proxy = simple_get_socks_proxy_new
+
+    task = Task()
+    task.ticket_info = {}
+    task.content = 'https://highlandsinn.hyatt.com/en/hotel/home.html'
+    # task.content = 'https://kochibolgatty.grand.hyatt.com/en/hotel/home.html'
+    # task.content = 'https://albuquerqueairport.place.hyatt.com/en/hotel/home.html'
+    task.content = 'https://newyork.park.hyatt.com/en/hotel/home.html'
+    # task.content = 'https://macae.place.hyatt.com/en/hotel/home.html'
+    # task.content = 'https://parisvendome.park.hyatt.com/en/hotel/home.html'
+    # task.content = 'https://saigon.park.hyatt.com/en/hotel/home.html'
+    # task.content = 'https://toronto.park.hyatt.com/en/hotel/home.html'
+    task.content = 'https://toronto.park.hyatt.com/en/hotel/home.html'
+
+    spider = HyattHotelSpider(task)
+    spider.crawl(required=['hotel'])
+    print spider.code
+    # print json.dumps(spider.result, ensure_ascii=False)
+    print spider.result

@@ -5,9 +5,9 @@ import re
 import json
 from mioji.common.spider import Spider, request, PROXY_REQ, PROXY_FLLOW
 # from mioji.common.class_common import Hotel_New
+# from mioji.common.class_common import Hotel_New
 from proj.my_lib.models.HotelModel import HotelNewBase as Hotel_New
 from mioji.common import parser_except
-# from proj.my_lib.models.HotelModel import HotelNewBase
 
 
 class ShangRiLaDetailSpider(Spider):
@@ -23,6 +23,7 @@ class ShangRiLaDetailSpider(Spider):
     def __init__(self, task=None):
         self.flag = False
         self.item = {}
+        self.hotel = Hotel_New()
         self.info_list = []
         super(ShangRiLaDetailSpider, self).__init__(task)
 
@@ -168,8 +169,9 @@ class ShangRiLaDetailSpider(Spider):
                     pass
                 else:
                     description_info += des
-            # print description_info
-
+            print description_info
+            description_info = re.sub(r'<.*?>', '', description_info)
+            print description_info
             self.item['description'] = description_info
             try:
                 hotel_phone = tree.xpath("//span[@id='ctl00_ContentPlaceHolder1_ltrPhone']/text()")[0]
@@ -263,11 +265,13 @@ class ShangRiLaDetailSpider(Spider):
                 if not accepted_card_info:
                     accepted_card_info = tree.xpath(
                         '//span[contains(@id, "ctl00_ContentPlaceHolder1_ltrPayment")]/text()')
-                if len(accepted_card_info) <= 1:
+                print accepted_card_info
+                accepted_card_info = [a for a in accepted_card_info if '酒店可接受以下信用卡付款' in a]
+                try:
                     accepted_card_infos = accepted_card_info[0].replace(':', '：')
                     accepted_cards = accepted_card_infos.split('：')[-1].replace('、', '|').replace('，', '|'). \
                         replace(u'及', "|").replace('。', '')
-                else:
+                except:
                     accepted_cards = accepted_card_info[-1].replace('、', '|').replace('，', '|'). \
                         replace(u'及', "|").replace('。', '')
             except:
@@ -283,6 +287,21 @@ class ShangRiLaDetailSpider(Spider):
 
         if 'about' in req_url:
             if 'service' in req_url:
+                try:
+                    # service_title = tree.xpath('//div[contains(@class, "contentdiv")]/div/strong')
+                    service_info = tree.xpath('//div[contains(@class, "contentdiv")]/div/ul')
+                except:
+                    raise parser_except.ParserException(22, 'error')
+                service_list = []
+                for infos in service_info:
+                    # title = titles.xpath('./text()')[0]
+                    # print title
+                    # if title:
+                    service_lists = infos.xpath('./li/text()')
+                    # service = '{}'.format(title, info)
+                    service_list.extend(service_lists)
+                print service_list
+                self.item['service1'] = '|'.join(service_list)
 
                 hotel2 = Hotel_New()
 
@@ -320,16 +339,18 @@ class ShangRiLaDetailSpider(Spider):
                         for keys,fac_value in facilities_dict.items():
                             if fac_value in service:
                                 service = self.clean_data(service)
-                                if keys in hotel2.facility:
-                                    hotel2.facility[keys] = hotel2.facility[keys] + ',' + service
+                                if keys in hotel2.facility_content:
+                                    hotel2.facility_content[keys] = hotel2.facility_content[keys] + ',' + service
                                 else:
-                                    hotel2.facility[keys] = service
+                                    hotel2.facility_content[keys] = service
                         for sev_value in service_dict.values():
                             if sev_value in service:
                                 service = self.clean_data(service)
-                                hotel2.service[reverse_sevice_dict[sev_value]] = service
-                    self.item['service'] = hotel2.service
-                    self.item['facility'] = hotel2.facility
+                                hotel2.service_content[reverse_sevice_dict[sev_value]] = service
+                    self.item['service'] = hotel2.service_content
+                    self.item['facility'] = hotel2.facility_content
+
+
                 except Exception as e:
                     self.item['service'] = "NULL"
                     self.item['facility'] = "NULL"
@@ -346,11 +367,24 @@ class ShangRiLaDetailSpider(Spider):
                 self.item['traffic'] = "NULL"
                 traffic_str_all = ""
                 index = 1
+                traffic_info_1 = ''.join(tree.xpath('//div[@class="control2_1column"]/p/span/text()|//div[@class="control2_1column"]/p/text()'))
+
+                traffic_info_2 = ''.join(tree.xpath('//div[@class="control2_1column"]/div[@id="ctl00_ContentPlaceHolder1_pnlAirportConnection"]/p/span/text()'
+                                                    '|//div[@class="control2_1column"]/div[@id="ctl00_ContentPlaceHolder1_pnlAirportConnection"]/p/text()'))
+
                 for tra_str in map_list:
                     # if tra_str == "公共交通":
-                    traffic_str_l = tree.xpath("//div[@class='control2_1column']/div[@class='map-list'][{}]/div/p/text()".format(index))
-                    traffic_str = " ".join(traffic_str_l).strip().replace(" ", "")
-                    traffic_str_all += tra_str + ":" + traffic_str
+                    traffic_str_l = tree.xpath("//div[@class='control2_1column']/div[@class='map-list'][{}]/div/p/text()"
+                                               "|//div[@class='control2_1column']/div[@class='map-list'][{}]/div/p/span/text()|"
+                                               "//div[@class='control2_1column']/div[@class='map-list'][{}]/div/p/u/text()|"
+                                               "//div[@class='control2_1column']/div[@class='map-list'][{}]/div/p/span/u/text()".format(index, index,index, index))
+                    try:
+                        ol_trafiic = ''.join(tree.xpath("//div[@class='control2_1column']/div[@class='map-list'][{}]/div/ol/li/text()|"
+                                            "//div[@class='control2_1column']/div[@class='map-list'][{}]/div/ol/li/span/text()".format(index, index)))
+                    except:
+                        ol_trafiic = ''
+                    traffic_str = " ".join(traffic_str_l).strip().replace(" ", "").replace('\r', '').replace('\n', '')
+                    traffic_str_all += tra_str + ":" + traffic_str + ol_trafiic
                     # if tra_str == "机场交通":
                     #     traffic_str_l = tree.xpath("//div[@class='control2_1column']/div[@class='map-list'][{}]/div/p/text()".format(index))
                     #     traffic_str = " ".join(traffic_str_l).strip().replace(" ", "")
@@ -371,8 +405,10 @@ class ShangRiLaDetailSpider(Spider):
                     #     traffic_str_l = tree.xpath("//div[@class='control2_1column']/div[@class='map-list'][{}]/div/p/text()".format(index))
                     #     traffic_str = " ".join(traffic_str_l).strip().replace(" ", "").replace('\r', '').replace('\n', '')
                     #     traffic_str_all += tra_str + ":" + traffic_str
-                    self.item['traffic'] = traffic_str_all
+
                     index += 1
+                self.item['traffic'] = traffic_info_1 + traffic_info_2 + traffic_str_all
+                print self.item['traffic']
                 return
 
         elif 'reviews' in req_url:
@@ -421,7 +457,7 @@ class ShangRiLaDetailSpider(Spider):
                 self.hotel.review_num = ''
 
         elif 'HotelPhotoVideoJson' in req_url or 'getphotosvideos' in req_url:
-            self.hotel = Hotel_New()
+
             self.hotel.hotel_name = self.hotel_name
             self.hotel.hotel_name_en = self.item['hotel_name_en']
             self.hotel.source = self.item['source']
@@ -437,7 +473,7 @@ class ShangRiLaDetailSpider(Spider):
             self.hotel.postal_code = self.item['postal_code']
             self.hotel.star = self.item['star']
             self.hotel.facility = self.item['facility']
-            self.hotel.service = self.item['service']
+            self.hotel.service = self.item['service1']
             self.hotel.description = self.item['description']
             self.hotel.accepted_cards = self.item['accepted_cards']
             self.hotel.check_in_time = self.item['check_in_time']
@@ -445,6 +481,8 @@ class ShangRiLaDetailSpider(Spider):
             self.hotel.hotel_url = self.url_index
             self.hotel.hotel_phone = self.item['hotel_phone']
             self.hotel.traffic = self.item['traffic']
+            self.hotel.others_info = json.dumps({'hotel_services_info': self.item['service1']})
+            print self.item['service1'], '--------------'
             if 'getphotosvideos' in req_url:
                 self.img_list = '|'.join(
                     ["https://www.hoteljen.com{}".format(img['image']) for img in resp if img['image']])
@@ -461,40 +499,59 @@ class ShangRiLaDetailSpider(Spider):
                 self.hotel.Img_first = self.img_first
 
             res = self.hotel.to_dict()
-
-            res = json.loads(res)
-            return res
+            return [res.__dict__]
 
 
 if __name__ == '__main__':
     from mioji.common.task_info import Task
     from mioji.common import spider
     from mioji.common.utils import simple_get_socks_proxy_new
-    spider.slave_get_proxy = simple_get_socks_proxy_new
+    # spider.slave_get_proxy = simple_get_socks_proxy_new
+    from openpyxl import Workbook
+    wb = Workbook()
+    ws = wb.active
 
     task = Task()
     spider = ShangRiLaDetailSpider()
     spider.task = task
 
-    task.content = 'http://www.shangri-la.com/cn/jinan/shangrila/&济南香格里拉大酒店&SLJI&中国大陆&'
+    # task.content = 'http://www.shangri-la.com/cn/jinan/shangrila/&济南香格里拉大酒店&SLJI&中国大陆&'
 
-    spider.crawl()
-    print spider.code
-    res = json.dumps(spider.result, ensure_ascii=False)
+    content = [
+        # 'http://www.shangri-la.com/cn/manila/edsashangrila/&\xe9\xa9\xac\xe5\xb0\xbc\xe6\x8b\x89\xe8\x89\xbe\xe8\x8e\x8e\xe9\xa6\x99\xe6\xa0\xbc\xe9\x87\x8c\xe6\x8b\x89\xe5\xa4\xa7\xe9\x85\x92\xe5\xba\x97&ESL&\xe8\x8f\xb2\xe5\xbe\x8b\xe5\xae\xbe&',
+        # 'http://www.shangri-la.com/cn/cebu/mactanresort/&\xe9\xa6\x99\xe6\xa0\xbc\xe9\x87\x8c\xe6\x8b\x89\xe9\xba\xa6\xe4\xb8\xb9\xe5\xb2\x9b\xe5\xba\xa6\xe5\x81\x87\xe9\x85\x92\xe5\xba\x97&MAC&\xe8\x8f\xb2\xe5\xbe\x8b\xe5\xae\xbe&',
+        # 'http://www.shangri-la.com/cn/colombo/shangrila/&\xe7\xa7\x91\xe4\xbc\xa6\xe5\x9d\xa1\xe9\xa6\x99\xe6\xa0\xbc\xe9\x87\x8c\xe6\x8b\x89\xe5\xa4\xa7\xe9\x85\x92\xe5\xba\x97&SLCB&\xe6\x96\xaf\xe9\x87\x8c\xe5\x85\xb0\xe5\x8d\xa1&',
+        # 'http://www.shangri-la.com/cn/dubai/shangrila/&\xe8\xbf\xaa\xe6\x8b\x9c\xe9\xa6\x99\xe6\xa0\xbc\xe9\x87\x8c\xe6\x8b\x89\xe5\xa4\xa7\xe9\x85\x92\xe5\xba\x97&SLDB&\xe9\x98\xbf\xe6\x8b\x89\xe4\xbc\xaf\xe8\x81\x94\xe5\x90\x88\xe9\x85\x8b\xe9\x95\xbf\xe5\x9b\xbd&',
+        # 'http://www.shangri-la.com/cn/hambantota/shangrila&\xe6\x96\xaf\xe9\x87\x8c\xe5\x85\xb0\xe5\x8d\xa1\xe9\xa6\x99\xe6\xa0\xbc\xe9\x87\x8c\xe6\x8b\x89\xe6\xb1\x89\xe7\x8f\xad\xe6\x89\x98\xe5\xa1\x94\xe9\xab\x98\xe5\xb0\x94\xe5\xa4\xab\xe5\xba\xa6\xe5\x81\x87\xe9\x85\x92\xe5\xba\x97&SLHT&\xe6\x96\xaf\xe9\x87\x8c\xe5\x85\xb0\xe5\x8d\xa1&',
+        # 'http://www.shangri-la.com/cn/paris/shangrila/&\xe5\xb7\xb4\xe9\xbb\x8e\xe9\xa6\x99\xe6\xa0\xbc\xe9\x87\x8c\xe6\x8b\x89\xe5\xa4\xa7\xe9\x85\x92\xe5\xba\x97&SLPR&\xe6\xb3\x95\xe5\x9b\xbd&',
+        'http://www.shangri-la.com/cn/tokyo/shangrila/&\xe4\xb8\x9c\xe4\xba\xac\xe9\xa6\x99\xe6\xa0\xbc\xe9\x87\x8c\xe6\x8b\x89\xe5\xa4\xa7\xe9\x85\x92\xe5\xba\x97&SLTY&\xe6\x97\xa5\xe6\x9c\xac&',
+        # 'http://www.shangri-la.com/cn/kualalumpur/shangrila/&\xe5\x90\x89\xe9\x9a\x86\xe5\x9d\xa1\xe9\xa6\x99\xe6\xa0\xbc\xe9\x87\x8c\xe6\x8b\x89\xe5\xa4\xa7\xe9\x85\x92\xe5\xba\x97&SLKL&\xe9\xa9\xac\xe6\x9d\xa5\xe8\xa5\xbf\xe4\xba\x9a&',
+        # 'http://www.shangri-la.com/cn/cairns/shangrila/&\xe5\x87\xaf\xe6\x81\xa9\xe6\x96\xaf\xe9\xa6\x99\xe6\xa0\xbc\xe9\x87\x8c\xe6\x8b\x89\xe5\xa4\xa7\xe9\x85\x92\xe5\xba\x97&SLMC&\xe6\xbe\xb3\xe5\xa4\xa7\xe5\x88\xa9\xe4\xba\x9a&',
+        # 'http://www.shangri-la.com/cn/singapore/shangrila/&\xe6\x96\xb0\xe5\x8a\xa0\xe5\x9d\xa1\xe9\xa6\x99\xe6\xa0\xbc\xe9\x87\x8c\xe6\x8b\x89\xe5\xa4\xa7\xe9\x85\x92\xe5\xba\x97&SLS&\xe6\x96\xb0\xe5\x8a\xa0\xe5\x9d\xa1&'
+        ]
+    import csv
+    for c in content:
+        print c
+        task.content = c
+        spider.crawl()
+        print spider.code
+        print spider.result
 
-    print res
 
-
-    # v_list = []
-    # k_list = []
-    # for k, v in res.items():
-    #     pass
-
-
-        # dateframe = pd.
-    # import codecs
-    # f = codecs.open('a.csv', 'a+', encoding='utf-8')
-    # for k, v in res.items():
-    #     f.write(str(v))
-    #     f.write(',')
-    # f.close()
+        # # 文件头，一般就是数据名
+        # # fileHeader = ["name", "score"]
+        # # 假设我们要写入的是以下两行数据
+        # fileHeader = spider.result['hotel'][0]
+        # s = [s for s in fileHeader.keys()]
+        # l = [f for f in fileHeader.values()]
+        # # 写入数据
+        # csvFile = open("/Users/mioji/Desktop/shangrila2.csv", "w")
+        #
+        # writer = csv.writer(csvFile)
+        # # 写入的内容都是以列表的形式传入函数
+        # print l
+        # l[16] = json.loads(l[16])['hotel_services_info']
+        # writer.writerow(s)
+        # writer.writerow(l)
+        #
+        # csvFile.close()

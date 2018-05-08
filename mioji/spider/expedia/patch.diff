@@ -1,0 +1,274 @@
+From d0cb5391288ad282452afae4f8af93a7f9f27626 Mon Sep 17 00:00:00 2001
+From: nmghr9 <nmghr9@gmail.com>
+Date: Tue, 19 Dec 2017 00:43:30 +0800
+Subject: [PATCH] !!!!!!! don't use your own requests in the project
+
+---
+ hotel_list_spider.py | 176 +++++++++++++++++++++++++++++++--------------------
+ 1 file changed, 108 insertions(+), 68 deletions(-)
+
+diff --git a/hotel_list_spider.py b/hotel_list_spider.py
+index 3dcddbc..e6d20e8 100644
+--- a/hotel_list_spider.py
++++ b/hotel_list_spider.py
+@@ -14,6 +14,7 @@ import sys
+ sys.path.append("/Users/miojilx/Spider/src")
+ from mioji.common.utils import setdefaultencoding_utf8
+ import requests
++
+ setdefaultencoding_utf8()
+ import json
+ from mioji.common.task_info import creat_hotelParams
+@@ -26,6 +27,7 @@ import datetime
+ from datetime import timedelta
+ from urllib import urlencode
+ from urlparse import urljoin
++
+ DATE_F = '%Y/%m/%d'
+ URL0 = 'https://www.expedia.com.hk/Hotel-Search?&langid=2052'
+ URL1 = 'https://www.expedia.com.hk/Hotel-Search-Data?responsive=true'
+@@ -37,6 +39,34 @@ hd = {
+     # 'Content-Length': 0,
+ }
+ 
++model_json = {
++    "site": {
++        "id": 18,
++        "tpid": 18,
++        "eapid": 0,
++        "brandName": "EXPEDIA",
++        "companyCode": 10124,
++        "defaultDomain": "www.expedia.com.hk",
++        "langId": 2052,
++        "locale": "zh_CN",
++        "resolvedCurrency": "HKD"
++    },
++    "user": {
++        "guid": "cf20f4e6-25d7-4183-99d0-954735abcb77",
++        "tuid": -1,
++        "expUserId": -1,
++        "userStatus": "ANONYMOUS",
++        "hasGroups": False,
++        "arranged": False,
++        "agent": False,
++        "sua": False
++    },
++    "abTests": [],
++    "coBrandedData": {
++        "htmlDom": "<div><h1>Dummy HTML template</h1></div>"
++    }
++}
++
+ 
+ def crate_params(ci, start_date, end_date, city_id, person_num, hashParam, ins):
+     params = {
+@@ -53,6 +83,7 @@ def crate_params(ci, start_date, end_date, city_id, person_num, hashParam, ins):
+ 
+     return params
+ 
++
+ class ExpediaListSpider(Spider):
+     source_type = 'expediaListHotel'
+     # 基础数据城市酒店列表 & 例行城市酒店
+@@ -84,8 +115,11 @@ class ExpediaListSpider(Spider):
+                     destination = re.search(r'destination=(.*?)(?=&)', url).group(1)
+                     self.user_datas['mjcity_id'] = destination
+                     self.user_datas['city_id'] = ''
+-                    json_str = requests.get(json_url).content
+-                    json_params = json.loads(json_str).get('site')
++                    try:
++                        json_str = requests.get(json_url).content
++                        json_params = json.loads(json_str).get('site')
++                    except Exception:
++                        json_params = model_json
+ 
+                 else:
+                     if re.match(r'.+regionId=(\d+)', url):
+@@ -106,7 +140,7 @@ class ExpediaListSpider(Spider):
+                 mjcity_id = self.task.content.split('&')[0]  # 获取城市ID
+                 task_p = creat_hotelParams(self.task.content)  # 酒店的初始信息
+                 self.user_datas['mjcity_id'] = mjcity_id
+-                suggest_city = get_suggest_city('expedia',mjcity_id)
++                suggest_city = get_suggest_city('expedia', mjcity_id)
+                 is_new_type = suggest_city.get('is_new_type')
+                 self_p = suggest_city.get('suggest')  # 初始这个城市的酒店和房间的详细信息
+             except Exception, e:
+@@ -118,13 +152,16 @@ class ExpediaListSpider(Spider):
+                 self.user_datas['city_id'] = city_id
+             else:
+                 url = self_p.get('url')
+-                print "url:",url
++                print "url:", url
+                 if 'regionId' not in url:
+-                    destination = re.search(r'destination=(.*?)(?=&)',url).group(1)
++                    destination = re.search(r'destination=(.*?)(?=&)', url).group(1)
+                     self.user_datas['mjcity_id'] = destination
+                     self.user_datas['city_id'] = ''
+-                    json_str = requests.get(json_url).content
+-                    json_params = json.loads(json_str).get('site')
++                    try:
++                        json_str = requests.get(json_url).content
++                        json_params = json.loads(json_str).get('site')
++                    except Exception:
++                        json_params = model_json
+                 else:
+                     if re.match(r'.+regionId=(\d+)', url):
+                         self.user_datas['city_id'] = re.search(r'regionId=(\d+)', url).group(1)
+@@ -164,13 +201,13 @@ class ExpediaListSpider(Spider):
+                 del params['regionId']
+                 del params['destination']
+                 params_str = urlencode(params)
+-                params_str = ''.join([params_str,'&','destination','=',destination])
+-                req_url = ''.join([URL1,'&',params_str])
++                params_str = ''.join([params_str, '&', 'destination', '=', destination])
++                req_url = ''.join([URL1, '&', params_str])
+                 return {'req': {'url': req_url, 'data': '', "method": "POST", 'headers': hd, },
+                         'data': {'content_type': 'json'},
+                         'user_handler': [self.parse_first_page]}
+ 
+-            return {'req': {'url': URL1, 'data': params, "method": "POST",'headers': hd,},
++            return {'req': {'url': URL1, 'data': params, "method": "POST", 'headers': hd, },
+                     'data': {'content_type': 'json'},
+                     'user_handler': [self.parse_first_page]}
+ 
+@@ -184,7 +221,7 @@ class ExpediaListSpider(Spider):
+             for i in xrange(2, page_size):
+                 param = crate_params(self.user_datas['mjcity_id'], start_date, end_date, city_id,
+                                      self.user_datas['adult'],
+-                                     '', i,)
++                                     '', i, )
+                 if not param.get('regionId'):
+                     param.update(
+                         {
+@@ -419,67 +456,70 @@ if __name__ == '__main__':
+     #     'stay_nights': '2',
+     #     'occ': '2'
+     # }
+-    task.content = '13384&2&1&20180121'
+-    task.content = '21275&2&1&20180121'
+-    task.content = '51417&2&1&20180121'
+-    task.content = '51376&2&1&20180304'
+-    task.content = '51431&2&1&20180304'
+-    task.content = '21269&2&1&20180304'
+-    task.content = '13127&2&1&20180304'
+-    suggest = json.dumps({'@type': 'gaiaRegionResult',
+- 'coordinates': {'lat': '48.862720', 'long': '2.343750'},
+- 'essId': {'sourceId': '179898', 'sourceName': 'GAI'},
+- 'gaiaId': '179898',
+- 'hierarchyInfo': {'airport': {'airportCode': 'PAR',
+-   'metrocode': 'PAR',
+-   'multicity': '179898'},
+-  'country': {'isoCode2': 'FR',
+-   'isoCode3': 'FRA',
+-   'name': '\xe6\xb3\x95\xe5\x9b\xbd'}},
+- 'hotelCountPerRegion': '3065',
+- 'index': '0',
+- 'packageable': 'false',
+- 'popularity': '1066.0',
+- 'regionGrades': {'globalGrade': '0'},
+- 'regionMetadata': {'hotelCount': '3065'},
+- 'regionNames': {'displayName': '<B>\xe5\xb7\xb4\xe9\xbb\x8e</B>\xef\xbc\x88\xe5\x8f\x8a\xe5\x91\xa8\xe8\xbe\xb9\xe5\x9c\xb0\xe5\x8c\xba\xef\xbc\x89',
+-  'fullName': '\xe5\xb7\xb4\xe9\xbb\x8e\xef\xbc\x88\xe5\x8f\x8a\xe5\x91\xa8\xe8\xbe\xb9\xe5\x9c\xb0\xe5\x8c\xba\xef\xbc\x89',
+-  'lastSearchName': '\xe5\xb7\xb4\xe9\xbb\x8e\xef\xbc\x88\xe5\x8f\x8a\xe5\x91\xa8\xe8\xbe\xb9\xe5\x9c\xb0\xe5\x8c\xba\xef\xbc\x89',
+-  'shortName': '\xe5\xb7\xb4\xe9\xbb\x8e\xef\xbc\x88\xe5\x8f\x8a\xe5\x91\xa8\xe8\xbe\xb9\xe5\x9c\xb0\xe5\x8c\xba\xef\xbc\x89'},
+- 'score': '1.0',
+- 'type': 'MULTICITY'}
+-)
++    #     task.content = '13384&2&1&20180121'
++    #     task.content = '21275&2&1&20180121'
++    #     task.content = '51417&2&1&20180121'
++    #     task.content = '51376&2&1&20180304'
++    #     task.content = '51431&2&1&20180304'
++    #     task.content = '21269&2&1&20180304'
++    #     task.content = '13127&2&1&20180304'
++    #     suggest = json.dumps({'@type': 'gaiaRegionResult',
++    #  'coordinates': {'lat': '48.862720', 'long': '2.343750'},
++    #  'essId': {'sourceId': '179898', 'sourceName': 'GAI'},
++    #  'gaiaId': '179898',
++    #  'hierarchyInfo': {'airport': {'airportCode': 'PAR',
++    #    'metrocode': 'PAR',
++    #    'multicity': '179898'},
++    #   'country': {'isoCode2': 'FR',
++    #    'isoCode3': 'FRA',
++    #    'name': '\xe6\xb3\x95\xe5\x9b\xbd'}},
++    #  'hotelCountPerRegion': '3065',
++    #  'index': '0',
++    #  'packageable': 'false',
++    #  'popularity': '1066.0',
++    #  'regionGrades': {'globalGrade': '0'},
++    #  'regionMetadata': {'hotelCount': '3065'},
++    #  'regionNames': {'displayName': '<B>\xe5\xb7\xb4\xe9\xbb\x8e</B>\xef\xbc\x88\xe5\x8f\x8a\xe5\x91\xa8\xe8\xbe\xb9\xe5\x9c\xb0\xe5\x8c\xba\xef\xbc\x89',
++    #   'fullName': '\xe5\xb7\xb4\xe9\xbb\x8e\xef\xbc\x88\xe5\x8f\x8a\xe5\x91\xa8\xe8\xbe\xb9\xe5\x9c\xb0\xe5\x8c\xba\xef\xbc\x89',
++    #   'lastSearchName': '\xe5\xb7\xb4\xe9\xbb\x8e\xef\xbc\x88\xe5\x8f\x8a\xe5\x91\xa8\xe8\xbe\xb9\xe5\x9c\xb0\xe5\x8c\xba\xef\xbc\x89',
++    #   'shortName': '\xe5\xb7\xb4\xe9\xbb\x8e\xef\xbc\x88\xe5\x8f\x8a\xe5\x91\xa8\xe8\xbe\xb9\xe5\x9c\xb0\xe5\x8c\xba\xef\xbc\x89'},
++    #  'score': '1.0',
++    #  'type': 'MULTICITY'}
++    # )
++    task.content = ""
+     task.ticket_info = {
+         'is_new_type': True,
+-        'suggest_type': 2,
+-        'suggest': suggest,
+-        'check_in': '20171230',
++        'suggest_type': 1,
++        'suggest': "https://www.expedia.com.hk/Hotel-Search?destination=%E5%87%AF%E5%A1%94%E4%BA%9A,+%E6%96%B0%E8%A5%BF%E5%85%B0&startDate=2018/02/27&endDate=2018/02/28&adults=2&regionId=1758&sort=recommended",
++        'check_in': '20180227',
+         'stay_nights': '2',
+         'occ': '2'
+     }
+ 
+     spider = ExpediaListSpider(task)
+-    spider.crawl()
+-    print spider.code, spider.result
+-
+-    # task.extra['hotel'] = {'check_in':'20170403', 'nights':1, 'rooms':[{}] }
+-    # for i, content in enumerate(contents):
+-    #     print
+-    #     "case:", i, "*" * 200
+-    #     task.content = content
+-    #     spider = ExpediaListSpider(task)
+-    #     spider.crawl()
+-    #     for i, hotel in enumerate(spider.result['hotel']):
+-    #         print
+-    #         "数量", i, hotel
+-    #     for i, room in enumerate(spider.result['room']):
+-    #         print
+-    #         "数量：", i, room
+-    [{
+-         "url": "https://www.expedia.com.hk/Hotel-Search?destination=%E9%98%BF%E6%8B%89%E7%B1%B3%E8%BE%BE%E5%85%AC%E5%9B%AD,+%E5%8A%A0%E5%88%A9%E7%A6%8F%E5%B0%BC%E4%BA%9A,+%E7%BE%8E%E5%88%A9%E5%9D%9A%E5%90%88%E4%BC%97%E5%9B%BD&startDate=2018/01/21&endDate=2018/01/22&adults=2&view=results"}]
+-    [{
+-         "url": "https://www.expedia.com.hk/Hotel-Search?destination=%E8%8B%B1%E6%A0%BC%E5%B0%94%E4%BC%8D%E5%BE%B7,+%E5%8A%A0%E5%88%A9%E7%A6%8F%E5%B0%BC%E4%BA%9A%E5%B7%9E,+%E7%BE%8E%E5%9B%BD&startDate=2018/01/21&endDate=2018/01/22&adults=2"}]
+-    [{
+-         "url": "https://www.expedia.com.hk/Hotel-Search?destination=%E4%B9%8C%E9%87%8C%E9%9B%85%E8%8B%8F%E5%90%88,+%E8%92%99%E5%8F%A4&startDate=2018/01/21&endDate=2018/01/22&adults=2"}]
+-    [{
+-         "url": "https://www.expedia.com.hk/Hotel-Search?destination=%E5%93%88%E7%B1%B3%E7%BA%B3,+%E8%8A%AC%E5%85%B0&startDate=2018/01/21&endDate=2018/01/22&adults=2"}]
+\ No newline at end of file
++    spider.crawl(required=['hotel'], cache_config={'enable': False})
++    print(spider.code, spider.result)
++    for i in spider.result['hotel']:
++        print(i)
++
++        # task.extra['hotel'] = {'check_in':'20170403', 'nights':1, 'rooms':[{}] }
++        # for i, content in enumerate(contents):
++        #     print
++        #     "case:", i, "*" * 200
++        #     task.content = content
++        #     spider = ExpediaListSpider(task)
++        #     spider.crawl()
++        #     for i, hotel in enumerate(spider.result['hotel']):
++        #         print
++        #         "数量", i, hotel
++        #     for i, room in enumerate(spider.result['room']):
++        #         print
++        #         "数量：", i, room
++        # [{
++        #      "url": "https://www.expedia.com.hk/Hotel-Search?destination=%E9%98%BF%E6%8B%89%E7%B1%B3%E8%BE%BE%E5%85%AC%E5%9B%AD,+%E5%8A%A0%E5%88%A9%E7%A6%8F%E5%B0%BC%E4%BA%9A,+%E7%BE%8E%E5%88%A9%E5%9D%9A%E5%90%88%E4%BC%97%E5%9B%BD&startDate=2018/01/21&endDate=2018/01/22&adults=2&view=results"}]
++        # [{
++        #      "url": "https://www.expedia.com.hk/Hotel-Search?destination=%E8%8B%B1%E6%A0%BC%E5%B0%94%E4%BC%8D%E5%BE%B7,+%E5%8A%A0%E5%88%A9%E7%A6%8F%E5%B0%BC%E4%BA%9A%E5%B7%9E,+%E7%BE%8E%E5%9B%BD&startDate=2018/01/21&endDate=2018/01/22&adults=2"}]
++        # [{
++        #      "url": "https://www.expedia.com.hk/Hotel-Search?destination=%E4%B9%8C%E9%87%8C%E9%9B%85%E8%8B%8F%E5%90%88,+%E8%92%99%E5%8F%A4&startDate=2018/01/21&endDate=2018/01/22&adults=2"}]
++        # [{
++        #      "url": "https://www.expedia.com.hk/Hotel-Search?destination=%E5%93%88%E7%B1%B3%E7%BA%B3,+%E8%8A%AC%E5%85%B0&startDate=2018/01/21&endDate=2018/01/22&adults=2"}]
+-- 
+2.10.1
+

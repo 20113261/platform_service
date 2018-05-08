@@ -10,6 +10,7 @@ from lxml import html as HTML
 # from data_obj import ElongHotel
 # from proj.my_lib.models.HotelModel import ElongHotel
 from proj.my_lib.models.HotelModel import HotelNewBase
+# from mioji.common.class_common import Hotel_New as HotelNewBase
 import json
 import execjs
 from urlparse import urljoin
@@ -112,7 +113,7 @@ def elong_parser(content, url, other_info):
 
     #print 'map_info=>%s' % hotel.map_info
     # #print hotel.map_info
-
+    #
     # 解析酒店星级
 
     try:
@@ -209,12 +210,20 @@ def elong_parser(content, url, other_info):
     try:
         service = ''
         accept_card = []
+        pet = ''
         service_list = root.xpath('//*[@id="serverall"]/li/text()')
         for each in service_list:
+            if '宠物' in each:
+                pet += each+'，'
             service += each.encode('utf-8').strip() + '|'
             if '卡' in each:
                 accept_card.append(each.strip())
         hotel.service = service[:-1]
+        if pet:
+            hotel.pet_type = pet
+        else:
+            hotel.pet_type = "NULL"
+        print hotel.service
     except:
         hotel.service = 'NULL'
     if accept_card:
@@ -284,7 +293,7 @@ def elong_parser(content, url, other_info):
         hotel.img_items = img_items[:-1]
 
         base_url = page_js.eval('window.newDetailController').get('BaseUrl')
-        base_url = urljoin(base_url,'ihotel_848_470_all/')
+        base_url = "http:"+urljoin(base_url,'ihotel_848_470_all/')
         if not img_items:
             keys = page_js.eval('window.newDetailController').get('HotelImageTagList',{}).get("urlList",{}).keys()
             img_lists =[]
@@ -293,6 +302,7 @@ def elong_parser(content, url, other_info):
                 img_lists.extend(img_list.values())
         img_lists = [base_url+img for img in img_lists]
         hotel.img_items = '|'.join(img_lists).encode('utf-8')
+        hotel.Img_first  = img_lists[0]
     except:
         hotel.img_items = 'NULL'
 
@@ -340,6 +350,7 @@ def elong_parser(content, url, other_info):
     # if first_img:
     #     del others_info_dict['first_img']
     # #print hotel
+    res = hotel.to_dict()
 
     return hotel
 

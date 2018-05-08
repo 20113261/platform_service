@@ -11,6 +11,7 @@ from util.UserAgent import GetUserAgent
 # from data_obj import AgodaHotel
 # from proj.my_lib.models.HotelModel import AgodaHotel
 from proj.my_lib.models.HotelModel import HotelNewBase
+# from mioji.common.class_common import Hotel_New as HotelNewBase
 from urlparse import urljoin
 import json
 
@@ -168,12 +169,22 @@ def agoda_parser(content, url, other_info):
     except:
         pass
 
+    hotel.pet_type = "NULL"
+    hotel.chiled_bed_type = ""
+
     try:
         service_url = "https://www.agoda.com/api/zh-cn/Hotel/AboutHotel?hotelId={0}".format(page_params['hotelId'])
         json_data = json.loads(requests.get(service_url).content)
         hotel.service = '|'.join(
             [feature['name'] for features in json_data['featureGroups'] for feature in features['feature'] if
              feature['available']]).encode('utf-8')
+        for features in json_data['featureGroups']:
+            for feature in features['feature']:
+                if feature['name'] == u'可携带宠物':
+                    if feature['available'] == True:
+                        hotel.pet_type = u'可携带宠物'
+                    else:
+                        hotel.pet_type = u'不可携带宠物'
 
     except:
         try:
@@ -190,6 +201,29 @@ def agoda_parser(content, url, other_info):
     except:
         hotel.description = 'NULL'
     #print 'hotel.description=>%s' % hotel.description
+    try:
+        temp = json_data['hotelPolicy']
+        if 'extrabedPolicies' in temp.keys():
+            temp = temp['extrabedPolicies']
+            for v in temp:
+                if u'加床' in v['description']:
+                    hotel.chiled_bed_type += v['description']
+    except:
+        pass
+
+    try:
+        temp = json_data['hotelPolicy']
+        if 'policyNotes' in temp.keys():
+            temp = temp['policyNotes']
+            for v in temp:
+                if u'加床' in v:
+                    hotel.chiled_bed_type += v
+    except:
+        pass
+
+
+    if not hotel.chiled_bed_type:
+        hotel.chiled_bed_type = "NULL"
 
     # hotel.check_in_time = None
     # hotel.check_out_time = None
@@ -279,7 +313,9 @@ def agoda_parser(content, url, other_info):
     # hotel.others_info = json.dumps(others_info_dict)
     # #print hotel
 
-    return hotel
+    res = hotel.to_dict()
+
+    return res
 
 
 if __name__ == '__main__':
@@ -321,4 +357,4 @@ if __name__ == '__main__':
     content = page.text
 
     result = agoda_parser(content, url, other_info)
-    print result
+    print result.to_pretty_json()

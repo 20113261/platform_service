@@ -315,3 +315,8 @@ def youzhan_hotel_url(self,task,**kwargs):
 def bestwest_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
+def bestwest_list_task(self, task, **kwargs):
+    _sdk = HotelListSDK(task=task)
+    return _sdk.execute()

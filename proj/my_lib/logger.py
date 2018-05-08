@@ -13,7 +13,7 @@ from datetime import datetime
 from collections import defaultdict
 from logging.handlers import RotatingFileHandler
 
-log_path = "/data/log/service_platform"
+log_path = "/data/log/service_platform_2"
 
 
 class NamedRotatingFileHandler(RotatingFileHandler):

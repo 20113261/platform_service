@@ -6,11 +6,14 @@ import time
 import datetime
 import json
 import re
-from lxml import etree
+try:
+    from lxml import etree
+except:
+    import lxml.etree as etree
 
 from mioji.common import logger
 from mioji.common import parser_except
-from mioji.common.class_common import Hotel
+# from mioji.common.class_common import Hotel as Hotel_New
 from mioji.common.spider import Spider, request, PROXY_REQ, PROXY_NONE, PROXY_FLLOW
 # from mioji.common.class_common import Hotel_New
 from proj.my_lib.models.HotelModel import HotelNewBase as Hotel_New
@@ -83,7 +86,9 @@ class HyattHotelSpider(Spider):
                         'url': self.url_en,
                         'method': 'get',
                         'headers': {
-                            'ihg-language': 'zh-CN',
+                            # 'ihg-language': 'zh-CN',
+                            'Connection': 'keep-alive',
+                            'accept-language': 'zh-CN,zh;q=0.9',
                             'accept': 'application/json, text/plain, */*',
                             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
                         },
@@ -106,8 +111,25 @@ class HyattHotelSpider(Spider):
                     'user_handler': [self.parse_www_com_rooms],
                 }
 
+            @request(retry_count=3, proxy_type=PROXY_REQ)
+            def get_hotel_grade_and_reviews():
+                return {
+                    'req': {
+                        'url': self.url_en + '/photos-reviews',
+                        'method': 'get',
+                        'headers': {
+                            'referer':self.url_en,
+                            'connection':'keep-alive',
+                            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36',
+                        },
+                    },
+                    'user_handler': [self.parse_www_grade_and_reviews],
+                }
+
 
             yield get_hotel_data
+            yield get_hotel_grade_and_reviews
             yield get_hotel_data_rooms
         # 另一种页面模式
         else:
@@ -235,16 +257,17 @@ class HyattHotelSpider(Spider):
         self.hotel_test['source_id'] = re.findall(r"var spiritCode='(.*?)'", resp, re.S)[0].encode('utf8')
 
         latitude = re.findall(r'"latitude" : "(.*?)"', resp, re.S)[0].encode('utf8')
-        longitude = re.findall(r'"latitude" : "(.*?)"', resp, re.S)[0].encode('utf8')
+        longitude = re.findall(r'"longitude" : "(.*?)"', resp, re.S)[0].encode('utf8')
         self.hotel_test['map_info'] = longitude + ',' + latitude
-        self.hotel_test['address'] = data.xpath("//p[@class='address']//text()")[0]
+        # self.hotel_test['address'] = data.xpath("//p[@class='address']//text()")[0]
+        self.hotel_test['address'] = ''.join(data.xpath("//p[@class='address']//text()"))
         self.hotel_test['hotel_city'] = re.findall(r'hotel_city:"(.*?)"', resp, re.S)[0].encode('utf-8')
         self.hotel_test['hotel_country'] = data.xpath("//p[@class='address']/span[1]/text()")[0]
         try :
             self.hotel_test['hotel_postal_code'] = data.xpath("//p[@class='address']/span[2]/text()")[0]
         except:
             self.hotel_test['hotel_postal_code'] = 'NULL'
-        self.hotel_test['star'] = 5
+        self.hotel_test['star'] = '5.0'
         self.hotel_test['grade'] = self.hotel_test['grade']
         self.hotel_test['review_num'] = self.hotel_test['review_num']
 
@@ -270,7 +293,8 @@ class HyattHotelSpider(Spider):
 
 
 
-        self.hotel_test['description'] = data.xpath("//div[@class='readMoreContent']//text()")[0]
+        # self.hotel_test['description'] = data.xpath("//div[@class='readMoreContent']//text()")[0]
+        self.hotel_test['description'] = data.xpath("/html/head/meta[1]/@content")[0]
 
         while '\n' in self.hotel_test['description']:
             self.hotel_test['description'].remove('\n')
@@ -309,7 +333,9 @@ class HyattHotelSpider(Spider):
         except:
             self.hotel_test['source_id'] = re.findall(r'hotel_spirit_code: "(.*?)"', resp, re.S)[0].encode('utf8')
         self.hotel_test['hotel_city'] = re.findall(r'hotel_city: "(.*?)"', resp, re.S)[0].encode('utf8')
-        self.hotel_test['hotel_country'] = re.findall(r'hotel_country: "(.*?)"', resp, re.S)[0].encode('utf8')
+        # self.hotel_test['hotel_country'] = re.findall(r'hotel_country: "(.*?)"', resp, re.S)[0].encode('utf8')
+        self.hotel_test['hotel_country'] = re.findall(r'"addressLine2": "(.*?)"', resp, re.S)[0].split(',')[-2].encode('utf8')
+
         self.hotel_test['hotel_postal_code'] = re.findall(r'hotel_postal_code: "(.*?)"', resp, re.S)[0].encode('utf8')
 
         try:
@@ -331,6 +357,8 @@ class HyattHotelSpider(Spider):
         # self.hotel_test['description'] = a
         try:
             self.hotel_test['description'] = re.findall('"description":"(.*?)"', resp, re.S)[0].encode('utf-8')
+            # print data.xpath('/html/head/meta[1]/@content')
+            # self.hotel_test['description'] = data.xpath('/html/head/meta[1]/@content')[0]
         except:
             self.hotel_test['description'] = 'NULL'
         # self.hotel_test['services']= data.xpath("//div[@class='titled-list Business Services']//li/text()")
@@ -352,6 +380,7 @@ class HyattHotelSpider(Spider):
         phone = data.xpath('//dd[@class="phone"]//text()')[0].split('+')[1]
         self.hotel_test['hotel_phone'] = phone.replace(' ', '')
         self.hotel_test['chiled_bed_type'] = ''
+
     def parse_www_com_rooms(self,req, resp):
         data = etree.HTML(resp)
         try:
@@ -361,11 +390,20 @@ class HyattHotelSpider(Spider):
             self.hotel_test['check_in_time'] = 'NULL'
             self.hotel_test['check_out_time'] = 'NULL'
 
+    def parse_www_grade_and_reviews(self, req, resp):
+        # reviews = re.findall('reviewCount":"(.*?)"', resp)
+        reviews = re.findall('based on (\d+) reviews', resp)
+        self.hotel_test['review_num'] = reviews[0] if reviews else 'NULL'
+        grades = re.findall('stars-(\d+).svg', resp)
+        grade = grades[0] if grades else ''
+        if grade:
+            self.hotel_test['grade'] = grade[0:-1]+'.'+grade[-1:]
+
 
     def parse_children(self, req, resp):
         data = etree.HTML(resp)
         try:
-            self.hotel_test['chiled_bed_type'] = data.xpath('//*[@id="corp-profiles-description"]/div[5]/div[2]/text()')[1]
+            self.hotel_test['chiled_bed_type'] = data.xpath('//*[@id="corp-profiles-description"]/div[5]/div[2]/text()')[1].strip('\n')
         except:
             self.hotel_test['chiled_bed_type'] = ''
     # 返回数据
@@ -378,22 +416,24 @@ class HyattHotelSpider(Spider):
         hotel.hotel_name_en = self.hotel_test['hotel_name_en']
         hotel.source = 'hyatt'
         hotel.source_id = self.hotel_test['source_id']
-        hotel.brand_name = 'NULL'
+        hotel.brand_name = '凯悦'
         hotel.map_info = self.hotel_test['map_info']
         hotel.address = self.hotel_test['address']
         hotel.city = self.hotel_test['hotel_city']
         hotel.country = self.hotel_test['hotel_country']
         hotel.postal_code = self.hotel_test['hotel_postal_code']
         hotel.star = 5
-        hotel.grade = 'NULL'
+        hotel.grade = self.hotel_test.get('grade', hotel.grade)
         hotel.review_num = 'NULL'
+        print self.hotel_test.get('review_num')
+        hotel.review_num = self.hotel_test.get('review_num', 'NULL')
         # hotel.has_wifi = self.hotel_test['has_wifi']
         # hotel.is_wifi_free = self.hotel_test['is_wifi_free']
         # hotel.has_parking = 'NULL'
         # hotel.is_parking_free = 'NULL'
         # hotel.service = self.hotel_test['services']
         # hotel.img_items = self.hotel_test['img_items']
-        # hotel.description = ''.join(self.hotel_test['description'])
+        hotel.description = self.hotel_test['description']
         hotel.Img_first = self.hotel_test['Img_first']
         hotel.hotel_phone = self.hotel_test['hotel_phone']
         hotel.hotel_zip_code = self.hotel_test['hotel_postal_code']
@@ -401,78 +441,78 @@ class HyattHotelSpider(Spider):
         hotel.chiled_bed_type = self.hotel_test['chiled_bed_type']
         hotel.pet_type = ''
         if self.hotel_test['has_wifi']:
-            hotel.facility['Room_wifi'] = self.hotel_test['has_wifi']
+            hotel.facility_content['Room_wifi'] = self.hotel_test['has_wifi']
         for one  in self.hotel_test['services']:
             one = one.lower()
             if 'faxing' in one:
-                hotel.service['Fax_copy'] = one
+                hotel.service_content['Fax_copy'] = one
             elif 'postal' in one:
-                hotel.service['Postal_Service'] = one
+                hotel.service_content['Postal_Service'] = one
             elif 'laundry' in one:
-                hotel.service['Laundry'] = one
+                hotel.service_content['Laundry'] = one
             elif 'room service' in one:
-                hotel.service['Food_delivery'] = one
+                hotel.service_content['Food_delivery'] = one
             elif 'concierge service' in one:
-                hotel.service['Protocol'] = one
+                hotel.service_content['Protocol'] = one
             elif 'babysitting' in one:
-                hotel.service['child_care'] = one
+                hotel.service_content['child_care'] = one
             elif 'shoeshine' in one:
-                hotel.service['polish_shoes'] = one
+                hotel.service_content['polish_shoes'] = one
 
 
             elif 'valet parking' in one:
-                hotel.facility['Valet_Parking'] = one
+                hotel.facility_content['Valet_Parking'] = one
             elif 'parking' in one:
-                hotel.facility['Parking'] = one
+                hotel.facility_content['Parking'] = one
             elif 'wifi' in one or 'wi-fi' in one:
-                hotel.facility['Room_wifi'] = one
+                hotel.facility_content['Room_wifi'] = one
             elif 'pool' in one:
-                hotel.facility['Swimming_Pool'] = one
+                hotel.facility_content['Swimming_Pool'] = one
             elif 'gym' in one:
-                hotel.facility['gym'] = one
+                hotel.facility_content['gym'] = one
             elif 'bar' in one:
-                hotel.facility['Bar'] = one
+                hotel.facility_content['Bar'] = one
             elif 'coffee' in one:
-                hotel.facility['coffee'] = one
+                hotel.facility_content['coffee'] = one
             elif 'parking' in one:
-                hotel.facility['Parking'] = one
+                hotel.facility_content['Parking'] = one
             elif 'spa' in one:
-                hotel.facility['SPA'] = one
+                hotel.facility_content['SPA'] = one
             elif 'golf' in one:
-                hotel.facility['Golf_Course'] = one
+                hotel.facility_content['Golf_Course'] = one
             elif 'restaurant' in one:
-                hotel.facility['Restaurant'] = one
+                hotel.facility_content['Restaurant'] = one
             elif 'sauna' in one:
-                hotel.facility['Sauna'] = one
+                hotel.facility_content['Sauna'] = one
             elif 'service to airport' in one or 'shuttle airport' in one:
-                hotel.facility['Airport_bus'] = one
+                hotel.facility_content['Airport_bus'] = one
             elif 'wedding' in one:
-                hotel.facility['Wedding_hall'] = one
+                hotel.facility_content['Wedding_hall'] = one
             elif 'restaurant' in one:
-                hotel.facility['Restaurant'] = one
+                hotel.facility_content['Restaurant'] = one
             elif 'business centre' in one:
-                hotel.facility['Business_Centre'] = one
+                hotel.facility_content['Business_Centre'] = one
             elif 'sereno Spa' in one:
-                hotel.facility['Mandara_Spa'] = one
+                hotel.facility_content['Mandara_Spa'] = one
             elif 'tennis' in one:
-                hotel.facility['Tennis_court'] = one
+                hotel.facility_content['Tennis_court'] = one
             elif 'spa' in one:
-                hotel.facility['SPA'] = one
+                hotel.facility_content['SPA'] = one
 
             elif "China_Friendly" in one:
-                hotel.feature['China_Friendly'] = one
+                hotel.feature_content['China_Friendly'] = one
             elif "Romantic_lovers" in one:
-                hotel.feature['Romantic_lovers'] = one
+                hotel.feature_content['Romantic_lovers'] = one
             elif "Parent_child" in one:
-                hotel.feature['Parent_child'] = one
+                hotel.feature_content['Parent_child'] = one
             elif "Beach_Scene" in one:
-                hotel.feature['Beach_Scene'] = one
+                hotel.feature_content['Beach_Scene'] = one
             elif "Hot_spring" in one:
-                hotel.feature['Hot_spring'] = one
+                hotel.feature_content['Hot_spring'] = one
             elif "Japanese_Hotel" in one:
-                hotel.feature['Japanese_Hotel'] = one
+                hotel.feature_content['Japanese_Hotel'] = one
             elif "Vacation" in one:
-                hotel.feature['Vacation'] = one
+                hotel.feature_content['Vacation'] = one
 
         hotel.accepted_cards = 'NULL'
         hotel.check_in_time = self.hotel_test['check_in_time']
@@ -521,35 +561,71 @@ if __name__ == "__main__":
     from mioji.common import spider
     #
     # spider.slave_get_proxy = simple_get_socks_proxy
+    urls = [
+        # 'https://parisvendome.park.hyatt.com/en/hotel/home.html',
+        'https://saigon.park.hyatt.com/en/hotel/home.html',
+        'https://toronto.park.hyatt.com/en/hotel/home.html',
+        'https://toronto.park.hyatt.com/en/hotel/home.html',
+        'https://seattledowntown.place.hyatt.com/en/hotel/home.html',
+        'https://www.hyatt.com/en-US/hotel/italy/park-hyatt-milan/milph',
+        'https://www.hyatt.com/en-US/hotel/china/park-hyatt-shanghai/shaph',
+        'https://www.hyatt.com/en-US/hotel/france/park-hyatt-paris-vendome/parph',
+        'https://www.hyatt.com/en-US/hotel/cambodia/park-hyatt-siem-reap/repph',
+        'https://www.hyatt.com/en-US/hotel/vietnam/park-hyatt-saigon/saiph',
+        'https://www.hyatt.com/en-US/hotel/china/park-hyatt-shanghai/shaph',
+        'https://www.hyatt.com/en-US/hotel/saint-kitts-and-nevis/park-hyatt-st-kitts/skbph',
+        'https://www.hyatt.com/en-US/hotel/australia/park-hyatt-sydney/sydph',
+        'https://www.hyatt.com/en-US/hotel/canada/park-hyatt-toronto/torph',
+        'https://www.hyatt.com/en-US/hotel/austria/park-hyatt-vienna/vieph',
+        'https://www.hyatt.com/en-US/hotel/washington-dc/park-hyatt-washington-dc/wasph',
+        'https://www.hyatt.com/en-US/hotel/tanzania/park-hyatt-zanzibar/znzph',
+        'https://www.hyatt.com/en-US/hotel/switzerland/park-hyatt-zurich/zurph'
+    ]
+    results = []
 
+    # for url in urls:
     task = Task()
     task.ticket_info = {}
     # task.content = 'https://highlandsinn.hyatt.com/en/hotel/home.html'
-    task.content = 'https://kochibolgatty.grand.hyatt.com/en/hotel/home.html'
-    task.content = 'https://albuquerqueairport.place.hyatt.com/en/hotel/home.html'
+    # task.content = 'https://kochibolgatty.grand.hyatt.com/en/hotel/home.html'
+    # task.content = 'https://albuquerqueairport.place.hyatt.com/en/hotel/home.html'
     # task.content = 'https://newyork.park.hyatt.com/en/hotel/home.html'
     # task.content = 'https://macae.place.hyatt.com/en/hotel/home.html'
     # task.content = 'https://parisvendome.park.hyatt.com/en/hotel/home.html'
     # task.content = 'https://saigon.park.hyatt.com/en/hotel/home.html'
     # task.content = 'https://toronto.park.hyatt.com/en/hotel/home.html'
     # task.content = 'https://toronto.park.hyatt.com/en/hotel/home.html'
+
+
     # task.content = 'https://seattledowntown.place.hyatt.com/en/hotel/home.html'
+
+
+
     # task.content = 'https://www.hyatt.com/en-US/hotel/italy/park-hyatt-milan/milph'
-    task.content = 'https://www.hyatt.com/en-US/hotel/china/park-hyatt-shanghai/shaph'
+
+    # task.content = 'https://www.hyatt.com/en-US/hotel/china/park-hyatt-shanghai/shaph'  # here
     # task.content = 'https://www.hyatt.com/en-US/hotel/france/park-hyatt-paris-vendome/parph'
     # task.content = 'https://www.hyatt.com/en-US/hotel/cambodia/park-hyatt-siem-reap/repph'
+    #{"service_content": {"20011": {"key": "洗衣服务", "value": "laundry"}, "21003": {"key": "送餐服务", "value": "room service"}}, "hotel_name_en": "Park Hyatt St. Kitts", "city_id": "NULL", "brand_name": "凯悦", "check_in_time": "4:00 PM", "postal_code": "KN7000", "pet_type": "", "continent": "NULL", "description": "Escape to the glamour and luxury of the Caribbean Islands and find five-star service, beachfront rooms, and refined resort dining at Park Hyatt St. Kitts. ", "city": "St. Kitts", "chiled_bed_type": "", "facility_content": {"13004": {"key": "餐厅", "value": "restaurant on-site"}, "12003": {"key": "SPA", "value": "more than 7,000 square feet of flexible event space and banquet facilities"}, "10001": {"key": "客房wifi", "value": "wi-fi"}, "12001": {"key": "游泳池", "value": "the penthouse suite offers a private swimming pool and terrace from the hotel’s top floor"}}, "map_info": "-62.638056,17.228889", "grade": "NULL", "others_info": "NULL", "img_items": "NULL", "hotel_url": "https://www.hyatt.com/en-US/hotel/saint-kitts-and-nevis/park-hyatt-st-kitts/skbph", "Img_first": "https://assets.hyatt.com/content/dam/hyatt/hyattdam/images/2017/11/27/1306/Park-Hyatt-St-Kitts-P098-Park-Executive-Suite-Pool.jpg/Park-Hyatt-St-Kitts-P098-Park-Executive-Suite-Pool.16x9.adapt.1280.720.jpg", "star": 5, "accepted_cards": "NULL", "traffic": "", "address": "Banana Bay, PO Box 1073, BasseterreSt. Kitts, Saint Kitts and Nevis, KN7000", "check_out_time": "12:00 PM", "hotel_name": "NULL", "hotel_phone": "18694681234", "hotel_zip_code": "KN7000", "country": " Saint Kitts and Nevis", "feature_content": {}, "source": "hyatt", "source_id": "skbph", "review_num": "NULL"}
+
     # task.content = 'https://www.hyatt.com/en-US/hotel/vietnam/park-hyatt-saigon/saiph'
     # task.content = 'https://www.hyatt.com/en-US/hotel/china/park-hyatt-shanghai/shaph'
     # task.content = 'https://www.hyatt.com/en-US/hotel/saint-kitts-and-nevis/park-hyatt-st-kitts/skbph'
     # task.content = 'https://www.hyatt.com/en-US/hotel/australia/park-hyatt-sydney/sydph'
-    # task.content = 'https://www.hyatt.com/en-US/hotel/canada/park-hyatt-toronto/torph'
-    # task.content = 'https://www.hyatt.com/en-US/hotel/austria/park-hyatt-vienna/vieph'
-    # task.content = 'https://www.hyatt.com/en-US/hotel/washington-dc/park-hyatt-washington-dc/wasph'
-    # task.content = 'https://www.hyatt.com/en-US/hotel/tanzania/park-hyatt-zanzibar/znzph'
-    # task.content = 'https://www.hyatt.com/en-US/hotel/switzerland/park-hyatt-zurich/zurph'
+    task.content = 'https://www.hyatt.com/en-US/hotel/canada/park-hyatt-toronto/torph' # !!!
+    task.content = 'https://www.hyatt.com/en-US/hotel/austria/park-hyatt-vienna/vieph'
+    task.content = 'https://www.hyatt.com/en-US/hotel/washington-dc/park-hyatt-washington-dc/wasph'
+    task.content = 'https://www.hyatt.com/en-US/hotel/tanzania/park-hyatt-zanzibar/znzph'
+    task.content = 'https://www.hyatt.com/en-US/hotel/switzerland/park-hyatt-zurich/zurph'
 
     spider = HyattHotelSpider(task)
     spider.crawl(required=['hotel'])
     print spider.code
-    # print json.dumps(spider.result, ensure_ascii=False)
-    print spider.result
+    # print spider.result
+    print json.dumps(spider.result['hotel'][0], ensure_ascii=False)
+    # results.append(json.dumps(spider.result['hotel'][0], ensure_ascii=False))
+    # print spider.result['hotel'][0]
+
+    # print '*'*30
+    # for result in results:
+    #     print result

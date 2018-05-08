@@ -2,81 +2,21 @@
 # -*- coding: utf-8 -*-
 
 
-import sys
 import re
 import requests
 from lxml import etree
-from lxml import html as HTML
 from proj.my_lib.models.HotelModel import HotelNewBase
-# from mioji.common.class_common import Hotel_New as HotelNewBase
 import json
-from proj.my_lib import parser_exception
-
-
-def process_text(ALL,service):
-    info1 = ''
-    for each in ALL:
-        for e in each.xpath('td'):
-            s= e.text_content()
-            s= s.replace('\n','').replace('\t','').replace('\r','').replace('  ','').replace('   ','')
-            info1 = info1+s+'::'
-
-    service += info1[:-2]+'|'
-    return service
 
 
 def hilton_parser(total_content, url, other_info):
     Hotel = HotelNewBase()
-    content, detail_content, map_info_content, desc_content, enDetail_content = total_content
-
-    html_detail = HTML.fromstring(detail_content)
-    service = ''
-    try:
-        service += u'交通：'
-        ALL = html_detail.xpath('//tbody[@id="tbodytransportation"]/tr')
-        service = process_text(ALL, service)
-    except Exception as e:
-        print e
-
-    try:
-        service += u'设施：'
-        ALL = html_detail.xpath('//tbody[@id="tbodyfacilities"]/tr')
-        service = process_text(ALL, service)
-    except Exception as e:
-        print e
-    try:
-        service += u'服务与设施：'
-        ALL = html_detail.xpath('//tbody[@id="tbodyservices"]/tr')
-        service = process_text(ALL, service)
-
-    except Exception as e:
-        print e
-    # try:
-    service += u'家庭：'
-    ALL = html_detail.xpath('//tbody[@id="tbodyfamily"]/tr')
-    service = process_text(ALL, service)
-    # except Exception as e:
-    #     print e
-
-
-    select_detail =etree.HTML(detail_content)
-    check_in_time = ''
-    check_out_time = ''
+    content, map_info_content, desc_content, enDetail_content = total_content
     hotel_id = url.split("/")[-2].split("-")[-1]
+    Hotel.source_id = hotel_id
     Hotel.hotel_url = url
-    try:
-        ALL = select_detail.xpath("//td[@headers='compare_{} compare_registration']/text()".format(hotel_id))
-        ALL = u'：'.join(ALL)
-        check_time = ALL.replace('\n', '').replace('\t', '').replace(' ', '')
-        check_time = check_time.split(u'：')
-        check_in_time = check_time[1]
-        check_out_time = check_time[-1]
-    except Exception, e:
-        print str(e)
-    Hotel.check_in_time = check_in_time
-    Hotel.check_out_time = check_out_time
-    Hotel = get_detail(Hotel, detail_content,enDetail_content,hotel_id)
-    Hotel.source = 'source'
+    Hotel = get_detail(Hotel,enDetail_content)
+    Hotel.source = 'hilton'
     Hotel.source_id = Hotel.source_id = other_info['source_id']
     Hotel.city_id = other_info['city_id']
     try:
@@ -95,10 +35,12 @@ def hilton_parser(total_content, url, other_info):
     select = etree.HTML(content)
     full_address = select.xpath('//span[@class="addr"]/text()')
     if full_address:
-        Hotel.address = full_address[0]
+        Hotel.address = full_address[0].encode('raw-unicode-escape')
     code = re.findall("(\d{5,6})",Hotel.address)
     if code:
         Hotel.hotel_zip_code = code[0]
+    else:
+        Hotel.hotel_zip_code = ''
     phone = select.xpath('//span[@class="tel tel-pc"]/text()')
     if phone:
         Hotel.hotel_phone = phone[0].replace("-",'')
@@ -120,107 +62,42 @@ def hilton_parser(total_content, url, other_info):
 
     Hotel.img_items = img_items
     select_map = etree.HTML(map_info_content)
-    traffic = select_map.xpath("//div[@class='access-guide-inner']/p/text()")
+    traffic = ''.join(select_map.xpath("//div[@class='access-guide-inner']/p/text()"))
     if traffic:
-        Hotel.traffic = traffic[0].encode('raw-unicode-escape')
+        Hotel.traffic = traffic.encode('raw-unicode-escape')
 
     select_desc = etree.HTML(desc_content)
+    service_info_list = select_desc.xpath('//ul/li/span[2]/text()')
+    hotel_name = select_desc.xpath('//h1/text()')[0]
+    Hotel.hotel_name = hotel_name.encode('raw-unicode-escape')
+    Hotel.check_in_time = ''
+    Hotel.check_out_time = ''
+    Hotel.pet_type = ''
+    for s_str in service_info_list:
+        s_str = s_str.encode('raw-unicode-escape')
+        if '入住' in s_str:
+            Hotel.check_in_time = re.compile(r'(\d+:\d+)').findall(s_str)[0]
+        if '退房' in s_str:
+            Hotel.check_out_time = re.compile(r'(\d+:\d+)').findall(s_str)[0]
+        if '宠物' in s_str:
+            Hotel.pet_type = s_str.replace('\r', '').replace('\n', '').strip()
     desc = select_desc.xpath('//div[@class="intro fix"]/p/text()')
+    desc = ''.join(desc)
     if desc:
-        Hotel.description = desc[0].encode('raw-unicode-escape')
-    # hotel = Hotel.to_dict()
-    Hotel.others_info = json.dumps({"service":service})
+        Hotel.description = desc.encode('raw-unicode-escape')
+
     return Hotel.to_dict()
 
 
-def get_detail(Hotel, content, enDetail_content,hotel_id):
-    select = etree.HTML(content)
-    hotel_name = select.xpath('//td[@class="tdHotelName"]/h3/a/text()')
-    if hotel_name:
-        Hotel.hotel_name = hotel_name[0]
-    else:
-        raise parser_exception.ParserException(29, "解析失败")
-    pet = select.xpath('//td[@headers="compare_{} compare_pets"]/text()'.format(hotel_id))
-    if pet:
-        Hotel.pet_type = pet[0].strip()
-    facilities = select.xpath("//tbody[@id='tbodyfacilities']/tr")
-    for facility in facilities:
-        info = facility.xpath('./td/text()|./td/span/text()')
-        info_list = []
-        for item in info:
-            if item.strip():
-                info_list.append(item.strip())
-            else:
-                continue
-        if u'不适用' in info_list[1]:
-            continue
-        if u"客房内有线上网" in info_list[0]:
-            Hotel.facility_content["Room_wired"] = info_list[0]
-        if u"客房内无线上网" in info_list[0]:
-            Hotel.facility_content["Room_wifi"] = info_list[0]
-        if u"公共区域无线上网" in info_list[0]:
-            Hotel.facility_content["Public_wifi"] = info_list[0]
-        if u"餐厅" in info_list[0]:
-            Hotel.facility_content["Restaurant"] = info_list[0]
-        if u"酒吧" in info_list[0]:
-            Hotel.facility_content["Bar"] = info_list[0]
-    servers = select.xpath("//tbody[@id='tbodyservices']/tr")
-    for server in servers:
-        info = server.xpath('./td/text()|./td/span/text()')
-        info_list = []
-        for item in info:
-            if item.strip():
-                info_list.append(item.strip())
-            else:
-                continue
-        if u'商务中心	' in info_list[0]:
-            Hotel.facility_content["Business_Centre"] = info_list[0]
-        if u'水疗中心	' in info_list[0]:
-            Hotel.facility_content["Mandara_Spa"] = info_list[0]
-    traffics = select.xpath("//tbody[@id='tbodytransportation']/tr")
-    for traffic in traffics:
-        info = traffic.xpath('./td/text()|./td/span/text()')
-        info_list = []
-        for item in info:
-            if item.strip():
-                info_list.append(item.strip())
-            else:
-                continue
-        if u'泊车' in info_list[0]:
-            Hotel.facility_content["Valet_Parking"] = info_list[1]
-            # print info_list[1]
-    try:
-        PARK = select.xpath('//td[@id="compare_parkdist"]/text()')
-        if u'泊车' in PARK[0]:
-            Hotel.facility_content["Parking"] = '停车场'
-        else:
-            pass
-    except Exception as e:
-        print e
-    if u'Complimentary Printing Service' in enDetail_content:
-        Hotel.service_content["Fax_copy"] = u"免费打印服务、传真"
-    if u'Baggage Storage' in enDetail_content:
-        Hotel.service_content["Luggage_Deposit"] = u'行李寄存'
-    if u'Concierge Desk' in enDetail_content:
-        Hotel.service_content["Protocol"] = u"礼宾接待处"
-    if u'Multi-Lingual Staff' in enDetail_content:
-        Hotel.service_content["Chinese_front"] = u'多语种工作人员'
-    if u'Safety Deposit Box' in enDetail_content:
-        Hotel.service_content["Frontdesk_safe"] = u'保险箱'
-    Hotel.service = str(Hotel.service_content)
-    if u'Fitness Room' in enDetail_content:
-        Hotel.facility_content["gym"] = u"健身房"
-    if u'Tennis Court' in enDetail_content:
-        Hotel.facility_content['Tennis_court'] = u'网球场'
-    if u'Laundry/Valet Service' in enDetail_content:
-        Hotel.facility_content["Laundry"] = u"洗衣/代客服务"
-    if u'Automated Teller (ATM)' in enDetail_content:
-        Hotel.facility_content["ATM"] = u"自动柜员机（ATM）"
-    if u'Sauna' in enDetail_content:
-        Hotel.facility_content["Sauna"] = u'桑拿'
-    if u'Pool' in enDetail_content:
-        Hotel.facility_content["Swimming_Pool"] = '水池'
+def get_detail(Hotel, enDetail_content):
+
     enselect = etree.HTML(enDetail_content)
+    server_str_en = enselect.xpath('//div[@class="copy_area"]/ul/li/text()')
+    print server_str_en
+    server_str_en = '|'.join([s.replace('\\n', '').replace('\\t', '').replace('\\r', '').
+                             replace('\n', '').replace('\t', '').replace('\r', '').strip() for s in server_str_en])
+    Hotel.service = server_str_en
+    Hotel.others_info = json.dumps({"hotel_services_info": server_str_en})
     hotel_name_en = enselect.xpath("//span[@class='property-name']/text()")
     if hotel_name_en:
         Hotel.hotel_name_en = hotel_name_en[0]
@@ -228,31 +105,57 @@ def get_detail(Hotel, content, enDetail_content,hotel_id):
     return res
 
 
-
 if __name__ == '__main__':
+    import csv
     # from proj.my_lib.Common.Browser import MySession
     # session = MySession()
     # url = 'http://www.hilton.com.cn/zh-CN/hotel/Beijing/hilton-beijing-wangfujing-BJSWFHI/'
-    # url = 'http://www.hilton.com.cn/zh-cn/hotel/sharjah/hilton-sharjah-SHJHSHI/'
-    url = 'http://www.hilton.com.cn/zh-cn/hotel/new-york/millennium-hilton-new-york-one-un-plaza-NYCUPHH/'
-    detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(url.split('/')[-2])
-    enDetail_url = 'http://www3.hilton.com/en/hotels/{}/{}/about/amenities.html'.format(url.split("/")[-3], url.split("/")[-2])
-    map_info_url = url + 'maps-directions.html'
-    desc_url = url + 'about.html'
-    session = requests.session()
-    content = session.get(url).text
-    detail_content = session.get(detail_url).text
-    map_info_content = session.get(map_info_url).text
-    desc_content = session.get(desc_url).text
-    enDetail = session.get(enDetail_url)
-    enDetail.encoding = 'utf8'
-    enDetail_content = enDetail.text
-    other_info = {
-        'source_id': '1000',
-        'city_id': '50795'
-    }
-    total_content = [content, detail_content, map_info_content, desc_content, enDetail_content]
-    result = hilton_parser(total_content, url, other_info)
-    print result
-# 'http://www3.hilton.com/en/hotels/new-york/millennium-hilton-new-york-one-un-plaza-NYCUPHH/about/amenities.html'
-# 'http://www3.hilton.com/en/hotels/millennium-hilton-new-york-one-un-plaza-NYCUPHH//about/amenities.html'
+    url = 'http://www.hilton.com.cn/zh-cn/hotel/sharjah/hilton-sharjah-SHJHSHI/'
+    # url = 'http://www.hilton.com.cn/zh-cn/hotel/new-york/millennium-hilton-new-york-one-un-plaza-NYCUPHH/'
+    u_list = [
+        'http://www.hilton.com.cn/zh-CN/hotel/Beijing/hilton-beijing-wangfujing-BJSWFHI/',
+        'http://www.hilton.com.cn/zh-cn/hotel/sharjah/hilton-sharjah-SHJHSHI/',
+        'http://www.hilton.com.cn/zh-cn/hotel/new-york/millennium-hilton-new-york-one-un-plaza-NYCUPHH/'
+    ]
+    for url in u_list:
+        detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(url.split('/')[-2])
+        enDetail_url = 'http://www3.hilton.com/en/hotels/{}/{}/about/amenities.html'.format(url.split("/")[-3], url.split("/")[-2])
+        map_info_url = url + 'maps-directions.html'
+        desc_url = url + 'about.html'
+        print url
+        print desc_url
+        print detail_url
+        print enDetail_url
+        print map_info_url
+        session = requests.session()
+        content = session.get(url).text
+        # detail_content = session.get(detail_url).text
+        map_info_content = session.get(map_info_url).text
+        desc_content = session.get(desc_url).text
+        enDetail = session.get(enDetail_url)
+        enDetail.encoding = 'utf8'
+        enDetail_content = enDetail.text
+        other_info = {
+            'source_id': '1000',
+            'city_id': '50795'
+        }
+        total_content = [content, map_info_content, desc_content, enDetail_content]
+        result = hilton_parser(total_content, url, other_info)
+        print result
+
+        dicts = {}
+        dicts.update(result.__dict__)
+        # print type(r)
+        s = [s for s in dicts.keys()]
+        l = [f for f in dicts.values()]
+        # 写入数据
+        csvFile = open("/Users/mioji/Desktop/hilton.csv", "a+")
+        #
+        writer = csv.writer(csvFile)
+
+        writer.writerow(s)
+        writer.writerow(l)
+        #
+        csvFile.close()
+    # 'http://www3.hilton.com/en/hotels/new-york/millennium-hilton-new-york-one-un-plaza-NYCUPHH/about/amenities.html'
+    # 'http://www3.hilton.com/en/hotels/millennium-hilton-new-york-one-un-plaza-NYCUPHH//about/amenities.html'

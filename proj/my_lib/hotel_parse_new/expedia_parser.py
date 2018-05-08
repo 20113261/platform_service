@@ -13,6 +13,7 @@ from lxml import html as HTML
 # from data_obj import ExpediaHotel  # DBSession
 from proj.my_lib.models.HotelModel import HotelNewBase
 # from mioji.common.class_common import Hotel_New as HotelNewBase
+# from mioji.common.class_common import Hotel_New as HotelNewBase
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -108,16 +109,21 @@ def expedia_parser(content, url, other_info):
     # print 'address=>%s' % hotel.address
     try:
         # grade = root.find_class('guest-rating')[0].find_class('rating-number')[0].text_content()
-        grade_str = html.xpath("//span[@class='rating-scale-low-res']/text()")[0]
-        grade = re.search(u"评分：(.*)/", grade_str.strip()).group(1)
+        grade_str = html.xpath("//span[@class='rating-scale-low-res']/text()|//span[@class='rating-scale-bold-low-res']/text()")[0]
+        print grade_str
+        grade = re.search(u"分：(.*)/", grade_str.strip()).group(1)
         hotel.grade = float(grade)
     except Exception, e:
         print str(e)
 
+        gra = html.xpath("//strong[@class='star-rating rating-secondary star rating']/span[@class='visuallyhidden']/text()")
+        if gra:
+            hotel.grade = gra[0].split("/")[0]
+
     # print 'grade=>%s' % hotel.grade
     try:
         star = root.xpath('//span[contains(@class, "stars-grey value-title")]')[0].attrib['title']
-        hotel.star = str(int(float(star)))
+        hotel.star = str(float(star))
     except Exception as e:
         print e
         hotel.star = -1
@@ -242,6 +248,7 @@ def expedia_parser(content, url, other_info):
                 service += hidden_fac + '|'
             else:
                 service += '酒店基础设施：' + facilities + '|'
+            # print service
         except Exception as e:
             print e
 
@@ -292,19 +299,23 @@ def expedia_parser(content, url, other_info):
 
     except Exception as e:
         print e
-    try:
-        # map_part = root.xpath('//div[@class="map"]/a/figure/@data-src')
-        # map_str = map_part[-1]
-        # google_map_info = urlparse.parse_qs(map_str)['center'][-1]
-        # map_info = ','.join(google_map_info.split(',')[::-1])
-        # hotel.map_info = map_info
-        map_temp = html.xpath("//div[@class='map uitk-col']/a/figure/@data-src")[0]
-        map_info_str = re.search(r"&center=(.*)&size", map_temp).group(1)
-        map_info = ",".join(map_info_str.split(",")[::-1])
-        hotel.map_info = map_info
-    except Exception, e:
-        map_info = 'NULL'
-        print str(e)
+    map_info = re.findall('"latlong": "(.*?)"',content)
+    if map_info:
+        hotel.map_info = map_info[0]
+    else:
+        try:
+            # map_part = root.xpath('//div[@class="map"]/a/figure/@data-src')
+            # map_str = map_part[-1]
+            # google_map_info = urlparse.parse_qs(map_str)['center'][-1]
+            # map_info = ','.join(google_map_info.split(',')[::-1])
+            # hotel.map_info = map_info
+            map_temp = html.xpath("//div[@class='map uitk-col']/a/figure/@data-src")[0]
+            map_info_str = re.search(r"&center=(.*)&size", map_temp).group(1)
+            map_info = ",".join(map_info_str.split(",")[::-1])
+            hotel.map_info = map_info
+        except Exception, e:
+            map_info = 'NULL'
+            print str(e)
 
     # print 'map_info=>%s' % map_info
     first_img = None
@@ -332,9 +343,7 @@ def expedia_parser(content, url, other_info):
     # print 'first_img=>%s' % first_img
     try:
         # desc = encode_unicode(root.find_class('hotel-description')[0].find_class('visuallyhidden')[0].tail.strip())
-        h3s = root.xpath('//div[@class="hotel-description"]/h3//text()')
-        ps = root.xpath('//div[@class="hotel-description"]/p//text()')
-        desc = '|_|'.join([title + '::' + value for title, value in zip(h3s, ps)])
+        desc = ''.join(root.xpath("//p[@class='rm-hide']/text()"))
         hotel.description = desc.encode('utf-8')
     except Exception, e:
         print str(e)
@@ -354,10 +363,11 @@ def expedia_parser(content, url, other_info):
         # policy_table = root.find_class('tab-pane')[0].find_class('col')[1].xpath('section')[0].getchildren()
         policy_table = root.xpath('//div[@data-section="checkIn"]/p/text()')
         for text in policy_table:
-            index = max(text.find('入住时间'), text.find('入住登記開始時間： 14:00'))
-            if index > -1:
-                check_in_time = text.split(' ')[-1]
-                break
+            if re.findall('\d+:\d+', text):
+                index = max(text.find('入住时间'), text.find('入住登記開始時間'))
+                if index > -1:
+                    check_in_time = text.split(' ')[-1]
+                    break
         # check_in_text = policy_table[2].xpath('p/text()')
         # if '中午' in check_in_text:
         #     check_in_time = '中午'
@@ -376,6 +386,7 @@ def expedia_parser(content, url, other_info):
                 break
         # policy_table = root.find_class('tab-pane')[0].find_class('col')[1].xpath('section')[0].getchildren()
         # check_out_text = policy_table[4].xpath('p/text()')[0].encode('utf-8').strip()
+        # print '111111',check_out_text
         # if '中午' in check_out_text:
         #     check_out_time = '中午'
         # else:
@@ -384,7 +395,10 @@ def expedia_parser(content, url, other_info):
     except Exception, e:
         print str(e)
     # print 'check_out_time=>%s' % hotel.check_out_time
-
+    city = html.xpath("//span[@class='city']/text()")
+    if city:
+        hotel.city = city[0]
+        print city
     try:
         child_beds = html.xpath("//div[@data-secion='childBeds']/div[@class='paragraph-hack']/ul/li/text()")
         hotel.chiled_bed_type = " ".join(child_beds)
@@ -404,7 +418,7 @@ def expedia_parser(content, url, other_info):
     hotel.city_id = other_info['city_id']
 
     if first_img:
-        hotel.others_info = json.dumps({'first_img':first_img,'hotel_services_info': service})
+        hotel.others_info = json.dumps({'first_img':first_img, 'hotel_services_info': service})
     try:
         hotel_phone = html.xpath("//span[@itemprop='telephone']/text()")[0]
         hotel.hotel_phone = hotel_phone.strip()
@@ -412,7 +426,6 @@ def expedia_parser(content, url, other_info):
         print '解析hotel.hotel_phone出错：{}'.format(e)
 
     res = hotel.to_dict()
-    
     return res
 
 
@@ -445,7 +458,6 @@ if __name__ == '__main__':
     # url = 'https://www.expedia.com.hk/Hotels-Upscale-3BR-Pad-In-Plateau-Montreal-By-Host-Kick.h20193722.Hotel-Information?chkin=2017%2F12%2F6&chkout=2017%2F12%2F7&rm1=a2&regionId=178288&sort=recommended&hwrqCacheKey=1b19fce7-f3f9-4a70-8b4d-bfedd0cb3969HWRQ1511802368580&vip=false&c=8978761e-8607-49e8-bc1f-e8a4dbf8c462&'
     # url = 'https://www.expedia.com/Paris-Hotels-Maison-Albar-Hotel-Paris-Champs-Elysees-Formerly-Mac-Mahon.h53564.Hotel-Information?chkin=12%2F1%2F2017&chkout=12%2F2%2F2017&rm1=a2&regionId=179898&hwrqCacheKey=4d9d56dc-f47b-41f2-bde6-8a47ff954388HWRQ1512100403589&vip=false&c=d44429b6-4c6e-408f-bf40-1c35ad4ef1c5&&exp_dp=217.41&exp_ts=1512100404426&exp_curr=USD&swpToggleOn=false&exp_pg=HSR'
 
-
     # url = 'https://www.expedia.com.hk/cn/New-York-Hotels-PUBLIC.h17117062.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178293&hwrqCacheKey=e0be673e-eca6-45be-bd2b-ea5bf0dd0eebHWRQ1522392221194&vip=false&c=1e3b30f7-285b-4ae4-9b91-1a178037b7a0&&exp_dp=2158.23&exp_ts=1522392225366&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
     # url = 'https://www.expedia.com.hk/cn/New-York-Hotels-1-Hotel-Central-Park.h9215515.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178293&hwrqCacheKey=e0be673e-eca6-45be-bd2b-ea5bf0dd0eebHWRQ1522652432294&vip=false&c=01bac27d-9159-4817-b69f-db3e14f44fb5&&exp_dp=3683.05&exp_ts=1522652433372&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
     # url = 'https://www.expedia.com.hk/cn/New-York-Hotels-The-Roosevelt-Hotel.h41864.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178293&hwrqCacheKey=e0be673e-eca6-45be-bd2b-ea5bf0dd0eebHWRQ1522652432294&vip=false&c=01bac27d-9159-4817-b69f-db3e14f44fb5&&exp_dp=1978.89&exp_ts=1522652433378&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
@@ -457,11 +469,20 @@ if __name__ == '__main__':
     # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-Hotel-Angeleno.h21848.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=1203.75&exp_ts=1522655643080&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
     # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-Downtown-Los-Angeles-Condos.h21935757.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=789.46&exp_ts=1522655643083&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
     # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-Foghorn-Harbor-Inn.h2200019.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=1396.26&exp_ts=1522655643084&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
-    url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-La-Quinta-Inn-Suites-LAX.h3919.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=877.59&exp_ts=1522655643088&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
+    # url = 'https://www.expedia-cn.com/Los-Angeles-Hotels-La-Quinta-Inn-Suites-LAX.h3919.Hotel-Information?chkin=2018%2F4%2F4&chkout=2018%2F4%2F7&rm1=a2&regionId=178280&hwrqCacheKey=12615292-7c53-4da3-abab-25be787b8beaHWRQ1522655626214&vip=false&c=a7d9cdf1-93da-4c02-8579-f53214cea6d4&&exp_dp=877.59&exp_ts=1522655643088&exp_curr=CNY&swpToggleOn=false&exp_pg=HSR'
     # url = 'https://www.expedia.com.hk/cn/Hoi-An-Hotels-Green-Areca-Villa.h10000424.Hotel-Information?chkin=2018%2F5%2F2&chkout=2018%2F5%2F3&rm1=a2&regionId=6347736&sort=recommended&hwrqCacheKey=c4472144-5be0-494a-b1cf-8c4a2efbe52dHWRQ1521553199897&vip=false&c=73bf84c1-f939-4ee2-9e98-f73d21b84db0&'
     # url = 'https://www.expedia.com.hk/cn/Haines-Hotels-Aspen-Suites-Hotel-Haines.h10002872.Hotel-Information?chkin=2018%2F5%2F15&chkout=2018%2F5%2F16&rm1=a2&regionId=1490&sort=recommended&hwrqCacheKey=be8657ae-80c5-455a-a087-d0b04f6def3bHWRQ1521553140407&vip=false&c=2305b055-e4cb-4ad4-b180-9a5061b34731&'
     # url = 'https://www.expedia.com.hk/cn/Odense-Hotels-Amalie-Bed-And-Breakfast-Apartments.h10121034.Hotel-Information?chkin=2018%2F5%2F29&chkout=2018%2F5%2F30&rm1=a2&regionId=6143836&sort=recommended&hwrqCacheKey=e8cacb15-f961-43b7-9dca-6af28b4b0677HWRQ1521553159212&vip=false&c=22c9b92d-4d8d-497d-b775-e8acd0ba2f16&'
     # url = 'https://www.expedia.com.hk/cn/Fyn-Hotels-Amalie-Bed-And-Breakfast-Apartments.h10121034.Hotel-Information?chkin=2018%2F5%2F29&chkout=2018%2F5%2F30&rm1=a2&regionId=6143836&sort=recommended&hwrqCacheKey=e8cacb15-f961-43b7-9dca-6af28b4b0677HWRQ1521553159212&vip=false&c=22c9b92d-4d8d-497d-b775-e8acd0ba2f16&'
+    url = 'https://www.expedia.com.hk/cn/Haines-Hotels-Aspen-Suites-Hotel-Haines.h10002872.Hotel-Information?chkin=2018%2F5%2F15&chkout=2018%2F5%2F16&rm1=a2&regionId=1490&sort=recommended&hwrqCacheKey=be8657ae-80c5-455a-a087-d0b04f6def3bHWRQ1521553140407&vip=false&c=2305b055-e4cb-4ad4-b180-9a5061b34731&'
+    # url = 'https://www.expedia.com.hk/cn/Odense-Hotels-Amalie-Bed-And-Breakfast-Apartments.h10121034.Hotel-Information?chkin=2018%2F5%2F29&chkout=2018%2F5%2F30&rm1=a2&regionId=6143836&sort=recommended&hwrqCacheKey=e8cacb15-f961-43b7-9dca-6af28b4b0677HWRQ1521553159212&vip=false&c=22c9b92d-4d8d-497d-b775-e8acd0ba2f16&'
+    # url = 'https://www.expedia.com.hk/cn/Fyn-Hotels-Amalie-Bed-And-Breakfast-Apartments.h10121034.Hotel-Information?chkin=2018%2F5%2F29&chkout=2018%2F5%2F30&rm1=a2&regionId=6143836&sort=recommended&hwrqCacheKey=e8cacb15-f961-43b7-9dca-6af28b4b0677HWRQ1521553159212&vip=false&c=22c9b92d-4d8d-497d-b775-e8acd0ba2f16&'
+    # url = 'https://www.expedia.com.hk/cn/Phetchabun-Hotels-Raiphuduen-Resort.h20574520.Hotel-Information?&chkin=2018/05/10&chkout=2018/05/11&rm1=a2&exp_dp=199.25&exp_ts=1524984622861&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
+    # url ='https://www.expedia.com.hk/cn/Phetchabun-Hotels-Tonkaew-Khaokho-Resort.h20575001.Hotel-Information?&chkin=2018/05/10&chkout=2018/05/11&rm1=a2&exp_dp=169.21&exp_ts=1524988272316&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
+    # url = 'https://www.expedia.com.hk/cn/Salvador-Hotels-Lindo-Village-Em-Itacimirim.h20176166.Hotel-Information?&chkin=2018/05/10&chkout=2018/05/11&rm1=a2'
+    # url = 'https://www.expedia.com.hk/cn/Lansing-Hotels-The-English-Inn.h36874.Hotel-Information?&chkin=2018/05/10&chkout=2018/05/11&rm1=a2&exp_dp=1560.48&exp_ts=1524990822579&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
+    # url = 'https://www.expedia.com.hk/cn/Da-Nang-Hotels-The-Ocean-Villas.h4714931.Hotel-Information?&chkin=2018/05/10&chkout=2018/05/11&rm1=a2&exp_dp=1341&exp_ts=1524991153159&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
+    # url = 'https://www.expedia.com.hk/cn/Wagga-Wagga-Hotels-International-Hotel-Wagga-Wagga.h8966967.Hotel-Information?&chkin=2018/05/10&chkout=2018/05/11&rm1=a2&exp_dp=805.84&exp_ts=1524993329954&exp_curr=HKD&swpToggleOn=false&exp_pg=HSR'
     other_info = {
         'source_id': '1000',
         'city_id': '50795'
@@ -471,7 +492,8 @@ if __name__ == '__main__':
         "http://10.10.32.22:48200/?type=px001&qid=0&query={%22req%22:%20[{%22source%22:%20%22ctripFlight%22,%20%22num%22:%201,%20%22type%22:%20%22verify%22,%20%22ip_type%22:%20%22test%22}]}&ptid=test&uid=test&tid=tid&ccy=spider_test").content
     proxy = json.loads(proxy_info)['resp'][0]['ips'][0]['inner_ip']
     proxies['socks'] = "socks5://" + proxy.encode('utf-8')
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}
     page = requests.get(url, headers=headers, proxies=proxies, verify=False)
     page.encoding = 'utf8'
     content = page.text
@@ -480,8 +502,15 @@ if __name__ == '__main__':
     # res = json.dumps(res, ensure_ascii=False)
     # result = json.loads(result)
     # print json.dumps(result, ensure_ascii=False)
-    print result
-
+    # print result
+    print result.grade
+    print result.pet_type
+    print result.chiled_bed_type
+    print result.description
+    a = dict(eval(str(result)))
+    # print json.dumps(a)
+    for i in a.items():
+        print i
     # print '#' * 100
     # keys = ['hotel_name', 'hotel_name_en', 'brand_name', 'address', 'service', 'description', 'accepted_cards']
     #

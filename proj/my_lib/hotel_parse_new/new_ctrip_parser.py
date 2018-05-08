@@ -139,6 +139,11 @@ def ctrip_parser(page, url, other_info):
         except Exception, e:
             traceback.print_exc(e)
 
+    try:
+        hotel.brand_name = root.xpath("//div[@id='groupBrandDesc']/div[@class='textbox']/p/b/text()")[0]
+    except Exception as e:
+        pass
+
     # print 'hotel.img_items =>', hotel.img_items
 
     # try:
@@ -315,6 +320,7 @@ def ctrip_parser(page, url, other_info):
 
     try:
         city_name = page_js.eval('hotelDomesticConfig')['query']['cityName']
+        hotel.city = city_name
         # city_name = page_js.eval('hotelDomesticConfig')['query']['cityName'].encode('raw-unicode-escape')
         country_id = page_js.eval('hotelDomesticConfig')['query']['country']
     except Exception as e:
@@ -348,6 +354,13 @@ def ctrip_parser(page, url, other_info):
     # print "chiled_bed_type==>%s" % hotel.chiled_bed_type
     # print 'check_in =>', hotel.check_in_time
     # print 'check_out =>', hotel.check_out_time
+    try:
+        address_l = address.split(",")
+        country = address_l[-1] if address_l else 'NULL'
+        hotel.country = country
+    except Exception as e:
+        hotel.country = 'NULL'
+
 
     try:
         address_l = address.split(",")
@@ -440,13 +453,23 @@ def ctrip_parser(page, url, other_info):
                 hotel_services_info += "特色::" + fea_str2
     except:
         hotel_services_info = hotel_services_info
-    hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name, 'country_id': country_id, 'hotel_services_info': hotel_services_info})
+    # try:
+    #     resrve_info = root.xpath("//div[@id='hotelAdd']/p[@id='bookingTip']/text()")
+    #     resrve_str = ''.join(map(lambda x: x.strip(), resrve_info))
+    # except:
+    #     resrve_str = "NULL"
+    hotel.others_info = json.dumps({'first_img': first_img, 'city_name': city_name,
+                                    'country_id': country_id, 'hotel_services_info': hotel_services_info,
+                                    })
     # hotel.facility = str(hotel.facility_content)
     # hotel.service = str(hotel.service_content)
     # hotel.feature = str(hotel.feature_content)
+    # res = json.loads(res)
+    # res = json.dumps(res, ensure_ascii=False)
+    # print res
     res = hotel.to_dict()
-
-    # res = hotel.to_dict()
+    # with open("ctrip.json", 'a') as f:
+    #     f.write(res + "\n")
     return res
 
 
@@ -483,7 +506,9 @@ if __name__ == '__main__':
     # url = 'http://hotels.ctrip.com/international/11494485.html'
     # url = 'http://hotels.ctrip.com/international/2002721.html'
     # url = 'http://hotels.ctrip.com/international/2002366.html'
-    url = 'http://hotels.ctrip.com/international/2216831.html'
+    # url = 'http://hotels.ctrip.com/international/2216831.html'
+    # url = 'http://hotels.ctrip.com/international/713478.html'
+    url = 'http://hotels.ctrip.com/international/2158769.html'
     url_list = ['http://hotels.ctrip.com/international/992466.html',
                 'http://hotels.ctrip.com/international/2611722.html',
                 'http://hotels.ctrip.com/international/3681269.html',
@@ -493,21 +518,30 @@ if __name__ == '__main__':
                 'http://hotels.ctrip.com/international/771969.html',
                 'http://hotels.ctrip.com/international/2802259.html',
                 'http://hotels.ctrip.com/international/3723826.html',
-                'http://hotels.ctrip.com/international/1983097.html',
-                'http://hotels.ctrip.com/international/4389196.html',
-                'http://hotels.ctrip.com/international/981517.html',
-                'http://hotels.ctrip.com/international/983720.html',
-                'http://hotels.ctrip.com/international/2612287.html',
-                'http://hotels.ctrip.com/international/737038.html',
-                'http://hotels.ctrip.com/international/705353.html',
-                'http://hotels.ctrip.com/international/713478.html',
-                'http://hotels.ctrip.com/international/3084846.html',
-                'http://hotels.ctrip.com/international/5128857.html',
-                'http://hotels.ctrip.com/international/684981.html']
+                'http://hotels.ctrip.com/international/1983097.html',]
+                # 'http://hotels.ctrip.com/international/4389196.html',
+                # 'http://hotels.ctrip.com/international/981517.html',
+                # 'http://hotels.ctrip.com/international/983720.html',
+                # 'http://hotels.ctrip.com/international/2612287.html',
+                # 'http://hotels.ctrip.com/international/737038.html',
+                # 'http://hotels.ctrip.com/international/705353.html',
+                # 'http://hotels.ctrip.com/international/713478.html',
+                # 'http://hotels.ctrip.com/international/3084846.html',
+                # 'http://hotels.ctrip.com/international/5128857.html',
+                # 'http://hotels.ctrip.com/international/684981.html']
     other_info = {
         'source_id': '1039433',
         'city_id': '10074'
     }
+    #
+    # for url in url_list:
+    #     page = requests.get(url)
+    #     page.encoding = 'utf8'
+    #     content = page.text
+    #     result = ctrip_parser(content, url, other_info)
+    #     res = json.loads(result)
+    #     res = json.dumps(res, ensure_ascii=False)
+    #     print res
 
     page = requests.get(url)
     page.encoding = 'utf8'

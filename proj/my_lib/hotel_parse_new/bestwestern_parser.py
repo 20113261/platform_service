@@ -31,7 +31,7 @@ def bestwestern_parser(content, url, other_info):
     # 酒店地址
     hotel.address = "".join(html.xpath('//div[contains(@class,"hotelImagebloc")]//div[contains(@class,"addressContainer")]/span/text()'))
     # 酒店所在城市
-    hotel.city = html.xpath('//div[contains(@class,"hotelImagebloc")]//div[contains(@class,"addressContainer")]/span[@id="address-1-city-state-zip"]/text()')[0]
+    hotel.city = html.xpath('//div[contains(@class,"hotelImagebloc")]//div[contains(@class,"addressContainer")]/span[@id="address-1-city-state-zip"]/text()')[0].strip()[:-1]
     # 酒店所在国家
     hotel.country = html.xpath('//div[contains(@class,"hotelImagebloc")]//div[contains(@class,"addressContainer")]/span')[-1].text
     # 城市ID（mioji）
@@ -80,7 +80,7 @@ def bestwestern_parser(content, url, other_info):
     hotel_service_info = __get_hotel_service(html)
     hotel.others_info = json.dumps({"hotel_services_info": hotel_service_info})
     print hotel.to_dict()
-    # with open("bestwestren.json", 'a') as f:
+    # with open("bestwestern.json", 'a') as f:
     #     f.write(hotel.to_dict() + "\n")
     return hotel.to_dict()
 
@@ -222,39 +222,64 @@ def get_hotel_facility(html):
 
 # 获取酒店设施、服务原始数据
 def __get_hotel_service(html):
-        hotel_service = ";".join(html.xpath(
+        hotel_service = "|".join(html.xpath(
             '//div[@class="hotelAmenities"]//div[contains(@class,"hotelAmenities")]//div[contains(@class,"hotelAmenities")]/ul//li/text()'))
-        room_service = ";".join(html.xpath(
-            '//div[@class="hotelAmenities"]//div[contains(@class,"roomAmenities")]//ul[@id="roomamenities"]/li/text()'))
-        service = hotel_service + ";" + room_service
+        room_service = "|".join(html.xpath(
+            '//div[@class="hotelAmenities"]//div[contains(@class,"roomAmenities")]//ul/li/text()'))
+        service = hotel_service + "|" + room_service
         return service
 
 
 if __name__ == '__main__':
     url = "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-victoria-palace-london-83873"
+    # url_l = [
+    #     "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-victoria-palace-london-83873",
+    #     "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-vauxhall-hotel-london-84215",
+    #     "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-delmere-hotel-london-83683",
+    #     "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-mornington-hotel-london-hyde-park-london-83187",
+    #     "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-boltons-hotel-london-kensington-london-83897",
+    #     "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-london-croydon-aparthotel-croydon-84209",
+    #     "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-maitrise-suites-apartment-hotel-london-83925",
+    #     "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-white-house-hotel-watford-83770",
+    #     "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-the-ship-hotel-weybridge-83913",
+    #     "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-welwyn-garden-city-homestead-court-hotel-welwyn-garden-city-83816"
+    # ]
     url_l = [
-        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-victoria-palace-london-83873",
-        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-vauxhall-hotel-london-84215",
-        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-delmere-hotel-london-83683",
-        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-mornington-hotel-london-hyde-park-london-83187",
-        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-boltons-hotel-london-kensington-london-83897",
-        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-london-croydon-aparthotel-croydon-84209",
-        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-maitrise-suites-apartment-hotel-london-83925",
-        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-white-house-hotel-watford-83770",
-        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-the-ship-hotel-weybridge-83913",
-        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-welwyn-garden-city-homestead-court-hotel-welwyn-garden-city-83816"
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-dragon-gate-inn-los-angeles-05341",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-la-mid-town-hotel-los-angeles-05724",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-hollywood-hills-hotel-hollywood-05204",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-glendale-los-angeles-05518",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-hollywood-plaza-inn-hollywood-05491",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-markland-hotel-monterey-park-05657",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-sunset-plaza-hotel-los-angeles-05377",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-airport-plaza-inn-inglewood-05463",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-plus-media-center-inn-suites-burbank-05631",
+        "https://www.bestwestern.net.cn/booking-path/hotel-details/best-western-airpark-hotel-inglewood-05459",
     ]
     req = requests.session()
-    for url in url_l:
-        resp = req.get(url, verify=False)
-        cookies = resp.cookies
-        # 经纬度
-        lng_lat = [cookies['search_locationLng'], cookies['search_locationLat']]
-        # 页面详情
-        html = resp.content
-        other_info = {
-            "source_id": "best-western-victoria-palace-london-83873",
-            "city_id": ""
-        }
-        content = [lng_lat, html]
-        res = bestwestern_parser(content, url, other_info)
+    # for url in url_l:
+    #     resp = req.get(url, verify=False)
+    #     cookies = resp.cookies
+    #     # 经纬度
+    #     lng_lat = [cookies['search_locationLng'], cookies['search_locationLat']]
+    #     # 页面详情
+    #     html = resp.content
+    #     other_info = {
+    #         "source_id": "best-western-victoria-palace-london-83873",
+    #         "city_id": ""
+    #     }
+    #     content = [lng_lat, html]
+    #     res = bestwestern_parser(content, url, other_info)
+
+    resp = req.get(url, verify=False)
+    cookies = resp.cookies
+    # 经纬度
+    lng_lat = [cookies['search_locationLng'], cookies['search_locationLat']]
+    # 页面详情
+    html = resp.content
+    other_info = {
+        "source_id": "best-western-victoria-palace-london-83873",
+        "city_id": ""
+    }
+    content = [lng_lat, html]
+    res = bestwestern_parser(content, url, other_info)
