@@ -317,6 +317,6 @@ def bestwest_list_task(self, task, **kwargs):
     return _sdk.execute()
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
-def bestwest_list_task(self, task, **kwargs):
+def holiday_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
