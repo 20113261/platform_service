@@ -186,6 +186,7 @@ if __name__ == '__main__':
     #
     # print(hotel_list_task(task=task))
 
+    #bestwest
     # task = Task(_worker='', _task_id='demo', _source='bestwest', _type='hotel_list',
     #             _task_name='list_hotel_bestwest_20180428a',
     #             _used_times=2, max_retry_times=6,
@@ -206,21 +207,39 @@ if __name__ == '__main__':
     #
     # print(hotel_list_task(task=task))
 
+    #holiday
+    # task = Task(_worker='', _task_id='demo', _source='Holiday', _type='hotel_list',
+    #             _task_name='list_hotel_holiday_20180507',
+    #             _used_times=2, max_retry_times=6,
+    #
+    # kwargs={
+    #                 "suggest_type" : 2,
+    #                 "check_in" : "20180701",
+    #                 "city_id" : "NULL",
+    #                 "suggest" : "{\"hits\": 2, \"countryCode\": \"0001\", \"longitude\": -80.1325, \"label\": \"South Beach, FL, United States\", \"rank\": 4.320963129957317, \"suggestion\": \"South Beach, FL, United States\", \"destinationType\": \"CITY\", \"latitude\": 25.77083, \"type\": \"B\"}",
+    #                 "country_id" : "501",
+    #                 "source" : "holiday",
+    #                 "part" : "20180507",
+    #                 "is_new_type" : 1,
+    #                 "date_index" : 0
+    #             },
+    #             _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
+    #
+    # print(hotel_list_task(task=task))
+
     task = Task(_worker='', _task_id='demo', _source='Holiday', _type='hotel_list',
-                _task_name='list_hotel_holiday_20180507',
+                _task_name='list_hotel_hyatt_20180507',
                 _used_times=2, max_retry_times=6,
 
     kwargs={
-                    "suggest_type" : 2,
-                    "check_in" : "20180701",
-                    "city_id" : "NULL",
-                    "suggest" : "{\"hits\": 2, \"countryCode\": \"0001\", \"longitude\": -80.1325, \"label\": \"South Beach, FL, United States\", \"rank\": 4.320963129957317, \"suggestion\": \"South Beach, FL, United States\", \"destinationType\": \"CITY\", \"latitude\": 25.77083, \"type\": \"B\"}",
-                    "country_id" : "501",
-                    "source" : "holiday",
-                    "part" : "20180507",
-                    "is_new_type" : 1,
-                    "date_index" : 0
-                },
+            "check_in" : "20180808",
+            "city_id" : "null",
+            "suggest" : "null",
+            "country_id" : "null",
+            "source" : "hyatt",
+            "date_index" : 0,
+            "source_id" : "null"
+        },
                 _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
 
     print(hotel_list_task(task=task))
