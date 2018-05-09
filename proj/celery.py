@@ -45,6 +45,10 @@ app.conf.update(
         Queue('grouptravel', exchange=Exchange('grouptravel', type='direct'), routing_key='grouptravel'),
 
         Queue('gha_hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='gha_hotel_list'),
+        Queue('hyatt_hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='hyatt_hotel_list'),
+        Queue('shangrila_hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='shangrila_hotel_list'),
+        Queue('starwood_hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='starwood_hotel_list'),
+
     ),
 
 )
