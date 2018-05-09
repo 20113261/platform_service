@@ -43,6 +43,8 @@ app.conf.update(
         Queue('supplement_field', exchange=Exchange('supplement_field', type='direct'), routing_key='supplement_field'),
         Queue('merge_task', exchange=Exchange('merge_task', type='direct'), routing_key='merge_task'),
         Queue('grouptravel', exchange=Exchange('grouptravel', type='direct'), routing_key='grouptravel'),
+
+        Queue('gha_hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='gha_hotel_list'),
     ),
 
 )

@@ -814,7 +814,7 @@ if __name__ == '__main__':
 
     # monitoring_PoiSource_list2detail()
 
-    monitoring_hotel_list2detail()
+    # monitoring_hotel_list2detail()
 
     city2list()
     # monitoring_poi_detail2imgOrComment()
