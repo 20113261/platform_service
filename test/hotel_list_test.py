@@ -228,39 +228,39 @@ if __name__ == '__main__':
     # print(hotel_list_task(task=task))
 
     #hyatt
-    # task = Task(_worker='', _task_id='demo', _source='Holiday', _type='hotel_list',
-    #             _task_name='list_hotel_hyatt_20180507',
-    #             _used_times=2, max_retry_times=6,
-    #
-    # kwargs={
-    #         "check_in" : "20180808",
-    #         "city_id" : "null",
-    #         "suggest" : "null",
-    #         "country_id" : "null",
-    #         "source" : "hyatt",
-    #         "date_index" : 0,
-    #         "source_id" : "null"
-    #     },
-    #
-    #             _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
-    #
-    # print(hotel_list_task(task=task))
-
-    #gha
     task = Task(_worker='', _task_id='demo', _source='Holiday', _type='hotel_list',
                 _task_name='list_hotel_hyatt_20180507',
                 _used_times=2, max_retry_times=6,
 
-                kwargs={
-    "check_in" : "20180520",
-    "city_id" : "NULL",
-    "suggest" : "3212&&捷克",
-    "country_id" : "NULL",
-    "source" : "gha",
-    "date_index" : 0,
-    "source_id" : "3212"
-},
+    kwargs={
+            "check_in" : "20180808",
+            "city_id" : "null",
+            "suggest" : "null",
+            "country_id" : "null",
+            "source" : "hyatt",
+            "date_index" : 0,
+            "source_id" : "null"
+        },
 
                 _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
 
     print(hotel_list_task(task=task))
+
+    #gha
+#     task = Task(_worker='', _task_id='demo', _source='Holiday', _type='hotel_list',
+#                 _task_name='list_hotel_hyatt_20180507',
+#                 _used_times=2, max_retry_times=6,
+#
+#                 kwargs={
+#     "check_in" : "20180520",
+#     "city_id" : "NULL",
+#     "suggest" : "3212&&捷克",
+#     "country_id" : "NULL",
+#     "source" : "gha",
+#     "date_index" : 0,
+#     "source_id" : "3212"
+# },
+#
+#                 _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
+#
+#     print(hotel_list_task(task=task))

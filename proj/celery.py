@@ -44,10 +44,10 @@ app.conf.update(
         Queue('merge_task', exchange=Exchange('merge_task', type='direct'), routing_key='merge_task'),
         Queue('grouptravel', exchange=Exchange('grouptravel', type='direct'), routing_key='grouptravel'),
 
-        Queue('gha_hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='gha_hotel_list'),
-        Queue('hyatt_hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='hyatt_hotel_list'),
-        Queue('shangrila_hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='shangrila_hotel_list'),
-        Queue('starwood_hotel_list', exchange=Exchange('hotel_list', type='direct'), routing_key='starwood_hotel_list'),
+        Queue('hotel_list_gha', exchange=Exchange('hotel_list', type='direct'), routing_key='hotel_list_gha'),
+        Queue('hotel_list_hyatt', exchange=Exchange('hotel_list', type='direct'), routing_key='hotel_list_hyatt'),
+        Queue('hotel_list_shangrila', exchange=Exchange('hotel_list', type='direct'), routing_key='hotel_list_shangrila'),
+        Queue('hotel_list_starwood', exchange=Exchange('hotel_list', type='direct'), routing_key='hotel_list_starwood'),
 
     ),
 
