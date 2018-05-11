@@ -98,19 +98,13 @@ class BaseSDK(object):
                 [self.task.worker, get_local_ip(), self.task.source, self.task.type, self.task.error_code,
                  self.task.task_name])))
 
-        if finished:
-            mongo_update_task(
-                queue=self.task.queue,
-                task_name=self.task.task_name,
-                task_id=self.task.task_id,
-                finish_code=1
-            )
-        else:
-            mongo_update_task(
-                queue=self.task.queue,
-                task_name=self.task.task_name,
-                task_id=self.task.task_id
-            )
+        mongo_update_task(
+            queue=self.task.queue,
+            task_name=self.task.task_name,
+            task_id=self.task.task_id,
+            error_code=self.task.error_code
+        )
+
 
     def _execute(self, **kwargs):
         pass
