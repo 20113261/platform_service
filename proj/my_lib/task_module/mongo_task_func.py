@@ -235,15 +235,16 @@ def _get_task_total_simple(collection_name, queue, used_times=6, limit=10000, de
 
 
 @func_time_logger
-def update_task(queue, task_name, task_id, finish_code=0):
+def update_task(queue, task_name, task_id, error_code):
     collections = db[generate_collection_name(queue=queue, task_name=task_name)]
-    if int(finish_code) == 1:
+    if error_code == 0:
         return collections.update({
             'task_token': task_id
         }, {
             '$set': {
                 "finished": 1,
-                'running': 0
+                'running': 0,
+                'error_code': error_code
             }
         }, multi=True)
     else:
@@ -251,7 +252,8 @@ def update_task(queue, task_name, task_id, finish_code=0):
             'task_token': task_id
         }, {
             '$set': {
-                'running': 0
+                'running': 0,
+                'error_code': error_code
             }
         }, multi=True)
 
