@@ -8,8 +8,8 @@ from lxml import html as HTML
 # from data_obj import BookingHotel
 # from mioji.common.class_common import Hotel_New
 # from proj.my_lib.models.HotelModel import HotelNewBase as Hotel_New
-from proj.my_lib.models.HotelModel import HotelNewBase
-# from mioji.common.class_common import Hotel_New as HotelNewBase
+from proj.my_lib.models.HotelModel import BookingHotelNewBase, Facilities, Service
+# from mioji.common.class_common import Hotel_New as BookingHotelNewBase
 # from common.common import get_proxy
 # from proj.my_lib.Common.KeyMatch import key_is_legal
 
@@ -18,32 +18,61 @@ sys.setdefaultencoding('utf-8')
 
 
 def booking_parser(content, url, other_info):
-    hotel = HotelNewBase()
+    hotel = BookingHotelNewBase()
+    facility_content = Facilities()
+    service_content = Service()
     try:
         root = HTML.fromstring(content)
     except Exception as e:
         print e.message
-    hotel.hotel_name = re.findall(r'b_hotel_name:.*?\'(.+?)\',', content)[0].strip()
-    hotel.hotel_name_en = re.findall(r'hotelName:.*?\"(.+?)\",', content)[0].strip().replace("-",' ')
+    # print content
+    name_info = root.xpath('//h2[@id="hp_hotel_name"]/text()')[0]
+    name = name_info.split('（')
+    try:
+        hotel.hotel_name = name[-1].replace('）', '')
+    except:
+        hotel.hotel_name = ''
+    try:
+        hotel.hotel_name_en = name[0]
+    except:
+        hotel.hotel_name_en = ''
+    # hotel.hotel_name = re.findall(r'b_hotel_name:.*?\'(.+?)\',', content)[0].strip()
+    # hotel.hotel_name_en = re.findall(r'hotelName:.*?\"(.+?)\",', content)[0].strip().replace("-",' ')
     hotel.source = 'booking'
     hotel.source_id = other_info['source_id']
     latitude = re.findall(r'b_map_center_latitude = (.*?);', content)[0].strip()
     longitude = re.findall(r'b_map_center_longitude = (.*?);', content)[0].strip()
-    hotel.map_info = '{},{}'.format(latitude, longitude)
+    hotel.map_info = '{},{}'.format(longitude, latitude)
     location_dict = json.loads(
         re.findall(r'<script type="application/ld\+json">(.*?)</script>', content, re.S)[0].replace('\n', '').strip())
     hotel.address = location_dict['address']['streetAddress']
-    hotel.city = re.findall(r'city_name:.*?\'(.*?)\'', content)[0].strip()
+    try:
+        hotel.city = re.findall(r'city_name:.*?\'(.*?)\'', content)[0].strip()
+    except:
+        hotel.city = 'NULL'
     hotel.country = location_dict['address']['addressCountry']
     hotel.city_id = other_info['city_id']
     hotel.postal_code = re.findall(r'"postalCode" : "(.*?)"', content, re.S)[0].strip()
-    print hotel.postal_code,1111111111
     try:
         hotel.star = root.xpath('//*[@id="wrap-hotelpage-top"]/div[@class="hp__hotel-title"]/span/span[@class="hp__hotel_ratings__stars nowrap"]/i/@title')[0].encode('utf-8').replace('星级酒店', '').replace("星级",'')
+        # if hotel.star.find('行业官方由第三方行业官方') > -1:
+        if len(hotel.star) > 10:
+            raise Exception
     except IndexError as e:
         print('Parser ERROR, NO Star Infomation.The reason follows: %s' % e.message)
-    hotel.grade = location_dict['aggregateRating']['ratingValue']
-    hotel.review_num = location_dict['aggregateRating']['reviewCount']
+    except Exception as e:
+        try:
+            star_tmp = root.xpath('//*[@id="wrap-hotelpage-top"]/div[@class="hp__hotel-title"]/span/span[@class="hp__hotel_ratings__stars nowrap"]/i/svg/@width')[0]
+            hotel.star = int(star_tmp)/13
+        except:
+            hotel.star = -1
+
+    try:
+        hotel.grade = location_dict['aggregateRating']['ratingValue']
+        hotel.review_num = location_dict['aggregateRating']['reviewCount']
+    except:
+        hotel.grade = ''
+        hotel.review_num = ''
     hotel.Img_first = location_dict['image']
     # hotel.other_info =
     # hotel.hotel_phone =
@@ -69,15 +98,16 @@ def booking_parser(content, url, other_info):
     hot_facilities = [i.replace('\n', '').strip() for i in root.xpath('//*[@id="hp_facilities_box"]/div[@class="facilities-sliding-keep"]/div/div[@class="important_facility "]//text()') if i.replace('\n', '').strip()]
     wifi = ''.join([i.replace('\n', '').strip() for i in root.xpath('//*[@id="hp_facilities_box"]//div[@data-section-id=11]/ul/li[@class="policy"]/p/span//text()') if i.replace('\n', '').strip()])
     if u'免费无线网络连接' in hot_facilities or u'免费！住宿方于各处提供WiFi（免费）。' in wifi:
-        hotel.facility_content['Public_wifi'] = wifi
+        facility_content['Public_wifi'] = wifi
     elif u'免费！住宿方于客房提供WiFi（免费）。' in wifi:
-        hotel.facility_content['Room_wifi'] = wifi
+        facility_content['Room_wifi'] = wifi
     elif u'客房' in wifi and u'有线网络' in wifi:
-        hotel.facility_content['Room_wired'] = wifi
+        facility_content['Room_wired'] = wifi
     elif u'公共' in wifi or u'各处' in wifi and u'有线网络' in wifi:
-        hotel.facility_content['Public_wired'] = wifi
+        facility_content['Public_wired'] = wifi
     parking = ''.join([i.replace('\n', '').strip() for i in root.xpath('//*[@id="hp_facilities_box"]//div[@data-section-id=16]//p//text()') if i.replace('\n', '').strip()])
-    hotel.facility_content['Parking'] = parking
+    facility_content['Parking'] = parking
+    hotel.facility = facility_content.to_values()
 
     # 设施新字段添加到facilities_dict， 即可自动匹配
     facilities_dict = {'Swimming_Pool': ['游泳池'], 'gym': ['健身房'], 'SPA': ['SPA'], 'Bar': ['酒吧'], 'Coffee_house': ['咖啡厅'],
@@ -98,17 +128,18 @@ def booking_parser(content, url, other_info):
         for keys, faci in facilities_dict.items():
             for fac in faci:
                 if fac in value:
-                    if keys in hotel.facility_content:
-                        hotel.facility_content[keys] = hotel.facility_content[keys] + ',' +every
+                    if keys in facility_content:
+                        facility_content[keys] = facility_content[keys] + ',' +every
                     else:
-                        hotel.facility_content[keys] = every
+                        facility_content[keys] = every
                     parser_list.append(every)
+    hotel.facility = facility_content.to_values()
     print('酒店设施：{}'.format(', '.join(part_facilities)))
     part_facilitiess = []
     for i in part_facilities:
         if i:
             part_facilitiess.append(i)
-    all_service = '{}'.format(',x '.join(part_facilitiess))
+    all_service = '{}'.format('|'.join(part_facilitiess))
     print('已解析出：%s' % ', '.join(parser_list))
     service_list = map(lambda x: x.encode('utf-8').replace('\n', '').strip(),
                        root.xpath('//*[@id="hp_facilities_box"]//div[@data-section-id=3]/ul/li/span[1]/text()'))
@@ -126,7 +157,8 @@ def booking_parser(content, url, other_info):
         for serv in service_dict.values():
             value = serv.replace('服务', '')
             if value in every:
-                hotel.service_content[reverse_sevice_dict[serv]] = every
+                service_content[reverse_sevice_dict[serv]] = every
+                hotel.service = service_content.to_values()
                 parser_sevice_list.append(every)
     print('酒店服务：{}'.format(', '.join(service_list) or '如果你看见了这句话请不要好奇，它表示酒店服务项目是空的'))
     print('已解析出：%s' % ', '.join(parser_sevice_list))
@@ -135,16 +167,24 @@ def booking_parser(content, url, other_info):
     for i in service_list:
         if i:
             service_lists.append(i)
-    all_service = '{}'.format(', '.join(service_lists)) + all_service
+    all_service = '{}'.format('|'.join(service_lists)) + all_service
+
     hotel.img_items = '|'.join(root.xpath('//*[@id="photos_distinct"]/a[position()<last()-1]/@href'))
     if not hotel.img_items:
         hotel.img_items = '|'.join(root.xpath('//div[@class="bh-photo-grid-thumb-cell"]/a/@href'))
+    if not hotel.img_items:
+        hotel.img_items = '|'.join(root.xpath('//div[@aria-hidden="true"]/a/img/@src'))
+    if not hotel.img_items:
+        hotel.img_items = '|'.join(root.xpath('//div[@class="hp-gallery"]/div/div/img/@src'))
     hotel.description = '\n'.join(
-        map(lambda x: x.strip(), root.xpath('//*[@id="summary"]/p/text()')))
+        map(lambda x: x.strip(), root.xpath('//*[@id="summary"]/p/text()|//*[@id="summary"]/p/span/text()')))
     a = root.xpath('//*[@class="jq_tooltip payment_methods_overall"]/button/@aria-label|'
-                                               '//div[contains(@class, "payment_promotion_labels")]/label/span/text()')
-
+                                               '//div[contains(@class, "payment_promotion_labels")]/label/span/text()|'
+                   '//p[@class=" payment_methods_overall"]/button/@aria-label')
+    # print content
+    # a = root.xpath('//p[@class=" payment_methods_overall"]/button/@aria-label')
     hotel.accepted_cards = '|'.join(a)
+    print hotel.accepted_cards, '==========='
     hotel.check_in_time = re.sub(pattern=r'<script.+?script>', repl='',
                                  string=root.xpath('//*[@id="checkin_policy"]/p/span/@data-caption')[0].encode('utf-8'),
                                  flags=re.S).strip()
@@ -157,7 +197,7 @@ def booking_parser(content, url, other_info):
     hotel.others_info = json.dumps({'hotel_services_info': all_service.replace(', , ,',','), "reserve": reserve})
 
     # print json.dumps(hotel.to_dict(), ensure_ascii=False)
-    return hotel.to_dict()
+    return hotel
 
 
 if __name__ == '__main__':
@@ -181,17 +221,18 @@ if __name__ == '__main__':
     # url_list = (i for i in open(r'/Users/mioji/work/work_place/booking_task.txt', 'r'))
     # print url_list, '-----'
     url_list = [
-
-        'http://www.booking.com/hotel/nl/salon-la-haye.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=cf33ef00c3ac1c507f69fca9dbfcdbe8;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;aer=1;srpvid=42bd1612c0660471;srepoch=1521601702;highlighted_blocks=100004801_101902367_2_0_0;all_sr_blocks=100004801_101902367_2_0_0;bshb=2;room1=A%2CA;hpos=10;hapos=205;dest_type=city;dest_id=-2147114;srfid=af747ee3d1c054c692eff026b7c1e77d5096aab2X205;from=searchresults;highlight_room=;spdest=ci/-2147114;spdist=22.7#hotelTmpl',
-        'https://www.booking.com/hotel/fr/best-western-paris-montmartre.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;all_sr_blocks=23789602_88985433_0_2_0;bshb=2;checkin=2018-05-01;checkout=2018-05-02;dest_id=-1456928;dest_type=city;dist=0;dotd_fb=1;hapos=1;highlighted_blocks=23789602_88985433_0_2_0;hpos=1;room1=A%2CA;sb_price_type=total;srepoch=1524813298;srfid=9465f163c0485ea263818c9dc64d8986e6706127X1;srpvid=d11232f8dcf20033;type=total;ucfs=1&#hotelTmpl',
-        'https://www.booking.com/hotel/jp/niwano-tokyo.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=b62833243de00664;srepoch=1524813386;highlighted_blocks=23682101_101298042_0_2_0;all_sr_blocks=23682101_101298042_0_2_0;bshb=2;room1=A%2CA;hpos=1;hapos=1;dest_type=city;dest_id=-246227;dotd_fb=1;srfid=38120cdd5600fd2ba120e872c3fa65aff90e70c2X1;from=searchresults;highlight_room=;sr_dotd=1#hotelTmpl',
-        'https://www.booking.com/hotel/gb/marlin-waterloo.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=e66e334512260203;srepoch=1524813454;highlighted_blocks=235686801_101022090_2_0_0;all_sr_blocks=235686801_101022090_2_0_0;bshb=2;room1=A%2CA;hpos=1;hapos=1;dest_type=city;dest_id=-2601889;dotd_fb=1;srfid=47ef19a1eb87f3a0f84a1b93438cfd9a9ac535d8X1;from=searchresults;highlight_room=;sr_dotd=1#hotelTmpl',
-        'https://www.booking.com/hotel/it/domina-roma-capannelle-conference.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;all_sr_blocks=8512501_88159292_0_2_0;bshb=2;checkin=2018-05-01;checkout=2018-05-02;dest_id=-126693;dest_type=city;dist=0;group_adults=2;hapos=2;highlighted_blocks=8512501_88159292_0_2_0;hpos=2;room1=A%2CA;sb_price_type=total;srepoch=1524813483;srfid=02de055843d0a9eb717f4303e9d11d903614986eX2;srpvid=3ffd3353e3a000a1;type=total;ucfs=1&#hotelTmpl',
-        'https://www.booking.com/hotel/us/the-park-ave-north-new-york.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=e0bd3366b83203a2;srepoch=1524813518;highlighted_blocks=166971204_89567537_2_0_0;all_sr_blocks=166971204_89567537_2_0_0;bshb=2;room1=A%2CA;hpos=1;hapos=1;dest_type=city;dest_id=20088325;srfid=9bd1108d51ffe4c75729bec1ead7f6d717cd4006X1;from=searchresults;highlight_room=#hotelTmpl',
-        'https://www.booking.com/hotel/my/the-wembley-st-giles-premier.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=3a9b3377b7bb0049;srepoch=1524813552;highlighted_blocks=124595902_107864107_0_2_0;all_sr_blocks=124595902_107864107_0_2_0;bshb=2;room1=A%2CA;hpos=2;hapos=2;dest_type=country;dest_id=128;srfid=51520cab10f3192cbfc6401606b3a80dbc483909X2;from=searchresults;highlight_room=#hotelTmpl',
-        'https://www.booking.com/hotel/mv/triton-beach-amp-spa.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=3c39338a9774000c;srepoch=1524813589;highlighted_blocks=181362701_91419671_2_41_0;all_sr_blocks=181362701_91419671_2_41_0;bshb=2;room1=A%2CA;hpos=1;hapos=1;dest_type=region;dest_id=4862;dotd_fb=1;srfid=024be238dbc90bef2cf935d06f6d89eb004c7d67X1;from=searchresults;highlight_room=;sr_dotd=1#hotelTmpl',
-        'https://www.booking.com/hotel/th/the-residence-on-thonglor.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=ad3733a96046018f;srepoch=1524813654;highlighted_blocks=147058101_100002739_0_2_0;all_sr_blocks=147058101_100002739_0_2_0;bshb=2;room1=A%2CA;hpos=1;hapos=1;dest_type=city;dest_id=-3414440;dotd_fb=1;srfid=f27167f36cd105857602a3e7572cc6b81ec82065X1;from=searchresults;highlight_room=;sr_dotd=1#hotelTmpl',
-        'https://www.booking.com/hotel/ca/eaton-chelsea.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;all_sr_blocks=7618801_95181527_2_2_0;bshb=2;checkin=2018-05-01;checkout=2018-05-02;dest_id=-574890;dest_type=city;dist=0;group_adults=2;hapos=1;highlighted_blocks=7618801_95181527_2_2_0;hpos=1;room1=A%2CA;sb_price_type=total;srepoch=1524813688;srfid=970f74be72c654ffcfd5a7a9ad9c56eea7d48d8cX1;srpvid=dd8733bb58160151;type=total;ucfs=1&#hotelTmpl'
+        'https://www.booking.com/hotel/us/columbine-inn-idaho-springs.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=f45de7384cf1d843f932922d8e061866;aer=1;all_sr_blocks=290362403_113758217_2_0_0;bshb=2;checkin=2018-05-19;checkout=2018-05-20;dest_id=20017647;dest_type=city;dist=0;group_adults=2;hapos=13;highlighted_blocks=290362403_113758217_2_0_0;hpos=13;room1=A%2CA;sb_price_type=total;spdest=ci%2F20017647;spdist=18.7;srepoch=1523812306;srfid=b1fe2ca7df3dc9cf5a4e27a81b68e932bb682187X13;srpvid=3a4e78e8c4680013;type=total;ucfs=1&#hotelTmpl',
+        # 'http://www.booking.com/hotel/it/alcione-lido-apartment.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=c9b9ccf617da86e9dea79445303027c0;checkin=2018-06-23;checkout=2018-06-24;ucfs=1;srpvid=12d16f6d7403002d;srepoch=1523980253;highlighted_blocks=283688901_113569386_3_0_0;all_sr_blocks=283688901_113569386_3_0_0;bshb=2;room1=A%2CA;hpos=5;hapos=20;dest_type=city;dest_id=-120151;srfid=5dd5b41987f56c56cddd130d44185a61a5e718c4X20;from=searchresults;highlight_room=#hotelTmpl'
+        # 'http://www.booking.com/hotel/nl/salon-la-haye.zh-cn.html?aid=376390;label=misc-aHhSC9cmXHUO1ZtqOcw05wS94870954985%3Apl%3Ata%3Ap1%3Ap2%3Aac%3Aap1t1%3Aneg%3Afi%3Atikwd-11455299683%3Alp9061505%3Ali%3Adec%3Adm;sid=cf33ef00c3ac1c507f69fca9dbfcdbe8;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;aer=1;srpvid=42bd1612c0660471;srepoch=1521601702;highlighted_blocks=100004801_101902367_2_0_0;all_sr_blocks=100004801_101902367_2_0_0;bshb=2;room1=A%2CA;hpos=10;hapos=205;dest_type=city;dest_id=-2147114;srfid=af747ee3d1c054c692eff026b7c1e77d5096aab2X205;from=searchresults;highlight_room=;spdest=ci/-2147114;spdist=22.7#hotelTmpl',
+        # 'https://www.booking.com/hotel/fr/best-western-paris-montmartre.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;all_sr_blocks=23789602_88985433_0_2_0;bshb=2;checkin=2018-05-01;checkout=2018-05-02;dest_id=-1456928;dest_type=city;dist=0;dotd_fb=1;hapos=1;highlighted_blocks=23789602_88985433_0_2_0;hpos=1;room1=A%2CA;sb_price_type=total;srepoch=1524813298;srfid=9465f163c0485ea263818c9dc64d8986e6706127X1;srpvid=d11232f8dcf20033;type=total;ucfs=1&#hotelTmpl',
+        # 'https://www.booking.com/hotel/jp/niwano-tokyo.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=b62833243de00664;srepoch=1524813386;highlighted_blocks=23682101_101298042_0_2_0;all_sr_blocks=23682101_101298042_0_2_0;bshb=2;room1=A%2CA;hpos=1;hapos=1;dest_type=city;dest_id=-246227;dotd_fb=1;srfid=38120cdd5600fd2ba120e872c3fa65aff90e70c2X1;from=searchresults;highlight_room=;sr_dotd=1#hotelTmpl',
+        # 'https://www.booking.com/hotel/gb/marlin-waterloo.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=e66e334512260203;srepoch=1524813454;highlighted_blocks=235686801_101022090_2_0_0;all_sr_blocks=235686801_101022090_2_0_0;bshb=2;room1=A%2CA;hpos=1;hapos=1;dest_type=city;dest_id=-2601889;dotd_fb=1;srfid=47ef19a1eb87f3a0f84a1b93438cfd9a9ac535d8X1;from=searchresults;highlight_room=;sr_dotd=1#hotelTmpl',
+        # 'https://www.booking.com/hotel/it/domina-roma-capannelle-conference.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;all_sr_blocks=8512501_88159292_0_2_0;bshb=2;checkin=2018-05-01;checkout=2018-05-02;dest_id=-126693;dest_type=city;dist=0;group_adults=2;hapos=2;highlighted_blocks=8512501_88159292_0_2_0;hpos=2;room1=A%2CA;sb_price_type=total;srepoch=1524813483;srfid=02de055843d0a9eb717f4303e9d11d903614986eX2;srpvid=3ffd3353e3a000a1;type=total;ucfs=1&#hotelTmpl',
+        # 'https://www.booking.com/hotel/us/the-park-ave-north-new-york.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=e0bd3366b83203a2;srepoch=1524813518;highlighted_blocks=166971204_89567537_2_0_0;all_sr_blocks=166971204_89567537_2_0_0;bshb=2;room1=A%2CA;hpos=1;hapos=1;dest_type=city;dest_id=20088325;srfid=9bd1108d51ffe4c75729bec1ead7f6d717cd4006X1;from=searchresults;highlight_room=#hotelTmpl',
+        # 'https://www.booking.com/hotel/my/the-wembley-st-giles-premier.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=3a9b3377b7bb0049;srepoch=1524813552;highlighted_blocks=124595902_107864107_0_2_0;all_sr_blocks=124595902_107864107_0_2_0;bshb=2;room1=A%2CA;hpos=2;hapos=2;dest_type=country;dest_id=128;srfid=51520cab10f3192cbfc6401606b3a80dbc483909X2;from=searchresults;highlight_room=#hotelTmpl',
+        # 'https://www.booking.com/hotel/mv/triton-beach-amp-spa.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=3c39338a9774000c;srepoch=1524813589;highlighted_blocks=181362701_91419671_2_41_0;all_sr_blocks=181362701_91419671_2_41_0;bshb=2;room1=A%2CA;hpos=1;hapos=1;dest_type=region;dest_id=4862;dotd_fb=1;srfid=024be238dbc90bef2cf935d06f6d89eb004c7d67X1;from=searchresults;highlight_room=;sr_dotd=1#hotelTmpl',
+        # 'https://www.booking.com/hotel/th/the-residence-on-thonglor.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;checkin=2018-05-01;checkout=2018-05-02;ucfs=1;srpvid=ad3733a96046018f;srepoch=1524813654;highlighted_blocks=147058101_100002739_0_2_0;all_sr_blocks=147058101_100002739_0_2_0;bshb=2;room1=A%2CA;hpos=1;hapos=1;dest_type=city;dest_id=-3414440;dotd_fb=1;srfid=f27167f36cd105857602a3e7572cc6b81ec82065X1;from=searchresults;highlight_room=;sr_dotd=1#hotelTmpl',
+        # 'https://www.booking.com/hotel/ca/eaton-chelsea.zh-cn.html?aid=334565;label=baidu-brand-list1;sid=d0fc884077eeadc9f920d649c9107367;all_sr_blocks=7618801_95181527_2_2_0;bshb=2;checkin=2018-05-01;checkout=2018-05-02;dest_id=-574890;dest_type=city;dist=0;group_adults=2;hapos=1;highlighted_blocks=7618801_95181527_2_2_0;hpos=1;room1=A%2CA;sb_price_type=total;srepoch=1524813688;srfid=970f74be72c654ffcfd5a7a9ad9c56eea7d48d8cX1;srpvid=dd8733bb58160151;type=total;ucfs=1&#hotelTmpl'
     ]
     gevent.spawn(list_to_queue, url_list).join()
     print(queue.qsize())
@@ -210,6 +251,7 @@ if __name__ == '__main__':
                     session = requests.session()
                     user_agent = ua.random
                     session.get(url_index, headers={'User-Agent': user_agent})
+                    print url_index
                     content = session.get(url, headers={'User-Agent': user_agent}).text
                 except:
                     pass

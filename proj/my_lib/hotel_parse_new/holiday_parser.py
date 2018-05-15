@@ -7,7 +7,7 @@ from lxml.html import fromstring
 from lxml import etree
 # from mioji.common.utils import setdefaultencoding_utf8
 from proj.my_lib.models.HotelModel import HotelNewBase
-# from mioji.common.class_common import Hotel_New as HotelNewBase
+#from mioji.common.class_common import Hotel_New as HotelNewBase
 reload(sys)
 sys.setdefaultencoding('utf-8')
 # setdefaultencoding_utf8()
@@ -35,6 +35,7 @@ def holiday_parser(content, url, other_info):
             pass
     else:
         content1, content2 = content
+    tree = etree.HTML(content2)
     re_match = re.search('/hotels/cn/zh/(\w+)/hoteldetail', url)
     hotel_code = re_match.group(1) if re_match else ''
 
@@ -56,7 +57,11 @@ def holiday_parser(content, url, other_info):
     hotel.postal_code = resp.get('address', '').get('zip', '')
     hotel.star = '-1'
     hotel.grade = resp.get('profile', '').get('averageReview', '')
+    if not hotel.grade:
+        hotel.grade = "".join(tree.xpath('//*[@id="review-link"]/span[@itemprop="ratingValue"]/text()'))
     hotel.review_num = resp.get('profile', '').get('totalReviews', '')
+    if not hotel.review_num:
+        hotel.review_num = ''.join(tree.xpath('//*[@id="review-link"]/span/span[@itemprop="reviewCount"]/text()'))
     hotel.check_in_time = resp.get('policies', '').get('checkinTime', '')
     hotel.check_out_time = resp.get('policies', '').get('checkoutTime', '')
     first_img = resp.get('profile', '')
@@ -65,38 +70,13 @@ def holiday_parser(content, url, other_info):
         if first_img:
             first_img = first_img.get('originalUrl', '')
             hotel.Img_first = first_img
-    hotel.description = resp.get('profile', '').get('longDescription', '') + '\n' + resp.get('profile', '').get('shortDescription', '')
-    # detail['has_wifi'] = 'Yes' if any([u'无线互联网' in ''.join(i.values()) or 'wifi' in ''.join(i.values()) for i in
-    #                                         resp.get('facilities', '')]) else detail.get('has_wifi', 'Null')
-    # detail['service'] = detail.get('service', '') + get_api_server(resp)
-    facilities_dict = {'Swimming_Pool': '泳池', 'gym': '健身', 'SPA': 'SPA', 'Bar': '酒吧', 'Coffee_house': '咖啡厅',
-                       'Tennis_court': '网球场', 'Golf_Course': '高尔夫球场', 'Sauna': '桑拿', 'Mandara_Spa': '水疗中心',
-                       'Recreation': '儿童娱乐场', 'Business_Centre': '商务中心', 'Lounge': '行政酒廊',
-                       'Wedding_hall': '婚礼礼堂', 'Restaurant': '餐厅', 'Parking': '停车',
-                       'Airport_bus': '机场班车', 'Valet_Parking': '代客泊车', 'Call_service': '叫车服务',
-                       'Rental_service': '租车服务', 'Room_wifi': '无线互联网', 'Room_wired': '有线互联网', 'Public_wifi': '无线互联网', 'Public_wired': '有线互联网'}
-    reverse_facility_dict = {v: k for k, v in facilities_dict.items()}
-    service_dict = {'Luggage_Deposit': '行李寄存', 'front_desk': '24小时前台', 'Lobby_Manager': '24小时大堂经理',
-                    '24Check_in': '24小时办理入住', 'Security': '24小时安保', 'Protocol': '礼宾服务',
-                    'wake': '叫醒服务', 'Chinese_front': '中文前台', 'Postal_Service': '邮政服务',
-                    'Fax_copy': '传真/复印', 'Laundry': '洗衣服务', 'polish_shoes': '擦鞋服务', 'Frontdesk_safe': '保险',
-                    'fast_checkin': '快速办理入住', 'ATM': '自动柜员机(ATM)/银行服务', 'child_care': '儿童看护',
-                    'Food_delivery': '送餐服务'}
-    reverse_sevice_dict = {v: k for k, v in service_dict.items()}
-    facilities = resp.get("facilities", "")
-    for each in facilities:
-        if each['id'] == 'NO_PETS_ALLOWED' or each['id'] == 'PETS_ALLOWED':
-            hotel.pet_type = each['name']
-        for fac_value in facilities_dict.values():
-            if fac_value in each['name']:
-                hotel.facility_content[reverse_facility_dict[fac_value]] = each['name']
-        for ser_value in service_dict.values():
-            if ser_value in each['name']:
-                hotel.service_content[reverse_sevice_dict[ser_value]] = each['name']
+    description = resp.get('profile', '').get('longDescription', '')
+    hotel.description = re.sub('<.*?>','',description)
+
+
     fea_str = get_api_server(resp)
-    tree = etree.HTML(content2)
-    ser_str = get_ota_server(tree, '上网', '互联网', '泳', '退房', '餐', '预定', '停车', '健身', '运动', '泳池', '特色', '服务')
-    hotel_services_info = fea_str + ser_str
+
+    hotel_services_info = fea_str
     hotel.others_info = json.dumps({
         'city': detail.get('city', ''),
         'country': detail.get('country', ''),
@@ -106,34 +86,32 @@ def holiday_parser(content, url, other_info):
     })
     hotel.img_items = get_all_pics(tree)
 
-    # content_list = tree.xpath("//div[@class='accordian-content']/li/div[@class='header']/h2/span/text()")
-    # index = 1
-    # for content in content_list:
-    #     if content == "停车":
-    #         parking_list = tree.xpath("//div[@class='accordian-content']/li[{}]/div[@class='item-content']/ul/li/text()".format(index))
-    #         hotel.facility_content['Parking'] = " ".join(parking_list)
-    #     if content == "宠物政策":
-    #         pet_list = tree.xpath("//div[@class='accordian-content']/li[{}]/div[@class='item-content']/ul/li/text()".format(index))
-    #         hotel.pet_type = " ".join(pet_list)
-    #     index += 1
     hotel.hotel_zip_code = hotel.postal_code
-    # try:
-    #     hotel.hotel_phone = tree.xpath("//div[@class='resdirect-num tel-no']/span/a/text()")[0]
-    # except Exception as e:
-    #     hotel.hotel_phone = "NULL"
     res = hotel.to_dict()
-    # res = json.loads(res)
-    # print json.dumps(res, ensure_ascii=False)
     return res
 
 
 def get_all_street(resp):
-    country = resp.get('address', '').get('country', '').get('name', '')
+    address = []
+    country = resp.get('address', {}).get('country', {}).get('name', '')
+    city =  resp.get('address', {}).get("city","")
+    zip = resp.get('address', {}).get("zip", "")
+    state = resp.get('address', {}).get('state', {}).get("name","")
     street = ''
     for k, v in resp.get('address', '').items():
         if k.startswith('street') and v:
-            street += v
-    return country + street
+            street += v + ' '
+    if street:
+        address.append(street)
+    if city:
+        address.append(city)
+    if state:
+        address.append(state)
+    if zip:
+        address.append(zip)
+    if country:
+        address.append(country)
+    return ' '.join([street, city, state, zip, country])
 
 
 def get_all_pics(tree):
@@ -162,13 +140,9 @@ def judge_xxx_available(tree, *args):
 
 
 def get_api_server(resp):
-    service = '|酒店特色：'
-    service += ', '.join([i['name'] for i in resp.get('badges') if i.get('name')]).lstrip().rstrip() + '|' + '酒店设施：'
-    service += ', '.join([i['name'] for i in resp.get('facilities') if i.get('name')]).lstrip().rstrip() + '|' + '联系方式：'
-    for i in resp.get('contact', ''):
-        service += '，'.join([k + ':' + v for k, v in i.items() if v]).lstrip().rstrip() + '|'
-    service += '酒店可以使用{}'.format(''.join(i['name'] for i in resp['policies'].get('acceptedCurrencies') if i.get('name')).lstrip().rstrip())
-    return service + '|'
+    service = "|".join([i["name"] for i in resp.get('facilities') if i.get('name')]).lstrip().rstrip()
+    badges = "|".join([i["name"] for i in resp.get('badges') if i.get('name')]).lstrip().rstrip()
+    return service + '|'+badges
 
 
 def get_ota_server(tree, *args):
@@ -187,45 +161,54 @@ def get_ota_server(tree, *args):
         text = max(all_text, key=len) if all_text else ''
         if text not in service:
             service.append(text)
-    return '|' + '|'.join(service)
+    return '|'.join(service)
 
 
 if __name__ == '__main__':
-    # url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/epatx/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/EPATX/details'
-    # url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/gsomm/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/GSOMM/details'
-    # url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/cofks/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/COFKS/details'
-    # url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/jnljo/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/JNLJO/details'
-    # url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/nlees/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/NLEES/details'
-    url = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/aadal/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/AADAL/details'
-    url2, url1 = url.split('#####')
-    # url1 = 'https://apis.ihg.com/hotels/v1/profiles/EMPCD/details'
-    # url2 = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/empcd/hoteldetail'
-    print 'start 1'
-    content1 = requests.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y', 'ihg-language': 'zh-CN',
-                                           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}).text
-    print 'got 1'
-    content2 = requests.get(url2, headers={
-                        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-                        # 'Content-Type': 'application/json; charset=UTF-8',
-                        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
-                        # 'ihg-language': 'zh-CN',
-                        'cache-control': "max-age=0",
-                        # 'Postman-Token': "f7e3b40e-12cf-c7e7-f0a7-d729ea761727"
-                    }).text
-    print 'start 2'
-    print 'got 2'
-    # content3可选，用来抓英文名
-    print 'start 3'
-    content3 = requests.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y',
-                                           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
-                                           }).text
-    print 'got 3'
-    # other_info = {
-    #     'source_city_id': '10000',
-    #
-    # }
-    result = holiday_parser((content1, content2, content3), url2, {})
-    # print '\n'.join(['%s:%s' % item for item in result.__dict__.items()])
-    # res = json.loads(result)
-    print result
+
+    url_s = [
+    'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/epatx/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/EPATX/details',
+    'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/gsomm/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/GSOMM/details',
+    'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/cofks/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/COFKS/details',
+    'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/jnljo/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/JNLJO/details',
+    'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/nlees/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/NLEES/details',
+    'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/aadal/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/AADAL/details',
+    'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/abelv/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/ABELV/details',
+    'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/abqtw/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/ABQTW/details',
+    'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/abzcc/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/ABZCC/details',
+    'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/adlah/hoteldetail#####https://apis.ihg.com/hotels/v1/profiles/ADLAH/details']
+    for url in url_s:
+        url2, url1 = url.split('#####')
+        # url1 = 'https://apis.ihg.com/hotels/v1/profiles/EMPCD/details'
+        # url2 = 'https://www.ihg.com/holidayinnexpress/hotels/cn/zh/empcd/hoteldetail'
+        print 'start 1'
+        content1 = requests.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y', 'ihg-language': 'zh-CN',
+                                               'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}).text
+        print 'got 1'
+        content2 = requests.get(url2, headers={
+                            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                            # 'Content-Type': 'application/json; charset=UTF-8',
+                            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36',
+                            # 'ihg-language': 'zh-CN',
+                            'cache-control': "max-age=0",
+                            # 'Postman-Token': "f7e3b40e-12cf-c7e7-f0a7-d729ea761727"
+                        }).text
+        print 'start 2'
+        print 'got 2'
+        # content3可选，用来抓英文名
+        print 'start 3'
+        content3 = requests.get(url1, headers={'x-ihg-api-key': 'se9ym5iAzaW8pxfBjkmgbuGjJcr3Pj6Y',
+                                               'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+                                               }).text
+        print 'got 3'
+        # other_info = {
+        #     'source_city_id': '10000',
+        #
+        # }
+        result = holiday_parser((content1, content2, content3), url2, {})
+        # print '\n'.join(['%s:%s' % item for item in result.__dict__.items()])
+        # res = json.loads(result)
+        with open("holiday.json",'a') as w:
+            w.write(result+'\n')
+        print result
 

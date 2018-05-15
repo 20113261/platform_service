@@ -7,6 +7,7 @@ import ctrip_parser
 import elong_parser
 import expedia_parser
 from proj.my_lib.hotel_parse_new import hilton_parser
+from proj.my_lib.hotel_parse_new import new_gha_parser as gha_parser
 import hotels_parser
 import hoteltravel_parser
 import hrs_parser
@@ -44,7 +45,8 @@ def parse_hotel(content, url, other_info, source, part, retry_count):
         'ihg': ihg_parser.ihg_parser,
         'holiday': holiday_parser.holiday_parser,
         'accor': accor_parser.accor_parser,
-        'marriott': marriott_parser.marriott_parser
+        'marriott': marriott_parser.marriott_parser,
+        'gha': gha_parser.gha_parser
     }
     if source not in function_dict.keys():
         raise TypeCheckError('Error Parser Source        with source %s   url %s ' % (source, url))

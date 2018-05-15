@@ -7,7 +7,7 @@ import json
 import requests
 from lxml import html as HTML
 from lxml import etree
-from proj.my_lib.models.HotelModel import HotelNewBase
+from proj.my_lib.models.HotelModel import HotelsHotelNewBase
 # from mioji.common.class_common import Hotel_New as HotelNewBase
 
 # from data_obj import HotelsHotel  # , DBSession
@@ -24,15 +24,16 @@ sys.setdefaultencoding('utf-8')
 
 
 def hotels_parser(content, url, other_info):
-    hotel = HotelNewBase()
+    hotel = HotelsHotelNewBase()
     content = content.decode('utf-8')
     root = HTML.fromstring(content)
 
     try:
         name_temp = root.xpath('//div[@class="property-description"]/div[@class="vcard"]/h1/text()')[0]
+        hotel.city = name_temp.split('-')[-1].strip()
     except Exception as e:
         print(e)
-    hotel.city = name_temp.split('-')[-1].strip()
+
     try:
         args = re.split('[(（]', name_temp, 2)
         # hotel.hotel_name = name_temp.split('(')[0].strip().encode('utf-8')
@@ -69,12 +70,12 @@ def hotels_parser(content, url, other_info):
             pass
     # -- fengyufei
     if len(re.findall('[\x80-\xff]+', str(hotel.hotel_name_en))) > 0:
-        # print '------va---'
-        name_temp = root.xpath('//div[@class="widget-query-group widget-query-destination"]/input/@value')[0]
-        # re.findall('[a-zA-Z ]+',name_temp)
-        hotel.hotel_name_en = re.findall('\((.*?)\)', name_temp)[0].encode('utf8')
-
         try:
+            # print '------va---'
+            name_temp = root.xpath('//div[@class="widget-query-group widget-query-destination"]/input/@value')[0]
+            # re.findall('[a-zA-Z ]+',name_temp)
+            hotel.hotel_name_en = re.findall('\((.*?)\)', name_temp)[0].encode('utf8')
+
             hotel.hotel_name = name_temp.split('({}'.format(hotel.hotel_name_en))[0].strip()
         except Exception:
             pass
@@ -103,7 +104,8 @@ def hotels_parser(content, url, other_info):
     try:
         temp = root.find_class('visible-on-small map-widget-wrapper')[0].xpath('div/@style')[0].encode('utf-8').strip()
         map_info = map_pat.findall(temp)[0]
-        hotel.map_info = map_info.split(',')[1] + ',' + map_info.split(',')[0]
+        # hotel.map_info = map_info.split(',')[0] + ',' + map_info.split(',')[1]
+        hotel.map_info = '{},{}'.format(map_info.split(',')[1], map_info.split(',')[0])
     except:
         # #print str(e)
         hotel.map_info = 'NULL'
@@ -355,8 +357,14 @@ def hotels_parser(content, url, other_info):
 
     # -- yangmingming --
     hotel.brand_name = 'NULL'
-    info = re.findall(r'id="pdp-linked-data">(.*?)</script>', content, re.S)[0]
-    info = json.loads(info)
+    try:
+        info = re.findall(r'id="pdp-linked-data">(.*?)</script>', content, re.S)[0]
+    except Exception as e:
+        info = '{}'
+    try:
+        info = json.loads(info)
+    except:
+        info = eval(info)
 
     # print info.keys()
     description = info.get('description', '')
@@ -370,7 +378,7 @@ def hotels_parser(content, url, other_info):
     type = info.get('@type', '')
     name = info.get('name', '')
 
-    address = info.get('address', '')
+    address = info.get('address', {})
     hotel.country = address.get('addressCountry', '')
     addressLocality = address.get('addressLocality', '')
     streetAddress = address.get('streetAddress', '')
@@ -379,29 +387,31 @@ def hotels_parser(content, url, other_info):
 
     root = etree.HTML(content)
     info_box = root.xpath('//div[@class="info-box"]')
-    types = info_box[1].xpath('./h4[1]/text()')[0]
-    if types == '小童':
-        hotel.chiled_bed_type = info_box[1].xpath('./ul[1]/li/text()')[0]
-        hotel.pet_type = info_box[1].xpath('./ul[2]/li/text()')[0]
-    elif types == '寵物':
-        hotel.chiled_bed_type = 'NULL'
-        hotel.pet_type = info_box[1].xpath('./ul[1]/li/text()')[0]
-    else:
+    try:
+        types = info_box[1].xpath('./h4[1]/text()')[1]
+        if types == '小童':
+            hotel.chiled_bed_type = info_box[1].xpath('./ul[1]/li/text()')[0]
+            hotel.pet_type = info_box[1].xpath('./ul[2]/li/text()')[0]
+        elif types == '寵物':
+            hotel.chiled_bed_type = 'NULL'
+            hotel.pet_type = info_box[1].xpath('./ul[1]/li/text()')[0]
+        else:
+            hotel.chiled_bed_type = 'NULL'
+            hotel.pet_type = 'NULL'
+    except:
         hotel.chiled_bed_type = 'NULL'
         hotel.pet_type = 'NULL'
     hotel.Img_first = hotel.img_items.split('|')[0]
 
     transport = root.xpath('//div[@class="whats-around-content-transport"]//text()')
-    hotel.traffic = ''.join(transport)
+    hotel.traffic = ''.join(transport)[2:]
 
     hotel.feature = 'NULL'
     hotel.facility = 'NULL'
     hotel.accepted_cards = 'NULL'
     hotel.continent = 'NULL'
 
-    resp = hotel.to_dict()
-
-    return resp
+    return hotel
 
 
 if __name__ == '__main__':
@@ -419,6 +429,7 @@ if __name__ == '__main__':
     }
 
     # url = 'https://zh.hotels.com/ho223637/'
+    url = 'http://zh.hotels.com/ho691986/?pa=706&q-check-out=2018-06-03&tab=description&q-room-0-adults=2&YGF=14&q-check-in=2018-06-02&MGT=1&WOE=7&WOD=6&ZSX=0&SYE=3&q-room-0-children=0'
     # url = 'https://zh.hotels.com/ho536186/'
     # url = 'https://zh.hotels.com/ho619519840/'
     # url = 'https://zh.hotels.com/ho416746/'
@@ -427,7 +438,7 @@ if __name__ == '__main__':
     # url = 'https://zh.hotels.com/ho194081/'
     # url = 'https://zh.hotels.com/ho122188/'
     # url = 'https://zh.hotels.com/ho669000160/'
-    url = 'https://zh.hotels.com/ho1210144/'
+    # url = 'https://zh.hotels.com/ho453541/'
 
     # with MySession(need_cache=True) as session:
     #     page = session.get(url=url)
@@ -435,6 +446,7 @@ if __name__ == '__main__':
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.text
+    print url
     result = hotels_parser(content, url, other_info)
     hotels_json = result.to_pretty_json()
     print hotels_json

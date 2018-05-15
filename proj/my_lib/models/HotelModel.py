@@ -79,60 +79,61 @@ class HotelNewBase(BaseModel):
     facility = Column(Text(), default='NULL')
     feature = Column(Text(), default='NULL')
 
-    feature_content = {
-        "China_Friendly": "NULL",
-        "Romantic_lovers": "NULL",
-        "Parent_child": "NULL",
-        "Beach_Scene": "NULL",
-        "Hot_spring": "NULL",
-        "Japanese_Hotel": "NULL",
-        "Vacation": "NULL"
-    }
-    facility_content = {
-        "Room_wifi": "NULL",
-        "Room_wired": "NULL",
-        "Public_wifi": "NULL",
-        "Public_wired": 'NULL',
-        "Parking": "NULL",
-        "Airport_bus": "NULL",
-        "Valet_Parking": "NULL",
-        "Call_service": "NULL",
-        "Rental_service": "NULL",
-        "Swimming_Pool": "NULL",
-        "gym": "NULL",
-        'SPA': "NULL",
-        "Bar": "NULL",
-        "Coffee_house": "NULL",
-        "Tennis_court": "NULL",
-        "Golf_Course": "NULL",
-        "Sauna": "NULL",
-        "Mandara_Spa": "NULL",
-        "Recreation": "NULL",
-        "Business_Centre": "NULL",
-        "Lounge": "NULL",
-        "Wedding_hall": "NULL",
-        "Restaurant": "NULL",
-    }
+    def __init__(self):
+        self.feature_content = {
+            "China_Friendly": "NULL",
+            "Romantic_lovers": "NULL",
+            "Parent_child": "NULL",
+            "Beach_Scene": "NULL",
+            "Hot_spring": "NULL",
+            "Japanese_Hotel": "NULL",
+            "Vacation": "NULL"
+        }
+        self.facility_content = {
+            "Room_wifi": "NULL",
+            "Room_wired": "NULL",
+            "Public_wifi": "NULL",
+            "Public_wired": 'NULL',
+            "Parking": "NULL",
+            "Airport_bus": "NULL",
+            "Valet_Parking": "NULL",
+            "Call_service": "NULL",
+            "Rental_service": "NULL",
+            "Swimming_Pool": "NULL",
+            "gym": "NULL",
+            'SPA': "NULL",
+            "Bar": "NULL",
+            "Coffee_house": "NULL",
+            "Tennis_court": "NULL",
+            "Golf_Course": "NULL",
+            "Sauna": "NULL",
+            "Mandara_Spa": "NULL",
+            "Recreation": "NULL",
+            "Business_Centre": "NULL",
+            "Lounge": "NULL",
+            "Wedding_hall": "NULL",
+            "Restaurant": "NULL",
+        }
 
-    service_content = {
-        "Luggage_Deposit": 'NULL',
-        "front_desk": 'NULL',
-        "Lobby_Manager": "NULL",
-        "24Check_in": "NULL",
-        "Security": "NULL",
-        "Protocol": 'NULL',
-        "wake": "NULL",
-        "Chinese_front": "NULL",
-        "Postal_Service": "NULL",
-        "Fax_copy": 'NULL',
-        "Laundry": "NULL",
-        "polish_shoes": "NULL",
-        "Frontdesk_safe": 'NULL',
-        "fast_checkin": "NULL",
-        "ATM": 'NULL',
-        "child_care": 'NULL',
-        "Food_delivery": 'NULL',
-    }
+        self.service_content = {
+            "Luggage_Deposit": 'NULL',
+            "front_desk": 'NULL',
+            "Lobby_Manager": "NULL",
+            "24Check_in": "NULL",
+            "Security": "NULL",
+            "Protocol": 'NULL',
+            "wake": "NULL",
+            "Chinese_front": "NULL",
+            "Postal_Service": "NULL",
+            "Fax_copy": 'NULL',
+            "Laundry": "NULL",
+            "polish_shoes": "NULL",
+            "Frontdesk_safe": 'NULL',
+            "fast_checkin": "NULL",
+            "ATM": 'NULL',
+            "child_care": 'NULL',
+            "Food_delivery": 'NULL',
+        }
 
 
     def facility_Num(self, key):
@@ -232,6 +233,9 @@ class HotelNewBase(BaseModel):
         self.facility = str(facility) if facility != {} else 'NULL'
         self.feature = str(feature) if facility != {} else 'NULL'
         self.service = str(service) if facility != {} else 'NULL'
+        self.__dict__.pop('facility_content')
+        self.__dict__.pop('feature_content')
+        self.__dict__.pop('service_content')
         return self
 
 

@@ -24,14 +24,17 @@ class BaseModel(object):
     def __setattr__(self, key, value):
         if key == '_BaseModel__columns_dict':return
         column = self._BaseModel__columns_dict.get(key, None)
-        if not column:
-            raise KeyError(str(key))
-        if not column.judgement_type(value):
-            raise TypeError('%s must be %s' % (value, column._typ))
-        if not key_is_legal(value):
-            self.__dict__[key] = column._default
+        if key in ['feature_content', 'facility_content', 'service_content']:
+            self.__dict__[key] = value
+        else:
+            if not column:
+                raise KeyError(str(key))
+            if not column.judgement_type(value):
+                raise TypeError('%s must be %s' % (value, column._typ))
+            if not key_is_legal(value):
+                self.__dict__[key] = column._default
 
-        self.__dict__[key] = value
+            self.__dict__[key] = value
 
     # def __delattr__(self, key):
     #     column = getattr(self, key, None)

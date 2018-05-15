@@ -9,11 +9,12 @@ from lxml import html as HTML
 # from selenium.webdriver.phantomjs import webdriver
 # from data_obj import ElongHotel
 # from proj.my_lib.models.HotelModel import ElongHotel
-from proj.my_lib.models.HotelModel import HotelNewBase
+from proj.my_lib.models.HotelModel import ElongHotelNewBase
 # from mioji.common.class_common import Hotel_New as HotelNewBase
 import json
 import execjs
 from urlparse import urljoin
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -24,7 +25,7 @@ grade_pat = re.compile(r'(\d+)', re.S)
 
 
 def elong_parser(content, url, other_info):
-    hotel = HotelNewBase()
+    hotel = ElongHotelNewBase()
 
     try:
         root = HTML.fromstring(content.decode('utf-8'))
@@ -37,7 +38,7 @@ def elong_parser(content, url, other_info):
             page_js = phantom_js.compile(js_str[js_str.index('HotelDetailController'):][:-1])
         except:
             pass
-        #print str(e)
+        # print str(e)
         # return hotel
         # pass
 
@@ -54,7 +55,7 @@ def elong_parser(content, url, other_info):
             hotel.hotel_name = root.find_class('hrela_name-cn')[0].xpath('./text()')[0].strip()
             hotel.hotel_name_en = root.find_class('hrela_name-en')[0].xpath('./text()')[0].strip()
         except:
-            #print(str(e))
+            # print(str(e))
             # return hotel_tuple
             pass
 
@@ -69,11 +70,11 @@ def elong_parser(content, url, other_info):
         else:
             hotel.hotel_name = 'NULL'
 
-    #print('hotel.hotel_name=>%s' % hotel.hotel_name)
+    # print('hotel.hotel_name=>%s' % hotel.hotel_name)
     # #print hotel.hotel_name
-    #print('hotel.hotel_name_en=>%s' % hotel.hotel_name_en)
+    # print('hotel.hotel_name_en=>%s' % hotel.hotel_name_en)
     # #print hotel.hotel_name_en
-    #print('brand=>%s' % hotel.brand_name)
+    # print('brand=>%s' % hotel.brand_name)
     # #print hotel.brand_name
 
     # 解析酒店地址
@@ -82,36 +83,36 @@ def elong_parser(content, url, other_info):
         temp = root.xpath('//span[@class="mr5 left"]/text()')
         hotel.address = temp[0].encode('utf-8').strip().split('：')[1]  # special chinese colon
     except:
-        #print(e)
+        # print(e)
         hotel.address = 'NULL'
 
     if hotel.address == 'NULL':
         try:
             hotel.address = root.xpath('//span[@class="icon-address"]/text()')[0].replace('地址：', '').strip()
         except:
-            #print(e)
+            # print(e)
             hotel.address = 'NULL'
 
-    #print('hotel.address=>%s' % hotel.address)
+    # print('hotel.address=>%s' % hotel.address)
     # #print hotel.address
 
     try:
         lat = re.findall(r'"lat":"([-+\d\.]*)"', content)[0]
         lon = re.findall(r'"lon":"([-+\d\.]*)"', content)[0]
         # map_infos = map_pat.findall(content)[0]
-        hotel.map_info = '{},{}'.format(lon, lat)
+        hotel.map_info = '{},{}'.format(lon, lat)   # 纬度在前，经度在后
     except:
         try:
-            map_infos = page_js.eval('HotelDetailController').get('AjaxHotelInfo',{}).get('HotelGeoInfo',{})
-            lat = map_infos.get('Lat',None)
-            lon = map_infos.get('Long',None)
-            hotel.map_info = '{0},{1}'.format(lon,lat)
+            map_infos = page_js.eval('HotelDetailController').get('AjaxHotelInfo', {}).get('HotelGeoInfo', {})
+            lat = map_infos.get('Lat', None)
+            lon = map_infos.get('Long', None)
+            hotel.map_info = '{0},{1}'.format(lon, lat)
             raise hotel.map_info == 'None,None'
         except:
             hotel.map_info = 'NULL'
-            #print traceback.format_exc(e)
+            # print traceback.format_exc(e)
 
-    #print 'map_info=>%s' % hotel.map_info
+    # print 'map_info=>%s' % hotel.map_info
     # #print hotel.map_info
     #
     # 解析酒店星级
@@ -124,13 +125,13 @@ def elong_parser(content, url, other_info):
             hotel.star = -1
     except:
         try:
-            star_temp = page_js.eval('window.newDetailController').get('RecommendHotelRequest',{}).get('starLevel','')
+            star_temp = page_js.eval('window.newDetailController').get('RecommendHotelRequest', {}).get('starLevel', '')
             if json.loads(star_temp):
                 hotel.star = json.loads(star_temp)[0]
         except:
             hotel.star = -1
 
-    #print 'star=>%s' % hotel.star
+    # print 'star=>%s' % hotel.star
     # #print hotel.star
     # 解析酒店评分
     try:
@@ -150,7 +151,7 @@ def elong_parser(content, url, other_info):
                 hotel.grade = float(tp)  # float(t_grade) * 0.05
             except:
                 hotel.grade = 'NULL'
-    #print 'grade=>%s' % hotel.grade
+    # print 'grade=>%s' % hotel.grade
     # #print hotel.grade
 
     # 解析酒店评论数
@@ -167,7 +168,7 @@ def elong_parser(content, url, other_info):
         except:
             hotel.review_num = -1
 
-    #print 'review=>%s' % hotel.review_num
+    # print 'review=>%s' % hotel.review_num
     # #print hotel.review_num
 
     # 解析酒店简介
@@ -185,24 +186,24 @@ def elong_parser(content, url, other_info):
     except:
         hotel.description = 'NULL'
 
-    #print 'description=>%s' % hotel.description
+    # print 'description=>%s' % hotel.description
     # #print hotel.description
 
     # parse check_in time info , check out time info
     try:
         temp_time = root.xpath('//div[@id="iscrollNewAmenities"]/div/dl/dd/text()')[0]. \
             encode('utf-8').strip()
-        #print temp_time
+        # print temp_time
         hotel.check_in_time = temp_time.split('，')[0]
         k = temp_time.find('退房时间：')
         if k != -1:
             hotel.check_out_time = temp_time[k + 15:]
     except:
         hotel.check_out_time = 'NULL'
-    #print 'check_in=>%s' % hotel.check_in_time
+    # print 'check_in=>%s' % hotel.check_in_time
     # #print hotel.check_in_time
 
-    #print 'check_out=>%s' % hotel.check_out_time
+    # print 'check_out=>%s' % hotel.check_out_time
     # #print hotel.check_out_time
     # parse all services at this hotel
 
@@ -214,7 +215,7 @@ def elong_parser(content, url, other_info):
         service_list = root.xpath('//*[@id="serverall"]/li/text()')
         for each in service_list:
             if '宠物' in each:
-                pet += each+'，'
+                pet += each + '，'
             service += each.encode('utf-8').strip() + '|'
             if '卡' in each:
                 accept_card.append(each.strip())
@@ -228,40 +229,41 @@ def elong_parser(content, url, other_info):
         hotel.service = 'NULL'
     if accept_card:
         hotel.accepted_cards = '|'.join(accept_card).encode('utf-8')
-    #print 'hotel.service=>%s' % hotel.service
-    #print 'hotel.accept_cards=>%s' % hotel.accepted_cards
+    # print 'hotel.service=>%s' % hotel.service
+    # print 'hotel.accept_cards=>%s' % hotel.accepted_cards
     # #print hotel.service
     first_img = None
     try:
         pattern_img = root.xpath('//div[@class="newdetaiL-img imgMore"]/@style')[0]
         first_img = re.search(r'url\(([^)]+)\)', pattern_img).group(1)
     except:
-        #print e
+        # print e
         pass
-    #others_info信息
-    #print 'first_img=>%s' % first_img
+    # others_info信息
+    # print 'first_img=>%s' % first_img
 
     city_name = 'NULL'
     try:
         city_name = page_js.eval('window.newDetailController')['Region']['RegionName']
     except:
-        #print e
+        # print e
         pass
-    #print city_name
+    # print city_name
     hotel.city = city_name
-    hotel.others_info = json.dumps({'city_name': city_name, 'first_img': first_img, 'hid':other_info.get('hid', 'NULL')})
+    hotel.others_info = json.dumps(
+        {'city_name': city_name, 'first_img': first_img, 'hid': other_info.get('hid', 'NULL')})
 
-    #获取source_city_id
+    # 获取source_city_id
 
     source_city_id = 'NULL'
     try:
         pattern_city_id = root.xpath('//p[@class="link555 t12"]/a[contains(@href,"region")]/@href')[0]
-        source_city_id = re.search(r'[0-9]+',pattern_city_id).group()
+        source_city_id = re.search(r'[0-9]+', pattern_city_id).group()
     except:
-        #print e
+        # print e
         pass
     # hotel.source_city_id = source_city_id
-    #print "hotel.source_city_id",hotel.source_city_id
+    # print "hotel.source_city_id",hotel.source_city_id
     # #print "hotel.others_info:",hotel.others_info
 
     # if '免费自助停车设施' in hotel.service:
@@ -274,13 +276,13 @@ def elong_parser(content, url, other_info):
     #     hotel.has_wifi = 'Yes'
     #     hotel.is_wifi_free = 'Yes'
 
-    #print 'has_parking=>%s' % hotel.has_parking
+    # print 'has_parking=>%s' % hotel.has_parking
     # #print hotel.has_parking
-    #print 'is_parking_free=>%s' % hotel.is_parking_free
+    # print 'is_parking_free=>%s' % hotel.is_parking_free
     # #print hotel.is_parking_free
-    #print 'has_wifi=>%s' % hotel.has_wifi
+    # print 'has_wifi=>%s' % hotel.has_wifi
     # #print hotel.has_wifi
-    #print 'has_free_wifi=>%s' % hotel.is_wifi_free
+    # print 'has_free_wifi=>%s' % hotel.is_wifi_free
     # #print hotel.is_wifi_free
 
     img_items = ''
@@ -293,20 +295,23 @@ def elong_parser(content, url, other_info):
         hotel.img_items = img_items[:-1]
 
         base_url = page_js.eval('window.newDetailController').get('BaseUrl')
-        base_url = "http:"+urljoin(base_url,'ihotel_848_470_all/')
+        base_url = "http:" + urljoin(base_url, 'ihotel_848_470_all/')
         if not img_items:
-            keys = page_js.eval('window.newDetailController').get('HotelImageTagList',{}).get("urlList",{}).keys()
-            img_lists =[]
+            keys = page_js.eval('window.newDetailController').get('HotelImageTagList', {}).get("urlList", {}).keys()
+            img_lists = []
             for key in keys:
-                img_list = page_js.eval('window.newDetailController').get('HotelImageTagList',{}).get("urlList",{}).get(key,{}).get('tagUrlList',{})
+                img_list = page_js.eval('window.newDetailController').get('HotelImageTagList', {}).get("urlList",
+                                                                                                       {}).get(key,
+                                                                                                               {}).get(
+                    'tagUrlList', {})
                 img_lists.extend(img_list.values())
-        img_lists = [base_url+img for img in img_lists]
+        img_lists = [base_url + img for img in img_lists]
         hotel.img_items = '|'.join(img_lists).encode('utf-8')
-        hotel.Img_first  = img_lists[0]
+        hotel.Img_first = img_lists[0]
     except:
         hotel.img_items = 'NULL'
 
-    #print 'img_items=>%s' % hotel.img_items
+    # print 'img_items=>%s' % hotel.img_items
     # #print hotel.img_items
 
     if url.startswith('http://hotel'):
@@ -327,8 +332,6 @@ def elong_parser(content, url, other_info):
         except:
             pass
 
-
-
     info_list = hotel.address.split(' ')
     hotel.country = info_list[-1]
     hotel.source = 'elong'
@@ -340,8 +343,8 @@ def elong_parser(content, url, other_info):
         hotel.source_id = other_info['source_id']
     hotel.city_id = other_info['city_id']
     hotel.others_info = json.dumps({
-        'hotel_services_info':hotel.service,
-    },ensure_ascii=False)
+        'hotel_services_info': hotel.service,
+    }, ensure_ascii=False)
 
     # others_info_dict = hotel.__dict__
     # if first_img:
@@ -350,7 +353,6 @@ def elong_parser(content, url, other_info):
     # if first_img:
     #     del others_info_dict['first_img']
     # #print hotel
-    res = hotel.to_dict()
 
     return hotel
 
@@ -428,30 +430,33 @@ if __name__ == '__main__':
     # url = 'http://ihotel.elong.com/670847/'
     # url = 'http://ihotel.elong.com/331466/'
     url = 'http://ihotel.elong.com/323558/'
-    #url = 'http://ihotel.elong.com/343475/'
-    #url = 'http://ihotel.elong.com/443150/'
-    #url = 'http://ihotel.elong.com/589177/'
-    #url = 'http://ihotel.elong.com/31131/'
-    #url = 'http://ihotel.elong.com/308868/'
-    url = 'http://ihotel.elong.com/765629/'
-    url = 'http://ihotel.elong.com/611803/'
-    url = 'http://ihotel.elong.com/133277/'
-    url = 'http://ihotel.elong.com/72746/'
-    url = 'http://ihotel.elong.com/302895/'
-    url = 'http://ihotel.elong.com/592426/'
-    url = 'http://ihotel.elong.com/590800/'
-    url = 'http://ihotel.elong.com/314595/'
+    # url = 'http://ihotel.elong.com/343475/'
+    # url = 'http://ihotel.elong.com/443150/'
+    # url = 'http://ihotel.elong.com/589177/'
+    # url = 'http://ihotel.elong.com/31131/'
+    # url = 'http://ihotel.elong.com/308868/'
+    # url = 'http://ihotel.elong.com/765629/'
+    # url = 'http://ihotel.elong.com/611803/'
+    # url = 'http://ihotel.elong.com/133277/'
+    # url = 'http://ihotel.elong.com/72746/'
+    # url = 'http://ihotel.elong.com/302895/'
+    # url = 'http://ihotel.elong.com/592426/'
+    # url = 'http://ihotel.elong.com/590800/'
+    # url = 'http://ihotel.elong.com/314595/'
     # url = 'http://hotel.elong.com/02518011/'
-    other_info = {u'source_id': u'670847', u'city_id': u'20236', 'hid':1234}
+    other_info = {u'source_id': u'670847', u'city_id': u'20236', 'hid': 1234}
 
     page = requests.get(url)
     page.encoding = 'utf8'
     content = page.content
+
+    print content
+
     # with open('content.txt','w+') as temp:
     #     temp.write(content)
     result = elong_parser(content, url, other_info)
-    temp =  result.to_pretty_json()
+    temp = result.to_pretty_json()
     print temp
 
     # 如果需要，可以在这里用 #print 打印 hotel 对象中的内容。也可直接使用 debug 调试查看 result
-    #print result.address
+    # print result.address

@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 # coding=utf-8
-
 import json
 import sys
 
@@ -11,7 +10,7 @@ import json
 # from common.logger import logger
 from lxml import html as HTML
 # from data_obj import ExpediaHotel  # DBSession
-from proj.my_lib.models.HotelModel import HotelNewBase
+from proj.my_lib.models.HotelModel import ExpediaHotelNewBase, Service, Facilities
 # from mioji.common.class_common import Hotel_New as HotelNewBase
 # from mioji.common.class_common import Hotel_New as HotelNewBase
 
@@ -21,7 +20,9 @@ map_pattern = re.compile(r'center=(.*?)')
 
 
 def expedia_parser(content, url, other_info):
-    hotel = HotelNewBase()
+    hotel = ExpediaHotelNewBase()
+    service_content = Service()
+    facility_content = Facilities()
     try:
         html = HTML.fromstring(content.decode('utf-8'))
         html = HTML.make_links_absolute(html, base_url=url)
@@ -100,6 +101,8 @@ def expedia_parser(content, url, other_info):
         # address += ','
         # address += encode_unicode(address_list.find_class('country')[0].text_content().strip())
         hotel.address = address
+
+        print re.findall('class="country">(.*?)</span>',content)
         # postal_code = encode_unicode(address_list.find_class('postal-code')[0].text_content().strip())
         # hotel.postal_code = postal_code
     except Exception, e:
@@ -173,9 +176,9 @@ def expedia_parser(content, url, other_info):
     # print 'is_parking_free=>%s' % hotel.is_parking_free
 
     try:
+        service = ''
         info_table = root.find_class('tab-pane')[0].find_class('col')[0].xpath('section')[0]
         category_num = len(info_table.xpath('h3'))
-        service = ''
         try:
             facilities_dict = {'Swimming_Pool': '游泳池', 'gym': '健身', 'SPA': 'SPA', 'Bar': '酒吧', 'Coffee_house': '咖啡厅',
                                'Tennis_court': '网球场', 'Golf_Course': '高尔夫球场', 'Sauna': '桑拿', 'Mandara_Spa': '水疗中心',
@@ -197,11 +200,13 @@ def expedia_parser(content, url, other_info):
                 each = each.rstrip(' ').lower().replace(" ", "")
                 for fac_value in facilities_dict.values():
                     if fac_value in each:
-                        hotel.facility_content[reverse_facility_dict[fac_value]] = each
+                        facility_content[reverse_facility_dict[fac_value]] = each
+                        hotel.facility = facility_content.to_values()
                         break
                 for serv_value in service_dict.values():
                     if serv_value in each:
-                        hotel.service_content[reverse_sevice_dict[serv_value]] = each
+                        service_content[reverse_sevice_dict[serv_value]] = each
+                        hotel.service = service_content.to_values()
                         break
         except Exception, e:
             print "解析hotel.service/facilities出错:  {}".format(e)
@@ -219,14 +224,16 @@ def expedia_parser(content, url, other_info):
                 internet_str = internet_str.lower()
                 if u"客房" in internet_str:
                     if u"wifi" in internet_str or u"无线" in internet_str:
-                        hotel.facility_content['Room_wifi'] = internet_str
+                        facility_content['Room_wifi'] = internet_str
                 if u"客房" in internet_str and u"有线" in internet_str:
-                    hotel.facility_content['Room_wired'] = internet_str
+                    facility_content['Room_wired'] = internet_str
                 if u"公共区域" in internet_str:
                     if u"wifi" in internet_str or u"无线" in internet_str:
-                        hotel.facility_content['Public_wifi'] = internet_str
+                        facility_content['Public_wifi'] = internet_str
                 if u"公共区域" in internet_str and u"有线" in internet_str:
-                    hotel.facility_content['Public_wired'] = internet_str
+                    facility_content['Public_wired'] = internet_str
+
+                hotel.facility = facility_content.to_values()
         except Exception, e:
             print "解析facility['Room_wifi']出错: {}".format(e)
 
@@ -234,74 +241,120 @@ def expedia_parser(content, url, other_info):
             parking_info = html.xpath("//div[@data-section='parking']/p/text()")
             parking_info_str = " ".join(parking_info).strip().replace("\n", "")
             if u"停车" in parking_info_str:
-                hotel.facility_content['Parking'] = parking_info_str
+                facility_content['Parking'] = parking_info_str
+                hotel.facility = facility_content.to_values()
         except Exception as e:
             print "解析facility['Parking']出错: {}".format(e)
-
         try:
             basics_facilities = info_table.xpath('div[@data-section="amenities-general"]/article/section/ul/li/text()')
-            facilities = encode_unicode(','.join(map(lambda x: x.strip(), basics_facilities)))
-            basics_hidden_fac = info_table.xpath('div[@data-section="amenities-general"]/article/section/ul/li/span/text()')
+            basics_facilities = []
+            if not basics_facilities:
+                basics_facilities = re.findall(r'<div.{1,30}data-section="amenities-general">.*?</section>', content, re.S)[0]
+                basics_facilities1 = re.findall('<li>(.*?)</li>', basics_facilities)
+                facilities = encode_unicode(
+                    '|'.join(map(lambda x: x.strip().replace(r'&nbsp;', '').replace('<span>', '').replace('</span>', ''), basics_facilities1)))
+                basics_hidden_fac = []
+            else:
+                facilities = encode_unicode('|'.join(map(lambda x: x.strip(), basics_facilities)))
+                basics_hidden_fac = info_table.xpath('div[@data-section="amenities-general"]/article/section/ul/li/span/text()')
             if basics_hidden_fac:
-                hidden_fac = encode_unicode(",".join(map(lambda x: x.strip(), basics_hidden_fac)))
-                service += '酒店基础设施：' + facilities + ','
+                hidden_fac = encode_unicode("|".join(map(lambda x: x.strip(), basics_hidden_fac)))
+                service += facilities + '|'
                 service += hidden_fac + '|'
             else:
-                service += '酒店基础设施：' + facilities + '|'
+                service += facilities + '|'
             # print service
         except Exception as e:
             print e
-
         try:
             house_facilities = info_table.xpath('div[@data-section="amenities-family"]/article/section/ul/li/text()')
-            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in house_facilities))
-            house_hidden_fac = info_table.xpath('div[@data-section="room"]/article/section/ul/li/span/text()')
+            if not house_facilities:
+                basics_facilities = re.findall(r'<div.{1,30}data-section="amenities-family">.*?</section>', content, re.S)[0]
+                basics_facilities1 = re.findall('<li>(.*?)</li>', basics_facilities)
+                facilities = encode_unicode(
+                    '|'.join(map(lambda x: x.strip().replace(r'&nbsp;', '').replace('<span>', '').replace('</span>', ''), basics_facilities1)))
+                house_hidden_fac = []
+            else:
+                facilities = encode_unicode('|'.join(facilitie.strip() for facilitie in house_facilities))
+                house_hidden_fac = info_table.xpath('div[@data-section="amenities-family"]/article/section/ul/li/span/text()')
             if house_hidden_fac:
-                hidden_fac = encode_unicode(",".join(map(lambda x: x.strip(), house_hidden_fac)))
-                service += '家居型设施：' + facilities + ','
+                hidden_fac = encode_unicode("|".join(map(lambda x: x.strip(), house_hidden_fac)))
+                service += facilities + '|'
                 service += hidden_fac + '|'
             else:
-                service += '家居型设施：' + facilities + '|'
+                service += facilities + '|'
             # print service
         except Exception as e:
             print e
 
         try:
             guestroom_facilities = info_table.xpath('div[@data-section="room"]/article/section/ul/li/text()')
-            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in guestroom_facilities))
-            guestroom_hidden_fac = info_table.xpath('div[@data-section="room"]/article/section/ul/li/span/text()')
+            if not guestroom_facilities:
+                basics_facilities = re.findall(r'<div.{1,30}data-section="room">.*?</section>', content, re.S)[0]
+                basics_facilities1 = re.findall('<li>(.*?)</li>', basics_facilities)
+                facilities = encode_unicode(
+                    '|'.join(map(lambda x: x.strip().replace(r'&nbsp;', '').replace('<span>', '').replace('</span>', ''), basics_facilities1)))
+                guestroom_hidden_fac = []
+            else:
+                facilities = encode_unicode('|'.join(facilitie.strip() for facilitie in guestroom_facilities))
+                guestroom_hidden_fac = info_table.xpath('div[@data-section="room"]/article/section/ul/li/span/text()')
             if guestroom_hidden_fac:
-                hidden_fac = encode_unicode(",".join(map(lambda x: x.strip(), guestroom_hidden_fac)))
-                service += '客房设施：' + facilities +','
+                hidden_fac = encode_unicode("|".join(map(lambda x: x.strip().replace(r'&nbsp;', ''), guestroom_hidden_fac)))
+                service += facilities + "|"
                 service += hidden_fac + '|'
             else:
-                service += '客房设施：' + facilities + '|'
-            # print service
+                service += facilities + '|'
+            print service
         except Exception as e:
             print e
 
         try:
             foods = info_table.xpath('div[@data-section="dining"]/article/section/p/text()')
-            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in foods))
+            if not foods:
+                basics_facilities = re.findall(r'<div.{1,30}data-section="dining">.*?</section>', content, re.S)[0]
+                basics_facilities1 = re.findall('<p>(.*?)</p>', basics_facilities)
+                facilities = encode_unicode('|'.join(map(lambda x: x.strip().replace(r'&nbsp;', '').replace('<span>', '').replace('</span>', ''), basics_facilities1)))
+            else:
+                facilities = encode_unicode('|'.join(facilitie.strip() for facilitie in foods))
             service += '美食佳肴：' + facilities + '|'
-            # print service
+            print service
         except Exception as e:
             print e
 
         try:
             accessibility = info_table.xpath('div[@data-section="accessibility"]/article/section/p/text()')
-            facilities = encode_unicode(','.join(facilitie.strip() for facilitie in accessibility))
-            service += '无障碍设施：' + facilities + '|'
-            # print service
+            if not accessibility:
+                basics_facilities = re.findall(r'<div.{1,30}data-section="accessibility">.*?</section>', content, re.S)[0]
+                basics_facilities1 = re.findall('<li>(.*?)</li>', basics_facilities)
+                facilities = encode_unicode(
+                    '|'.join(map(lambda x: x.strip().replace(r'&nbsp;', '').replace('<span>', '').replace('</span>', ''), basics_facilities1)))
+                guestroom_hidden_fac = re.findall('<p>(.*?)</p>', basics_facilities)
+            else:
+                facilities = encode_unicode('|'.join(facilitie.strip() for facilitie in accessibility))
+                guestroom_hidden_fac = info_table.xpath('div[@data-section="accessibility"]/article/section/ul/li/text()')
+            if guestroom_hidden_fac:
+                hidden_fac = encode_unicode("|".join(map(lambda x: x.strip(), guestroom_hidden_fac)))
+                service += hidden_fac + '|'
+                service += facilities + '|'
+            else:
+                service += facilities + '|'
+
+            print service
         except Exception as e:
             print e
-        # hotel.others_info = json.dumps({'hotel_services_info': service})
+        '//ul[@id="languages-spoken-list"]/li/text()'
+        try:
+            languages = html.xpath('//ul[@id="languages-spoken-list"]/li/text()')
+            service += "|".join(languages)
+        except:
+            pass
+        # hotel.otlanguageshers_info = json.dumps({'hotel_services_info': service})
 
     except Exception as e:
         print e
     map_info = re.findall('"latlong": "(.*?)"',content)
     if map_info:
-        hotel.map_info = map_info[0]
+        hotel.map_info = ','.join(map_info[0].split(',')[::-1])
     else:
         try:
             # map_part = root.xpath('//div[@class="map"]/a/figure/@data-src')
@@ -335,7 +388,10 @@ def expedia_parser(content, url, other_info):
                     pass
             if each_url != 'https:':
                 img_url_set.add(each_url)
-        hotel.img_items = '|'.join(img_url_set)
+        if len(img_url_set)>100:
+            hotel.img_items = '|'.join(img_url_set[:100])
+        else:
+            hotel.img_items = '|'.join(img_url_set)
         hotel.Img_first = first_img
     except Exception, e:
         print str(e)
@@ -343,7 +399,11 @@ def expedia_parser(content, url, other_info):
     # print 'first_img=>%s' % first_img
     try:
         # desc = encode_unicode(root.find_class('hotel-description')[0].find_class('visuallyhidden')[0].tail.strip())
-        desc = ''.join(root.xpath("//p[@class='rm-hide']/text()"))
+        # print root.xpath("//p[@class='rm-hide']/")
+        des_li = root.xpath("//p[@class='rm-hide']/text()")
+        if len(des_li) == 4:
+            des_li = des_li[:-1]
+        desc = ''.join(des_li)
         hotel.description = desc.encode('utf-8')
     except Exception, e:
         print str(e)
@@ -425,13 +485,11 @@ def expedia_parser(content, url, other_info):
     except Exception as e:
         print '解析hotel.hotel_phone出错：{}'.format(e)
 
-    res = hotel.to_dict()
-    return res
+    return hotel
 
 
 def encode_unicode(str):
     return str.replace('\u00', '\\x').decode('string-escape').encode('utf8')
-
 
 if __name__ == '__main__':
     from proj.my_lib.new_hotel_parser.lang_convert import tradition2simple
@@ -494,6 +552,7 @@ if __name__ == '__main__':
     proxies['socks'] = "socks5://" + proxy.encode('utf-8')
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}
+    url = 'https://travelads.hlserve.com/TravelAdsService/v3/Hotels/TravelAdClickRedirect?trackingData=Cmp-I39a0j3+f8Qs1D1PnLa+xolhofHMo5YRTlfyKcY1SnpG6dahDgxXJKvDlc32yhKtIXjPSh8hk6N+thKZl6bBzLJK6K0Kbas/XizabJBaL6xz81FpFaeQuRLZXha7ZWyMnbQkwGycAaJanQ1UyC8nTQn1xmpn4GlxFjdHXD6+6wuvtDFIQk0efqbvg5nNAlNjagm6q2vbfQhSaXHoicFqRK2xOH1phap4n72e+bys1qwS+UGtuEJhgrXKV9J/KXWEPk82PJiSl2msZB01KAvMxHap2GGnIzKLo6SGiyJEent0Lw4Kd6HI707ozyeGJzBDlcf6FPStGYdD49FA7czRuoAwhY6dq6qsvK3dvEr9ON2gOIjz14TgKJeROzyiY0wqSA62JTEJ3sUjrOzjIry7ZiG0krW+64hL6Zi0MdvHa+wrkhuYqoApnJbjtftUofKpzJxFnsS05180KeSY6rtRrAiO+XeyxxcepdtCusTQ4/Fje673TxAELYk9vx74J4Ta9UE4POOSR8NJcoxI72mFPd33sd+2yPegGnTOBOSLyBJEH3iZJ/bM4tzEbYVol233WqX9eVWxPodZLoDuKI0u3h2QtLTOfp+qGWMiOnU0SZXdM919u7vAVJcLWFL58s/QFG7c1jEeTJnmpeluMcV5vDZ2uQYGyDpoqsv7oBMAQtpAQBVSCoP9r8h5QBXkOvS6k8ixbPFLq1D4qWPxwrAZ45ly4810K2Lt5O1PWMdJ/eCwKUgBUOpuAdICZU3AAqvYulbkzoL/fQCeRXDAVXCfD0MLIN/U4Di/O8IROu9YXlmObpQjDecgpwwq/MapnFz7ZKY26OS+swXf7sffoKHgCEaRf+4Gf57B4IBYZVXdazOVJfcWlcQ6+oxsWiz1zz2hv5bAI3hpMgPaL/f0UdISqi2QwJk6QLz3yqM4qLttzuKhdXN12cjQxe6O4jyyO85NRrY22TGx1oYZoNQXJh71djwR0WeSEwxnpzVAbBX6IUbJkRAB6NDqA39sg55LYKdYAuIzaDRciQX+WcW/n1RPr42k7bD3Psv5QVmbRDFE54fEIXveXjNyUoEyiAo6BiMPHxjOPci8vULoEZn2MVNYOU1+jubp0nSgbQ4sMay3FPfS2CG/fm2UAfciChY3iK4D/DgnSYjK4fEnkJix3r0drQ==&rank=1&testVersionOverride=11141.44405.1%2C13487.51625.0%2C14567.99990.0%2C11433.63360.0&destinationUrl=https%3A%2F%2Fwww.expedia.com.hk%2Fcn%2FTacna-Hotels-Casa-Andina-Select-Tacna.h15448190.Hotel-Information&candidateHmGuid=68a93d4c-8edc-454a-963f-82ca9f7b20dc&beaconIssued=2018-04-15T20:54:56'
     page = requests.get(url, headers=headers, proxies=proxies, verify=False)
     page.encoding = 'utf8'
     content = page.text

@@ -89,7 +89,7 @@ class HotelDetailSDK(BaseSDK):
         }
         logger.debug('aaaaaaa  '+source)
         logger.debug('bbbbbbb  '+str(source in ['starwood', 'hyatt', 'gha','shangrila','fourseasons','bestwest']))
-        if source in ['starwood', 'hyatt', 'gha','shangrila','fourseasons', 'bestwest']:
+        if source in ['starwood', 'hyatt', 'shangrila','fourseasons', 'bestwest']:
             error_code, res, page_store_key_list = hotel_detail_database(url, source)
 
             if error_code == 0:
@@ -116,7 +116,7 @@ class HotelDetailSDK(BaseSDK):
 
                 # init session
                 start = time.time()
-                if source not in ('hilton', 'ihg', 'holiday', 'accor', 'marriott', 'elong'):
+                if source not in ('hilton', 'ihg', 'holiday', 'accor', 'marriott', 'elong', 'gha'):
                     page = session.get(url, timeout=240)
                     page.encoding = 'utf8'
                     content = page.text
@@ -238,7 +238,10 @@ class HotelDetailSDK(BaseSDK):
                         'city_id': '50795'
                     }
                     content = [content, detail_content, map_info_content, desc_content, enDetail_content]
-
+                elif source == 'gha':
+                    url = url.replace('gha.com', 'discoveryloyalty.com')
+                    req = requests.get(url, verify=False)
+                    content = req.content
                 else:
                     session.auto_update_host = False
                     hilton_index = url.find('index.html')

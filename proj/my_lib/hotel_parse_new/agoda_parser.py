@@ -10,7 +10,7 @@ from lxml import html as HTML
 from util.UserAgent import GetUserAgent
 # from data_obj import AgodaHotel
 # from proj.my_lib.models.HotelModel import AgodaHotel
-from proj.my_lib.models.HotelModel import HotelNewBase
+from proj.my_lib.models.HotelModel import AgodaHotelNewBase
 # from mioji.common.class_common import Hotel_New as HotelNewBase
 from urlparse import urljoin
 import json
@@ -28,16 +28,18 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 
-def agoda_parser(content, url, other_info):
-    hotel = HotelNewBase()
+def agoda_parser(two_content, url, other_info):
+    hotel = AgodaHotelNewBase()
     try:
+        content, content_service_json = two_content
         content = content.decode('utf-8')
         root = HTML.fromstring(content)
     except:
-        #print str(e)
+        # print str(e)
         pass
 
     ph_runtime = execjs.get('PhantomJS')
+    # 'https://www.agoda.com/zh-cn/dpto-carlos-paz/hotel/all/villa-carlos-paz-ar.html?checkin=2018-05-27&los=1&adults=2&rooms=1&cid=-1&searchrequestid=68f086e1-9d13-4ee1-b380-5bc8ee4f7f40'
     page_js = ph_runtime.compile(root.xpath('//script[contains(text(),"propertyPageParams")]/text()')[0])
     page_params = page_js.eval('propertyPageParams')
     try:
@@ -49,7 +51,7 @@ def agoda_parser(content, url, other_info):
             try:
                 hotel_name = root.xpath('//title/text()')[0].split('-')[0][:-1]
             except:
-                #print str(e)
+                # print str(e)
                 pass
 
     try:
@@ -59,7 +61,7 @@ def agoda_parser(content, url, other_info):
     except:
         # #print str(e)
         hotel.hotel_name = 'NULL'
-    #print 'hotel_name=>%s' % hotel.hotel_name
+    # print 'hotel_name=>%s' % hotel.hotel_name
     # #print hotel.hotel_name
 
     try:
@@ -67,17 +69,19 @@ def agoda_parser(content, url, other_info):
     except:
         hotel.hotel_name_en = 'NULL'
         # #print str(e)
-    #print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
+    # print 'hotel.hotel_name_en=>%s' % hotel.hotel_name_en
     # #print hotel.hotel_name_en
 
     try:
-        if page_params['hotelInfo']['address']['address'] in page_params['hotelInfo']['address']['full']:
-            hotel.address = page_params['hotelInfo']['address']['full']
-        else:
-            hotel.address = page_params['hotelInfo']['address']['address'] + page_params['hotelInfo']['address']['full']
+        # if page_params['hotelInfo']['address']['address'] in page_params['hotelInfo']['address']['full']:
+        #     hotel.address = page_params['hotelInfo']['address']['full']
+        # else:
+        #     hotel.address = page_params['hotelInfo']['address']['address'] + page_params['hotelInfo']['address']['full']
+
+        hotel.address = page_params['hotelInfo']['address']['full'].replace('\r', '').replace('\n', '')
     except:
         hotel.address = "NULL"
-    #print 'hotel.address=>%s' % hotel.address
+    # print 'hotel.address=>%s' % hotel.address
 
     try:
         hotel.star = int(page_params['hotelInfo']['starRating']['icon'].split('-')[-1])
@@ -90,7 +94,7 @@ def agoda_parser(content, url, other_info):
         else:
             hotel.star = -1
 
-    #print 'hotel.star=>%s' % hotel.star
+    # print 'hotel.star=>%s' % hotel.star
 
     try:
         lat_pat = re.compile(r'latitude\" content=(.*?) \/>', re.S)
@@ -98,12 +102,12 @@ def agoda_parser(content, url, other_info):
 
         lon_text = lon_pat.findall(content)[0][1:-1]
         lat_text = lat_pat.findall(content)[0][1:-1]
-        hotel.map_info = lon_text + ',' + lat_text
+        hotel.map_info = '{},{}'.format(lon_text, lat_text)
     except:
         # #print str(e)
         hotel.map_info = 'NULL'
 
-    #print 'map_info=>%s' % hotel.map_info
+    # print 'map_info=>%s' % hotel.map_info
 
     try:
         hotel.grade = float(page_params['reviews']['score'])
@@ -115,7 +119,7 @@ def agoda_parser(content, url, other_info):
                 hotel.grade = page_params['masterRoomInfo'][0]['demographics']['grades'][0]['score']
             except:
                 hotel.grade = -1
-    #print 'grade=>%s' % hotel.grade
+    # print 'grade=>%s' % hotel.grade
 
     try:
         hotel.review_num = page_params['reviews']['reviewsCount']
@@ -130,7 +134,7 @@ def agoda_parser(content, url, other_info):
             except:
                 hotel.review_num = -1
 
-    #print 'hotel.review_num=>%s' % hotel.review_num
+    # print 'hotel.review_num=>%s' % hotel.review_num
 
     try:
         first_img = page_params.get("mosaicInitData", {}).get('images', [])[0].get('Location', 'NULL')
@@ -162,7 +166,7 @@ def agoda_parser(content, url, other_info):
                         map(lambda x: 'http:' + x, img_list))
                 except:
                     hotel.img_items = 'NULL'
-    #print 'img_items=>%s' % hotel.img_items
+    # print 'img_items=>%s' % hotel.img_items
 
     try:
         hotel.hotel_url = url
@@ -173,8 +177,11 @@ def agoda_parser(content, url, other_info):
     hotel.chiled_bed_type = ""
 
     try:
-        service_url = "https://www.agoda.com/api/zh-cn/Hotel/AboutHotel?hotelId={0}".format(page_params['hotelId'])
-        json_data = json.loads(requests.get(service_url).content)
+        # service_url = "https://www.agoda.com/api/zh-cn/Hotel/AboutHotel?hotelId={0}".format(page_params['hotelId'])
+        # print service_url
+        #
+        # resp = requests.get(service_url, cookies=cookies).content
+        json_data = json.loads(content_service_json)
         hotel.service = '|'.join(
             [feature['name'] for features in json_data['featureGroups'] for feature in features['feature'] if
              feature['available']]).encode('utf-8')
@@ -185,7 +192,6 @@ def agoda_parser(content, url, other_info):
                         hotel.pet_type = u'可携带宠物'
                     else:
                         hotel.pet_type = u'不可携带宠物'
-
     except:
         try:
             hotel.service = '|'.join(
@@ -194,13 +200,13 @@ def agoda_parser(content, url, other_info):
         except:
             # hotel.service = '|'.join()
             hotel.service = 'NULL'
-    #print 'hotel.service=>%s' % hotel.service
+    # print 'hotel.service=>%s' % hotel.service
 
     try:
         hotel.description = json_data['hotelDesc']['overview'].strip().replace('<BR>', '').encode('utf-8')
     except:
         hotel.description = 'NULL'
-    #print 'hotel.description=>%s' % hotel.description
+    # print 'hotel.description=>%s' % hotel.description
     try:
         temp = json_data['hotelPolicy']
         if 'extrabedPolicies' in temp.keys():
@@ -220,7 +226,6 @@ def agoda_parser(content, url, other_info):
                     hotel.chiled_bed_type += v
     except:
         pass
-
 
     if not hotel.chiled_bed_type:
         hotel.chiled_bed_type = "NULL"
@@ -251,8 +256,8 @@ def agoda_parser(content, url, other_info):
                 "Description")
         except:
             pass
-    #print "hotel.check_in_time:", hotel.check_in_time
-    #print "hotel.check_out_time:", hotel.check_out_time
+    # print "hotel.check_in_time:", hotel.check_in_time
+    # print "hotel.check_out_time:", hotel.check_out_time
     # 从酒店页面获取城市信息
     try:
         country_id = page_params['hotelSearchCriteria']['countryId']
@@ -264,21 +269,22 @@ def agoda_parser(content, url, other_info):
         country_name = 'NULL'
         city_name = 'NULL'
         city_id = 'NULL'
-        #print e
+        # print e
         # pass
 
     hotel.others_info = json.dumps(
         {'country_id': country_id, 'country_name': country_name, 'city_name': city_name, 'city_id': city_id,
-         'first_img': first_img, 'hid':other_info.get('hid'),'hotel_services_info':hotel.service},ensure_ascii=False)
+         'first_img': first_img, 'hid': other_info.get('hid'), 'hotel_services_info': hotel.service},
+        ensure_ascii=False)
     # hotel.source_city_id = city_id
     hotel.country = page_params['hotelInfo'].get('address', {}).get('countryName', '')
     hotel.city = page_params['hotelInfo'].get('address', {}).get('cityName', '')
-    #print "hotel.others_info:", hotel.others_info
-    #print "hotel.source_city_id:", hotel.source_city_id
+    # print "hotel.others_info:", hotel.others_info
+    # print "hotel.source_city_id:", hotel.source_city_id
     hotel.accepted_cards = 'NULL'
-    #print "accepted_cards:", hotel.accepted_cards
-    #print "check_in_time：", hotel.check_in_time
-    #print "check_out_time:", hotel.check_out_time
+    # print "accepted_cards:", hotel.accepted_cards
+    # print "check_in_time：", hotel.check_in_time
+    # print "check_out_time:", hotel.check_out_time
 
     # if '无线网络' in hotel.service:
     #     hotel.has_wifi = 'Yes'
@@ -292,13 +298,13 @@ def agoda_parser(content, url, other_info):
     # if '停车场免费' in hotel.service or 'parking free' in hotel.service:
     #     hotel.is_parking_free = 'Yes'
 
-    #print 'hotel.has_wifi=>%s' % hotel.has_wifi
+    # print 'hotel.has_wifi=>%s' % hotel.has_wifi
     # #print hotel.has_wifi
-    #print 'hotel.is_wifi_free=>%s' % hotel.is_wifi_free
+    # print 'hotel.is_wifi_free=>%s' % hotel.is_wifi_free
     # #print hotel.has_wifi
-    #print 'hotel.has_parking=>%s' % hotel.has_parking
+    # print 'hotel.has_parking=>%s' % hotel.has_parking
     # #print hotel.has_parking
-    #print 'hotel.is_parking_free=>%s' % hotel.is_parking_free
+    # print 'hotel.is_parking_free=>%s' % hotel.is_parking_free
 
     hotel.source = 'agoda'
     hotel.hotel_url = url.encode('utf-8')
@@ -313,9 +319,7 @@ def agoda_parser(content, url, other_info):
     # hotel.others_info = json.dumps(others_info_dict)
     # #print hotel
 
-    res = hotel.to_dict()
-
-    return res
+    return hotel
 
 
 if __name__ == '__main__':
@@ -335,12 +339,13 @@ if __name__ == '__main__':
     # url = 'http://10.10.180.145:8888/hotel_page_viewer?task_name=hotel_base_data_agoda&id=49536fe85753dfd12ea88d0700bda26d'
     # url = 'https://www.agoda.com/zh-cn/wingate-by-wyndham-arlington_2/hotel/all/arlington-tx-us.html?checkin=2017-08-03&los=1&adults=1&rooms=1&cid=-1&searchrequestid=09d590d3-cc17-4046-89a1-112b6ed35266'
     # url = 'https://www.agoda.com/zh-cn/hotel-las-bovedas/hotel/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
-    # url = 'https://www.agoda.com/zh-cn/estudio-casco-antiguo/hotel/all/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7'
-    # url = 'https://www.agoda.com/zh-cn/ilunion-golf-badajoz-hotel/hotel/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
+
+    # url = 'https://www.agoda.com/zh-cn/estudio-casco-antiguo/hotel/all/badajoz-es.html?checkin=2018-09-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
+    # url = 'https://www.agoda.com/zh-cn/ilunion-golf-badajoz-hotel/hotel/badajoz-es.html?checkin=2018-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
     # url = 'https://www.agoda.com/zh-cn/hotel-lisboa/hotel/all/badajoz-es.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=65bc1980-4fcf-4ed1-bdf0-438a11704f7a'
-    url = 'https://www.agoda.com/zh-cn/oarsman-s-bay-lodge/hotel/yasawa-islands-fj.html?checkin=2017-11-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=b5bd9776-41c6-4fdd-b361-4abcaf8c8703'
+    # url = 'https://www.agoda.com/zh-cn/oarsman-s-bay-lodge/hotel/yasawa-islands-fj.html?checkin=2017-11-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=b5bd9776-41c6-4fdd-b361-4abcaf8c8703'
     # url = 'https://www.agoda.com/zh-cn/hotel-huatian-chinagora/hotel/alfortville-fr.html?checkin=2017-12-20&los=1&adults=2&rooms=1&cid=-1&searchrequestid=f53c35ca-007e-4974-af8f-ebfa20c4dfee'
-    # url = 'https://www.agoda.com/zh-cn/puesta-del-sol-apartment/hotel/all/asilah-ma.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=a00c61b5-db95-40f9-b5c3-a385219f7e7a'
+    url = 'https://www.agoda.com/zh-cn/puesta-del-sol-apartment/hotel/all/asilah-ma.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=a00c61b5-db95-40f9-b5c3-a385219f7e7a'
     # url = 'https://www.agoda.com/zh-cn/ana-o-tai/hotel/all/hanga-roa-cl.html?checkin=2017-12-15&los=1&adults=2&rooms=1&cid=-1&searchrequestid=1b174d8d-2aef-4fea-836d-fb7a5e70e234'
     # url = 'https://www.agoda.com/zh-cn/cabanas-teo/hotel/all/isla-de-pascua-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=5460efbf-de01-4b89-99c8-11e1adc2f066'
     # url = 'https://www.agoda.com/zh-cn/hare-vivanka/hotel/all/hanga-roa-cl.html?checkin=2017-12-25&los=1&adults=2&rooms=1&cid=-1&searchrequestid=60408400-065d-49f8-8965-d45ef26b7d91'
@@ -348,13 +353,17 @@ if __name__ == '__main__':
     # url = 'https://www.agoda.com/zh-cn/hotel-alagare/hotel/lausanne-ch.html?checkin=2017-12-07&los=1&adults=2&rooms=1&cid=-1&searchrequestid=9127dc90-fd5e-4cbb-aa22-4cf62afbdecd'
     # url = 'https://www.agoda.com/zh-cn/grand-hyatt-new-york-hotel/hotel/new-york-ny-us.html?checkin=2017-12-20&los=1&adults=2&rooms=1&cid=-1&searchrequestid=7e5812dd-d6a4-4ca3-90a1-60437e475f93'
     # url = 'https://www.agoda.com/zh-cn/hotel-the-celestine-tokyo-shiba/hotel/tokyo-jp.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=b0293d9f-56be-46ad-998e-3a14b8601594&isMRS=1'
-    url = 'https://www.agoda.com/zh-cn/royal-park-hotel-the-shiodome-tokyo/hotel/tokyo-jp.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=35cdc5b6-2e05-4924-b71e-479692ddb593&isMRS=1'
+    # url = 'https://www.agoda.com/zh-cn/royal-park-hotel-the-shiodome-tokyo/hotel/tokyo-jp.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=35cdc5b6-2e05-4924-b71e-479692ddb593&isMRS=1'
     # url = 'https://www.agoda.com/zh-cn/conrad-macao-cotai-central/hotel/macau-mo.html?checkin=2017-12-17&los=1&adults=3&rooms=1&searchrequestid=5bd92238-b4f5-4d41-a958-051575b96f71&dodhotel=1&isMRS=0'
     # url = 'https://www.agoda.com/zh-cn/kakkos-beach-hotel-adults-only/hotel/crete-island-gr.html?selectedproperty=4619813&checkIn=2018-04-29&los=1&rooms=1&adults=2&childs=0&cid=1590325&tag=hid4619813%2cpidWtiG9MCoCx4AAK-P--YAAAAY'
     # url = 'https://www.agoda.com/zh-cn/hotel-gri-mar/hotel/llansa-es.html?selectedproperty=229354&checkIn=2018-04-29&los=1&rooms=1&adults=2&childs=0&cid=1590325&tag=hid229354%2cpidWthg9H8AAAEAAK5YRRQAAAAe'
+
     page = requests.get(url=url, headers=headers)
+    cookies = page.cookies.get_dict()
+
     page.encoding = 'utf8'
     content = page.text
 
-    result = agoda_parser(content, url, other_info)
+    result = agoda_parser(content, url, cookies, other_info)
+    print url
     print result.to_pretty_json()

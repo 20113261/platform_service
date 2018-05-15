@@ -88,15 +88,15 @@ if __name__ == '__main__':
 
     task = Task(_worker='', _queue='hotel_detail', _routine_key='hotel_detail', _task_id='demo', _source='starwood',
                 _type='hotel',
-                _task_name='detail_hotel_starwood_20180507',
+                _task_name='detail_hotel_gha_20180507',
                 _used_times=0, max_retry_times=10,
                 kwargs={
-    "url" : "http://www.shangri-la.com/cn/hongkong/islandshangrila/&港岛香格里拉大酒店&ISL&香港&",
+    "url" : "https://zh.gha.com/Al-Faisaliah/Al-Faisaliah-Hotel",
     "country_id" : "NULL",
-    "source" : "shangrila",
-    "part" : "detail_hotel_shangrila_20180507",
+    "source" : "gha",
+    "part" : "detail_hotel_gha_20180507",
     "city_id" : "NULL",
-    "source_id" : "ISL"
+    "source_id" : "AFALF"
 },
                 task_type=TaskType.NORMAL, list_task_token=None)
 
