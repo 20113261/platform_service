@@ -29,6 +29,7 @@ from proj.mysql_pool import service_platform_pool
 from toolbox.Hash import get_token
 from MongoTaskInsert import InsertTask, TaskType
 from rabbitmq_func import detect_msg_num
+from proj.my_lib.task_module.mongo_task_func import get_serviceplatform_monitor_info
 
 logger = get_logger('monitor')
 
@@ -283,9 +284,11 @@ def monitoring_hotel_list2detail():
 
     try:
         table_dict = {name: _v for (name,), _v in zip(get_all_tables(), repeat(None))}
+        collection_name_list = ['_'.join(i3.split('_')[5:]) for i1, i2, i3, i4 in get_serviceplatform_monitor_info()]
 
         for table_name in table_dict.keys():
-
+            if table_name not in collection_name_list:
+                continue
             tab_args = table_name.split('_')
             if tab_args[0] != 'list':
                 continue
@@ -295,6 +298,7 @@ def monitoring_hotel_list2detail():
                 continue
             if tab_args[3] == 'test':
                 continue
+
 
             timestamp, priority, sequence = get_seek(table_name)
 
@@ -814,7 +818,7 @@ if __name__ == '__main__':
 
     # monitoring_PoiSource_list2detail()
 
-    # monitoring_hotel_list2detail()
+    monitoring_hotel_list2detail()
 
     city2list()
     # monitoring_poi_detail2imgOrComment()

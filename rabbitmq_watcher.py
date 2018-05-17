@@ -251,6 +251,6 @@ for queue_name, (_min, _max, seconds) in TASK_CONF.items():
 
 if __name__ == '__main__':
     # schedule.start()
-    insert_task('poi_list', limit=10000)
+    insert_task('hotel_list', limit=10000)
     # mongo_task_watcher()
 

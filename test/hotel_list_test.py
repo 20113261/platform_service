@@ -197,7 +197,7 @@ if __name__ == '__main__':
                     "city_id": "null",
                     'suggest': '''印度喀拉拉邦恰拉库德伊&13.404954,52.5200066''',
                     "country_id": "null",
-                    "source": "bestwest",
+                    "source": "gha",
                     "part": "20180428a",
                     "is_new_type": 0,
                     "date_index": 0
