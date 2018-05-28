@@ -9,7 +9,7 @@ import sys
 
 sys.path.append('/data/lib')
 from proj.my_lib.Common.Task import Task
-from proj.total_tasks import hotel_list_task
+from proj.total_tasks import hotel_list_task, zxp_hotel_list_task
 
 if __name__ == '__main__':
     # hotel_list_task('booking', '51211', '501', '20171102', 'test', task_name="list_hotel_test_test")
@@ -187,43 +187,43 @@ if __name__ == '__main__':
     # print(hotel_list_task(task=task))
 
     #bestwest
-    task = Task(_worker='', _task_id='demo', _source='bestwest', _type='hotel_list',
-                _task_name='list_hotel_bestwest_20180428a',
-                _used_times=2, max_retry_times=6,
-
-                kwargs={
-                    "suggest_type": "2",
-                    "check_in": "20180530",
-                    "city_id": "null",
-                    'suggest': '''印度喀拉拉邦恰拉库德伊&13.404954,52.5200066''',
-                    "country_id": "null",
-                    "source": "gha",
-                    "part": "20180428a",
-                    "is_new_type": 0,
-                    "date_index": 0
-                },_routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
-
-    print(hotel_list_task(task=task))
-
-    #holiday
-    # task = Task(_worker='', _task_id='demo', _source='Holiday', _type='hotel_list',
-    #             _task_name='list_hotel_holiday_20180507',
+    # task = Task(_worker='', _task_id='demo', _source='bestwest', _type='hotel_list',
+    #             _task_name='list_hotel_bestwest_20180428a',
     #             _used_times=2, max_retry_times=6,
     #
-    # kwargs={
-    #                 "suggest_type" : 2,
-    #                 "check_in" : "20180701",
-    #                 "city_id" : "NULL",
-    #                 "suggest" : "{\"hits\": 2, \"countryCode\": \"0001\", \"longitude\": -80.1325, \"label\": \"South Beach, FL, United States\", \"rank\": 4.320963129957317, \"suggestion\": \"South Beach, FL, United States\", \"destinationType\": \"CITY\", \"latitude\": 25.77083, \"type\": \"B\"}",
-    #                 "country_id" : "501",
-    #                 "source" : "holiday",
-    #                 "part" : "20180507",
-    #                 "is_new_type" : 1,
-    #                 "date_index" : 0
-    #             },
-    #             _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
+    #             kwargs={
+    #                 "suggest_type": "2",
+    #                 "check_in": "20180530",
+    #                 "city_id": "null",
+    #                 'suggest': '''印度喀拉拉邦恰拉库德伊&13.404954,52.5200066''',
+    #                 "country_id": "null",
+    #                 "source": "gha",
+    #                 "part": "20180428a",
+    #                 "is_new_type": 0,
+    #                 "date_index": 0
+    #             },_routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
     #
     # print(hotel_list_task(task=task))
+
+    #holiday
+    task = Task(_worker='proj.total_tasks.holiday_list_task', _task_id='demo', _source='Holiday', _type='HotelList',
+                _task_name='list_hotel_holiday_20180523',
+                _used_times=2, max_retry_times=6,
+
+    kwargs={
+                    "suggest_type" : 2,
+                    "check_in" : "20180701",
+                    "city_id" : "NULL",
+                    "suggest" : "{\"hits\": 2, \"countryCode\": \"0001\", \"longitude\": -80.1325, \"label\": \"South Beach, FL, United States\", \"rank\": 4.320963129957317, \"suggestion\": \"South Beach, FL, United States\", \"destinationType\": \"CITY\", \"latitude\": 25.77083, \"type\": \"B\"}",
+                    "country_id" : "501",
+                    "source" : "holiday",
+                    "part" : "20180507",
+                    "is_new_type" : 1,
+                    "date_index" : 0
+                },
+                _routine_key='hotel_list_holiday', list_task_token='', _queue='hotel_list_holiday', task_type=0)
+
+    print(zxp_hotel_list_task(task=task))
 
     #hyatt
     # task = Task(_worker='', _task_id='demo', _source='Holiday', _type='hotel_list',

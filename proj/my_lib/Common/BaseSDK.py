@@ -88,10 +88,8 @@ class BaseSDK(object):
         else:
             finished = False
 
-        r.incr('|_||_|'.join(
-            map(lambda x: str(x),
-                [self.task.worker, get_local_ip(), self.task.source, self.task.type, self.task.error_code,
-                 self.task.task_name])))
+        r.zincrby(self.task.task_name, str(self.task.error_code))
+        r.zincrby(self.task.task_name, 'total')
 
         self.logger.debug('|_||_|'.join(
             map(lambda x: str(x),

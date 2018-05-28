@@ -46,4 +46,4 @@ def detect_msg_num(queue_name):
 
 
 if __name__ == '__main__':
-    print(detect_msg_num("poi_list"))
+    print(detect_msg_num("celery"))

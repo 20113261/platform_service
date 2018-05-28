@@ -7,6 +7,7 @@
 # @Software: PyCharm
 from __future__ import absolute_import
 from SDK import *
+from SDK.MyHotelListSDK import MyHotelListSDK
 from SDK.SupplementTask import SupplementReMapInfo
 from SDK.HiltonTaxSDK import HiltonTaxSDK
 from SDK.HiltonSuggestCitySDK import HiltonSuggestCitySDK
@@ -21,6 +22,7 @@ from SDK.CtripImageSDK import  CtripImageSDK
 from proj.celery import app
 from proj.my_lib.BaseTask import BaseTask
 from SDK.BestwestSuggestMapSDK import BestwestSuggestMapSDK
+
 
 
 #ctripPoi image task
@@ -326,3 +328,12 @@ def zxp_slow_list_task(self, task, **kwargs):
     _sdk = HotelListSDK(task=task)
     return _sdk.execute()
 
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
+def zxp_hotel_list_task(self, task, **kwargs):
+    _sdk = MyHotelListSDK(task=task)
+    return _sdk.execute()
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
+def hiltion_detail_task(self, task, **kwargs):
+    _sdk = HotelDetailSDK(task=task)
+    return _sdk.execute()

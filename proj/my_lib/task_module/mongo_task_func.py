@@ -1,3 +1,4 @@
+#coding:utf-8
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time    : 2017/7/15 下午11:05
@@ -47,7 +48,7 @@ def get_task_total_simple(queue, used_times=6, limit=30000, debug=False):
     :return: Task
     """
     # type:  (str, int, int, bool) -> Task
-    collection_name_list = [i3 for i1, i2, i3, i4 in get_serviceplatform_monitor_info()]
+    collection_name_list = [i3 for i1, i2, i3, i4 in get_serviceplatform_monitor_info()]   #读取数据库
     collection_prefix = 'Task_Queue_{}_TaskName_'.format(queue)
     c_list = list(filter(lambda x: str(x).startswith(collection_prefix), collection_name_list))
 

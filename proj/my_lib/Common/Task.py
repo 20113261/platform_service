@@ -6,6 +6,8 @@
 # @File    : Task.py
 # @Software: PyCharm
 import json
+import copy
+from MongoTaskInsert_2 import InsertTask, TaskType
 
 
 class TaskStatus(object):
@@ -50,6 +52,8 @@ class Task(object):
         self.task_type = task_type
         self.list_task_token = list_task_token
 
+        self.parent_id = ''
+
         # 初始化任务执行信息
         self.used_times = _used_times,
         self.max_retry_times = max_retry_times
@@ -70,6 +74,7 @@ class Task(object):
 
         # 任务 collection 信息
         self.collection = collection
+
 
     @property
     def list_task_insert_db_count(self):
@@ -112,3 +117,30 @@ class Task(object):
 
     def __str__(self):
         return json.dumps(self.__dict__, ensure_ascii=False)
+
+    def gen_list_task(self, data):
+        if not data:
+            raise ValueError('列表页子任务为空，此task的parent_id 为{}'.format(self.task_id))
+        self.parent_id = self.task_id
+        with InsertTask(task=self, data=data) as it:
+            for line in data:
+                it.insert_task(line)
+
+    def gen_detail_task(self, data, subtask_type='hotel_detail'):
+        if not data:
+            raise ValueError('详情页为空，此task的parent_id为{}'.format(self.task_id))
+        task = copy.deepcopy(self)
+        task.parent_id = self.task_id
+        task.task_name = self.task_name.replace('list', subtask_type.split('_')[-1])
+        task.routine_key = self.routine_key.replace('hotel_list', subtask_type)
+        task.queue = self.queue.replace('hotel_list', subtask_type)
+        task.task_type = TaskType.NORMAL
+        task.type = self.type.replace('List', subtask_type.split('_')[-1].title())
+        task.worker = self.worker.replace('list', subtask_type.split('_')[-1])
+        # self.pop('list_task_token')
+        # self.pop('task_id')
+
+
+        with InsertTask(task=self, data=data) as it:
+            it.insert_task(data)
+
