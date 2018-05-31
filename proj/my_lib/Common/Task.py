@@ -141,6 +141,6 @@ class Task(object):
         # self.pop('task_id')
 
 
-        with InsertTask(task=self, data=data) as it:
+        with InsertTask(task=task, data=data) as it:
             it.insert_task(data)
 
