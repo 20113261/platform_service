@@ -195,7 +195,7 @@ class MyHotelListSDK(BaseSDK):
                         'country_id': line[3],
                         'hotel_url': line[4]
                     })
-                self.task.gen_detail_task(data, 'images')
+                self.task.gen_detail_task(data)
 
             return res_data
 
