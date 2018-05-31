@@ -340,7 +340,9 @@ class AsyncConsumer(object):
 
 
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
-example = AsyncConsumer('amqp://hourong:1220@10.10.213.148:5672/task_info')
+# example = AsyncConsumer('amqp://hourong:1220@10.10.213.148:5672/task_info')
+example = AsyncConsumer('amqp://zxp:zxp@47.93.188.221:5677/serviceplatform')
+
 try:
     example.run()
 except KeyboardInterrupt:

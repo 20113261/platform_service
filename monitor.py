@@ -820,7 +820,7 @@ if __name__ == '__main__':
 
     monitoring_hotel_list2detail()
 
-    # city2list()
+    city2list()
     # monitoring_poi_detail2imgOrComment()
     # monitoring_hotel_detail2ImgOrComment()
     # while True:

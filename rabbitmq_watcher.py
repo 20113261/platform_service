@@ -196,8 +196,9 @@ def insert_task(queue, limit):
                 task.worker,
                 task_id="[collection: {}][tid: {}]".format(task.collection, task.task_id),
                 kwargs={'task': task},
-                queue=task.queue,
-                routing_key=task.routine_key
+                queue=task.routine_key,
+                # exchange=task.routine_key,
+                # routing_key=task.queue
             )
         else:
             # 如果需要开启慢任务

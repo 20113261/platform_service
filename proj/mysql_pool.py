@@ -15,6 +15,15 @@ def init_pool(host, user, password, database, max_connections=5):
                              db=database, charset='utf8', use_unicode=False, blocking=True)
     return mysql_db_pool
 
+db_config = dict(
+    user='mioji_admin',
+    password='mioji1109',
+    host='10.10.238.148',
+    database='task_db'
+)
+
+task_db_monitor_db_pool = init_pool(**db_config)
+
 
 db_config = dict(
     user='mioji_admin',
@@ -77,11 +86,3 @@ db_config = dict(
 )
 spider_data_base_data_pool = init_pool(**db_config)
 
-db_config = dict(
-    user='mioji_admin',
-    password='mioji1109',
-    host='10.10.238.148',
-    database='task_db'
-)
-
-task_db_monitor_db_pool = init_pool(**db_config)

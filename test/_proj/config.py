@@ -5,6 +5,7 @@ from __future__ import absolute_import
 # BROKER_URL = 'amqp://hourong:1220@10.10.114.35/celery'
 # CELERY_RESULT_BACKEND = 'amqp://hourong:1220@10.10.189.213/celery'
 BROKER_URL = 'amqp://hourong:1220@10.10.189.213/TaskDistribute'
+# BROKER_URL = 'amqp://zxp:zxp@47.93.188.221/serviceplatform'
 
 CELERY_RESULT_BACKEND = 'mongodb://10.10.231.105:27017/'
 

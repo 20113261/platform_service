@@ -337,3 +337,7 @@ def zxp_hotel_list_task(self, task, **kwargs):
 def hiltion_detail_task(self, task, **kwargs):
     _sdk = HotelDetailSDK(task=task)
     return _sdk.execute()
+
+@app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m', expires=5)
+def test_zxp(self, task, **kwargs):
+    print task, '来啦！'
