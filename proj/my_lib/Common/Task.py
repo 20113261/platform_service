@@ -132,7 +132,7 @@ class Task(object):
         task = copy.deepcopy(self)
         task.parent_id = self.task_id
         task.task_name = self.task_name.replace('list', subtask_type.split('_')[-1])
-        task.routine_key = self.routine_key.replace('list_hotel', subtask_type)
+        task.routine_key = self.routine_key.replace('list', subtask_type.split('_')[-1])
         task.queue = self.queue.replace('hotel_list', subtask_type)
         task.task_type = TaskType.NORMAL
         task.type = self.type.replace('List', subtask_type.split('_')[-1].title())
