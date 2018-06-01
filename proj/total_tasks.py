@@ -8,6 +8,7 @@
 from __future__ import absolute_import
 from SDK import *
 from SDK.MyHotelListSDK import MyHotelListSDK
+from SDK.MyHotelDetailSDK import MyHotelDetailSDK
 from SDK.SupplementTask import SupplementReMapInfo
 from SDK.HiltonTaxSDK import HiltonTaxSDK
 from SDK.HiltonSuggestCitySDK import HiltonSuggestCitySDK
@@ -334,8 +335,8 @@ def zxp_hotel_list_task(self, task, **kwargs):
     return _sdk.execute()
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m')
-def hiltion_detail_task(self, task, **kwargs):
-    _sdk = HotelDetailSDK(task=task)
+def zxp_hotel_detail_task(self, task, **kwargs):
+    _sdk = MyHotelDetailSDK(task=task)
     return _sdk.execute()
 
 @app.task(bind=True, base=BaseTask, max_retries=3, rate_limit='10/m', expires=5)

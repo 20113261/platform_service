@@ -274,6 +274,6 @@ if __name__ == '__main__':
             "content" : "Beijing",
             'city_id': '',
             'country_id': ''
-        }, _routine_key='hotel_list', list_task_token='', _queue='hotel_list', task_type=0)
+        }, _routine_key='list_hotel_hilton', list_task_token='', _queue='hotel_list', task_type=0)
 
-    print(hotel_list_task(task))
+    print(zxp_hotel_list_task(task))

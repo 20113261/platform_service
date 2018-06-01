@@ -114,8 +114,9 @@ if __name__ == '__main__':
     # url = 'http://www.hilton.com.cn/zh-cn/hotel/new-york/millennium-hilton-new-york-one-un-plaza-NYCUPHH/'
     u_list = [
         'http://www.hilton.com.cn/zh-CN/hotel/Beijing/hilton-beijing-wangfujing-BJSWFHI/',
-        'http://www.hilton.com.cn/zh-cn/hotel/sharjah/hilton-sharjah-SHJHSHI/',
-        'http://www.hilton.com.cn/zh-cn/hotel/new-york/millennium-hilton-new-york-one-un-plaza-NYCUPHH/'
+        # 'http://www.hilton.com.cn/zh-cn/hotel/sharjah/hilton-sharjah-SHJHSHI/',
+        # 'http://www.hilton.com.cn/zh-cn/hotel/new-york/millennium-hilton-new-york-one-un-plaza-NYCUPHH/',
+        # 'http://www.hilton.com.cn/zh-cn/hotel/Chicago/palmer-house-a-hilton-hotel-CHIPHHH/index.html'
     ]
     for url in u_list:
         detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(url.split('/')[-2])

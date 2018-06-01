@@ -9,7 +9,7 @@ import sys
 
 sys.path.append('/data/lib')
 from proj.my_lib.Common.Task import Task
-from proj.total_tasks import hotel_detail_task
+from proj.total_tasks import zxp_hotel_detail_task
 from MongoTaskInsert import TaskType
 
 if __name__ == '__main__':
@@ -86,18 +86,35 @@ if __name__ == '__main__':
     #
     # print(hotel_detail_task(task=task))
 
-    task = Task(_worker='', _queue='hotel_detail', _routine_key='hotel_detail', _task_id='demo', _source='starwood',
-                _type='hotel',
-                _task_name='detail_hotel_gha_20180507',
-                _used_times=0, max_retry_times=10,
-                kwargs={
-    "url" : "https://zh.gha.com/Al-Faisaliah/Al-Faisaliah-Hotel",
-    "country_id" : "NULL",
-    "source" : "gha",
-    "part" : "detail_hotel_gha_20180507",
-    "city_id" : "NULL",
-    "source_id" : "AFALF"
-},
-                task_type=TaskType.NORMAL, list_task_token=None)
+    #gha
+#     task = Task(_worker='', _queue='hotel_detail', _routine_key='hotel_detail', _task_id='demo', _source='starwood',
+#                 _type='hotel',
+#                 _task_name='detail_hotel_gha_20180507',
+#                 _used_times=0, max_retry_times=10,
+#                 kwargs={
+#     "url" : "https://zh.gha.com/Al-Faisaliah/Al-Faisaliah-Hotel",
+#     "country_id" : "NULL",
+#     "source" : "gha",
+#     "part" : "detail_hotel_gha_20180507",
+#     "city_id" : "NULL",
+#     "source_id" : "AFALF"
+# },
+#                 task_type=TaskType.NORMAL, list_task_token=None)
+#
+#     print(hotel_detail_task(task=task))
 
-    print(hotel_detail_task(task=task))
+    #hilton
+    task = Task(_worker='', _queue='hotel_detail', _routine_key='hotel_detail', _task_id='demo', _source='hilton',
+              _type='hotel',
+              _task_name='detail_hotel_hilton_20180531',
+              _used_times=0, max_retry_times=10,
+              kwargs={
+                  "source_id": "CHIPHHH",
+                  "source": "hilton",
+                  "country_id": "",
+                  "city_id": "",
+                  "hotel_url": "http://www.hilton.com.cn/zh-CN/hotel/Beijing/hilton-beijing-wangfujing-BJSWFHI/"
+              },
+              task_type=TaskType.NORMAL, list_task_token=None)
+
+    print(zxp_hotel_detail_task(task=task))
