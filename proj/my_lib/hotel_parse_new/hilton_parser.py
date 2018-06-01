@@ -76,9 +76,13 @@ def hilton_parser(total_content, url, other_info):
     for s_str in service_info_list:
         s_str = s_str.encode('raw-unicode-escape')
         if '入住' in s_str:
-            Hotel.check_in_time = re.compile(r'(\d+:\d+)').findall(s_str)[0]
+            check_in_time = re.compile(r'(\d+:\d+)').findall(s_str)
+            if check_in_time:
+                Hotel.check_in_time = check_in_time[0]
         if '退房' in s_str:
-            Hotel.check_out_time = re.compile(r'(\d+:\d+)').findall(s_str)[0]
+            check_out_time = re.compile(r'(\d+:\d+)').findall(s_str)
+            if check_out_time:
+                Hotel.check_out_time = check_out_time[0]
         if '宠物' in s_str:
             Hotel.pet_type = s_str.replace('\r', '').replace('\n', '').strip()
     desc = select_desc.xpath('//div[@class="intro fix"]/p/text()')
