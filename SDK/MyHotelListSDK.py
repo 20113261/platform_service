@@ -11,6 +11,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from celery.utils.log import get_task_logger
+from proj.my_lib.logger import get_logger
 from mioji.spider_factory import factory
 from mioji.common.task_info import Task
 from mioji.common.utils import simple_get_socks_proxy
@@ -36,7 +37,7 @@ from MongoTaskInsert_2 import InsertTask, TaskType
 from proj.my_lib.Common.Task import Task as ResultTask
 
 mioji.common.pool.pool.set_size(2024)
-logger = get_task_logger('hotel_list')
+logger = get_logger("HotelListSDK")
 mioji.common.logger.logger = logger
 mioji.common.pages_store.cache_dir = list_cache_path
 mioji.common.pages_store.STORE_TYPE = cache_type
