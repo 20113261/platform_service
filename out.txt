@@ -1,0 +1,11 @@
+file
+This message is for file!
+file
+This message is for file!
+file
+file
+file
+<open file 'out.txt', mode 'a' at 0x109319930>
+<open file 'out.txt', mode 'a' at 0x109319930>
+<open file 'out.txt', mode 'a' at 0x109319930>
+<module 'sys' (built-in)>

@@ -113,7 +113,7 @@ if __name__ == '__main__':
                   "source": "hilton",
                   "country_id": "",
                   "city_id": "",
-                  "hotel_url": "http://www.hilton.com.cn/zh-CN/hotel/Beijing/hilton-beijing-wangfujing-BJSWFHI/"
+                  "hotel_url": "http://www.hilton.com.cn/zh-cn/hotel/wuhan/hilton-wuhan-WUHRSHI/index.html"
               },
               task_type=TaskType.NORMAL, list_task_token=None)
 

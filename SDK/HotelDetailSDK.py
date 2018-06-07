@@ -219,6 +219,7 @@ class HotelDetailSDK(BaseSDK):
                         content2 = page2.text
                         content = (content1, content2)
                 elif source == 'hilton':
+                    url = url.replace('index.html', '')
                     detail_url = 'http://www3.hilton.com/zh_CN/hotels/china/{}/popup/hotelDetails.html'.format(
                         url.split('/')[-2])
                     enDetail_url = 'http://www3.hilton.com/en/hotels/{}/{}/about/amenities.html'.format(
