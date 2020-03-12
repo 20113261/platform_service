@@ -19,7 +19,7 @@ pygpgme==0.1
 pyexecjs==1.4.0
 pycurl==7.19.0
 pyasn1==0.2.3
-psutil==5.3.1
+psutil==5.6.6
 pika==0.10.0
 perf==0.1
 pandas==0.19.2
