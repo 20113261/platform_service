@@ -38,7 +38,7 @@ gevent==1.1.2
 eventlet==0.21.0
 dbutils==1.2
 dataset==0.8.0
-celery==4.1.0
+celery==5.2.2
 backports.ssl-match-hostname==3.4.0.2
 anyjson==0.3.3
 imagehash==3.7
