@@ -4,7 +4,7 @@ user-agent==0.1.5
 urllib3==1.10.2
 urlgrabber==3.9.1
 supervisor==3.3.3
-suds==0.4
+suds==1.0.0
 scipy==0.18.1
 requests==2.13.0
 requesocks==0.10.8
